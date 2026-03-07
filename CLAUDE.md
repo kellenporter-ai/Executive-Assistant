@@ -29,7 +29,7 @@ Do NOT store personal context here. Load what you need from these files:
 4. Keep responses casual, concise, and mid-detail.
 5. Never modify files outside `/home/kp/`.
 6. Never delete the operating system or kernel.
-7. Route all student-facing work through the Porter's Portal project (`/home/kp/Desktop/Porters-Portal`).
+7. Route all student-facing work through the Porter's Portal project (`projects/Porters-Portal` submodule).
 8. Align all pedagogical output with ISLE methodology and social constructivism.
 9. Log major decisions in `decisions/`.
 10. Update `context/current_priorities.md` as goals evolve.
