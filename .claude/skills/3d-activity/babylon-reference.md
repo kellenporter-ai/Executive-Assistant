@@ -514,6 +514,50 @@ BABYLON.Animation.CreateAndStartAnimation(
 
 ---
 
+## Static Scene Optimization
+
+For any mesh that doesn't move or animate after initial placement, apply these flags to eliminate per-frame CPU overhead. This is free performance — do it for every static object.
+
+```javascript
+// After positioning all static meshes:
+function freezeStatic(mesh) {
+    mesh.freezeWorldMatrix();          // stop recalculating transform matrix every frame
+    mesh.doNotSyncBoundingInfo = true;  // stop recalculating bounding box
+    if (mesh.material && !mesh.material._frozen) {
+        mesh.material.freeze();         // stop checking material state changes
+    }
+}
+
+// Apply to all static scene elements (walls, floor, furniture, props)
+[floor, wall, ceiling, ...labTables, ...staticProps].forEach(m => {
+    if (m.getChildMeshes) {
+        m.getChildMeshes().forEach(freezeStatic);
+    } else {
+        freezeStatic(m);
+    }
+});
+```
+
+### Engine-Level Performance Priority
+
+Add this after scene creation for Chromebook-targeted sims:
+
+```javascript
+scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive;
+```
+
+This tells the engine to auto-disable minor features and prioritize frame throughput. Use on every sim unless you need specific features it disables (check Babylon docs if something stops working).
+
+### When NOT to Freeze
+
+- Meshes that animate, move, or scale during the sim (projectiles, draggable objects, sliders)
+- Meshes whose material properties change at runtime (color shifts on state change)
+- Meshes that need per-frame frustum culling accuracy (rare in our small scenes)
+
+After a mesh stops moving (e.g., projectile lands), you CAN freeze it at that point for a late optimization.
+
+---
+
 ## Render Loop & Resize
 
 Always end the main script with:
@@ -522,6 +566,168 @@ Always end the main script with:
 engine.runRenderLoop(() => scene.render());
 window.addEventListener('resize', () => engine.resize());
 ```
+
+---
+
+## Thin Instances — Mass Repetition of Identical Geometry
+
+When a scene repeats the same mesh many times (rows of desks, evidence markers, chairs, trees), creating individual meshes hammers the CPU with draw calls. Thin Instances render thousands of copies in a single GPU pass with near-zero CPU cost.
+
+**Use when:** 10+ copies of identical geometry exist in the scene.
+**Do NOT use for:** Meshes that need individual picking, individual visibility toggling, or per-instance material changes.
+
+```javascript
+// 1. Create the base mesh once (with material)
+const deskBase = BABYLON.MeshBuilder.CreateBox("desk", { width: 1.8, height: 0.06, depth: 0.9 }, scene);
+deskBase.material = matTable;
+
+// 2. Build a Float32Array of 4x4 transform matrices
+const matrices = new Float32Array(16 * desktopPositions.length);
+for (let i = 0; i < desktopPositions.length; i++) {
+    const m = BABYLON.Matrix.Translation(
+        desktopPositions[i].x,
+        desktopPositions[i].y,
+        desktopPositions[i].z
+    );
+    m.copyToArray(matrices, i * 16);
+}
+
+// 3. Apply — one draw call renders all instances
+deskBase.thinInstanceSetBuffer("matrix", matrices, 16);
+
+// Optional: freeze after setup (thin instances are already GPU-side)
+deskBase.freezeWorldMatrix();
+deskBase.doNotSyncBoundingInfo = true;
+```
+
+### Thin Instance with Rotation/Scale
+
+```javascript
+const m = BABYLON.Matrix.Compose(
+    new BABYLON.Vector3(1, 1, 1),          // scale
+    BABYLON.Quaternion.RotationAxis(        // rotation
+        BABYLON.Axis.Y, angle
+    ),
+    new BABYLON.Vector3(x, y, z)           // position
+);
+```
+
+### Thin Instance Limitations
+
+- **No individual picking** — you can't click one instance. If you need picking, use regular InstancedMesh instead.
+- **All-or-nothing rendering** — if the bounding box is on screen, ALL instances render. Fine for classroom-sized scenes; problematic for huge open worlds.
+- **Same material** — all instances share the base mesh's material. Use per-instance color buffers if you need color variation.
+
+### When to Use Regular InstancedMesh Instead
+
+If you need to click/drag individual copies or show/hide them independently, use `mesh.createInstance()`:
+
+```javascript
+const inst = baseMesh.createInstance("desk_" + i);
+inst.position.set(x, y, z);
+// inst is individually pickable and can be hidden with inst.setEnabled(false)
+```
+
+Regular instances still share geometry on the GPU (one draw call per material), but the CPU tracks each one for culling and picking.
+
+---
+
+## GreasedLine — Efficient Vector Lines in 3D
+
+Standard WebGL lines are limited to 1px width on most hardware. Creating tube meshes for thick lines (crime scene tape, measurement lines, laser beams, trajectory traces) wastes massive polygon counts. GreasedLine renders thick, crisp lines using a billboarded ribbon — minimal triangles, any width.
+
+**Use when:** You need lines thicker than 1px, dashed lines, or SVG-style strokes in 3D space.
+
+**CDN:** GreasedLine is included in the main Babylon.js bundle since v6. No additional script needed.
+
+```javascript
+// Basic thick line between two points
+const line = BABYLON.CreateGreasedLine("traceLine", {
+    points: [
+        new BABYLON.Vector3(-2, 1, 0),
+        new BABYLON.Vector3(3, 2.5, 0),
+        new BABYLON.Vector3(5, 0.5, 0)
+    ]
+}, {
+    width: 0.04,           // world-space width
+    color: BABYLON.Color3.FromHexString("#ff4444")
+}, scene);
+```
+
+### Dashed Lines
+
+```javascript
+const dashedLine = BABYLON.CreateGreasedLine("ruler", {
+    points: rulerPoints
+}, {
+    width: 0.02,
+    color: BABYLON.Color3.White(),
+    dashCount: 20,         // number of dash-gap pairs
+    dashRatio: 0.5         // 0.5 = equal dash and gap
+}, scene);
+```
+
+### Trajectory Trace (replacing tube meshes)
+
+```javascript
+// Instead of CreateTube with 500 tessellation segments:
+const tracePoints = [];
+for (let t = 0; t <= totalTime; t += 0.02) {
+    tracePoints.push(new BABYLON.Vector3(
+        v0x * t,
+        v0y * t - 0.5 * 9.8 * t * t,
+        0
+    ));
+}
+const trace = BABYLON.CreateGreasedLine("trajectory", {
+    points: tracePoints
+}, {
+    width: 0.03,
+    color: BABYLON.Color3.FromHexString("#22d47a")
+}, scene);
+```
+
+### Crime Scene Tape (replacing catenary tubes)
+
+GreasedLine is ideal for tape-style decorations. For the actual tape text effect, continue using CreateTube with DynamicTexture since GreasedLine doesn't support texture mapping. But for boundary lines, perimeter ropes, and measurement guides, GreasedLine is the better choice.
+
+### GreasedLine vs Tubes/Cylinders
+
+| Use Case | Best Choice |
+|---|---|
+| Thin measurement/trajectory lines | GreasedLine |
+| Dashed/dotted reference lines | GreasedLine |
+| Glowing laser/beam effects | GreasedLine + emissive material |
+| Tape/rope with printed text | CreateTube + DynamicTexture |
+| Thick pipes/structural tubes | CreateTube (needs 3D volume) |
+
+---
+
+## Level of Detail (LOD)
+
+LOD swaps high-poly meshes for simpler versions at distance. Critical for dense scenes (classrooms with 30 desks, outdoor environments).
+
+```javascript
+// Create LOD levels for a complex prop
+const propHigh = buildDetailedMicroscope(scene);  // 800 tris
+const propMed  = buildSimpleMicroscope(scene);    // 200 tris
+const propLow  = BABYLON.MeshBuilder.CreateBox("microLOD2", {
+    width: 0.15, height: 0.35, depth: 0.15
+}, scene);                                         // 12 tris
+propLow.material = propHigh.material;
+
+// Register LOD chain on the high-detail mesh
+propHigh.addLODLevel(8, propMed);    // switch to medium at 8m
+propHigh.addLODLevel(15, propLow);   // switch to box at 15m
+propHigh.addLODLevel(25, null);      // cull entirely at 25m
+```
+
+### LOD Guidelines
+
+- **Only worth it for complex props** repeated across the scene. A single lab table doesn't need LOD.
+- **2-3 levels max.** High -> simplified -> box/null.
+- **Distance thresholds** depend on scene scale. For classroom scenes (10-15m across), use 5/10/20m. For outdoor scenes (50m+), use 15/30/60m.
+- **Combine with Thin Instances**: build the high-detail mesh with thin instances for close items, medium-detail with thin instances for mid-range. Manually switch sets based on camera distance in the render loop.
 
 ---
 

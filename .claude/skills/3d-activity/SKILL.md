@@ -127,6 +127,9 @@ Follow the detailed patterns in [babylon-reference.md](babylon-reference.md). Th
 - Build all models from **Babylon.js primitives** (boxes, cylinders, spheres, etc.) — no external model files
 - Make environments **realistic** — lab tables, walls, terrain, not floating objects on a grid
 - **Texture major surfaces procedurally** — use the `pbrTex()` helper with Canvas 2D painting (see babylon-reference.md "Procedural Textures" section). Floors, walls, ceilings, doors, furniture tops, and equipment panels should have painted textures (tile grout, brick mortar, wood grain, metal panels, etc.), not flat-color PBR. Flat-color `pbr()` is fine only for small parts like legs, bolts, and handles
+- **Freeze all static meshes** after positioning — call `freezeWorldMatrix()`, `doNotSyncBoundingInfo = true`, and `material.freeze()` on every mesh that doesn't move. Set `scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive`
+- **Use Thin Instances for repeated geometry** (10+ identical objects like desks, markers, chairs) — see babylon-reference.md "Thin Instances" section
+- **Use GreasedLine for thick lines** (measurement lines, trajectory traces, reference lines) instead of CreateTube — see babylon-reference.md "GreasedLine" section. Exception: textured tape still uses CreateTube + DynamicTexture
 
 ---
 

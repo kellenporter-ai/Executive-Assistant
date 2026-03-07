@@ -16,16 +16,18 @@
   - Gamification to drive participation and motivation
   - Differentiated learning for varied learning styles and abilities
 - Recent focus areas (as of March 2026):
-  - **Assessment security** — server-side telemetry validation, session tokens, anti-cheat measures
+  - **Assessment security & analytics** — server-side telemetry validation, session tokens, anti-cheat; now tracking word count and words-per-second as behavioral integrity signals; 3-panel Google Classroom-style grading view
   - **Gamification expansion** — Flux Shop, cosmetics (auras, particles, frames, trails), boss fights, dungeons, PvP arena
-  - **Simulation development** — Babylon.js 3D activities and 2D interactive activities for physics and forensic science
+  - **Avatar customization** — operative avatar getting deep visual polish: hair path geometry (buzz, afro, pixie, braids, ponytail), fabric texture system, space background animation
+  - **Simulation development** — Babylon.js 3D activities and 2D interactive activities for physics and forensic science; 3D rendering optimizations applied (Thin Instances, GreasedLine, static mesh freezing, LOD)
+  - **3D asset pipeline (planning)** — roadmap documented in `decisions/asset-pipeline-roadmap.md`; Phase 1 (external glTF + Meshoptimizer) is next sprint target
   - **Grading UX** — side-by-side rubric grading, academic integrity analysis, AI-flagged submission handling
 
 ## AI Agent Team
 - 9 specialized agents managed from `agents/` in the Executive Assistant repo
 - Agents: portal-orchestrator, ui-accessibility-engineer, backend-integration-engineer, qa-bug-resolution, content-strategist-ux-writer, data-analyst, economy-designer, deployment-monitor, 3d-graphics-engineer
 - Agent memory stored in `agents/memory/` — captures patterns, bugs, architecture decisions
-- 14 skills in `skills/` — dev-pipeline, create-assessment, slide-deck, 3d-activity, 2d-activity, crime-scene-generator, and more
+- 13 skills in `.claude/skills/` — dev-pipeline, create-assessment, slide-deck, 3d-activity, 2d-activity, crime-scene-generator, context-sync, agent-creator, game-balance, generate-image, generate-questions, lesson-plan, study-guide
 - Leverage cheaper/faster models for sub-agent tasks
 
 ## Guiding Principles

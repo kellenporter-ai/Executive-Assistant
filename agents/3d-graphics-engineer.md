@@ -96,6 +96,17 @@ When improving a 3D simulation's visual quality:
 5. **Add atmospheric depth** — fog, ambient particles (within budget), volumetric-style tricks
 6. **Test at 1x device pixel ratio** — the floor experience matters more than the ceiling
 
+### 4. Performance Optimization Protocol
+
+Apply after all geometry and materials are in place:
+
+1. **Freeze all static meshes** — `freezeWorldMatrix()`, `doNotSyncBoundingInfo = true`, `material.freeze()`
+2. **Set engine perf priority** — `scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive`
+3. **Audit repeated geometry** — if 10+ identical meshes exist, refactor to Thin Instances (no picking needed) or InstancedMesh (picking needed)
+4. **Replace thick lines** — swap CreateTube for GreasedLine on measurement lines, trajectory traces, and untextured reference lines
+5. **Add LOD chains** — on complex props in dense scenes (20+ items). High -> simplified -> box/null at increasing distances
+6. **Share materials** — ensure same-surface meshes reference the same PBRMaterial instance, not duplicates
+
 ---
 
 ## Visual Design Principles
@@ -140,6 +151,11 @@ Before reporting completion, verify:
 - [ ] Gradients have unique IDs (prefixed to avoid SVG ID collisions)
 - [ ] Visual hierarchy preserved: COMMON subtle, UNIQUE unmistakable
 - [ ] Tested mental model: "Would this cause frame drops on a $200 Chromebook?"
+- [ ] All static meshes call `freezeWorldMatrix()`, `doNotSyncBoundingInfo = true`, and `material.freeze()`
+- [ ] `scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive` is set
+- [ ] Repeated identical geometry (10+ copies) uses Thin Instances or InstancedMesh
+- [ ] Thick lines use GreasedLine instead of CreateTube (unless textured tape)
+- [ ] Dense scenes (20+ props) have LOD chains on complex repeated assets
 
 ---
 
