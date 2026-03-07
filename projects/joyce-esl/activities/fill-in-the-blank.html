@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Fill in the Blank</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #1a1a2e;
+            --bg2: #16213e;
+            --panel: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --error: #ff3366;
+            --text: #ffffff;
+            --muted: #8899aa;
+            --card-bg: rgba(255,255,255,0.07);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .title-area h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+        .stats { display: flex; gap: 16px; align-items: center; font-size: 0.85rem; }
+        .tier-badge { background: var(--accent); color: #000; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .streak { color: #ff9500; font-weight: 700; }
+        .accuracy-stat { color: var(--muted); }
+
+        .xp-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+        .xp-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #7c3aed); transition: width 0.4s ease; border-radius: 0 3px 3px 0; }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 0;
+            gap: 24px;
+            position: relative;
+        }
+
+        .category-label {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .sentence-display {
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-align: center;
+            max-width: 600px;
+            line-height: 1.6;
+        }
+
+        .blank {
+            display: inline-block;
+            min-width: 80px;
+            border-bottom: 3px solid var(--accent);
+            margin: 0 4px;
+            padding: 2px 8px;
+            color: var(--accent);
+            font-weight: 800;
+            transition: border-color 0.3s, color 0.3s;
+        }
+
+        .blank.correct-blank {
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .blank.wrong-blank {
+            border-color: var(--error);
+            color: var(--error);
+            text-decoration: line-through;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 450px;
+        }
+
+        .choice-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            outline: none;
+        }
+
+        .choice-btn:hover, .choice-btn:focus-visible {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .choice-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .choice-btn:active { transform: scale(0.97); }
+
+        .choice-btn.correct { border-color: var(--success); background: rgba(0, 255, 136, 0.15); animation: pulse-green 0.4s ease; }
+        .choice-btn.wrong { border-color: var(--error); background: rgba(255, 51, 102, 0.15); animation: shake 0.4s ease; }
+        .choice-btn.reveal { border-color: var(--success); background: rgba(0, 255, 136, 0.1); }
+        .choice-btn[disabled] { pointer-events: none; opacity: 0.7; }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-height: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.show { opacity: 1; }
+        .feedback.correct-fb { color: var(--success); }
+        .feedback.wrong-fb { color: var(--error); }
+
+        .correct-answer-line {
+            font-size: 0.9rem;
+            color: var(--success);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .correct-answer-line.show { opacity: 1; }
+
+        .level-up-banner {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+            border: 2px solid var(--accent); border-radius: 20px;
+            padding: 32px 48px; text-align: center; z-index: 100;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        .level-up-banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+        .level-up-banner h2 { font-size: 1.6rem; margin-bottom: 8px; }
+        .level-up-banner .new-tier { font-size: 1.2rem; color: var(--accent); font-weight: 800; }
+
+        footer {
+            padding: 10px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-top: 1px solid var(--border); flex-shrink: 0;
+        }
+
+        .reset-btn {
+            background: none; border: 1px solid var(--border); color: var(--muted);
+            padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .reset-btn:hover, .reset-btn:focus-visible { border-color: var(--error); color: var(--error); }
+        .reset-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 2px; }
+        .total-stat { font-size: 0.8rem; color: var(--muted); }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(0,255,136,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        @media (max-width: 500px) {
+            .sentence-display { font-size: 1.2rem; }
+            .choices { gap: 8px; }
+            .choice-btn { padding: 12px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-area"><h1>Fill in the Blank</h1></div>
+        <div class="stats">
+            <span class="streak" id="streak" aria-label="Current streak">0x</span>
+            <span class="tier-badge" id="tierBadge" aria-label="Current tier">ROOKIE</span>
+            <span class="accuracy-stat" id="accuracy" aria-label="Accuracy">0%</span>
+        </div>
+    </header>
+
+    <div class="xp-bar-container" role="progressbar" aria-label="Progress to next tier" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+        <div class="xp-bar" id="xpBar" style="width: 0%"></div>
+    </div>
+
+    <main class="game-area">
+        <div class="category-label" id="category" aria-live="polite"></div>
+        <div class="sentence-display" id="sentenceDisplay" aria-live="polite"></div>
+        <div class="choices" id="choices" role="group" aria-label="Answer choices"></div>
+        <div class="feedback" id="feedback" aria-live="assertive"></div>
+        <div class="correct-answer-line" id="correctLine"></div>
+    </main>
+
+    <div class="level-up-banner" id="levelBanner" role="alert">
+        <h2>LEVEL UP!</h2>
+        <div class="new-tier" id="newTierLabel"></div>
+    </div>
+
+    <footer>
+        <button class="reset-btn" id="resetBtn" aria-label="Reset all progress">Reset Progress</button>
+        <span class="total-stat" id="totalStat">0 / 0</span>
+    </footer>
+
+    <script>
+    // ==================== ADAPTIVE ENGINE ====================
+    class AdaptiveEngine {
+        constructor(storageKey, questionBank) {
+            this.storageKey = storageKey; this.bank = questionBank;
+            this.promoteThreshold = 4; this.demoteThreshold = 2;
+            this.tierLabels = { 1: 'Rookie', 2: 'Starter', 3: 'Pro', 4: 'All-Star', 5: 'Legend' };
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.tier = data.tier || 1; this.correctStreak = data.correctStreak || 0;
+                this.wrongStreak = data.wrongStreak || 0; this.totalCorrect = data.totalCorrect || 0;
+                this.totalAttempts = data.totalAttempts || 0; this.seen = data.seen || {};
+            } else {
+                this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+                this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            }
+        }
+        get tierLabel() { return this.tierLabels[this.tier] || 'Rookie'; }
+        get accuracy() { return this.totalAttempts === 0 ? 0 : Math.round((this.totalCorrect / this.totalAttempts) * 100); }
+        next() {
+            const tierItems = this.bank[this.tier];
+            if (!tierItems || tierItems.length === 0) return null;
+            if (!this.seen[this.tier]) this.seen[this.tier] = [];
+            if (this.seen[this.tier].length >= tierItems.length) this.seen[this.tier] = [];
+            const unseenIndices = tierItems.map((_, i) => i).filter(i => !this.seen[this.tier].includes(i));
+            const pick = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+            this.seen[this.tier].push(pick);
+            return { ...tierItems[pick], tier: this.tier, tierLabel: this.tierLabel };
+        }
+        answer(correct) {
+            this.totalAttempts++;
+            if (correct) {
+                this.totalCorrect++; this.correctStreak++; this.wrongStreak = 0;
+                if (this.correctStreak >= this.promoteThreshold && this.tier < 5) {
+                    this.tier++; this.correctStreak = 0; this.save();
+                    return { promoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            } else {
+                this.wrongStreak++; this.correctStreak = 0;
+                if (this.wrongStreak >= this.demoteThreshold && this.tier > 1) {
+                    this.tier--; this.wrongStreak = 0; this.save();
+                    return { demoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            }
+            this.save();
+            return { promoted: false, demoted: false, tier: this.tier, tierLabel: this.tierLabel };
+        }
+        save() {
+            localStorage.setItem(this.storageKey, JSON.stringify({
+                tier: this.tier, correctStreak: this.correctStreak, wrongStreak: this.wrongStreak,
+                totalCorrect: this.totalCorrect, totalAttempts: this.totalAttempts, seen: this.seen
+            }));
+        }
+        reset() {
+            this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+            this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            localStorage.removeItem(this.storageKey);
+        }
+    }
+
+    // ==================== QUESTION BANK ====================
+    const questionBank = {
+        1: [
+            { sentence: 'I ___ a student.', answer: 'am', options: ['am', 'is', 'are', 'be'], category: 'To Be' },
+            { sentence: 'She ___ my teacher.', answer: 'is', options: ['is', 'am', 'are', 'be'], category: 'To Be' },
+            { sentence: 'They ___ happy right now.', answer: 'are', options: ['are', 'is', 'am', 'be'], category: 'To Be' },
+            { sentence: 'He ___ a book in his hand.', answer: 'has', options: ['has', 'have', 'is', 'are'], category: 'To Have' },
+            { sentence: 'We ___ two dogs at home.', answer: 'have', options: ['have', 'has', 'is', 'are'], category: 'To Have' },
+            { sentence: 'The cat ___ small.', answer: 'is', options: ['is', 'are', 'am', 'have'], category: 'To Be' },
+            { sentence: 'I ___ to school every day.', answer: 'go', options: ['go', 'goes', 'going', 'gone'], category: 'Verbs' },
+            { sentence: 'She ___ English every day.', answer: 'speaks', options: ['speaks', 'speak', 'speaking', 'spoke'], category: 'Verbs' },
+            { sentence: 'We always ___ lunch at noon.', answer: 'eat', options: ['eat', 'eats', 'eating', 'am'], category: 'Verbs' },
+            { sentence: 'The dog always ___ fast.', answer: 'runs', options: ['runs', 'run', 'running', 'am'], category: 'Verbs' },
+            { sentence: 'I like ___ apple on the table.', answer: 'the', options: ['the', 'a', 'an', 'is'], category: 'Articles' },
+            { sentence: 'She is ___ girl.', answer: 'a', options: ['a', 'an', 'the', 'is'], category: 'Articles' },
+            { sentence: 'He eats ___ orange.', answer: 'an', options: ['an', 'a', 'the', 'is'], category: 'Articles' },
+            { sentence: '___ is your name?', answer: 'What', options: ['What', 'Who', 'Where', 'When'], category: 'Questions' },
+            { sentence: '___ do you live?', answer: 'Where', options: ['Where', 'What', 'Who', 'When'], category: 'Questions' },
+            { sentence: '___ is your friend?', answer: 'Who', options: ['Who', 'What', 'Where', 'When'], category: 'Questions' },
+            { sentence: 'I ___ not tired right now.', answer: 'am', options: ['am', 'is', 'are', 'be'], category: 'Negatives' },
+            { sentence: 'She does ___ like rain.', answer: 'not', options: ['not', 'no', 'none', 'never'], category: 'Negatives' },
+            { sentence: 'This is ___ pen.', answer: 'my', options: ['my', 'me', 'I', 'mine'], category: 'Pronouns' },
+            { sentence: 'That is ___ book.', answer: 'her', options: ['her', 'she', 'hers', 'him'], category: 'Pronouns' },
+            { sentence: 'I ___ water every day.', answer: 'drink', options: ['drink', 'drinks', 'drinking', 'am'], category: 'Verbs' },
+            { sentence: 'The bird ___ fly.', answer: 'can', options: ['can', 'is', 'has', 'does'], category: 'Modals' },
+        ],
+        2: [
+            { sentence: 'She ___ to the store yesterday.', answer: 'went', options: ['went', 'go', 'goes', 'going'], category: 'Past Tense' },
+            { sentence: 'I ___ my homework last night.', answer: 'did', options: ['did', 'do', 'does', 'doing'], category: 'Past Tense' },
+            { sentence: 'They ___ playing soccer right now.', answer: 'are', options: ['are', 'is', 'am', 'be'], category: 'Present Continuous' },
+            { sentence: 'He is ___ a sandwich right now.', answer: 'eating', options: ['eating', 'eat', 'eats', 'drank'], category: 'Present Continuous' },
+            { sentence: 'We ___ go to the park tomorrow.', answer: 'will', options: ['will', 'was', 'were', 'did'], category: 'Future Tense' },
+            { sentence: 'She is ___ than her brother.', answer: 'taller', options: ['taller', 'tall', 'tallest', 'more tall'], category: 'Comparatives' },
+            { sentence: 'This is the ___ book in the library.', answer: 'best', options: ['best', 'better', 'good', 'most good'], category: 'Superlatives' },
+            { sentence: 'There are ___ students in the class.', answer: 'many', options: ['many', 'much', 'a lot', 'any'], category: 'Quantifiers' },
+            { sentence: 'I need ___ water, please.', answer: 'some', options: ['some', 'many', 'a', 'few'], category: 'Quantifiers' },
+            { sentence: 'She ___ breakfast every morning.', answer: 'eats', options: ['eats', 'eat', 'eating', 'am'], category: 'Subject-Verb Agreement' },
+            { sentence: 'The children ___ in the park every day.', answer: 'play', options: ['play', 'plays', 'playing', 'am'], category: 'Subject-Verb Agreement' },
+            { sentence: 'I have ___ been to New York.', answer: 'never', options: ['never', 'ever', 'always', 'sometimes'], category: 'Adverbs' },
+            { sentence: 'She sings very ___.', answer: 'well', options: ['well', 'good', 'nice', 'great'], category: 'Adverbs' },
+            { sentence: 'The movie was ___ interesting.', answer: 'very', options: ['very', 'much', 'more', 'most'], category: 'Adverbs' },
+            { sentence: 'Yesterday, he ___ his keys at home.', answer: 'forgot', options: ['forgot', 'forget', 'forgets', 'forgetting'], category: 'Past Tense' },
+            { sentence: 'We ___ to the beach last summer.', answer: 'went', options: ['went', 'go', 'gone', 'going'], category: 'Past Tense' },
+            { sentence: 'I ___ like to visit my grandparents someday.', answer: 'would', options: ['would', 'was', 'were', 'am'], category: 'Modals' },
+            { sentence: 'You ___ finish your homework before you play.', answer: 'should', options: ['should', 'was', 'were', 'am'], category: 'Modals' },
+            { sentence: 'The store is ___ the bank and the school.', answer: 'between', options: ['between', 'behind', 'beside', 'below'], category: 'Prepositions' },
+            { sentence: 'The cat is sitting ___ the table.', answer: 'on', options: ['on', 'in', 'at', 'by'], category: 'Prepositions' },
+            { sentence: 'I wake up ___ 7 o\'clock.', answer: 'at', options: ['at', 'on', 'in', 'by'], category: 'Prepositions' },
+        ],
+        3: [
+            { sentence: 'If I ___ more time, I would read more books.', answer: 'had', options: ['had', 'have', 'has', 'having'], category: 'Conditionals' },
+            { sentence: 'She asked me ___ I wanted to go.', answer: 'whether', options: ['whether', 'weather', 'where', 'which'], category: 'Conjunctions' },
+            { sentence: 'The test was difficult; ___, most students passed.', answer: 'however', options: ['however', 'therefore', 'because', 'although'], category: 'Transitions' },
+            { sentence: 'He has been ___ here for three years.', answer: 'living', options: ['living', 'lived', 'live', 'lives'], category: 'Present Perfect' },
+            { sentence: 'By the time she arrived, we had already ___.', answer: 'left', options: ['left', 'leave', 'leaving', 'leaves'], category: 'Past Perfect' },
+            { sentence: 'The book ___ was on the table is mine.', answer: 'that', options: ['that', 'what', 'who', 'whom'], category: 'Relative Clauses' },
+            { sentence: 'The woman ___ lives next door is a doctor.', answer: 'who', options: ['who', 'which', 'that', 'whom'], category: 'Relative Clauses' },
+            { sentence: 'She is interested ___ learning new languages.', answer: 'in', options: ['in', 'on', 'at', 'for'], category: 'Phrasal Verbs' },
+            { sentence: 'He looks ___ to his vacation every year.', answer: 'forward', options: ['forward', 'backward', 'around', 'after'], category: 'Phrasal Verbs' },
+            { sentence: 'I am used ___ waking up early.', answer: 'to', options: ['to', 'for', 'at', 'with'], category: 'Gerunds' },
+            { sentence: 'She suggested ___ the museum.', answer: 'visiting', options: ['visiting', 'visit', 'to visit', 'visited'], category: 'Gerunds' },
+            { sentence: '___ it was raining, we went outside.', answer: 'Although', options: ['Although', 'Because', 'Therefore', 'Unless'], category: 'Conjunctions' },
+            { sentence: 'He speaks English ___ if he were a native speaker.', answer: 'as', options: ['as', 'like', 'so', 'than'], category: 'Comparisons' },
+            { sentence: 'The more you practice, the ___ you get.', answer: 'better', options: ['better', 'best', 'good', 'well'], category: 'Comparatives' },
+            { sentence: 'I wish I ___ speak five languages.', answer: 'could', options: ['could', 'can', 'would', 'should'], category: 'Wishes' },
+            { sentence: 'Neither the teacher ___ the students were late.', answer: 'nor', options: ['nor', 'or', 'and', 'but'], category: 'Conjunctions' },
+            { sentence: 'He apologized ___ being late to class.', answer: 'for', options: ['for', 'to', 'about', 'with'], category: 'Prepositions' },
+            { sentence: 'The homework must ___ completed by Friday.', answer: 'be', options: ['be', 'is', 'been', 'being'], category: 'Passive Voice' },
+            { sentence: 'She is ___ hard-working student I know.', answer: 'the most', options: ['the most', 'more', 'most', 'the more'], category: 'Superlatives' },
+            { sentence: 'We have ___ finished our project.', answer: 'already', options: ['already', 'yet', 'still', 'just'], category: 'Adverbs' },
+            { sentence: 'He ran so fast ___ nobody could catch him.', answer: 'that', options: ['that', 'than', 'then', 'which'], category: 'Result Clauses' },
+        ],
+        4: [
+            { sentence: 'Had she known about the change, she ___ have prepared differently.', answer: 'would', options: ['would', 'could', 'should', 'will'], category: 'Third Conditional' },
+            { sentence: 'The report, ___ was submitted late, contained several errors.', answer: 'which', options: ['which', 'that', 'who', 'what'], category: 'Non-Restrictive Clauses' },
+            { sentence: 'Not until the bell rang ___ the students leave.', answer: 'did', options: ['did', 'do', 'were', 'had'], category: 'Inversion' },
+            { sentence: 'She insisted ___ seeing the manager immediately.', answer: 'on', options: ['on', 'in', 'at', 'for'], category: 'Dependent Prepositions' },
+            { sentence: 'The project is ___ to be completed by next month.', answer: 'expected', options: ['expected', 'expecting', 'expects', 'expect'], category: 'Passive Infinitives' },
+            { sentence: 'He denied ___ the email.', answer: 'receiving', options: ['receiving', 'to receive', 'received', 'receive'], category: 'Gerund vs Infinitive' },
+            { sentence: 'The situation calls ___ immediate action.', answer: 'for', options: ['for', 'on', 'up', 'out'], category: 'Phrasal Verbs' },
+            { sentence: '___ the fact that he studied hard, he failed the test.', answer: 'Despite', options: ['Despite', 'Although', 'Because', 'Since'], category: 'Concession' },
+            { sentence: 'She would rather ___ at home than go to the party.', answer: 'stay', options: ['stay', 'staying', 'stayed', 'to stay'], category: 'Preferences' },
+            { sentence: 'It is essential that every student ___ the assignment.', answer: 'complete', options: ['complete', 'completes', 'completed', 'completing'], category: 'Subjunctive' },
+            { sentence: 'The research ___ out by the university proved groundbreaking.', answer: 'carried', options: ['carried', 'carrying', 'carry', 'carries'], category: 'Reduced Clauses' },
+            { sentence: 'She came across ___ an interesting article while browsing.', answer: 'quite', options: ['quite', 'quiet', 'rather', 'such'], category: 'Intensifiers' },
+            { sentence: '___ had he arrived than the meeting began.', answer: 'No sooner', options: ['No sooner', 'Hardly', 'Not only', 'Scarcely'], category: 'Inversion' },
+            { sentence: 'The students, most of ___ were beginners, improved quickly.', answer: 'whom', options: ['whom', 'who', 'which', 'them'], category: 'Relative Clauses' },
+            { sentence: 'He takes ___ his father in many ways.', answer: 'after', options: ['after', 'on', 'up', 'over'], category: 'Phrasal Verbs' },
+            { sentence: 'I\'d sooner walk ___ take the bus in this weather.', answer: 'than', options: ['than', 'then', 'that', 'to'], category: 'Preferences' },
+            { sentence: 'The law ___ into effect next January.', answer: 'comes', options: ['comes', 'came', 'come', 'coming'], category: 'Collocations' },
+            { sentence: 'She managed to ___ up with a brilliant idea.', answer: 'come', options: ['come', 'bring', 'make', 'put'], category: 'Phrasal Verbs' },
+            { sentence: 'Were I in your position, I ___ accept the offer.', answer: 'would', options: ['would', 'will', 'could', 'should'], category: 'Formal Conditionals' },
+            { sentence: 'The teacher had the students ___ the experiment again.', answer: 'repeat', options: ['repeat', 'repeated', 'repeating', 'to repeat'], category: 'Causatives' },
+        ],
+        5: [
+            { sentence: 'Seldom ___ such an impressive performance been witnessed.', answer: 'has', options: ['has', 'had', 'have', 'was'], category: 'Inversion' },
+            { sentence: 'The proposal, controversial ___ it may be, deserves consideration.', answer: 'though', options: ['though', 'as', 'despite', 'however'], category: 'Concessive Clauses' },
+            { sentence: 'Her argument was so ___ that even skeptics were persuaded.', answer: 'compelling', options: ['compelling', 'compelled', 'compel', 'compellingly'], category: 'Word Forms' },
+            { sentence: 'The findings lend ___ to the hypothesis that exercise improves cognition.', answer: 'credence', options: ['credence', 'credit', 'credibility', 'credential'], category: 'Collocations' },
+            { sentence: 'So ___ was the damage that repairs took several months.', answer: 'extensive', options: ['extensive', 'extending', 'extended', 'extent'], category: 'Inversion' },
+            { sentence: '___ the circumstances, the committee decided to postpone the vote.', answer: 'Given', options: ['Given', 'Giving', 'Gave', 'Being given'], category: 'Participle Clauses' },
+            { sentence: 'He is thought ___ have left the country.', answer: 'to', options: ['to', 'that', 'for', 'as'], category: 'Passive Reporting' },
+            { sentence: 'The implications of this discovery cannot be ___.', answer: 'overstated', options: ['overstated', 'overstate', 'overstating', 'understated'], category: 'Word Choice' },
+            { sentence: 'Little ___ she know that her speech would go viral.', answer: 'did', options: ['did', 'does', 'had', 'was'], category: 'Inversion' },
+            { sentence: 'The policy was implemented with a view ___ reducing inequality.', answer: 'to', options: ['to', 'of', 'for', 'on'], category: 'Fixed Expressions' },
+            { sentence: 'It is imperative that the government ___ action immediately.', answer: 'take', options: ['take', 'takes', 'took', 'taking'], category: 'Subjunctive' },
+            { sentence: 'The results were ___ with those of previous studies.', answer: 'consistent', options: ['consistent', 'consisting', 'consisted', 'consist'], category: 'Academic Vocabulary' },
+            { sentence: 'Far ___ it from me to criticize, but the plan has flaws.', answer: 'be', options: ['be', 'is', 'being', 'been'], category: 'Fixed Expressions' },
+            { sentence: 'The phenomenon warrants further ___.', answer: 'investigation', options: ['investigation', 'investigate', 'investigating', 'investigative'], category: 'Word Forms' },
+            { sentence: 'She attributed her success ___ hard work and perseverance.', answer: 'to', options: ['to', 'for', 'with', 'by'], category: 'Dependent Prepositions' },
+            { sentence: 'Under no circumstances ___ this information be shared.', answer: 'should', options: ['should', 'would', 'could', 'will'], category: 'Inversion' },
+            { sentence: 'The data ___ suggests a correlation, not causation.', answer: 'merely', options: ['merely', 'barely', 'hardly', 'rarely'], category: 'Adverb Nuance' },
+            { sentence: 'The outcome hinges ___ the committee\'s decision.', answer: 'on', options: ['on', 'in', 'at', 'to'], category: 'Dependent Prepositions' },
+            { sentence: 'Inasmuch ___ the evidence is inconclusive, no verdict was reached.', answer: 'as', options: ['as', 'that', 'so', 'if'], category: 'Formal Conjunctions' },
+            { sentence: 'The theory, ___ plausible on the surface, lacks empirical support.', answer: 'however', options: ['however', 'although', 'despite', 'whereas'], category: 'Concession' },
+        ]
+    };
+
+    // ==================== GAME LOGIC ====================
+    const engine = new AdaptiveEngine('esl-fill-blank', questionBank);
+
+    const categoryEl = document.getElementById('category');
+    const sentenceDisplay = document.getElementById('sentenceDisplay');
+    const choicesEl = document.getElementById('choices');
+    const feedbackEl = document.getElementById('feedback');
+    const correctLine = document.getElementById('correctLine');
+    const streakEl = document.getElementById('streak');
+    const tierBadge = document.getElementById('tierBadge');
+    const accuracyEl = document.getElementById('accuracy');
+    const xpBar = document.getElementById('xpBar');
+    const xpBarContainer = document.querySelector('.xp-bar-container');
+    const totalStat = document.getElementById('totalStat');
+    const levelBanner = document.getElementById('levelBanner');
+    const newTierLabel = document.getElementById('newTierLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let currentQuestion = null;
+    let locked = false;
+
+    const encouragements = ['Nice!', 'Got it!', 'Yes!', 'Correct!', 'Boom!', 'Fire!', 'Clean!', 'Sharp!', 'Smooth!', 'On point!'];
+    const wrongPhrases = ['Not quite.', 'Close one.', 'Keep going.', 'Almost.', 'Next time.'];
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function updateUI() {
+        streakEl.textContent = engine.correctStreak + 'x';
+        tierBadge.textContent = engine.tierLabel.toUpperCase();
+        accuracyEl.textContent = engine.accuracy + '%';
+        totalStat.textContent = engine.totalCorrect + ' / ' + engine.totalAttempts;
+        const progress = (engine.correctStreak / engine.promoteThreshold) * 100;
+        xpBar.style.width = progress + '%';
+        xpBarContainer.setAttribute('aria-valuenow', engine.correctStreak);
+    }
+
+    function showQuestion() {
+        locked = false;
+        feedbackEl.classList.remove('show');
+        feedbackEl.className = 'feedback';
+        correctLine.classList.remove('show');
+
+        currentQuestion = engine.next();
+        if (!currentQuestion) return;
+
+        categoryEl.textContent = currentQuestion.category;
+
+        const parts = currentQuestion.sentence.split('___');
+        sentenceDisplay.innerHTML = parts[0] + '<span class="blank" id="blankSpan">&nbsp;&nbsp;&nbsp;&nbsp;</span>' + (parts[1] || '');
+
+        const options = shuffle(currentQuestion.options);
+        choicesEl.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = opt;
+            btn.setAttribute('aria-label', opt);
+            btn.addEventListener('click', () => handleChoice(btn, opt));
+            choicesEl.appendChild(btn);
+        });
+
+        updateUI();
+    }
+
+    function handleChoice(btn, chosen) {
+        if (locked) return;
+        locked = true;
+
+        const correct = chosen === currentQuestion.answer;
+        const result = engine.answer(correct);
+        const buttons = choicesEl.querySelectorAll('.choice-btn');
+        const blankSpan = document.getElementById('blankSpan');
+
+        buttons.forEach(b => {
+            b.disabled = true;
+            if (b.textContent === currentQuestion.answer) b.classList.add('reveal');
+        });
+
+        if (correct) {
+            btn.classList.add('correct');
+            blankSpan.textContent = currentQuestion.answer;
+            blankSpan.classList.add('correct-blank');
+            feedbackEl.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+            feedbackEl.className = 'feedback correct-fb show';
+        } else {
+            btn.classList.add('wrong');
+            blankSpan.textContent = chosen;
+            blankSpan.classList.add('wrong-blank');
+            feedbackEl.textContent = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+            feedbackEl.className = 'feedback wrong-fb show';
+            correctLine.textContent = 'Correct answer: ' + currentQuestion.answer;
+            correctLine.classList.add('show');
+        }
+
+        updateUI();
+
+        if (result.promoted) {
+            newTierLabel.textContent = result.tierLabel.toUpperCase();
+            levelBanner.classList.add('show');
+            setTimeout(() => {
+                levelBanner.classList.remove('show');
+                setTimeout(showQuestion, 300);
+            }, 1800);
+        } else {
+            setTimeout(showQuestion, correct ? 800 : 1800);
+        }
+    }
+
+    resetBtn.addEventListener('click', () => {
+        if (confirm('Reset all progress? This cannot be undone.')) {
+            engine.reset();
+            updateUI();
+            showQuestion();
+        }
+    });
+
+    updateUI();
+    showQuestion();
+    </script>
+</body>
+</html>

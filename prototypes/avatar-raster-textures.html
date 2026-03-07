@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 1: Raster Texture Overlays - Porter's Portal Avatar Prototype</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+  h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 40px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .comparison {
+    display: flex;
+    gap: 60px;
+    align-items: flex-start;
+  }
+  .column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .column-label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #94a3b8;
+    letter-spacing: 0.03em;
+    padding: 6px 16px;
+    border: 1px solid #1e293b;
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.6);
+  }
+  .avatar-frame {
+    width: 240px;
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    background: radial-gradient(ellipse at 50% 80%, rgba(30, 41, 59, 0.3) 0%, transparent 70%);
+    padding: 10px;
+  }
+  .legend {
+    margin-top: 40px;
+    display: flex;
+    gap: 28px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.78rem;
+    color: #94a3b8;
+  }
+  .legend-swatch {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid #334155;
+    overflow: hidden;
+  }
+  .rarity-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 4px;
+    margin-top: 4px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Option 1: Raster Texture Overlays</h1>
+<p class="subtitle">Tileable PNG patterns over rarity color fills</p>
+
+<div class="comparison">
+  <!-- NO TEXTURES (flat look) -->
+  <div class="column">
+    <span class="column-label">No Textures (Current)</span>
+    <div class="avatar-frame">
+      <svg viewBox="0 0 200 340" width="220" height="330" style="filter: drop-shadow(0 4px 20px rgba(0,0,0,0.25))">
+        <defs>
+          <filter id="f-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <filter id="f-soft" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <filter id="f-bloom" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <linearGradient id="f-outfit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="hsl(240,20%,20%)"/>
+            <stop offset="100%" stop-color="hsl(240,18%,12%)"/>
+          </linearGradient>
+          <linearGradient id="f-hl" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="hsla(240,30%,35%,0.2)"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </linearGradient>
+          <linearGradient id="f-pants" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="hsl(240,15%,16%)"/>
+            <stop offset="100%" stop-color="hsl(240,12%,10%)"/>
+          </linearGradient>
+          <radialGradient id="f-face" cx="45%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#FDDCB5"/><stop offset="100%" stop-color="#FDDCB599"/>
+          </radialGradient>
+          <radialGradient id="f-energy" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="hsl(180,100%,70%)" stop-opacity="0.7"/>
+            <stop offset="60%" stop-color="hsl(200,80%,50%)" stop-opacity="0.21"/>
+            <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="f-hair" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="#1a1a2ecc"/>
+          </linearGradient>
+        </defs>
+
+        <!-- Platform shadow -->
+        <ellipse cx="100" cy="326" rx="42" ry="5" fill="rgba(0,0,0,0.3)">
+          <animate attributeName="rx" values="42;39;42" dur="3.5s" repeatCount="indefinite"/>
+        </ellipse>
+
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="3.5s" repeatCount="indefinite"/>
+
+          <!-- LEGS -->
+          <path d="M82 198 L79 270 Q79 282 86 282 L94 282 Q99 282 98 276 L94 198" fill="url(#f-pants)" stroke="hsl(240,15%,22%)" stroke-width="0.8"/>
+          <path d="M106 198 L103 270 Q103 282 110 282 L118 282 Q123 282 122 276 L120 198" fill="url(#f-pants)" stroke="hsl(240,15%,22%)" stroke-width="0.8"/>
+
+          <!-- FEET (RARE blue) -->
+          <g filter="url(#f-soft)">
+            <path d="M76 270 L74 282 Q72 292 82 292 L96 292 Q100 292 98 284 L96 270" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.6"/>
+            <path d="M102 270 L100 282 Q98 292 108 292 L122 292 Q126 292 124 284 L122 270" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.6"/>
+            <line x1="78" y1="276" x2="96" y2="276" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.5"/>
+            <line x1="104" y1="276" x2="122" y2="276" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.5"/>
+          </g>
+
+          <!-- TORSO -->
+          <path d="M68 88 Q100 82 132 88 L126 200 Q100 206 74 200 Z" fill="url(#f-outfit)" stroke="hsl(240,18%,25%)" stroke-width="1"/>
+          <path d="M68 88 Q100 82 100 88 L100 200 Q86 204 74 200 Z" fill="url(#f-hl)"/>
+          <!-- Collar V -->
+          <path d="M88 88 L100 105 L112 88" fill="#FDDCB5"/>
+          <path d="M86 87 L100 106 L114 87" fill="none" stroke="hsl(240,20%,28%)" stroke-width="1.2"/>
+          <line x1="100" y1="106" x2="100" y2="195" stroke="hsla(180,30%,40%,0.08)" stroke-width="0.5"/>
+
+          <!-- CHEST GEAR (RARE blue) -->
+          <g filter="url(#f-soft)">
+            <path d="M72 92 Q100 86 128 92 L124 175 Q100 180 76 175 Z" fill="#3b82f6" fill-opacity="0.3" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.6"/>
+            <!-- Shoulder plates -->
+            <path d="M68 88 Q60 86 60 96 L70 100" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.5"/>
+            <path d="M132 88 Q140 86 140 96 L130 100" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.5"/>
+            <line x1="80" y1="115" x2="120" y2="115" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.3"/>
+            <line x1="82" y1="140" x2="118" y2="140" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.2"/>
+            <circle cx="100" cy="120" r="5" fill="none" stroke="#3b82f6" stroke-width="1.2" stroke-opacity="0.7"/>
+            <circle cx="100" cy="120" r="2" fill="#60a5fa" fill-opacity="0.7">
+              <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Energy lines (RARE+) -->
+            <line x1="88" y1="100" x2="82" y2="165" stroke="#60a5fa" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="3 4">
+              <animate attributeName="stroke-dashoffset" values="0;-14" dur="2s" repeatCount="indefinite"/>
+            </line>
+            <line x1="112" y1="100" x2="118" y2="165" stroke="#60a5fa" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="3 4">
+              <animate attributeName="stroke-dashoffset" values="0;-14" dur="2s" repeatCount="indefinite"/>
+            </line>
+          </g>
+
+          <!-- BELT (RARE blue) -->
+          <g>
+            <rect x="72" y="188" width="56" height="14" rx="3" fill="#3b82f6" fill-opacity="0.55" stroke="#3b82f6" stroke-width="0.8"/>
+            <rect x="94" y="189" width="12" height="12" rx="2" fill="#60a5fa" fill-opacity="0.4"/>
+            <rect x="74" y="190" width="8" height="10" rx="2" fill="#3b82f6" fill-opacity="0.3" stroke="#60a5fa" stroke-width="0.3"/>
+            <rect x="118" y="190" width="8" height="10" rx="2" fill="#3b82f6" fill-opacity="0.3" stroke="#60a5fa" stroke-width="0.3"/>
+          </g>
+
+          <!-- ARMS -->
+          <path d="M68 90 L50 94 Q44 96 43 103 L42 155 Q42 160 46 160 L58 160 L66 155 Z" fill="url(#f-outfit)" stroke="hsl(240,18%,25%)" stroke-width="0.8"/>
+          <path d="M132 90 L150 94 Q156 96 157 103 L158 155 Q158 160 154 160 L142 160 L134 155 Z" fill="url(#f-outfit)" stroke="hsl(240,18%,25%)" stroke-width="0.8"/>
+
+          <!-- HANDS (UNCOMMON green) -->
+          <g filter="url(#f-soft)">
+            <path d="M38 148 L38 172 Q38 178 44 178 L58 178 Q62 178 62 172 L62 148" fill="#22c55e" fill-opacity="0.5" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.7"/>
+            <path d="M138 148 L138 172 Q138 178 144 178 L158 178 Q162 178 162 172 L162 148" fill="#22c55e" fill-opacity="0.5" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.7"/>
+            <line x1="42" y1="170" x2="58" y2="170" stroke="#4ade80" stroke-width="1" stroke-opacity="0.5"/>
+            <line x1="142" y1="170" x2="158" y2="170" stroke="#4ade80" stroke-width="1" stroke-opacity="0.5"/>
+          </g>
+
+          <!-- ENERGY CORE -->
+          <g filter="url(#f-bloom)">
+            <circle cx="100" cy="130" r="6" fill="url(#f-energy)">
+              <animate attributeName="r" values="6;8;6" dur="3s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <circle cx="100" cy="130" r="2.5" fill="hsl(180,100%,75%)" fill-opacity="0.49">
+            <animate attributeName="fill-opacity" values="0.49;0.21;0.49" dur="2s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- NECK -->
+          <rect x="93" y="72" width="14" height="18" rx="5" fill="#FDDCB5"/>
+
+          <!-- HEAD -->
+          <g>
+            <ellipse cx="100" cy="50" rx="21" ry="28" fill="url(#f-face)" stroke="#FDDCB599" stroke-width="0.5"/>
+            <!-- Ears -->
+            <ellipse cx="78" cy="52" rx="4" ry="6" fill="#FDDCB5" stroke="#FDDCB599" stroke-width="0.3"/>
+            <ellipse cx="122" cy="52" rx="4" ry="6" fill="#FDDCB5" stroke="#FDDCB599" stroke-width="0.3"/>
+            <!-- FACE -->
+            <g>
+              <path d="M86 40 Q90 37 96 39" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <path d="M104 39 Q110 37 114 40" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="91" cy="47" rx="6" ry="4.5" fill="white"/>
+              <ellipse cx="109" cy="47" rx="6" ry="4.5" fill="white"/>
+              <circle cx="92" cy="47" r="3" fill="hsl(180,70%,45%)"/>
+              <circle cx="110" cy="47" r="3" fill="hsl(180,70%,45%)"/>
+              <circle cx="92" cy="47" r="1.5" fill="#111"/>
+              <circle cx="110" cy="47" r="1.5" fill="#111"/>
+              <circle cx="93.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+              <circle cx="111.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+              <ellipse cx="91" cy="47" rx="6.5" ry="0" fill="#FDDCB5">
+                <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+              </ellipse>
+              <ellipse cx="109" cy="47" rx="6.5" ry="0" fill="#FDDCB5">
+                <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+              </ellipse>
+              <path d="M98 52 Q100 56 102 52" stroke="#FDDCB599" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+              <path d="M95 60 Q100 63 105 60" stroke="#FDDCB599" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- HAIR -->
+            <path d="M79 44 Q78 28 100 22 Q122 28 121 44 Q119 32 100 28 Q81 32 79 44" fill="url(#f-hair)"/>
+
+            <!-- HEAD GEAR (RARE blue) - helmet -->
+            <g filter="url(#f-glow)">
+              <path d="M77 28 Q100 10 123 28 L125 62 Q100 72 75 62 Z" fill="#3b82f6" fill-opacity="0.55" stroke="#3b82f6" stroke-width="1.2"/>
+              <rect x="80" y="44" width="40" height="8" rx="4" fill="hsl(180,90%,55%)" fill-opacity="0.85">
+                <animate attributeName="fill-opacity" values="0.85;0.5;0.85" dur="3s" repeatCount="indefinite"/>
+              </rect>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <span class="rarity-badge" style="background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);">Rare Gear Set</span>
+  </div>
+
+  <!-- WITH TEXTURES -->
+  <div class="column">
+    <span class="column-label">With Raster Textures</span>
+    <div class="avatar-frame" style="border-color: #1e40af33;">
+      <svg viewBox="0 0 200 340" width="220" height="330" style="filter: drop-shadow(0 4px 20px rgba(0,0,0,0.25))">
+        <defs>
+          <filter id="t-glow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="3" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <filter id="t-soft" x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <filter id="t-bloom" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+          </filter>
+          <linearGradient id="t-outfit" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="hsl(240,20%,20%)"/>
+            <stop offset="100%" stop-color="hsl(240,18%,12%)"/>
+          </linearGradient>
+          <linearGradient id="t-hl" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="hsla(240,30%,35%,0.2)"/>
+            <stop offset="100%" stop-color="transparent"/>
+          </linearGradient>
+          <linearGradient id="t-pants" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="hsl(240,15%,16%)"/>
+            <stop offset="100%" stop-color="hsl(240,12%,10%)"/>
+          </linearGradient>
+          <radialGradient id="t-face" cx="45%" cy="40%" r="55%">
+            <stop offset="0%" stop-color="#FDDCB5"/><stop offset="100%" stop-color="#FDDCB599"/>
+          </radialGradient>
+          <radialGradient id="t-energy" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="hsl(180,100%,70%)" stop-opacity="0.7"/>
+            <stop offset="60%" stop-color="hsl(200,80%,50%)" stop-opacity="0.21"/>
+            <stop offset="100%" stop-color="transparent" stop-opacity="0"/>
+          </radialGradient>
+          <linearGradient id="t-hair" x1="0" y1="0" x2="0.3" y2="1">
+            <stop offset="0%" stop-color="#1a1a2e"/><stop offset="100%" stop-color="#1a1a2ecc"/>
+          </linearGradient>
+
+          <!-- TEXTURE PATTERNS -->
+          <!-- Carbon Fibre (chest armor) -->
+          <pattern id="tex-carbon" patternUnits="userSpaceOnUse" width="24" height="22">
+            <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAWCAYAAADafVyIAAAAV0lEQVR4AWPg5uaexcDI8B9Ec3JyFhDCpKpnACmGYWI0kKqe9j4AAi0gBtPEaCBZPYggF1NsAYXBR9gCShPAwPuAkgRA30imJR4tKkaLitGiYrSoIAIDAKy7LKCTTHSAAAAAAElFTkSuQmCC" width="24" height="22"/>
+          </pattern>
+
+          <!-- Hexabump (helmet) -->
+          <pattern id="tex-hexabump" patternUnits="userSpaceOnUse" width="19" height="33">
+            <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAhCAQAAACR61jhAAAArUlEQVR4AY3SQQrCQBBE0b6icxJhFkIWc3Z7SuOnU0iav9PHNISKcTxWLX95XUu26zF1w+iWUZNtNKYzI9kTCKNNxNS8Mt6BCSaFQWBQMYgzaIfNccQ+abSezE8uBq1M/6wfy0QLmyeBkWglzr7nQc6oz3Y9ploMGo5gwGAFxmgGgyEbqpiNsJIBg8IEnHGed4wBIX+ZDjIrZ0znXKAxVvphbKUwCKzSYILOWPUb+kvq4+prG70AAAAASUVORK5CYII=" width="19" height="33"/>
+          </pattern>
+
+          <!-- Black Scales (belt/boots — leather-like) -->
+          <pattern id="tex-scales" patternUnits="userSpaceOnUse" width="40" height="40">
+            <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoBAMAAAB+0KVeAAAAMFBMVEUqKiosLCwuLi4xMTErKystLS0qKiopKSkpKSkzMzMpKSkoKCg3NzcoKCgrKysnJydKwFaoAAAAEHRSTlNcQDIqTjlVanEjY3gcf0eVx2e4NwAAAJNJREFUeAHt0SEKwmAAQOEHDrVYdEmTgwXBoCzZ9l9h8HeT2Wa1CUY9gc3qFTyBJ/EKij+DF7yAwfbVx+Nc5kBoVoUi5mugG2Kh+Ci5UtRJkFWKcctLpVi07ERFeUy6Nk/FaLIH+rflRhHmgwO7xz1XkA1Pvdd2Nq2VMQpjlDHqK0YZo4xRxihjFMYoMEb9/qP/ozcE1oO5SZysbgAAAABJRU5ErkJggg==" width="40" height="40"/>
+          </pattern>
+
+          <!-- Gun Metal (gloves) -->
+          <pattern id="tex-gunmetal" patternUnits="userSpaceOnUse" width="10" height="10">
+            <image href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAX0lEQVQY02PIiAgXIIQdbG0SGMAEHgCSd7a382Kws7Gux6UYJO7m5moFwmCF2BSD+B5OjgYwzBAYGyOKrhhEB3i4KyBjBmwOx+YhrA7H60Fkh+P0ILrDsXoQm8OxeRAA3tdK4XWWWjsAAAAASUVORK5CYII=" width="10" height="10"/>
+          </pattern>
+
+          <!-- Clip paths for texture containment -->
+          <clipPath id="clip-chest">
+            <path d="M72 92 Q100 86 128 92 L124 175 Q100 180 76 175 Z"/>
+          </clipPath>
+          <clipPath id="clip-shoulder-l">
+            <path d="M68 88 Q60 86 60 96 L70 100 Z"/>
+          </clipPath>
+          <clipPath id="clip-shoulder-r">
+            <path d="M132 88 Q140 86 140 96 L130 100 Z"/>
+          </clipPath>
+          <clipPath id="clip-helmet">
+            <path d="M77 28 Q100 10 123 28 L125 62 Q100 72 75 62 Z"/>
+          </clipPath>
+          <clipPath id="clip-belt">
+            <rect x="72" y="188" width="56" height="14" rx="3"/>
+          </clipPath>
+          <clipPath id="clip-boot-l">
+            <path d="M76 270 L74 282 Q72 292 82 292 L96 292 Q100 292 98 284 L96 270 Z"/>
+          </clipPath>
+          <clipPath id="clip-boot-r">
+            <path d="M102 270 L100 282 Q98 292 108 292 L122 292 Q126 292 124 284 L122 270 Z"/>
+          </clipPath>
+          <clipPath id="clip-glove-l">
+            <path d="M38 148 L38 172 Q38 178 44 178 L58 178 Q62 178 62 172 L62 148 Z"/>
+          </clipPath>
+          <clipPath id="clip-glove-r">
+            <path d="M138 148 L138 172 Q138 178 144 178 L158 178 Q162 178 162 172 L162 148 Z"/>
+          </clipPath>
+        </defs>
+
+        <!-- Platform shadow -->
+        <ellipse cx="100" cy="326" rx="42" ry="5" fill="rgba(0,0,0,0.3)">
+          <animate attributeName="rx" values="42;39;42" dur="3.5s" repeatCount="indefinite"/>
+        </ellipse>
+
+        <g>
+          <animateTransform attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="3.5s" repeatCount="indefinite"/>
+
+          <!-- LEGS -->
+          <path d="M82 198 L79 270 Q79 282 86 282 L94 282 Q99 282 98 276 L94 198" fill="url(#t-pants)" stroke="hsl(240,15%,22%)" stroke-width="0.8"/>
+          <path d="M106 198 L103 270 Q103 282 110 282 L118 282 Q123 282 122 276 L120 198" fill="url(#t-pants)" stroke="hsl(240,15%,22%)" stroke-width="0.8"/>
+
+          <!-- FEET (RARE blue) + scales texture -->
+          <g filter="url(#t-soft)">
+            <path d="M76 270 L74 282 Q72 292 82 292 L96 292 Q100 292 98 284 L96 270" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.6"/>
+            <path d="M102 270 L100 282 Q98 292 108 292 L122 292 Q126 292 124 284 L122 270" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.6"/>
+            <!-- Texture overlay on boots -->
+            <rect x="70" y="268" width="32" height="28" fill="url(#tex-scales)" opacity="0.55" clip-path="url(#clip-boot-l)" style="mix-blend-mode: soft-light;"/>
+            <rect x="98" y="268" width="32" height="28" fill="url(#tex-scales)" opacity="0.55" clip-path="url(#clip-boot-r)" style="mix-blend-mode: soft-light;"/>
+            <line x1="78" y1="276" x2="96" y2="276" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.5"/>
+            <line x1="104" y1="276" x2="122" y2="276" stroke="#60a5fa" stroke-width="1.5" stroke-opacity="0.5"/>
+          </g>
+
+          <!-- TORSO -->
+          <path d="M68 88 Q100 82 132 88 L126 200 Q100 206 74 200 Z" fill="url(#t-outfit)" stroke="hsl(240,18%,25%)" stroke-width="1"/>
+          <path d="M68 88 Q100 82 100 88 L100 200 Q86 204 74 200 Z" fill="url(#t-hl)"/>
+          <!-- Collar V -->
+          <path d="M88 88 L100 105 L112 88" fill="#FDDCB5"/>
+          <path d="M86 87 L100 106 L114 87" fill="none" stroke="hsl(240,20%,28%)" stroke-width="1.2"/>
+          <line x1="100" y1="106" x2="100" y2="195" stroke="hsla(180,30%,40%,0.08)" stroke-width="0.5"/>
+
+          <!-- CHEST GEAR (RARE blue) + carbon fibre texture -->
+          <g filter="url(#t-soft)">
+            <path d="M72 92 Q100 86 128 92 L124 175 Q100 180 76 175 Z" fill="#3b82f6" fill-opacity="0.3" stroke="#3b82f6" stroke-width="1" stroke-opacity="0.6"/>
+            <!-- Carbon fibre texture overlay on chest -->
+            <rect x="70" y="84" width="62" height="100" fill="url(#tex-carbon)" opacity="0.6" clip-path="url(#clip-chest)" style="mix-blend-mode: soft-light;"/>
+            <!-- Shoulder plates -->
+            <path d="M68 88 Q60 86 60 96 L70 100" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.5"/>
+            <rect x="58" y="84" width="16" height="20" fill="url(#tex-carbon)" opacity="0.5" clip-path="url(#clip-shoulder-l)" style="mix-blend-mode: soft-light;"/>
+            <path d="M132 88 Q140 86 140 96 L130 100" fill="#3b82f6" fill-opacity="0.5" stroke="#60a5fa" stroke-width="0.5"/>
+            <rect x="128" y="84" width="16" height="20" fill="url(#tex-carbon)" opacity="0.5" clip-path="url(#clip-shoulder-r)" style="mix-blend-mode: soft-light;"/>
+            <line x1="80" y1="115" x2="120" y2="115" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.3"/>
+            <line x1="82" y1="140" x2="118" y2="140" stroke="#60a5fa" stroke-width="0.8" stroke-opacity="0.2"/>
+            <circle cx="100" cy="120" r="5" fill="none" stroke="#3b82f6" stroke-width="1.2" stroke-opacity="0.7"/>
+            <circle cx="100" cy="120" r="2" fill="#60a5fa" fill-opacity="0.7">
+              <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <!-- Energy lines -->
+            <line x1="88" y1="100" x2="82" y2="165" stroke="#60a5fa" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="3 4">
+              <animate attributeName="stroke-dashoffset" values="0;-14" dur="2s" repeatCount="indefinite"/>
+            </line>
+            <line x1="112" y1="100" x2="118" y2="165" stroke="#60a5fa" stroke-width="0.5" stroke-opacity="0.2" stroke-dasharray="3 4">
+              <animate attributeName="stroke-dashoffset" values="0;-14" dur="2s" repeatCount="indefinite"/>
+            </line>
+          </g>
+
+          <!-- BELT (RARE blue) + scales texture -->
+          <g>
+            <rect x="72" y="188" width="56" height="14" rx="3" fill="#3b82f6" fill-opacity="0.55" stroke="#3b82f6" stroke-width="0.8"/>
+            <!-- Texture overlay on belt -->
+            <rect x="72" y="188" width="56" height="14" rx="3" fill="url(#tex-scales)" opacity="0.5" clip-path="url(#clip-belt)" style="mix-blend-mode: soft-light;"/>
+            <rect x="94" y="189" width="12" height="12" rx="2" fill="#60a5fa" fill-opacity="0.4"/>
+            <rect x="74" y="190" width="8" height="10" rx="2" fill="#3b82f6" fill-opacity="0.3" stroke="#60a5fa" stroke-width="0.3"/>
+            <rect x="118" y="190" width="8" height="10" rx="2" fill="#3b82f6" fill-opacity="0.3" stroke="#60a5fa" stroke-width="0.3"/>
+          </g>
+
+          <!-- ARMS -->
+          <path d="M68 90 L50 94 Q44 96 43 103 L42 155 Q42 160 46 160 L58 160 L66 155 Z" fill="url(#t-outfit)" stroke="hsl(240,18%,25%)" stroke-width="0.8"/>
+          <path d="M132 90 L150 94 Q156 96 157 103 L158 155 Q158 160 154 160 L142 160 L134 155 Z" fill="url(#t-outfit)" stroke="hsl(240,18%,25%)" stroke-width="0.8"/>
+
+          <!-- HANDS (UNCOMMON green) + gun-metal texture -->
+          <g filter="url(#t-soft)">
+            <path d="M38 148 L38 172 Q38 178 44 178 L58 178 Q62 178 62 172 L62 148" fill="#22c55e" fill-opacity="0.5" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.7"/>
+            <path d="M138 148 L138 172 Q138 178 144 178 L158 178 Q162 178 162 172 L162 148" fill="#22c55e" fill-opacity="0.5" stroke="#22c55e" stroke-width="0.8" stroke-opacity="0.7"/>
+            <!-- Gun metal texture overlay on gloves -->
+            <rect x="36" y="146" width="28" height="34" fill="url(#tex-gunmetal)" opacity="0.7" clip-path="url(#clip-glove-l)" style="mix-blend-mode: overlay;"/>
+            <rect x="136" y="146" width="28" height="34" fill="url(#tex-gunmetal)" opacity="0.7" clip-path="url(#clip-glove-r)" style="mix-blend-mode: overlay;"/>
+            <line x1="42" y1="170" x2="58" y2="170" stroke="#4ade80" stroke-width="1" stroke-opacity="0.5"/>
+            <line x1="142" y1="170" x2="158" y2="170" stroke="#4ade80" stroke-width="1" stroke-opacity="0.5"/>
+          </g>
+
+          <!-- ENERGY CORE -->
+          <g filter="url(#t-bloom)">
+            <circle cx="100" cy="130" r="6" fill="url(#t-energy)">
+              <animate attributeName="r" values="6;8;6" dur="3s" repeatCount="indefinite"/>
+            </circle>
+          </g>
+          <circle cx="100" cy="130" r="2.5" fill="hsl(180,100%,75%)" fill-opacity="0.49">
+            <animate attributeName="fill-opacity" values="0.49;0.21;0.49" dur="2s" repeatCount="indefinite"/>
+          </circle>
+
+          <!-- NECK -->
+          <rect x="93" y="72" width="14" height="18" rx="5" fill="#FDDCB5"/>
+
+          <!-- HEAD -->
+          <g>
+            <ellipse cx="100" cy="50" rx="21" ry="28" fill="url(#t-face)" stroke="#FDDCB599" stroke-width="0.5"/>
+            <!-- Ears -->
+            <ellipse cx="78" cy="52" rx="4" ry="6" fill="#FDDCB5" stroke="#FDDCB599" stroke-width="0.3"/>
+            <ellipse cx="122" cy="52" rx="4" ry="6" fill="#FDDCB5" stroke="#FDDCB599" stroke-width="0.3"/>
+            <!-- FACE -->
+            <g>
+              <path d="M86 40 Q90 37 96 39" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <path d="M104 39 Q110 37 114 40" stroke="#1a1a2e" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+              <ellipse cx="91" cy="47" rx="6" ry="4.5" fill="white"/>
+              <ellipse cx="109" cy="47" rx="6" ry="4.5" fill="white"/>
+              <circle cx="92" cy="47" r="3" fill="hsl(180,70%,45%)"/>
+              <circle cx="110" cy="47" r="3" fill="hsl(180,70%,45%)"/>
+              <circle cx="92" cy="47" r="1.5" fill="#111"/>
+              <circle cx="110" cy="47" r="1.5" fill="#111"/>
+              <circle cx="93.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+              <circle cx="111.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+              <ellipse cx="91" cy="47" rx="6.5" ry="0" fill="#FDDCB5">
+                <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+              </ellipse>
+              <ellipse cx="109" cy="47" rx="6.5" ry="0" fill="#FDDCB5">
+                <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+              </ellipse>
+              <path d="M98 52 Q100 56 102 52" stroke="#FDDCB599" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+              <path d="M95 60 Q100 63 105 60" stroke="#FDDCB599" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+            </g>
+            <!-- HAIR -->
+            <path d="M79 44 Q78 28 100 22 Q122 28 121 44 Q119 32 100 28 Q81 32 79 44" fill="url(#t-hair)"/>
+
+            <!-- HEAD GEAR (RARE blue) - helmet + hexabump texture -->
+            <g filter="url(#t-glow)">
+              <path d="M77 28 Q100 10 123 28 L125 62 Q100 72 75 62 Z" fill="#3b82f6" fill-opacity="0.55" stroke="#3b82f6" stroke-width="1.2"/>
+              <!-- Hexabump texture overlay on helmet -->
+              <rect x="73" y="8" width="56" height="66" fill="url(#tex-hexabump)" opacity="0.55" clip-path="url(#clip-helmet)" style="mix-blend-mode: soft-light;"/>
+              <rect x="80" y="44" width="40" height="8" rx="4" fill="hsl(180,90%,55%)" fill-opacity="0.85">
+                <animate attributeName="fill-opacity" values="0.85;0.5;0.85" dur="3s" repeatCount="indefinite"/>
+              </rect>
+            </g>
+          </g>
+
+          <!-- Rarity glow ring (RARE) -->
+          <g filter="url(#t-bloom)">
+            <ellipse cx="100" cy="200" rx="55" ry="10" fill="none" stroke="rgba(59,130,246,0.25)" stroke-width="2">
+              <animate attributeName="stroke-opacity" values="0.25;0.08;0.25" dur="3s" repeatCount="indefinite"/>
+            </ellipse>
+          </g>
+        </g>
+      </svg>
+    </div>
+    <span class="rarity-badge" style="background: rgba(59,130,246,0.15); color: #60a5fa; border: 1px solid rgba(59,130,246,0.3);">Rare Gear Set + Textures</span>
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-swatch" style="background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABgAAAAWCAYAAADafVyIAAAAV0lEQVR4AWPg5uaexcDI8B9Ec3JyFhDCpKpnACmGYWI0kKqe9j4AAi0gBtPEaCBZPYggF1NsAYXBR9gCShPAwPuAkgRA30imJR4tKkaLitGiYrSoIAIDAKy7LKCTTHSAAAAAAElFTkSuQmCC'); background-color: #1a2040;"></div>
+    <span>Carbon Fibre<br><small style="color:#475569">Chest Armor</small></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABMAAAAhCAQAAACR61jhAAAArUlEQVR4AY3SQQrCQBBE0b6icxJhFkIWc3Z7SuOnU0iav9PHNISKcTxWLX95XUu26zF1w+iWUZNtNKYzI9kTCKNNxNS8Mt6BCSaFQWBQMYgzaIfNccQ+abSezE8uBq1M/6wfy0QLmyeBkWglzr7nQc6oz3Y9ploMGo5gwGAFxmgGgyEbqpiNsJIBg8IEnHGed4wBIX+ZDjIrZ0znXKAxVvphbKUwCKzSYILOWPUb+kvq4+prG70AAAAASUVORK5CYII='); background-color: #1a2040;"></div>
+    <span>Hexabump<br><small style="color:#475569">Helmet</small></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAoBAMAAAB+0KVeAAAAMFBMVEUqKiosLCwuLi4xMTErKystLS0qKiopKSkpKSkzMzMpKSkoKCg3NzcoKCgrKysnJydKwFaoAAAAEHRSTlNcQDIqTjlVanEjY3gcf0eVx2e4NwAAAJNJREFUeAHt0SEKwmAAQOEHDrVYdEmTgwXBoCzZ9l9h8HeT2Wa1CUY9gc3qFTyBJ/EKij+DF7yAwfbVx+Nc5kBoVoUi5mugG2Kh+Ci5UtRJkFWKcctLpVi07ERFeUy6Nk/FaLIH+rflRhHmgwO7xz1XkA1Pvdd2Nq2VMQpjlDHqK0YZo4xRxihjFMYoMEb9/qP/ozcE1oO5SZysbgAAAABJRU5ErkJggg=='); background-color: #1a2040;"></div>
+    <span>Black Scales<br><small style="color:#475569">Belt / Boots</small></span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-swatch" style="background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAYAAACNMs+9AAAAX0lEQVQY02PIiAgXIIQdbG0SGMAEHgCSd7a382Kws7Gux6UYJO7m5moFwmCF2BSD+B5OjgYwzBAYGyOKrhhEB3i4KyBjBmwOx+YhrA7H60Fkh+P0ILrDsXoQm8OxeRAA3tdK4XWWWjsAAAAASUVORK5CYII='); background-color: #1a2040;"></div>
+    <span>Gun Metal<br><small style="color:#475569">Gloves</small></span>
+  </div>
+</div>
+
+<p style="margin-top: 32px; font-size: 0.75rem; color: #475569; max-width: 600px; text-align: center; line-height: 1.6;">
+  Textures are applied as semi-transparent overlays using <code style="color: #64748b;">mix-blend-mode: soft-light</code> and <code style="color: #64748b;">overlay</code>,
+  preserving the rarity color tint underneath. Patterns tile via SVG <code style="color: #64748b;">&lt;pattern&gt;</code> elements with embedded base64 PNGs.
+  Substituted <em>black-scales</em> for <em>dark-leather</em> to keep file size minimal (292 bytes vs 73KB).
+</p>
+
+</body>
+</html>

@@ -8,10 +8,10 @@
 - Build: `npm run build` (tsc + vite). No ESLint — use `npx tsc --noEmit` for type checking.
 
 ## Key File Paths
-- Types: `/home/kp/Desktop/Porters-Portal/types.ts`
-- Gamification lib: `/home/kp/Desktop/Porters-Portal/lib/gamification.ts`
-- Firebase client: `/home/kp/Desktop/Porters-Portal/lib/firebase.ts`
-- Data service: `/home/kp/Desktop/Porters-Portal/services/dataService.ts`
+- Types: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal/types.ts`
+- Gamification lib: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal/lib/gamification.ts`
+- Firebase client: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal/lib/firebase.ts`
+- Data service: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal/services/dataService.ts`
 
 ## Component Locations
 - `OperativeAvatar` — `components/dashboard/OperativeAvatar.tsx`

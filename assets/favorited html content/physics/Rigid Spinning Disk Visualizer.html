@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotational & Linear Kinematics Simulation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1a3a5c;
+            --primary-light: #2b5c8f;
+            --accent: #00c2b2;
+            --outer-color: #e05a2b;
+            --outer-light: #f28c6a;
+            --inner-color: #8b44e8;
+            --inner-light: #b07cf0;
+            --bg: #f0f3f7;
+            --panel: #ffffff;
+            --panel2: #f7f9fc;
+            --border: #dde2eb;
+            --text: #1e2a3a;
+            --text-muted: #6b7a8d;
+            --green: #1ba87e;
+            --red: #d63434;
+            --mono: 'Space Mono', monospace;
+            --sans: 'DM Sans', sans-serif;
+        }
+
+        *, *::before, *::after { box-sizing: border-box; }
+
+        body, html {
+            margin: 0; padding: 0;
+            width: 100vw; height: 100vh;
+            font-family: var(--sans);
+            background: var(--bg);
+            overflow: hidden;
+            color: var(--text);
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 310px 1fr 370px;
+            gap: 12px;
+            width: 100%; height: 100%;
+            padding: 12px;
+        }
+
+        .panel {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .controls-panel, .analysis-panel { padding: 18px; }
+
+        .canvas-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: #f7f9fc;
+            overflow: hidden;
+            border-radius: 12px;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        /* ---- Typography ---- */
+        .panel-title {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin: 0 0 16px 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .section-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin: 16px 0 8px 0;
+        }
+
+        /* ---- Playback Controls ---- */
+        .playback-row {
+            display: flex; gap: 8px; margin-bottom: 4px;
+        }
+
+        .btn {
+            font-family: var(--sans);
+            font-size: 13px;
+            font-weight: 600;
+            border: none;
+            padding: 9px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .btn-play {
+            background: var(--primary);
+            color: white;
+            flex: 1;
+        }
+        .btn-play:hover { background: #0f2540; }
+        .btn-play.active { background: var(--green); }
+
+        .btn-reset {
+            background: #fff;
+            color: var(--red);
+            border: 1.5px solid var(--red);
+        }
+        .btn-reset:hover { background: #fdf0f0; }
+
+        .btn-capture {
+            width: 100%;
+            background: var(--green);
+            color: white;
+            justify-content: center;
+            padding: 10px;
+        }
+        .btn-capture:hover { background: #148a65; }
+        .btn-capture:disabled { background: #aac9be; cursor: not-allowed; }
+
+        .btn-clear {
+            width: 100%;
+            background: white;
+            color: var(--text-muted);
+            border: 1.5px solid var(--border);
+            justify-content: center;
+            padding: 9px;
+            margin-top: 6px;
+        }
+        .btn-clear:hover { background: var(--bg); }
+
+        /* ---- Hint banner ---- */
+        .hint-bar {
+            background: #eef6ff;
+            border: 1px solid #c0d9f0;
+            border-radius: 7px;
+            padding: 8px 12px;
+            font-size: 12px;
+            color: #2563a8;
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+        .hint-bar strong { font-weight: 700; }
+
+        /* ---- Sliders ---- */
+        .slider-group {
+            margin-bottom: 14px;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 4px;
+        }
+
+        .slider-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .slider-name .symbol {
+            font-family: var(--mono);
+            font-size: 14px;
+        }
+
+        .slider-value {
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-light);
+            background: #eef2f8;
+            padding: 2px 8px;
+            border-radius: 5px;
+        }
+
+        .slider-sublabel {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary-light);
+            height: 5px;
+        }
+
+        /* ---- Direction badge ---- */
+        #dirBadge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            margin-top: 4px;
+            transition: all 0.2s;
+        }
+        .dir-ccw { background: #e8f5e9; color: #1ba87e; border: 1px solid #a5d6b0; }
+        .dir-cw  { background: #fff3e0; color: #e07b1a; border: 1px solid #f0c585; }
+        .dir-stopped { background: #f0f3f7; color: var(--text-muted); border: 1px solid var(--border); }
+
+        /* ---- Annotation Panel ---- */
+        .ann-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .ann-card {
+            background: var(--panel2);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+        }
+
+        .ann-card-title {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid;
+        }
+        .ann-card.outer .ann-card-title {
+            color: var(--outer-color);
+            border-color: var(--outer-light);
+        }
+        .ann-card.inner .ann-card-title {
+            color: var(--inner-color);
+            border-color: var(--inner-light);
+        }
+
+        .ann-check {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 12px;
+            margin-bottom: 5px;
+            cursor: pointer;
+        }
+        .ann-check input[type="checkbox"] {
+            accent-color: var(--primary-light);
+            width: 14px; height: 14px; cursor: pointer;
+        }
+        .ann-check .sym {
+            font-family: var(--mono);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 1px 5px;
+            border-radius: 3px;
+        }
+
+        /* ---- Analysis Panel ---- */
+        .capture-row {
+            display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+        }
+
+        .capture-row label {
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .capture-row input[type="number"] {
+            width: 68px;
+            padding: 6px 8px;
+            border: 1.5px solid var(--border);
+            border-radius: 6px;
+            font-family: var(--mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .capture-row .unit {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .state-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .state-card {
+            background: var(--panel2);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            font-family: var(--mono);
+            font-size: 11px;
+            line-height: 1.8;
+        }
+
+        .state-card-title {
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 6px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid;
+        }
+
+        .state-card.stateA .state-card-title { color: #1a6fd6; border-color: #9ac4f5; }
+        .state-card.stateB .state-card-title { color: #c25c00; border-color: #f5b97a; }
+
+        .state-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .state-row .key { color: var(--text-muted); }
+        .state-row .val { font-weight: 700; color: var(--text); }
+        .state-row .val.outer { color: var(--outer-color); }
+        .state-row .val.inner { color: var(--inner-color); }
+
+        .delta-card {
+            background: #fff9f0;
+            border: 1.5px solid #f5d8b0;
+            border-radius: 8px;
+            padding: 12px;
+            font-family: var(--mono);
+            font-size: 11px;
+            line-height: 1.9;
+        }
+
+        .delta-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #b35c00;
+            margin-bottom: 6px;
+            padding-bottom: 5px;
+            border-bottom: 1.5px solid #f5d8b0;
+        }
+
+        .delta-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        .delta-row .dval { font-weight: 700; color: #c25c00; }
+
+        /* ---- Screenshot boxes ---- */
+        .screenshot-wrapper { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+
+        .screenshot-box {
+            display: none;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            padding: 8px;
+            background: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            font-family: var(--sans);
+            color: var(--primary);
+        }
+        .screenshot-box img {
+            max-width: 100%;
+            border-radius: 5px;
+            display: block;
+            margin-top: 5px;
+            border: 1px solid #eee;
+            cursor: zoom-in;
+            transition: transform 0.15s;
+        }
+        .screenshot-box img:hover { transform: scale(1.02); }
+
+        /* ---- Modal ---- */
+        #imgModal {
+            display: none;
+            position: fixed; z-index: 9999;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.88);
+            justify-content: center; align-items: center;
+        }
+        #imgModal img {
+            max-width: 90%; max-height: 90%;
+            border: 3px solid white;
+            border-radius: 8px;
+        }
+        .close-modal {
+            position: absolute; top: 18px; right: 36px;
+            color: white; font-size: 38px; font-weight: bold;
+            cursor: pointer;
+        }
+        .close-modal:hover { color: var(--outer-color); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+
+    <!-- ═══════════════ LEFT PANEL ═══════════════ -->
+    <div class="panel controls-panel">
+        <div class="panel-title">⚙ Simulation Controls</div>
+
+        <!-- How to use hint -->
+        <div class="hint-bar">
+            <strong>How to use:</strong> Adjust ω and α, then press <strong>Play</strong>. Use the annotation checkboxes below to visualize vectors on each coin.
+        </div>
+
+        <!-- Playback -->
+        <div class="playback-row">
+            <button id="playPauseBtn" class="btn btn-play">▶ Play</button>
+            <button id="btnReset" class="btn btn-reset">↺ Reset</button>
+        </div>
+
+        <!-- Direction badge -->
+        <div id="dirBadge" class="dir-stopped">● Stopped</div>
+
+        <!-- Angular Velocity -->
+        <div class="section-label">Rotational Parameters</div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-name"><span class="symbol">ω</span> Angular Velocity</span>
+                <span class="slider-value" id="valOmega">1.00 rad/s</span>
+            </div>
+            <div class="slider-sublabel">How fast the disk spins (rad/s)</div>
+            <input type="range" id="slideOmega" min="-3" max="3" step="0.05" value="1">
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-name"><span class="symbol">α</span> Angular Acceleration</span>
+                <span class="slider-value" id="valAlpha">0.00 rad/s²</span>
+            </div>
+            <div class="slider-sublabel">Rate of change of ω (rad/s²)</div>
+            <input type="range" id="slideAlpha" min="-1.5" max="1.5" step="0.05" value="0">
+        </div>
+
+        <!-- Radii -->
+        <div class="section-label">Coin Positions</div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-name" style="color:var(--outer-color)">● Outer Coin Radius <span class="symbol">R</span></span>
+                <span class="slider-value" id="valR">300</span>
+            </div>
+            <input type="range" id="slideR" min="150" max="350" step="5" value="300">
+        </div>
+
+        <div class="slider-group">
+            <div class="slider-header">
+                <span class="slider-name" style="color:var(--inner-color)">● Inner Coin Radius <span class="symbol">r</span></span>
+                <span class="slider-value" id="val_r">120</span>
+            </div>
+            <input type="range" id="slider" min="30" max="350" step="5" value="120">
+        </div>
+
+        <!-- Annotation Controls -->
+        <div class="section-label">Show Annotations on Canvas</div>
+
+        <div class="ann-grid">
+            <div class="ann-card outer">
+                <div class="ann-card-title">Outer Coin (R)</div>
+                <label class="ann-check">
+                    <input type="checkbox" id="outChkPos">
+                    <span class="sym" style="background:#dbeafe;color:#1a6fd6">r⃗</span> Position
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="outChkVel">
+                    <span class="sym" style="background:#dcfce7;color:#15803d">v⃗</span> Velocity
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="outChkAng">
+                    <span class="sym" style="background:#f3e8ff;color:#7c3aed">θ</span> Angle
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="outChkArc">
+                    <span class="sym" style="background:#fff7ed;color:#c2410c">s</span> Arc length
+                </label>
+            </div>
+            <div class="ann-card inner">
+                <div class="ann-card-title">Inner Coin (r)</div>
+                <label class="ann-check">
+                    <input type="checkbox" id="inChkPos">
+                    <span class="sym" style="background:#dbeafe;color:#1a6fd6">r⃗</span> Position
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="inChkVel">
+                    <span class="sym" style="background:#dcfce7;color:#15803d">v⃗</span> Velocity
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="inChkAng">
+                    <span class="sym" style="background:#f3e8ff;color:#7c3aed">θ</span> Angle
+                </label>
+                <label class="ann-check">
+                    <input type="checkbox" id="inChkArc">
+                    <span class="sym" style="background:#fff7ed;color:#c2410c">s</span> Arc length
+                </label>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ═══════════════ CENTER PANEL ═══════════════ -->
+    <div class="panel canvas-panel">
+        <canvas id="simCanvas" width="800" height="1100"></canvas>
+    </div>
+
+    <!-- ═══════════════ RIGHT PANEL ═══════════════ -->
+    <div class="panel analysis-panel">
+        <div class="panel-title">📊 State Analysis</div>
+
+        <div class="hint-bar">
+            Capture two states separated by a time interval Δt. The simulation auto-advances and snapshots both moments.
+        </div>
+
+        <div class="section-label">Time Interval</div>
+        <div class="capture-row">
+            <label for="inputDt">Δt =</label>
+            <input type="number" id="inputDt" value="1.0" min="0.1" step="0.1">
+            <span class="unit">seconds</span>
+        </div>
+
+        <button id="btnStartCapture" class="btn btn-capture">⏱ Capture State A → B</button>
+        <button id="btnClearStates" class="btn btn-clear">✕ Clear States</button>
+
+        <div class="section-label">Captured States</div>
+
+        <div class="state-cards">
+            <!-- State A -->
+            <div class="state-card stateA">
+                <div class="state-card-title">State A</div>
+                <div class="state-row"><span class="key">t</span><span class="val" id="outTA">--</span></div>
+                <div class="state-row"><span class="key">θ</span><span class="val" id="outThetaA">--</span></div>
+                <div class="state-row"><span class="key">s<sub>out</sub></span><span class="val outer" id="outSoutA">--</span></div>
+                <div class="state-row"><span class="key">s<sub>in</sub></span><span class="val inner" id="outSinA">--</span></div>
+                <div class="state-row"><span class="key">v<sub>out</sub></span><span class="val outer" id="outVoutA">--</span></div>
+                <div class="state-row"><span class="key">v<sub>in</sub></span><span class="val inner" id="outVinA">--</span></div>
+            </div>
+            <!-- State B -->
+            <div class="state-card stateB">
+                <div class="state-card-title">State B</div>
+                <div class="state-row"><span class="key">t</span><span class="val" id="outTB">--</span></div>
+                <div class="state-row"><span class="key">θ</span><span class="val" id="outThetaB">--</span></div>
+                <div class="state-row"><span class="key">s<sub>out</sub></span><span class="val outer" id="outSoutB">--</span></div>
+                <div class="state-row"><span class="key">s<sub>in</sub></span><span class="val inner" id="outSinB">--</span></div>
+                <div class="state-row"><span class="key">v<sub>out</sub></span><span class="val outer" id="outVoutB">--</span></div>
+                <div class="state-row"><span class="key">v<sub>in</sub></span><span class="val inner" id="outVinB">--</span></div>
+            </div>
+        </div>
+
+        <!-- Delta -->
+        <div class="delta-card">
+            <div class="delta-title">Δ Differences  (B − A)</div>
+            <div class="delta-row"><span>Δt</span><span class="dval"><span id="outDt">--</span> s</span></div>
+            <div class="delta-row"><span>Δθ</span><span class="dval"><span id="outDTheta">--</span> rad</span></div>
+            <div class="delta-row"><span>Δs <span style="color:var(--outer-color)">(outer)</span></span><span class="dval" style="color:var(--outer-color)"><span id="outDSout">--</span></span></div>
+            <div class="delta-row"><span>Δs <span style="color:var(--inner-color)">(inner)</span></span><span class="dval" style="color:var(--inner-color)"><span id="outDSin">--</span></span></div>
+        </div>
+
+        <!-- Snapshots -->
+        <div class="section-label">Snapshots</div>
+        <div class="screenshot-wrapper">
+            <div id="boxA" class="screenshot-box">
+                State A Snapshot <span style="font-weight:400;font-size:10px;">(click to enlarge)</span>
+                <img id="imgStateA" src="" alt="State A">
+            </div>
+            <div id="boxB" class="screenshot-box">
+                State B Snapshot <span style="font-weight:400;font-size:10px;">(click to enlarge)</span>
+                <img id="imgStateB" src="" alt="State B">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div id="imgModal">
+    <span class="close-modal" onclick="closeModal()">×</span>
+    <img id="modalImg" src="">
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const width = canvas.width;
+    const height = canvas.height;
+    const cx = width / 2;
+    const cy = 390;
+    const coinSize = 16;
+    const maxR = 350;
+
+    let isPaused = true;
+    let time = 0, theta = 0, omega = 1, alpha = 0;
+    let R = 300, r = 120;
+    const maxOmega = 3;
+
+    let isCapturingSequence = false;
+    let targetCaptureTime = 0;
+
+    const annotations = {
+        inner: { pos: false, vel: false, angle: false, s: false },
+        outer: { pos: false, vel: false, angle: false, s: false }
+    };
+
+    let stateA = null, stateB = null;
+
+    // -- Element refs --
+    const sOmega = document.getElementById('slideOmega');
+    const sAlpha = document.getElementById('slideAlpha');
+    const sR = document.getElementById('slideR');
+    const sr = document.getElementById('slider');
+    const vOmega = document.getElementById('valOmega');
+    const vAlpha = document.getElementById('valAlpha');
+    const vR = document.getElementById('valR');
+    const vr = document.getElementById('val_r');
+    const dirBadge = document.getElementById('dirBadge');
+
+    // -- Annotation checkboxes --
+    const annMap = {
+        outChkPos: ['outer','pos'], outChkVel: ['outer','vel'],
+        outChkAng: ['outer','angle'], outChkArc: ['outer','s'],
+        inChkPos:  ['inner','pos'], inChkVel:  ['inner','vel'],
+        inChkAng:  ['inner','angle'], inChkArc: ['inner','s'],
+    };
+    Object.entries(annMap).forEach(([id, [coin, key]]) => {
+        document.getElementById(id).addEventListener('change', e => {
+            annotations[coin][key] = e.target.checked;
+            if (isPaused) draw();
+        });
+    });
+
+    function updateDirBadge() {
+        if (Math.abs(omega) < 0.005) {
+            dirBadge.className = 'dir-stopped';
+            dirBadge.textContent = '● Stopped';
+        } else if (omega > 0) {
+            dirBadge.className = 'dir-ccw';
+            dirBadge.textContent = '↺ Counter-Clockwise';
+        } else {
+            dirBadge.className = 'dir-cw';
+            dirBadge.textContent = '↻ Clockwise';
+        }
+    }
+
+    sOmega.addEventListener('input', e => {
+        omega = parseFloat(e.target.value);
+        vOmega.textContent = omega.toFixed(2) + " rad/s";
+        updateDirBadge();
+    });
+    sAlpha.addEventListener('input', e => {
+        alpha = parseFloat(e.target.value);
+        vAlpha.textContent = alpha.toFixed(2) + " rad/s²";
+    });
+    sR.addEventListener('input', e => {
+        R = parseFloat(e.target.value); vR.textContent = R;
+        sr.max = R;
+        if (r > R) { r = R; sr.value = r; vr.textContent = r; }
+        if (isPaused) draw();
+    });
+    sr.addEventListener('input', e => {
+        r = parseFloat(e.target.value); vr.textContent = r;
+        if (isPaused) draw();
+    });
+
+    document.getElementById('playPauseBtn').addEventListener('click', () => {
+        isPaused = !isPaused;
+        updatePlayPauseUI();
+        if (!isPaused) lastTime = performance.now();
+    });
+    document.getElementById('btnReset').addEventListener('click', resetAnimation);
+    document.getElementById('btnStartCapture').addEventListener('click', startCaptureSequence);
+    document.getElementById('btnClearStates').addEventListener('click', clearStates);
+
+    const modal = document.getElementById('imgModal');
+    const modalImg = document.getElementById('modalImg');
+    document.getElementById('imgStateA').addEventListener('click', function() { modalImg.src = this.src; modal.style.display = 'flex'; });
+    document.getElementById('imgStateB').addEventListener('click', function() { modalImg.src = this.src; modal.style.display = 'flex'; });
+    function closeModal() { modal.style.display = 'none'; }
+    modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+    function updatePlayPauseUI() {
+        const btn = document.getElementById('playPauseBtn');
+        btn.textContent = isPaused ? '▶ Play' : '⏸ Pause';
+        btn.className = isPaused ? 'btn btn-play' : 'btn btn-play active';
+    }
+
+    function resetAnimation() {
+        time = 0; theta = 0;
+        omega = parseFloat(sOmega.value);
+        alpha = parseFloat(sAlpha.value);
+        isPaused = true; isCapturingSequence = false;
+        updatePlayPauseUI(); clearStates();
+        document.getElementById('btnStartCapture').disabled = false;
+        document.getElementById('btnStartCapture').textContent = '⏱ Capture State A → B';
+        draw();
+    }
+
+    function startCaptureSequence() {
+        const dtInput = parseFloat(document.getElementById('inputDt').value);
+        if (isNaN(dtInput) || dtInput <= 0) { alert("Please enter a valid positive Δt."); return; }
+        captureState('A');
+        targetCaptureTime = time + dtInput;
+        isCapturingSequence = true;
+        document.getElementById('btnStartCapture').disabled = true;
+        document.getElementById('btnStartCapture').textContent = '⏳ Capturing...';
+        isPaused = false; updatePlayPauseUI();
+        lastTime = performance.now();
+    }
+
+    function captureState(type) {
+        draw();
+        const obj = { t: time, theta, omega, sIn: theta*r, sOut: theta*R, vIn: omega*r, vOut: omega*R, r, R };
+        if (type === 'A') {
+            stateA = obj; stateB = null;
+            document.getElementById('imgStateA').src = canvas.toDataURL("image/png");
+            document.getElementById('boxA').style.display = 'block';
+            document.getElementById('boxB').style.display = 'none';
+        } else {
+            stateB = obj;
+            document.getElementById('imgStateB').src = canvas.toDataURL("image/png");
+            document.getElementById('boxB').style.display = 'block';
+        }
+        updateStateUI();
+    }
+
+    function clearStates() {
+        stateA = null; stateB = null;
+        document.getElementById('boxA').style.display = 'none';
+        document.getElementById('boxB').style.display = 'none';
+        updateStateUI();
+        if (isPaused) draw();
+    }
+
+    function fmt(n) { return n !== undefined && !isNaN(n) ? n.toFixed(2) : '--'; }
+
+    function updateStateUI() {
+        if (stateA) {
+            document.getElementById('outTA').textContent = fmt(stateA.t) + ' s';
+            document.getElementById('outThetaA').textContent = fmt(stateA.theta) + ' rad';
+            document.getElementById('outSinA').textContent = fmt(stateA.sIn);
+            document.getElementById('outSoutA').textContent = fmt(stateA.sOut);
+            document.getElementById('outVinA').textContent = fmt(stateA.vIn);
+            document.getElementById('outVoutA').textContent = fmt(stateA.vOut);
+        } else {
+            ['outTA','outThetaA','outSinA','outSoutA','outVinA','outVoutA'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+        if (stateB) {
+            document.getElementById('outTB').textContent = fmt(stateB.t) + ' s';
+            document.getElementById('outThetaB').textContent = fmt(stateB.theta) + ' rad';
+            document.getElementById('outSinB').textContent = fmt(stateB.sIn);
+            document.getElementById('outSoutB').textContent = fmt(stateB.sOut);
+            document.getElementById('outVinB').textContent = fmt(stateB.vIn);
+            document.getElementById('outVoutB').textContent = fmt(stateB.vOut);
+        } else {
+            ['outTB','outThetaB','outSinB','outSoutB','outVinB','outVoutB'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+        if (stateA && stateB) {
+            document.getElementById('outDt').textContent = fmt(stateB.t - stateA.t);
+            document.getElementById('outDTheta').textContent = fmt(stateB.theta - stateA.theta);
+            document.getElementById('outDSin').textContent = fmt(stateB.sIn - stateA.sIn);
+            document.getElementById('outDSout').textContent = fmt(stateB.sOut - stateA.sOut);
+        } else {
+            ['outDt','outDTheta','outDSin','outDSout'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+    }
+
+    let lastTime = performance.now();
+
+    function loop(now) {
+        const dt = (now - lastTime) / 1000;
+        lastTime = now;
+        if (!isPaused || isCapturingSequence) {
+            updatePhysics(dt); draw();
+        }
+        requestAnimationFrame(loop);
+    }
+
+    function updatePhysics(dt) {
+        if (isCapturingSequence && (time + dt >= targetCaptureTime)) {
+            dt = targetCaptureTime - time;
+            advanceKinematics(dt);
+            captureState('B');
+            isCapturingSequence = false; isPaused = true;
+            updatePlayPauseUI();
+            document.getElementById('btnStartCapture').disabled = false;
+            document.getElementById('btnStartCapture').textContent = '⏱ Capture State A → B';
+            return;
+        }
+        advanceKinematics(dt);
+    }
+
+    function advanceKinematics(dt) {
+        if (alpha !== 0) {
+            omega += alpha * dt;
+            omega = Math.max(-maxOmega, Math.min(maxOmega, omega));
+            sOmega.value = omega;
+            vOmega.textContent = omega.toFixed(2) + " rad/s";
+            updateDirBadge();
+        }
+        theta += omega * dt;
+        time += dt;
+    }
+
+    // ---- Drawing ----
+
+    function drawArrow(x0, y0, x1, y1, color, label, invertText = false) {
+        const headLen = 14;
+        const angle = Math.atan2(y1 - y0, x1 - x0);
+        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        ctx.beginPath(); ctx.fillStyle = color;
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1 - headLen * Math.cos(angle - Math.PI/6), y1 - headLen * Math.sin(angle - Math.PI/6));
+        ctx.lineTo(x1 - headLen * Math.cos(angle + Math.PI/6), y1 - headLen * Math.sin(angle + Math.PI/6));
+        ctx.fill();
+        if (label) {
+            ctx.fillStyle = color; ctx.font = "bold 18px 'Space Mono', monospace";
+            const m = invertText ? -1.5 : 1;
+            ctx.fillText(label, x1 + 18*m*Math.cos(angle), y1 + 18*m*Math.sin(angle) - (invertText ? 15 : 0));
+        }
+    }
+
+    function drawGhost(state, rVal, label) {
+        ctx.save(); ctx.globalAlpha = 0.32;
+        const x = cx + rVal * Math.cos(state.theta);
+        const y = cy - rVal * Math.sin(state.theta);
+        ctx.beginPath(); ctx.arc(x, y, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = "#e67e22"; ctx.fill();
+        ctx.strokeStyle = "#d35400"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.beginPath(); ctx.setLineDash([5,5]);
+        ctx.moveTo(cx, cy); ctx.lineTo(x, y);
+        ctx.strokeStyle = "#888"; ctx.stroke();
+        ctx.fillStyle = "#d35400"; ctx.font = "bold 14px 'Space Mono', monospace";
+        ctx.fillText(label, x + 18, y - 18);
+        ctx.restore();
+    }
+
+    const OUTER_COLOR = '#e05a2b';
+    const INNER_COLOR = '#8b44e8';
+
+    function drawCoinData(radiusVal, type) {
+        const coinColor = type === 'outer' ? OUTER_COLOR : INNER_COLOR;
+        const coinStroke = type === 'outer' ? '#b83a10' : '#5e22b0';
+        const x = cx + radiusVal * Math.cos(theta);
+        const y = cy - radiusVal * Math.sin(theta);
+        const ann = annotations[type];
+
+        if (ann.angle || ann.s) {
+            let currentTheta = theta % (Math.PI * 2);
+            if (!ann.pos && ann.angle) {
+                ctx.beginPath(); ctx.setLineDash([4,4]); ctx.strokeStyle = "rgba(0,0,0,0.18)";
+                ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+            }
+            if (ann.angle) {
+                ctx.beginPath();
+                ctx.strokeStyle = type === 'inner' ? "rgba(139,68,232,0.65)" : "rgba(224,90,43,0.65)";
+                ctx.lineWidth = 4;
+                ctx.arc(cx, cy, radiusVal, 0, -currentTheta, currentTheta > 0);
+                ctx.stroke();
+            }
+            const textAngle = -currentTheta;
+            const labelR = radiusVal + coinSize + 15;
+            const tX = cx + labelR * Math.cos(textAngle);
+            const tY = cy + labelR * Math.sin(textAngle);
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            if (ann.angle) {
+                ctx.fillStyle = coinColor; ctx.font = "bold 16px 'Space Mono', monospace";
+                ctx.fillText(type === 'inner' ? "θ" : "θ", tX, tY);
+            }
+            if (ann.s) {
+                ctx.fillStyle = "#c25c00"; ctx.font = "bold 14px 'Space Mono', monospace";
+                ctx.fillText(`s=${(theta * radiusVal).toFixed(1)}`, tX, tY + (ann.angle ? 20 : 0));
+            }
+            ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        }
+
+        if (ann.pos) drawArrow(cx, cy, x, y, "#2980b9", type === 'inner' ? 'r' : 'R');
+        if (ann.vel) {
+            const velScale = 0.25;
+            const vx = -(radiusVal * omega) * Math.sin(theta);
+            const vy = -(radiusVal * omega) * Math.cos(theta);
+            drawArrow(x, y, x + vx*velScale, y + vy*velScale, "#1ba87e", 'v');
+        }
+
+        // Draw coin
+        ctx.beginPath(); ctx.arc(x, y, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = coinColor; ctx.fill();
+        ctx.strokeStyle = coinStroke; ctx.lineWidth = 3; ctx.stroke();
+
+        // Label
+        ctx.fillStyle = 'white'; ctx.font = "bold 11px 'DM Sans', sans-serif";
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(type === 'outer' ? 'R' : 'r', x, y);
+        ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
+    }
+
+    function drawLinearTrack() {
+        const topY = 840;
+        ctx.beginPath(); ctx.moveTo(0, topY); ctx.lineTo(width, topY);
+        ctx.strokeStyle = "#dde2eb"; ctx.lineWidth = 1.5; ctx.stroke();
+
+        ctx.fillStyle = "rgba(0,0,0,0.55)";
+        ctx.font = "bold 14px 'DM Sans', sans-serif";
+        ctx.fillText("Linear Path (Unrolled Arc, 0 → 2πR)", 40, topY + 25);
+
+        const startX = 50;
+        const maxTrackW = 700;
+        const ppu = maxTrackW / (2 * Math.PI * maxR);
+
+        // Outer track
+        const outCircum = 2 * Math.PI * R;
+        const outVisLen = outCircum * ppu;
+        const outY = topY + 80;
+        ctx.beginPath(); ctx.moveTo(startX, outY); ctx.lineTo(startX + outVisLen, outY);
+        ctx.strokeStyle = "#f0b49a"; ctx.lineWidth = 7; ctx.stroke();
+        ctx.fillStyle = OUTER_COLOR; ctx.font = "600 13px 'DM Sans', sans-serif";
+        ctx.fillText(`Outer coin path  (R = ${R})`, startX, outY - 22);
+
+        const sOut = theta * R;
+        let xOutMod = ((sOut % outCircum) + outCircum) % outCircum;
+        const dotOutX = startX + xOutMod * ppu;
+
+        if (annotations.outer.vel) {
+            const vLen = Math.abs(omega * R * 0.25);
+            const dir = omega > 0 ? 1 : -1;
+            drawArrow(dotOutX, outY, dotOutX + dir * vLen, outY, "#1ba87e", "v", omega < 0);
+        }
+        if (annotations.outer.s) {
+            ctx.fillStyle = "#c25c00"; ctx.font = "bold 13px 'Space Mono', monospace";
+            ctx.fillText(`s=${sOut.toFixed(1)}`, dotOutX - 20, outY + 22);
+        }
+
+        ctx.beginPath(); ctx.arc(dotOutX, outY, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = OUTER_COLOR; ctx.fill();
+        ctx.strokeStyle = '#b83a10'; ctx.lineWidth = 3; ctx.stroke();
+
+        // Inner track
+        const inCircum = 2 * Math.PI * r;
+        const inVisLen = inCircum * ppu;
+        const inY = topY + 175;
+        ctx.beginPath(); ctx.moveTo(startX, inY); ctx.lineTo(startX + inVisLen, inY);
+        ctx.strokeStyle = "#c9acf5"; ctx.lineWidth = 7; ctx.stroke();
+        ctx.fillStyle = INNER_COLOR; ctx.font = "600 13px 'DM Sans', sans-serif";
+        ctx.fillText(`Inner coin path  (r = ${r})`, startX, inY - 22);
+
+        const sIn = theta * r;
+        let xInMod = ((sIn % inCircum) + inCircum) % inCircum;
+        const dotInX = startX + xInMod * ppu;
+
+        if (annotations.inner.vel) {
+            const vLen = Math.abs(omega * r * 0.25);
+            const dir = omega > 0 ? 1 : -1;
+            drawArrow(dotInX, inY, dotInX + dir * vLen, inY, "#1ba87e", "v", omega < 0);
+        }
+        if (annotations.inner.s) {
+            ctx.fillStyle = "#c25c00"; ctx.font = "bold 13px 'Space Mono', monospace";
+            ctx.fillText(`s=${sIn.toFixed(1)}`, dotInX - 20, inY + 22);
+        }
+
+        ctx.beginPath(); ctx.arc(dotInX, inY, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = INNER_COLOR; ctx.fill();
+        ctx.strokeStyle = '#5e22b0'; ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Reference line
+        ctx.beginPath(); ctx.strokeStyle = "rgba(0,0,0,0.15)"; ctx.lineWidth = 1.5; ctx.setLineDash([6,6]);
+        ctx.moveTo(cx, cy); ctx.lineTo(width - 20, cy); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(0,0,0,0.35)"; ctx.font = "13px 'DM Sans', sans-serif";
+        ctx.fillText("+x Reference  (θ = 0)", width - 170, cy - 12);
+
+        // Disk
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
+        ctx.fillStyle = "#e9edf4"; ctx.fill();
+        ctx.strokeStyle = "#c5cdd9"; ctx.lineWidth = 2.5; ctx.stroke();
+
+        // Center dot
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2);
+        ctx.fillStyle = "#2c3e50"; ctx.fill();
+
+        if (stateA) { drawGhost(stateA, stateA.R, 'A'); drawGhost(stateA, stateA.r, 'A'); }
+        if (stateB) { drawGhost(stateB, stateB.R, 'B'); drawGhost(stateB, stateB.r, 'B'); }
+
+        drawCoinData(R, 'outer');
+        drawCoinData(r, 'inner');
+
+        // HUD
+        const hud = [
+            { label: 'Time', val: `${time.toFixed(2)} s`, color: '#1e2a3a' },
+            { label: 'ω', val: `${omega.toFixed(2)} rad/s`, color: '#2b5c8f' },
+            { label: 'α', val: `${alpha.toFixed(2)} rad/s²`, color: '#2b5c8f' },
+            { label: 'θ', val: `${theta.toFixed(2)} rad`, color: '#6d28d9' },
+        ];
+
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.strokeStyle = '#dde2eb';
+        ctx.lineWidth = 1;
+        roundRect(ctx, 12, 12, 185, 106, 8);
+        ctx.fill(); ctx.stroke();
+
+        hud.forEach((h, i) => {
+            ctx.font = "600 13px 'DM Sans', sans-serif";
+            ctx.fillStyle = '#6b7a8d';
+            ctx.fillText(h.label, 22, 36 + i * 23);
+            ctx.font = "bold 13px 'Space Mono', monospace";
+            ctx.fillStyle = h.color;
+            ctx.textAlign = 'right';
+            ctx.fillText(h.val, 190, 36 + i * 23);
+            ctx.textAlign = 'left';
+        });
+        ctx.restore();
+
+        // Legend
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,0.88)';
+        ctx.strokeStyle = '#dde2eb';
+        ctx.lineWidth = 1;
+        roundRect(ctx, 12, 130, 185, 52, 8);
+        ctx.fill(); ctx.stroke();
+
+        ctx.beginPath(); ctx.arc(30, 147, 8, 0, Math.PI*2);
+        ctx.fillStyle = OUTER_COLOR; ctx.fill();
+        ctx.font = "600 12px 'DM Sans', sans-serif"; ctx.fillStyle = '#1e2a3a';
+        ctx.fillText("Outer coin (R)", 44, 151);
+
+        ctx.beginPath(); ctx.arc(30, 167, 8, 0, Math.PI*2);
+        ctx.fillStyle = INNER_COLOR; ctx.fill();
+        ctx.fillText("Inner coin (r)", 44, 171);
+        ctx.restore();
+
+        drawLinearTrack();
+    }
+
+    function roundRect(ctx, x, y, w, h, r) {
+        ctx.beginPath();
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
+    }
+
+    updateDirBadge();
+    resetAnimation();
+    requestAnimationFrame(loop);
+</script>
+</body>
+</html>

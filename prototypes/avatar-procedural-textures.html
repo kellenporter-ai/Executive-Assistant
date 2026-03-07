@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Option 2: Procedural SVG Textures - OperativeAvatar</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0a0a0f;
+    color: #e2e8f0;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding: 32px;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: #f1f5f9;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 40px;
+  }
+  .rarity-row {
+    display: flex;
+    justify-content: center;
+    gap: 48px;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+  }
+  .rarity-section {
+    text-align: center;
+  }
+  .rarity-label {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding: 4px 16px;
+    border-radius: 4px;
+    display: inline-block;
+  }
+  .rarity-label.common { color: #94a3b8; border: 1px solid #334155; }
+  .rarity-label.rare { color: #60a5fa; border: 1px solid #1e3a5f; text-shadow: 0 0 8px rgba(59,130,246,0.4); }
+  .rarity-label.unique { color: #fbbf24; border: 1px solid #78520a; text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+  .compare-row {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .avatar-col {
+    text-align: center;
+  }
+  .avatar-col h3 {
+    font-size: 12px;
+    color: #64748b;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .avatar-wrap {
+    width: 180px;
+    height: 320px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    border: 1px solid #1e293b;
+    background: radial-gradient(ellipse at 50% 80%, rgba(30,41,59,0.3) 0%, transparent 70%);
+  }
+  .avatar-wrap svg { width: 160px; height: 300px; }
+</style>
+</head>
+<body>
+
+<h1>Option 2: Procedural SVG Textures</h1>
+<p class="subtitle">feTurbulence + feSpecularLighting + feColorMatrix -- zero raster assets</p>
+
+<!-- ============================================================
+     COMMON RARITY
+     ============================================================ -->
+<div class="rarity-section">
+  <div class="rarity-label common">Common</div>
+  <div class="rarity-row">
+    <!-- Flat -->
+    <div class="avatar-col">
+      <h3>No Textures</h3>
+      <div class="avatar-wrap" id="common-flat"></div>
+    </div>
+    <!-- Textured -->
+    <div class="avatar-col">
+      <h3>Procedural Textures</h3>
+      <div class="avatar-wrap" id="common-tex"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     RARE RARITY
+     ============================================================ -->
+<div class="rarity-section">
+  <div class="rarity-label rare">Rare</div>
+  <div class="rarity-row">
+    <div class="avatar-col">
+      <h3>No Textures</h3>
+      <div class="avatar-wrap" id="rare-flat"></div>
+    </div>
+    <div class="avatar-col">
+      <h3>Procedural Textures</h3>
+      <div class="avatar-wrap" id="rare-tex"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     UNIQUE RARITY
+     ============================================================ -->
+<div class="rarity-section">
+  <div class="rarity-label unique">Unique</div>
+  <div class="rarity-row">
+    <div class="avatar-col">
+      <h3>No Textures</h3>
+      <div class="avatar-wrap" id="unique-flat"></div>
+    </div>
+    <div class="avatar-col">
+      <h3>Procedural Textures</h3>
+      <div class="avatar-wrap" id="unique-tex"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Rarity color definitions matching the portal
+const RARITY = {
+  COMMON:   { primary: '#64748b', glow: 'rgba(100,116,139,0.3)', particle: '#94a3b8', intensity: 0.3 },
+  RARE:     { primary: '#3b82f6', glow: 'rgba(59,130,246,0.5)',  particle: '#60a5fa', intensity: 0.7 },
+  UNIQUE:   { primary: '#f59e0b', glow: 'rgba(245,158,11,0.6)',  particle: '#fbbf24', intensity: 0.9 },
+};
+
+const SKIN = '#F1C27D';
+const SKIN_SH = '#F1C27D99';
+const HAIR = '#1a1a2e';
+const HUE = 0;
+
+function buildAvatar(rarity, textured) {
+  const r = RARITY[rarity];
+  const uid = `${rarity.toLowerCase()}-${textured ? 'tx' : 'fl'}`;
+
+  // Base outfit colors
+  const outfitTop = `hsl(${HUE + 240}, 20%, 20%)`;
+  const outfitBot = `hsl(${HUE + 240}, 18%, 12%)`;
+  const pantsTop = `hsl(${HUE + 240}, 15%, 16%)`;
+  const pantsBot = `hsl(${HUE + 240}, 12%, 10%)`;
+  const outlineCol = `hsl(${HUE + 240}, 18%, 25%)`;
+  const bootBase = `hsl(${HUE + 240}, 12%, 14%)`;
+
+  let defs = `
+    <linearGradient id="${uid}-outfit" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${outfitTop}"/>
+      <stop offset="100%" stop-color="${outfitBot}"/>
+    </linearGradient>
+    <linearGradient id="${uid}-pants" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="${pantsTop}"/>
+      <stop offset="100%" stop-color="${pantsBot}"/>
+    </linearGradient>
+    <radialGradient id="${uid}-face" cx="45%" cy="40%" r="55%">
+      <stop offset="0%" stop-color="${SKIN}"/><stop offset="100%" stop-color="${SKIN_SH}"/>
+    </radialGradient>
+    <linearGradient id="${uid}-hair" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="${HAIR}"/><stop offset="100%" stop-color="${HAIR}cc"/>
+    </linearGradient>
+    <filter id="${uid}-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+    </filter>
+    <filter id="${uid}-soft" x="-10%" y="-10%" width="120%" height="120%">
+      <feGaussianBlur stdDeviation="1.5" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+    </filter>
+    <filter id="${uid}-bloom" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="b"/><feComposite in="SourceGraphic" in2="b" operator="over"/>
+    </filter>
+  `;
+
+  // ---- PROCEDURAL TEXTURE FILTERS ----
+  if (textured) {
+    // Carbon-fiber chest armor texture
+    defs += `
+    <filter id="${uid}-chest-tex" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.08 0.15" numOctaves="4" seed="1" result="noise"/>
+      <feColorMatrix type="matrix" in="noise" result="tinted"
+        values="0 0 0 0 ${hexToR(r.primary)}
+                0 0 0 0 ${hexToG(r.primary)}
+                0 0 0 0 ${hexToB(r.primary)}
+                0 0 0 0.35 0"/>
+      <feComposite in="tinted" in2="SourceGraphic" operator="in" result="clipped"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="clipped"/>
+      </feMerge>
+    </filter>`;
+
+    // Helmet hex pattern
+    defs += `
+    <filter id="${uid}-helm-tex" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feTurbulence type="turbulence" baseFrequency="0.05 0.06" numOctaves="2" seed="7" result="hexnoise"/>
+      <feColorMatrix type="matrix" in="hexnoise" result="hextint"
+        values="0 0 0 0 ${hexToR(r.particle)}
+                0 0 0 0 ${hexToG(r.particle)}
+                0 0 0 0 ${hexToB(r.particle)}
+                0 0 0 0.4 0"/>
+      <feSpecularLighting in="hexnoise" surfaceScale="3" specularConstant="${0.4 + r.intensity * 0.6}" specularExponent="25" result="specular" lighting-color="${r.particle}">
+        <fePointLight x="100" y="20" z="120"/>
+      </feSpecularLighting>
+      <feComposite in="specular" in2="SourceGraphic" operator="in" result="specClip"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="hextint"/>
+        <feMergeNode in="specClip"/>
+      </feMerge>
+    </filter>`;
+
+    // Leather belt/boots texture
+    defs += `
+    <filter id="${uid}-leather-tex" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.12 0.04" numOctaves="5" seed="3" result="leathernoise"/>
+      <feColorMatrix type="matrix" in="leathernoise" result="leathertint"
+        values="0 0 0 0 ${hexToR(r.primary) * 0.7}
+                0 0 0 0 ${hexToG(r.primary) * 0.7}
+                0 0 0 0 ${hexToB(r.primary) * 0.7}
+                0 0 0 0.3 0"/>
+      <feComposite in="leathertint" in2="SourceGraphic" operator="in" result="leatherClip"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="leatherClip"/>
+      </feMerge>
+    </filter>`;
+
+    // Brushed metal gloves
+    defs += `
+    <filter id="${uid}-metal-tex" x="-10%" y="-10%" width="120%" height="120%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.02 0.25" numOctaves="3" seed="5" result="metalnoise"/>
+      <feSpecularLighting in="metalnoise" surfaceScale="5" specularConstant="${0.6 + r.intensity * 0.5}" specularExponent="35" result="metalspec" lighting-color="${r.particle}">
+        <fePointLight x="80" y="100" z="200"/>
+      </feSpecularLighting>
+      <feComposite in="metalspec" in2="SourceGraphic" operator="in" result="metalClip"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="metalClip"/>
+      </feMerge>
+    </filter>`;
+
+    // Subtle fabric for base clothing
+    defs += `
+    <filter id="${uid}-fabric-tex" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+      <feTurbulence type="fractalNoise" baseFrequency="0.35 0.25" numOctaves="3" seed="11" result="fabricnoise"/>
+      <feColorMatrix type="matrix" in="fabricnoise" result="fabrictint"
+        values="0 0 0 0 0.15
+                0 0 0 0 0.15
+                0 0 0 0 0.2
+                0 0 0 0.12 0"/>
+      <feComposite in="fabrictint" in2="SourceGraphic" operator="in" result="fabricClip"/>
+      <feMerge>
+        <feMergeNode in="SourceGraphic"/>
+        <feMergeNode in="fabricClip"/>
+      </feMerge>
+    </filter>`;
+
+    // Rarity glow for outer silhouette
+    defs += `
+    <filter id="${uid}-rarity-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="${4 + r.intensity * 6}" in="SourceGraphic" result="glowblur"/>
+      <feColorMatrix type="matrix" in="glowblur" result="colored"
+        values="0 0 0 0 ${hexToR(r.primary)}
+                0 0 0 0 ${hexToG(r.primary)}
+                0 0 0 0 ${hexToB(r.primary)}
+                0 0 0 ${r.intensity * 0.7} 0"/>
+      <feMerge>
+        <feMergeNode in="colored"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>`;
+  }
+
+  // -- Build body SVG --
+  const fabricFilter = textured ? `filter="url(#${uid}-fabric-tex)"` : '';
+  const chestFilter = textured ? `filter="url(#${uid}-chest-tex)"` : '';
+  const helmFilter = textured ? `filter="url(#${uid}-helm-tex)"` : '';
+  const leatherFilter = textured ? `filter="url(#${uid}-leather-tex)"` : '';
+  const metalFilter = textured ? `filter="url(#${uid}-metal-tex)"` : '';
+  const outerGlow = textured ? `filter="url(#${uid}-rarity-glow)"` : '';
+
+  let body = '';
+
+  // Platform shadow
+  body += `<ellipse cx="100" cy="326" rx="42" ry="5" fill="rgba(0,0,0,0.3)">
+    <animate attributeName="rx" values="42;39;42" dur="3.5s" repeatCount="indefinite"/>
+  </ellipse>`;
+
+  // Breathing group
+  body += `<g ${outerGlow}>
+    <animateTransform attributeName="transform" type="translate" values="0,0;0,-1.5;0,0" dur="3.5s" repeatCount="indefinite"/>`;
+
+  // -- Legs --
+  body += `<g ${fabricFilter}>
+    <path d="M82 198 L79 270 Q79 282 86 282 L94 282 Q99 282 98 276 L94 198"
+          fill="url(#${uid}-pants)" stroke="${outlineCol}" stroke-width="0.8"/>
+    <path d="M106 198 L103 270 Q103 282 110 282 L118 282 Q123 282 122 276 L120 198"
+          fill="url(#${uid}-pants)" stroke="${outlineCol}" stroke-width="0.8"/>
+  </g>`;
+
+  // -- Feet (boots) --
+  body += `<g ${leatherFilter}>
+    <path d="M76 270 L74 282 Q72 292 82 292 L96 292 Q100 292 98 284 L96 270"
+          fill="${r.primary}" stroke="${r.particle}" stroke-width="0.8" stroke-opacity="0.6"/>
+    <path d="M102 270 L100 282 Q98 292 108 292 L122 292 Q126 292 124 284 L122 270"
+          fill="${r.primary}" stroke="${r.particle}" stroke-width="0.8" stroke-opacity="0.6"/>
+    <line x1="78" y1="276" x2="96" y2="276" stroke="${r.particle}" stroke-width="1.5" stroke-opacity="0.5"/>
+    <line x1="104" y1="276" x2="122" y2="276" stroke="${r.particle}" stroke-width="1.5" stroke-opacity="0.5"/>
+  </g>`;
+
+  // -- Torso --
+  body += `<g ${fabricFilter}>
+    <path d="M68 88 Q100 82 132 88 L126 200 Q100 206 74 200 Z"
+          fill="url(#${uid}-outfit)" stroke="${outlineCol}" stroke-width="1"/>
+  </g>`;
+
+  // Collar V
+  body += `<path d="M88 88 L100 105 L112 88" fill="${SKIN}"/>
+    <path d="M86 87 L100 106 L114 87" fill="none" stroke="hsl(${HUE + 240},20%,28%)" stroke-width="1.2"/>
+    <line x1="100" y1="106" x2="100" y2="195" stroke="hsla(${HUE + 180},30%,40%,0.08)" stroke-width="0.5"/>`;
+
+  // -- Chest Armor --
+  body += `<g ${chestFilter}>
+    <path d="M72 92 Q100 86 128 92 L124 175 Q100 180 76 175 Z"
+          fill="${r.primary}" fill-opacity="0.3" stroke="${r.primary}" stroke-width="1" stroke-opacity="0.6"/>
+    <!-- Shoulder plates -->
+    <path d="M68 88 Q60 86 60 96 L70 100" fill="${r.primary}" fill-opacity="0.5" stroke="${r.particle}" stroke-width="0.5"/>
+    <path d="M132 88 Q140 86 140 96 L130 100" fill="${r.primary}" fill-opacity="0.5" stroke="${r.particle}" stroke-width="0.5"/>
+    <line x1="80" y1="115" x2="120" y2="115" stroke="${r.particle}" stroke-width="0.8" stroke-opacity="0.3"/>
+    <line x1="82" y1="140" x2="118" y2="140" stroke="${r.particle}" stroke-width="0.8" stroke-opacity="0.2"/>
+    <circle cx="100" cy="120" r="5" fill="none" stroke="${r.primary}" stroke-width="1.2" stroke-opacity="0.7"/>
+    <circle cx="100" cy="120" r="2" fill="${r.particle}" fill-opacity="0.7">
+      <animate attributeName="fill-opacity" values="0.7;0.3;0.7" dur="2s" repeatCount="indefinite"/>
+    </circle>
+  </g>`;
+
+  // -- Belt --
+  body += `<g ${leatherFilter}>
+    <rect x="72" y="188" width="56" height="14" rx="3" fill="${r.primary}" fill-opacity="0.55" stroke="${r.primary}" stroke-width="0.8"/>
+    <rect x="94" y="189" width="12" height="12" rx="2" fill="${r.particle}" fill-opacity="0.4"/>
+    <rect x="74" y="190" width="8" height="10" rx="2" fill="${r.primary}" fill-opacity="0.3" stroke="${r.particle}" stroke-width="0.3"/>
+    <rect x="118" y="190" width="8" height="10" rx="2" fill="${r.primary}" fill-opacity="0.3" stroke="${r.particle}" stroke-width="0.3"/>
+  </g>`;
+
+  // -- Arms --
+  body += `<g ${fabricFilter}>
+    <path d="M68 90 L50 94 Q44 96 43 103 L42 155 Q42 160 46 160 L58 160 L66 155 Z"
+          fill="url(#${uid}-outfit)" stroke="${outlineCol}" stroke-width="0.8"/>
+    <path d="M132 90 L150 94 Q156 96 157 103 L158 155 Q158 160 154 160 L142 160 L134 155 Z"
+          fill="url(#${uid}-outfit)" stroke="${outlineCol}" stroke-width="0.8"/>
+  </g>`;
+
+  // -- Hands (gloves) --
+  body += `<g ${metalFilter}>
+    <path d="M38 148 L38 172 Q38 178 44 178 L58 178 Q62 178 62 172 L62 148"
+          fill="${r.primary}" fill-opacity="0.5" stroke="${r.primary}" stroke-width="0.8" stroke-opacity="0.7"/>
+    <path d="M138 148 L138 172 Q138 178 144 178 L158 178 Q162 178 162 172 L162 148"
+          fill="${r.primary}" fill-opacity="0.5" stroke="${r.primary}" stroke-width="0.8" stroke-opacity="0.7"/>
+    <line x1="42" y1="170" x2="58" y2="170" stroke="${r.particle}" stroke-width="1" stroke-opacity="0.5"/>
+    <line x1="142" y1="170" x2="158" y2="170" stroke="${r.particle}" stroke-width="1" stroke-opacity="0.5"/>
+  </g>`;
+
+  // -- Neck --
+  body += `<rect x="93" y="72" width="14" height="18" rx="5" fill="${SKIN}"/>`;
+
+  // -- Head --
+  body += `<g>
+    <ellipse cx="100" cy="50" rx="21" ry="28" fill="url(#${uid}-face)" stroke="${SKIN_SH}" stroke-width="0.5"/>
+    <!-- Ears -->
+    <ellipse cx="78" cy="52" rx="4" ry="6" fill="${SKIN}" stroke="${SKIN_SH}" stroke-width="0.3"/>
+    <ellipse cx="122" cy="52" rx="4" ry="6" fill="${SKIN}" stroke="${SKIN_SH}" stroke-width="0.3"/>
+    <!-- Eyebrows -->
+    <path d="M86 40 Q90 37 96 39" stroke="${HAIR}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M104 39 Q110 37 114 40" stroke="${HAIR}" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <!-- Eye whites -->
+    <ellipse cx="91" cy="47" rx="6" ry="4.5" fill="white"/>
+    <ellipse cx="109" cy="47" rx="6" ry="4.5" fill="white"/>
+    <!-- Irises -->
+    <circle cx="92" cy="47" r="3" fill="hsl(${HUE + 180},70%,45%)"/>
+    <circle cx="110" cy="47" r="3" fill="hsl(${HUE + 180},70%,45%)"/>
+    <!-- Pupils -->
+    <circle cx="92" cy="47" r="1.5" fill="#111"/>
+    <circle cx="110" cy="47" r="1.5" fill="#111"/>
+    <!-- Highlights -->
+    <circle cx="93.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+    <circle cx="111.5" cy="45.5" r="1" fill="white" fill-opacity="0.8"/>
+    <!-- Blink -->
+    <ellipse cx="91" cy="47" rx="6.5" ry="0" fill="${SKIN}">
+      <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="109" cy="47" rx="6.5" ry="0" fill="${SKIN}">
+      <animate attributeName="ry" values="0;0;0;5;0;0;0;0;0;0;0;0" dur="5s" repeatCount="indefinite"/>
+    </ellipse>
+    <!-- Nose -->
+    <path d="M98 52 Q100 56 102 52" stroke="${SKIN_SH}" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+    <!-- Mouth -->
+    <path d="M95 60 Q100 63 105 60" stroke="${SKIN_SH}" stroke-width="0.8" fill="none" stroke-linecap="round"/>
+    <!-- Hair -->
+    <path d="M79 44 Q78 28 100 22 Q122 28 121 44 Q119 32 100 28 Q81 32 79 44" fill="url(#${uid}-hair)"/>
+  </g>`;
+
+  // -- Helmet --
+  body += `<g ${helmFilter}>
+    <path d="M77 28 Q100 10 123 28 L125 62 Q100 72 75 62 Z"
+          fill="${r.primary}" fill-opacity="0.55" stroke="${r.primary}" stroke-width="1.2"/>
+    <rect x="80" y="44" width="40" height="8" rx="4" fill="hsl(${HUE + 180},90%,55%)" fill-opacity="0.85">
+      <animate attributeName="fill-opacity" values="0.85;0.5;0.85" dur="3s" repeatCount="indefinite"/>
+    </rect>
+  </g>`;
+
+  // -- Rarity glow particles (textured version only) --
+  if (textured && r.intensity >= 0.5) {
+    body += `<g filter="url(#${uid}-bloom)">`;
+    const particleCount = Math.round(4 + r.intensity * 6);
+    for (let i = 0; i < particleCount; i++) {
+      const angle = (i * 360 / particleCount) * Math.PI / 180;
+      const px = 100 + Math.cos(angle) * (42 + (i % 3) * 6);
+      const py = 150 + Math.sin(angle) * (65 + (i % 3) * 8);
+      const dur = (2.2 + i * 0.35).toFixed(1);
+      body += `<circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="1.5" fill="${r.particle}" fill-opacity="0.4">
+        <animate attributeName="cy" values="${py.toFixed(1)};${(py - 14).toFixed(1)};${py.toFixed(1)}" dur="${dur}s" repeatCount="indefinite"/>
+        <animate attributeName="fill-opacity" values="0.4;0;0.4" dur="${dur}s" repeatCount="indefinite"/>
+      </circle>`;
+    }
+    body += `</g>`;
+  }
+
+  // Close breathing group
+  body += `</g>`;
+
+  return `<svg viewBox="0 0 200 340" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 4px 20px rgba(0,0,0,0.25))">
+    <defs>${defs}</defs>
+    ${body}
+  </svg>`;
+}
+
+// Hex color to 0-1 float helpers
+function hexToR(hex) { return parseInt(hex.slice(1, 3), 16) / 255; }
+function hexToG(hex) { return parseInt(hex.slice(3, 5), 16) / 255; }
+function hexToB(hex) { return parseInt(hex.slice(5, 7), 16) / 255; }
+
+// Render all six variants
+document.getElementById('common-flat').innerHTML = buildAvatar('COMMON', false);
+document.getElementById('common-tex').innerHTML  = buildAvatar('COMMON', true);
+document.getElementById('rare-flat').innerHTML    = buildAvatar('RARE', false);
+document.getElementById('rare-tex').innerHTML     = buildAvatar('RARE', true);
+document.getElementById('unique-flat').innerHTML  = buildAvatar('UNIQUE', false);
+document.getElementById('unique-tex').innerHTML   = buildAvatar('UNIQUE', true);
+</script>
+</body>
+</html>

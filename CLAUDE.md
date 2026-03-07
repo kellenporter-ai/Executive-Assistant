@@ -14,7 +14,8 @@ Do NOT store personal context here. Load what you need from these files:
 
 ## Available Resources
 
-- **Skills & tools:** check `skills/` for custom tools and API connections (see Skill Format below)
+- **Media assets:** check `assets/` for reusable media (textures, images, etc.) available across projects
+- **Skills & tools:** check `.claude/skills/` for invocable skills (auto-discovered by Claude Code). Legacy copies also in `skills/`
 - **Sub-agents:** check `agents/` for agents running on cheaper/faster models
 - **Projects:** check `projects/` for ongoing work and per-project context
 - **Decision log:** check `decisions/` before making or revisiting major choices
@@ -36,13 +37,13 @@ Do NOT store personal context here. Load what you need from these files:
 
 ## Skill Format (MANDATORY)
 
-Every skill MUST be saved in `skills/` as a `.md` file with this exact structure:
+Every skill MUST be saved in `.claude/skills/<skill-name>/SKILL.md` with this exact structure (this makes them auto-discovered and user-invocable via `/skill-name`):
 
 ```yaml
 ---
 name: skill-name
 description: When and why to use this skill
-model: claude-sonnet-4-5-20250514  # or claude-opus-4-6, claude-haiku-4-5-20251001, etc.
+model: claude-sonnet-4-6  # or claude-opus-4-6, claude-haiku-4-5-20251001, etc.
 ---
 ```
 

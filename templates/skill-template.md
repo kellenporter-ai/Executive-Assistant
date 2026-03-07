@@ -1,7 +1,7 @@
 ---
 name: skill-name-here
 description: Describe exactly when and why this skill should be used.
-model: claude-sonnet-4-5-20250514
+model: claude-sonnet-4-6
 ---
 
 # Skill Name

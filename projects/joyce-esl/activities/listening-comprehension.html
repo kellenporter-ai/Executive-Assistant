@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Listening Practice</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #1a1a2e;
+            --bg2: #16213e;
+            --panel: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --error: #ff3366;
+            --text: #ffffff;
+            --muted: #8899aa;
+            --card-bg: rgba(255,255,255,0.07);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .title-area h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+        .stats { display: flex; gap: 16px; align-items: center; font-size: 0.85rem; }
+        .tier-badge { background: var(--accent); color: #000; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .streak { color: #ff9500; font-weight: 700; }
+        .accuracy-stat { color: var(--muted); }
+
+        .xp-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+        .xp-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #7c3aed); transition: width 0.4s ease; border-radius: 0 3px 3px 0; }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 0;
+            gap: 20px;
+            position: relative;
+        }
+
+        .prompt { font-size: 1rem; color: var(--muted); text-align: center; }
+
+        .speaker-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .play-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent);
+            background: rgba(0, 212, 255, 0.1);
+            color: var(--accent);
+            font-size: 2rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
+            outline: none;
+        }
+
+        .play-btn:hover, .play-btn:focus-visible {
+            background: rgba(0, 212, 255, 0.2);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.3);
+        }
+
+        .play-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 4px; }
+        .play-btn:active { transform: scale(0.95); }
+
+        .play-btn.speaking {
+            animation: pulse-ring 1s ease infinite;
+            background: rgba(0, 212, 255, 0.25);
+        }
+
+        .speed-toggle {
+            display: flex;
+            gap: 8px;
+        }
+
+        .speed-btn {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: border-color 0.2s, color 0.2s;
+            outline: none;
+        }
+
+        .speed-btn.active { border-color: var(--accent); color: var(--accent); }
+        .speed-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .mode-label {
+            font-size: 0.8rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .choices.single-col {
+            grid-template-columns: 1fr;
+            max-width: 400px;
+        }
+
+        .choice-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 1.05rem;
+            font-weight: 600;
+            padding: 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            min-height: 54px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            outline: none;
+        }
+
+        .choice-btn:hover, .choice-btn:focus-visible {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .choice-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        .choice-btn:active { transform: scale(0.97); }
+        .choice-btn.correct { border-color: var(--success); background: rgba(0, 255, 136, 0.15); animation: pulse-green 0.4s ease; }
+        .choice-btn.wrong { border-color: var(--error); background: rgba(255, 51, 102, 0.15); animation: shake 0.4s ease; }
+        .choice-btn.reveal { border-color: var(--success); background: rgba(0, 255, 136, 0.1); }
+        .choice-btn[disabled] { pointer-events: none; opacity: 0.7; }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-height: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.show { opacity: 1; }
+        .feedback.correct-fb { color: var(--success); }
+        .feedback.wrong-fb { color: var(--error); }
+
+        .answer-reveal {
+            font-size: 0.95rem;
+            color: var(--success);
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center;
+        }
+
+        .answer-reveal.show { opacity: 1; }
+
+        .no-speech-warning {
+            background: rgba(255, 51, 102, 0.1);
+            border: 1px solid var(--error);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            max-width: 400px;
+            color: var(--error);
+        }
+
+        .level-up-banner {
+            position: fixed; top: 50%; left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+            border: 2px solid var(--accent); border-radius: 20px;
+            padding: 32px 48px; text-align: center; z-index: 100;
+            opacity: 0; pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        .level-up-banner.show { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+        .level-up-banner h2 { font-size: 1.6rem; margin-bottom: 8px; }
+        .level-up-banner .new-tier { font-size: 1.2rem; color: var(--accent); font-weight: 800; }
+
+        footer {
+            padding: 10px 20px; display: flex; justify-content: space-between;
+            align-items: center; border-top: 1px solid var(--border); flex-shrink: 0;
+        }
+
+        .reset-btn {
+            background: none; border: 1px solid var(--border); color: var(--muted);
+            padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .reset-btn:hover, .reset-btn:focus-visible { border-color: var(--error); color: var(--error); }
+        .reset-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 2px; }
+        .total-stat { font-size: 0.8rem; color: var(--muted); }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(0,255,136,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(0, 212, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 212, 255, 0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+        }
+
+        @media (max-width: 500px) {
+            .play-btn { width: 64px; height: 64px; font-size: 1.5rem; }
+            .choice-btn { padding: 12px; font-size: 0.95rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-area"><h1>Listening Practice</h1></div>
+        <div class="stats">
+            <span class="streak" id="streak" aria-label="Current streak">0x</span>
+            <span class="tier-badge" id="tierBadge" aria-label="Current tier">ROOKIE</span>
+            <span class="accuracy-stat" id="accuracy" aria-label="Accuracy">0%</span>
+        </div>
+    </header>
+
+    <div class="xp-bar-container" role="progressbar" aria-label="Progress to next tier" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+        <div class="xp-bar" id="xpBar" style="width: 0%"></div>
+    </div>
+
+    <main class="game-area" id="gameArea">
+        <!-- Content injected by JS -->
+    </main>
+
+    <div class="level-up-banner" id="levelBanner" role="alert">
+        <h2>LEVEL UP!</h2>
+        <div class="new-tier" id="newTierLabel"></div>
+    </div>
+
+    <footer>
+        <button class="reset-btn" id="resetBtn" aria-label="Reset all progress">Reset Progress</button>
+        <span class="total-stat" id="totalStat">0 / 0</span>
+    </footer>
+
+    <script>
+    // ==================== ADAPTIVE ENGINE ====================
+    class AdaptiveEngine {
+        constructor(storageKey, questionBank) {
+            this.storageKey = storageKey; this.bank = questionBank;
+            this.promoteThreshold = 4; this.demoteThreshold = 2;
+            this.tierLabels = { 1: 'Rookie', 2: 'Starter', 3: 'Pro', 4: 'All-Star', 5: 'Legend' };
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.tier = data.tier || 1; this.correctStreak = data.correctStreak || 0;
+                this.wrongStreak = data.wrongStreak || 0; this.totalCorrect = data.totalCorrect || 0;
+                this.totalAttempts = data.totalAttempts || 0; this.seen = data.seen || {};
+            } else {
+                this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+                this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            }
+        }
+        get tierLabel() { return this.tierLabels[this.tier] || 'Rookie'; }
+        get accuracy() { return this.totalAttempts === 0 ? 0 : Math.round((this.totalCorrect / this.totalAttempts) * 100); }
+        next() {
+            const tierItems = this.bank[this.tier];
+            if (!tierItems || tierItems.length === 0) return null;
+            if (!this.seen[this.tier]) this.seen[this.tier] = [];
+            if (this.seen[this.tier].length >= tierItems.length) this.seen[this.tier] = [];
+            const unseenIndices = tierItems.map((_, i) => i).filter(i => !this.seen[this.tier].includes(i));
+            const pick = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+            this.seen[this.tier].push(pick);
+            return { ...tierItems[pick], tier: this.tier, tierLabel: this.tierLabel };
+        }
+        answer(correct) {
+            this.totalAttempts++;
+            if (correct) {
+                this.totalCorrect++; this.correctStreak++; this.wrongStreak = 0;
+                if (this.correctStreak >= this.promoteThreshold && this.tier < 5) {
+                    this.tier++; this.correctStreak = 0; this.save();
+                    return { promoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            } else {
+                this.wrongStreak++; this.correctStreak = 0;
+                if (this.wrongStreak >= this.demoteThreshold && this.tier > 1) {
+                    this.tier--; this.wrongStreak = 0; this.save();
+                    return { demoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            }
+            this.save();
+            return { promoted: false, demoted: false, tier: this.tier, tierLabel: this.tierLabel };
+        }
+        save() {
+            localStorage.setItem(this.storageKey, JSON.stringify({
+                tier: this.tier, correctStreak: this.correctStreak, wrongStreak: this.wrongStreak,
+                totalCorrect: this.totalCorrect, totalAttempts: this.totalAttempts, seen: this.seen
+            }));
+        }
+        reset() {
+            this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+            this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            localStorage.removeItem(this.storageKey);
+        }
+    }
+
+    // ==================== QUESTION BANK ====================
+    // type: 'word' = hear a word, pick the correct spelling
+    // type: 'sentence' = hear a sentence, pick what was said
+    // type: 'question' = hear a question, pick the correct answer
+    const questionBank = {
+        1: [
+            { type: 'word', speak: 'apple', answer: 'apple', options: ['apple', 'table', 'purple', 'able'] },
+            { type: 'word', speak: 'school', answer: 'school', options: ['school', 'cool', 'stool', 'skull'] },
+            { type: 'word', speak: 'water', answer: 'water', options: ['water', 'winter', 'waiter', 'weather'] },
+            { type: 'word', speak: 'happy', answer: 'happy', options: ['happy', 'heavy', 'hungry', 'hurry'] },
+            { type: 'word', speak: 'friend', answer: 'friend', options: ['friend', 'front', 'found', 'fried'] },
+            { type: 'word', speak: 'morning', answer: 'morning', options: ['morning', 'moving', 'moaning', 'meaning'] },
+            { type: 'word', speak: 'teacher', answer: 'teacher', options: ['teacher', 'together', 'toaster', 'catcher'] },
+            { type: 'word', speak: 'window', answer: 'window', options: ['window', 'winter', 'wonder', 'winner'] },
+            { type: 'word', speak: 'yellow', answer: 'yellow', options: ['yellow', 'yelling', 'pillow', 'fellow'] },
+            { type: 'word', speak: 'number', answer: 'number', options: ['number', 'member', 'lumber', 'November'] },
+            { type: 'sentence', speak: 'I am a student.', answer: 'I am a student.', options: ['I am a student.', 'I am a teacher.', 'I am a parent.', 'I have a student.'] },
+            { type: 'sentence', speak: 'The cat is black.', answer: 'The cat is black.', options: ['The cat is black.', 'The hat is black.', 'The cat is back.', 'The car is black.'] },
+            { type: 'sentence', speak: 'She has a dog.', answer: 'She has a dog.', options: ['She has a dog.', 'She has a doll.', 'He has a dog.', 'She had a dog.'] },
+            { type: 'sentence', speak: 'I like pizza.', answer: 'I like pizza.', options: ['I like pizza.', 'I like pasta.', 'I liked pizza.', 'He likes pizza.'] },
+            { type: 'sentence', speak: 'We go to school.', answer: 'We go to school.', options: ['We go to school.', 'We go to the store.', 'We went to school.', 'He goes to school.'] },
+            { type: 'question', speak: 'What color is the sky?', answer: 'Blue', options: ['Blue', 'Red', 'Green', 'Yellow'] },
+            { type: 'question', speak: 'How many legs does a dog have?', answer: 'Four', options: ['Four', 'Two', 'Six', 'Three'] },
+            { type: 'question', speak: 'What do you drink when you are thirsty?', answer: 'Water', options: ['Water', 'Bread', 'Chair', 'Paper'] },
+            { type: 'question', speak: 'Where do students go to learn?', answer: 'School', options: ['School', 'Store', 'Park', 'Beach'] },
+            { type: 'question', speak: 'What meal do you eat in the morning?', answer: 'Breakfast', options: ['Breakfast', 'Lunch', 'Dinner', 'Snack'] },
+            { type: 'word', speak: 'pencil', answer: 'pencil', options: ['pencil', 'petal', 'people', 'puzzle'] },
+            { type: 'word', speak: 'brother', answer: 'brother', options: ['brother', 'bother', 'butter', 'better'] },
+        ],
+        2: [
+            { type: 'sentence', speak: 'She is reading a book in the library.', answer: 'She is reading a book in the library.', options: ['She is reading a book in the library.', 'She is writing a book in the library.', 'She is reading a book in the kitchen.', 'He is reading a book in the library.'] },
+            { type: 'sentence', speak: 'The boys are playing soccer after school.', answer: 'The boys are playing soccer after school.', options: ['The boys are playing soccer after school.', 'The boys are playing basketball after school.', 'The boys are playing soccer before school.', 'The girls are playing soccer after school.'] },
+            { type: 'sentence', speak: 'I usually eat lunch at twelve thirty.', answer: 'I usually eat lunch at twelve thirty.', options: ['I usually eat lunch at twelve thirty.', 'I always eat lunch at twelve thirty.', 'I usually eat dinner at twelve thirty.', 'I usually eat lunch at eleven thirty.'] },
+            { type: 'question', speak: 'What season comes after summer?', answer: 'Fall', options: ['Fall', 'Spring', 'Winter', 'Summer'] },
+            { type: 'question', speak: 'If today is Monday, what day is tomorrow?', answer: 'Tuesday', options: ['Tuesday', 'Wednesday', 'Sunday', 'Saturday'] },
+            { type: 'question', speak: 'What do you use to write on paper?', answer: 'A pen or pencil', options: ['A pen or pencil', 'A ruler', 'An eraser', 'A notebook'] },
+            { type: 'sentence', speak: 'My mother works at a hospital.', answer: 'My mother works at a hospital.', options: ['My mother works at a hospital.', 'My mother works at a school.', 'My father works at a hospital.', 'My mother worked at a hospital.'] },
+            { type: 'sentence', speak: 'They went to the store to buy groceries.', answer: 'They went to the store to buy groceries.', options: ['They went to the store to buy groceries.', 'They went to the park to buy groceries.', 'They went to the store to buy clothes.', 'He went to the store to buy groceries.'] },
+            { type: 'question', speak: 'How many months are there in a year?', answer: 'Twelve', options: ['Twelve', 'Ten', 'Seven', 'Fourteen'] },
+            { type: 'question', speak: 'What do you wear on your feet?', answer: 'Shoes', options: ['Shoes', 'Gloves', 'A hat', 'A belt'] },
+            { type: 'sentence', speak: 'He takes the bus to school every morning.', answer: 'He takes the bus to school every morning.', options: ['He takes the bus to school every morning.', 'He takes the train to school every morning.', 'He takes the bus to work every morning.', 'She takes the bus to school every morning.'] },
+            { type: 'sentence', speak: 'We have a test on Friday.', answer: 'We have a test on Friday.', options: ['We have a test on Friday.', 'We have a test on Monday.', 'We had a test on Friday.', 'We have a party on Friday.'] },
+            { type: 'question', speak: 'What language are you learning right now?', answer: 'English', options: ['English', 'Math', 'Science', 'History'] },
+            { type: 'sentence', speak: 'The weather is cloudy and cold today.', answer: 'The weather is cloudy and cold today.', options: ['The weather is cloudy and cold today.', 'The weather is sunny and hot today.', 'The weather is cloudy and warm today.', 'The weather was cloudy and cold today.'] },
+            { type: 'question', speak: 'Where do you go when you are sick?', answer: 'The doctor', options: ['The doctor', 'The store', 'The park', 'The school'] },
+            { type: 'sentence', speak: 'She forgot her homework at home.', answer: 'She forgot her homework at home.', options: ['She forgot her homework at home.', 'She forgot her lunchbox at home.', 'He forgot her homework at home.', 'She finished her homework at home.'] },
+            { type: 'word', speak: 'environment', answer: 'environment', options: ['environment', 'entertainment', 'equipment', 'experiment'] },
+            { type: 'word', speak: 'important', answer: 'important', options: ['important', 'impossible', 'impatient', 'imported'] },
+            { type: 'word', speak: 'different', answer: 'different', options: ['different', 'difficult', 'distance', 'direction'] },
+            { type: 'word', speak: 'beautiful', answer: 'beautiful', options: ['beautiful', 'bountiful', 'butterfly', 'basketball'] },
+        ],
+        3: [
+            { type: 'sentence', speak: 'Although it was raining, they decided to go for a walk.', answer: 'Although it was raining, they decided to go for a walk.', options: ['Although it was raining, they decided to go for a walk.', 'Because it was raining, they decided to stay home.', 'Although it was snowing, they decided to go for a walk.', 'Although it was raining, they decided to go for a run.'] },
+            { type: 'sentence', speak: 'The teacher asked the students to work in groups.', answer: 'The teacher asked the students to work in groups.', options: ['The teacher asked the students to work in groups.', 'The teacher asked the students to work alone.', 'The teacher told the students to work in groups.', 'The principal asked the students to work in groups.'] },
+            { type: 'question', speak: 'What would you do if you found a wallet on the ground?', answer: 'Return it to the owner or turn it in', options: ['Return it to the owner or turn it in', 'Keep the money inside', 'Leave it on the ground', 'Throw it away'] },
+            { type: 'question', speak: 'Why is it important to get enough sleep?', answer: 'It helps your body and mind rest and recover', options: ['It helps your body and mind rest and recover', 'It makes you hungry', 'It helps you run faster', 'It makes school easier to skip'] },
+            { type: 'sentence', speak: 'He has been studying English for two years.', answer: 'He has been studying English for two years.', options: ['He has been studying English for two years.', 'He has been studying math for two years.', 'He studied English for two years.', 'He has been teaching English for two years.'] },
+            { type: 'sentence', speak: 'If I had more time, I would learn to play guitar.', answer: 'If I had more time, I would learn to play guitar.', options: ['If I had more time, I would learn to play guitar.', 'If I had more money, I would learn to play guitar.', 'If I had more time, I would learn to play piano.', 'When I have more time, I will learn to play guitar.'] },
+            { type: 'question', speak: 'Can you explain the difference between weather and climate?', answer: 'Weather is daily conditions; climate is long-term patterns', options: ['Weather is daily conditions; climate is long-term patterns', 'They mean the same thing', 'Climate is about clouds; weather is about rain', 'Weather is hot; climate is cold'] },
+            { type: 'sentence', speak: 'The students were asked to present their projects in front of the class.', answer: 'The students were asked to present their projects in front of the class.', options: ['The students were asked to present their projects in front of the class.', 'The students were asked to write their projects in front of the class.', 'The students were asked to present their homework in front of the class.', 'The teachers were asked to present their projects in front of the class.'] },
+            { type: 'question', speak: 'What is the main idea of a paragraph?', answer: 'The most important point the author is making', options: ['The most important point the author is making', 'The first word of the paragraph', 'The longest sentence', 'The title of the book'] },
+            { type: 'sentence', speak: 'She not only finished her work early but also helped her classmates.', answer: 'She not only finished her work early but also helped her classmates.', options: ['She not only finished her work early but also helped her classmates.', 'She finished her work early and went home.', 'She not only finished her work late but also helped her classmates.', 'He not only finished his work early but also helped his classmates.'] },
+            { type: 'word', speak: 'consequence', answer: 'consequence', options: ['consequence', 'confidence', 'conference', 'conscience'] },
+            { type: 'word', speak: 'opportunity', answer: 'opportunity', options: ['opportunity', 'operation', 'opposition', 'optimistic'] },
+            { type: 'word', speak: 'responsible', answer: 'responsible', options: ['responsible', 'reasonable', 'respectable', 'restaurant'] },
+            { type: 'question', speak: 'What does it mean to summarize something?', answer: 'To give a short version of the main points', options: ['To give a short version of the main points', 'To copy it word for word', 'To make it longer', 'To translate it'] },
+            { type: 'sentence', speak: 'Before the test, make sure you review all your notes.', answer: 'Before the test, make sure you review all your notes.', options: ['Before the test, make sure you review all your notes.', 'After the test, make sure you review all your notes.', 'Before the game, make sure you review all your notes.', 'Before the test, make sure you throw away all your notes.'] },
+            { type: 'question', speak: 'What is a synonym for the word "happy"?', answer: 'Glad or joyful', options: ['Glad or joyful', 'Sad or upset', 'Angry or mad', 'Tired or sleepy'] },
+            { type: 'sentence', speak: 'The experiment showed that plants need sunlight to grow.', answer: 'The experiment showed that plants need sunlight to grow.', options: ['The experiment showed that plants need sunlight to grow.', 'The experiment showed that plants need darkness to grow.', 'The experiment showed that animals need sunlight to grow.', 'The teacher showed that plants need sunlight to grow.'] },
+            { type: 'word', speak: 'investigate', answer: 'investigate', options: ['investigate', 'intimidate', 'integrate', 'immigrate'] },
+            { type: 'word', speak: 'demonstrate', answer: 'demonstrate', options: ['demonstrate', 'determinate', 'decorate', 'desperate'] },
+            { type: 'question', speak: 'What should you do if you don\'t understand something in class?', answer: 'Ask the teacher to explain it again', options: ['Ask the teacher to explain it again', 'Ignore it and move on', 'Leave the classroom', 'Copy from a friend'] },
+        ],
+        4: [
+            { type: 'sentence', speak: 'Despite the challenges they faced, the team managed to complete the project on schedule.', answer: 'Despite the challenges they faced, the team managed to complete the project on schedule.', options: ['Despite the challenges they faced, the team managed to complete the project on schedule.', 'Because of the challenges they faced, the team failed to complete the project.', 'Despite the challenges they faced, the team decided to quit the project.', 'Despite the success they had, the team managed to complete the project on schedule.'] },
+            { type: 'question', speak: 'What is the difference between a fact and an opinion?', answer: 'A fact can be proven; an opinion is a personal belief', options: ['A fact can be proven; an opinion is a personal belief', 'Facts are in books; opinions are spoken', 'Facts are always true; opinions are always false', 'There is no difference'] },
+            { type: 'sentence', speak: 'Had she arrived earlier, she would have been able to get a better seat.', answer: 'Had she arrived earlier, she would have been able to get a better seat.', options: ['Had she arrived earlier, she would have been able to get a better seat.', 'She arrived early and got the best seat.', 'Had she arrived later, she would have been able to get a better seat.', 'Had she arrived earlier, she would have left immediately.'] },
+            { type: 'question', speak: 'Why is it important to consider multiple perspectives when forming an opinion?', answer: 'It helps you understand the full picture and make informed decisions', options: ['It helps you understand the full picture and make informed decisions', 'It wastes time', 'It makes you confused', 'It is not important'] },
+            { type: 'sentence', speak: 'The documentary highlighted the impact of pollution on marine ecosystems.', answer: 'The documentary highlighted the impact of pollution on marine ecosystems.', options: ['The documentary highlighted the impact of pollution on marine ecosystems.', 'The documentary highlighted the benefits of pollution on marine ecosystems.', 'The movie highlighted the impact of pollution on marine ecosystems.', 'The documentary ignored the impact of pollution on marine ecosystems.'] },
+            { type: 'word', speak: 'unprecedented', answer: 'unprecedented', options: ['unprecedented', 'unprocessed', 'unpredicted', 'unprotected'] },
+            { type: 'word', speak: 'significant', answer: 'significant', options: ['significant', 'sufficient', 'sacrifice', 'scientific'] },
+            { type: 'word', speak: 'controversy', answer: 'controversy', options: ['controversy', 'contribution', 'conversation', 'concentration'] },
+            { type: 'sentence', speak: 'It is essential that students develop critical thinking skills from an early age.', answer: 'It is essential that students develop critical thinking skills from an early age.', options: ['It is essential that students develop critical thinking skills from an early age.', 'It is optional that students develop critical thinking skills.', 'It is essential that teachers develop critical thinking skills from an early age.', 'It is essential that students avoid critical thinking skills from an early age.'] },
+            { type: 'question', speak: 'What does it mean to "read between the lines"?', answer: 'To understand a hidden or implied meaning', options: ['To understand a hidden or implied meaning', 'To read very slowly', 'To skip every other line', 'To read out loud'] },
+            { type: 'sentence', speak: 'The committee recommended that the school implement a new attendance policy.', answer: 'The committee recommended that the school implement a new attendance policy.', options: ['The committee recommended that the school implement a new attendance policy.', 'The committee demanded that the school close immediately.', 'The principal recommended that the school implement a new attendance policy.', 'The committee recommended that the school remove the attendance policy.'] },
+            { type: 'word', speak: 'elaborate', answer: 'elaborate', options: ['elaborate', 'eliminate', 'elevate', 'evaluate'] },
+            { type: 'word', speak: 'reluctant', answer: 'reluctant', options: ['reluctant', 'redundant', 'relevant', 'resilient'] },
+            { type: 'question', speak: 'How can context clues help you understand a new word?', answer: 'The surrounding words give hints about the meaning', options: ['The surrounding words give hints about the meaning', 'You should always use a dictionary instead', 'Context clues are not helpful', 'You guess randomly'] },
+            { type: 'sentence', speak: 'Neither the students nor the teacher was prepared for the fire drill.', answer: 'Neither the students nor the teacher was prepared for the fire drill.', options: ['Neither the students nor the teacher was prepared for the fire drill.', 'Both the students and the teacher were prepared for the fire drill.', 'Neither the students nor the teacher enjoyed the fire drill.', 'Either the students or the teacher was prepared for the fire drill.'] },
+            { type: 'sentence', speak: 'By the time the ambulance arrived, the paramedics had already been called.', answer: 'By the time the ambulance arrived, the paramedics had already been called.', options: ['By the time the ambulance arrived, the paramedics had already been called.', 'Before the ambulance arrived, nobody called the paramedics.', 'By the time the police arrived, the paramedics had already been called.', 'By the time the ambulance arrived, the paramedics had already left.'] },
+            { type: 'word', speak: 'exaggerate', answer: 'exaggerate', options: ['exaggerate', 'excavate', 'evaporate', 'extravagant'] },
+            { type: 'word', speak: 'distinguish', answer: 'distinguish', options: ['distinguish', 'diminish', 'distribute', 'discipline'] },
+            { type: 'question', speak: 'What is the purpose of a thesis statement in an essay?', answer: 'To state the main argument or point of the essay', options: ['To state the main argument or point of the essay', 'To list all the vocabulary words', 'To introduce the author', 'To end the essay'] },
+            { type: 'sentence', speak: 'The research suggests that regular exercise significantly improves mental health.', answer: 'The research suggests that regular exercise significantly improves mental health.', options: ['The research suggests that regular exercise significantly improves mental health.', 'The research proves that exercise cures all diseases.', 'The research suggests that regular sleep significantly improves mental health.', 'The teacher suggests that regular exercise significantly improves mental health.'] },
+        ],
+        5: [
+            { type: 'sentence', speak: 'Notwithstanding the considerable opposition, the amendment was ratified by a narrow margin.', answer: 'Notwithstanding the considerable opposition, the amendment was ratified by a narrow margin.', options: ['Notwithstanding the considerable opposition, the amendment was ratified by a narrow margin.', 'Because of the considerable support, the amendment was ratified easily.', 'Notwithstanding the considerable opposition, the amendment was rejected.', 'Notwithstanding the considerable support, the amendment was ratified by a narrow margin.'] },
+            { type: 'question', speak: 'How does the author\'s use of irony contribute to the overall theme of the text?', answer: 'It highlights contradictions and deepens the reader\'s understanding', options: ['It highlights contradictions and deepens the reader\'s understanding', 'It makes the text funnier', 'It has no effect on the theme', 'It confuses the reader on purpose'] },
+            { type: 'sentence', speak: 'The unprecedented nature of the crisis necessitated a comprehensive reevaluation of existing protocols.', answer: 'The unprecedented nature of the crisis necessitated a comprehensive reevaluation of existing protocols.', options: ['The unprecedented nature of the crisis necessitated a comprehensive reevaluation of existing protocols.', 'The common nature of the crisis necessitated minor adjustments.', 'The unprecedented nature of the celebration necessitated a comprehensive reevaluation.', 'The unprecedented nature of the crisis eliminated the need for existing protocols.'] },
+            { type: 'word', speak: 'juxtaposition', answer: 'juxtaposition', options: ['juxtaposition', 'justification', 'jurisdiction', 'jurisprudence'] },
+            { type: 'word', speak: 'corroborate', answer: 'corroborate', options: ['corroborate', 'collaborate', 'commemorate', 'communicate'] },
+            { type: 'word', speak: 'meticulous', answer: 'meticulous', options: ['meticulous', 'miraculous', 'methodical', 'metaphorical'] },
+            { type: 'question', speak: 'In what way does the concept of "unreliable narrator" affect interpretation of a story?', answer: 'It means the reader must question whether the narrator is telling the truth', options: ['It means the reader must question whether the narrator is telling the truth', 'It means the story is not worth reading', 'It means the narrator is always lying', 'It has no effect on interpretation'] },
+            { type: 'sentence', speak: 'The findings of the longitudinal study corroborated the hypothesis that socioeconomic factors significantly influence academic outcomes.', answer: 'The findings of the longitudinal study corroborated the hypothesis that socioeconomic factors significantly influence academic outcomes.', options: ['The findings of the longitudinal study corroborated the hypothesis that socioeconomic factors significantly influence academic outcomes.', 'The findings contradicted the hypothesis about socioeconomic factors.', 'The findings of the short study corroborated the hypothesis.', 'The findings of the longitudinal study were inconclusive.'] },
+            { type: 'sentence', speak: 'Were it not for the intervention of the mediator, the negotiations would have collapsed entirely.', answer: 'Were it not for the intervention of the mediator, the negotiations would have collapsed entirely.', options: ['Were it not for the intervention of the mediator, the negotiations would have collapsed entirely.', 'The mediator was not needed because negotiations went smoothly.', 'Were it not for the intervention of the judge, the negotiations would have collapsed.', 'Because of the mediator, the negotiations collapsed entirely.'] },
+            { type: 'word', speak: 'ambivalent', answer: 'ambivalent', options: ['ambivalent', 'ambitious', 'ambiguous', 'equivalent'] },
+            { type: 'word', speak: 'provocative', answer: 'provocative', options: ['provocative', 'productive', 'progressive', 'protective'] },
+            { type: 'question', speak: 'What rhetorical strategy is being used when a speaker presents a counterargument and then refutes it?', answer: 'Anticipating and addressing objections to strengthen their argument', options: ['Anticipating and addressing objections to strengthen their argument', 'Admitting they are wrong', 'Changing the topic', 'Confusing the audience'] },
+            { type: 'sentence', speak: 'The subtle interplay between economic policy and social welfare underscores the complexity of governance.', answer: 'The subtle interplay between economic policy and social welfare underscores the complexity of governance.', options: ['The subtle interplay between economic policy and social welfare underscores the complexity of governance.', 'Economic policy has nothing to do with social welfare.', 'The obvious connection between economic policy and social welfare simplifies governance.', 'The subtle interplay between foreign policy and social welfare underscores the complexity of governance.'] },
+            { type: 'word', speak: 'scrutinize', answer: 'scrutinize', options: ['scrutinize', 'summarize', 'sterilize', 'symbolize'] },
+            { type: 'word', speak: 'phenomenon', answer: 'phenomenon', options: ['phenomenon', 'philosophy', 'photography', 'philanthropy'] },
+            { type: 'question', speak: 'How does an author establish credibility, also known as ethos, in persuasive writing?', answer: 'By demonstrating expertise, using reliable sources, and maintaining a fair tone', options: ['By demonstrating expertise, using reliable sources, and maintaining a fair tone', 'By using emotional language only', 'By writing longer paragraphs', 'By avoiding any evidence'] },
+            { type: 'sentence', speak: 'Insofar as the preliminary data is concerned, the results appear promising but warrant further investigation.', answer: 'Insofar as the preliminary data is concerned, the results appear promising but warrant further investigation.', options: ['Insofar as the preliminary data is concerned, the results appear promising but warrant further investigation.', 'The preliminary data conclusively proves the hypothesis.', 'Insofar as the final data is concerned, the results are disappointing.', 'The preliminary data is irrelevant to the results.'] },
+            { type: 'sentence', speak: 'The paradox of choice suggests that having too many options can lead to decision paralysis rather than satisfaction.', answer: 'The paradox of choice suggests that having too many options can lead to decision paralysis rather than satisfaction.', options: ['The paradox of choice suggests that having too many options can lead to decision paralysis rather than satisfaction.', 'Having more choices always leads to greater happiness.', 'The paradox of choice suggests that fewer options cause decision paralysis.', 'The paradox of choice is not supported by any evidence.'] },
+            { type: 'word', speak: 'formidable', answer: 'formidable', options: ['formidable', 'favorable', 'fashionable', 'fundamental'] },
+            { type: 'word', speak: 'resilient', answer: 'resilient', options: ['resilient', 'resistant', 'relevant', 'redundant'] },
+        ]
+    };
+
+    // ==================== SPEECH SYNTHESIS ====================
+    const synth = window.speechSynthesis;
+    let speechSupported = 'speechSynthesis' in window;
+    let speechRate = 0.85;
+    let selectedVoice = null;
+
+    function loadVoices() {
+        if (!speechSupported) return;
+        const voices = synth.getVoices();
+        if (voices.length === 0) return;
+        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google')) ||
+                        voices.find(v => v.lang === 'en-US') ||
+                        voices.find(v => v.lang.startsWith('en-US')) ||
+                        voices.find(v => v.lang.startsWith('en')) ||
+                        voices[0];
+    }
+
+    // Try to load voices now and on voiceschanged
+    loadVoices();
+    if (synth.onvoiceschanged !== undefined) {
+        synth.addEventListener('voiceschanged', loadVoices);
+    }
+
+    function speak(text, callback) {
+        if (!speechSupported) return;
+
+        // Try loading voices on every speak call (handles lazy-loading browsers)
+        if (!selectedVoice) loadVoices();
+
+        synth.cancel();
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.lang = 'en-US';
+        utter.rate = speechRate;
+        utter.pitch = 1;
+        if (selectedVoice) utter.voice = selectedVoice;
+
+        const playBtn = document.getElementById('playBtn');
+        if (playBtn) playBtn.classList.add('speaking');
+
+        utter.onend = () => {
+            if (playBtn) playBtn.classList.remove('speaking');
+            if (callback) callback();
+        };
+
+        utter.onerror = () => {
+            if (playBtn) playBtn.classList.remove('speaking');
+        };
+
+        synth.speak(utter);
+    }
+
+    // ==================== GAME LOGIC ====================
+    const engine = new AdaptiveEngine('esl-listening', questionBank);
+    const gameArea = document.getElementById('gameArea');
+    const streakEl = document.getElementById('streak');
+    const tierBadge = document.getElementById('tierBadge');
+    const accuracyEl = document.getElementById('accuracy');
+    const xpBar = document.getElementById('xpBar');
+    const xpBarContainer = document.querySelector('.xp-bar-container');
+    const totalStat = document.getElementById('totalStat');
+    const levelBanner = document.getElementById('levelBanner');
+    const newTierLabel = document.getElementById('newTierLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let currentQuestion = null;
+    let locked = false;
+
+    const encouragements = ['Nice!', 'Got it!', 'Yes!', 'Correct!', 'Boom!', 'Fire!', 'Clean!', 'Sharp!', 'Good ear!', 'Locked in!'];
+    const wrongPhrases = ['Not quite.', 'Close one.', 'Keep going.', 'Almost.', 'Listen again next time.'];
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function updateUI() {
+        streakEl.textContent = engine.correctStreak + 'x';
+        tierBadge.textContent = engine.tierLabel.toUpperCase();
+        accuracyEl.textContent = engine.accuracy + '%';
+        totalStat.textContent = engine.totalCorrect + ' / ' + engine.totalAttempts;
+        const progress = (engine.correctStreak / engine.promoteThreshold) * 100;
+        xpBar.style.width = progress + '%';
+        xpBarContainer.setAttribute('aria-valuenow', engine.correctStreak);
+    }
+
+    function showQuestion() {
+        locked = false;
+        currentQuestion = engine.next();
+        if (!currentQuestion) return;
+
+        const isSentenceType = currentQuestion.type === 'sentence';
+        const isQuestionType = currentQuestion.type === 'question';
+        const modeText = currentQuestion.type === 'word' ? 'WORD' : currentQuestion.type === 'sentence' ? 'SENTENCE' : 'QUESTION';
+        const promptText = currentQuestion.type === 'word' ? 'Listen and pick the word you hear' :
+                           currentQuestion.type === 'sentence' ? 'Listen and pick what you heard' :
+                           'Listen to the question and pick the best answer';
+
+        gameArea.innerHTML = `
+            <p class="prompt">${promptText}</p>
+            <div class="mode-label">${modeText}</div>
+            <div class="speaker-area">
+                <button class="play-btn" id="playBtn" aria-label="Play audio">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                </button>
+                <div class="speed-toggle">
+                    <button class="speed-btn ${speechRate >= 0.8 ? 'active' : ''}" data-rate="0.85" aria-label="Normal speed">Normal</button>
+                    <button class="speed-btn ${speechRate < 0.8 ? 'active' : ''}" data-rate="0.6" aria-label="Slow speed">Slow</button>
+                </div>
+            </div>
+            <div class="choices ${isQuestionType ? 'single-col' : ''}" id="choices" role="group" aria-label="Answer choices"></div>
+            <div class="feedback" id="feedback" aria-live="assertive"></div>
+            <div class="answer-reveal" id="answerReveal"></div>
+        `;
+
+        const playBtn = document.getElementById('playBtn');
+        const choicesEl = document.getElementById('choices');
+
+        // Speed buttons
+        document.querySelectorAll('.speed-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                speechRate = parseFloat(btn.dataset.rate);
+                document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            });
+        });
+
+        // Play button — user gesture required for speech on file:// protocol
+        playBtn.addEventListener('click', () => speak(currentQuestion.speak));
+
+        // Choices
+        const options = shuffle(currentQuestion.options);
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = opt;
+            btn.setAttribute('aria-label', opt);
+            btn.addEventListener('click', () => handleChoice(btn, opt));
+            choicesEl.appendChild(btn);
+        });
+
+        updateUI();
+    }
+
+    function handleChoice(btn, chosen) {
+        if (locked) return;
+        locked = true;
+
+        const correct = chosen === currentQuestion.answer;
+        const result = engine.answer(correct);
+        const choicesEl = document.getElementById('choices');
+        const feedbackEl = document.getElementById('feedback');
+        const answerReveal = document.getElementById('answerReveal');
+        const buttons = choicesEl.querySelectorAll('.choice-btn');
+
+        buttons.forEach(b => {
+            b.disabled = true;
+            if (b.textContent === currentQuestion.answer) b.classList.add('reveal');
+        });
+
+        if (correct) {
+            btn.classList.add('correct');
+            feedbackEl.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+            feedbackEl.className = 'feedback correct-fb show';
+        } else {
+            btn.classList.add('wrong');
+            feedbackEl.textContent = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+            feedbackEl.className = 'feedback wrong-fb show';
+            answerReveal.textContent = 'Answer: ' + currentQuestion.answer;
+            answerReveal.classList.add('show');
+            // Re-speak the correct answer
+            setTimeout(() => speak(currentQuestion.speak), 500);
+        }
+
+        updateUI();
+
+        if (result.promoted) {
+            newTierLabel.textContent = result.tierLabel.toUpperCase();
+            levelBanner.classList.add('show');
+            setTimeout(() => {
+                levelBanner.classList.remove('show');
+                setTimeout(showQuestion, 300);
+            }, 1800);
+        } else {
+            setTimeout(showQuestion, correct ? 1000 : 2500);
+        }
+    }
+
+    resetBtn.addEventListener('click', () => {
+        if (confirm('Reset all progress? This cannot be undone.')) {
+            engine.reset();
+            updateUI();
+            showQuestion();
+        }
+    });
+
+    // Start immediately — speech will attempt on user click (play button)
+    // which satisfies browser user-gesture requirements for speech synthesis
+    if (!speechSupported) {
+        gameArea.innerHTML = '<div class="no-speech-warning"><h2>Speech Not Supported</h2><p>Your browser does not support speech synthesis. Try using Chrome, Edge, or Safari.</p></div>';
+    } else {
+        updateUI();
+        showQuestion();
+    }
+    </script>
+</body>
+</html>

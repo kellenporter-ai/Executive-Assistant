@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sentence Builder</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #1a1a2e;
+            --bg2: #16213e;
+            --panel: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --error: #ff3366;
+            --text: #ffffff;
+            --muted: #8899aa;
+            --card-bg: rgba(255,255,255,0.07);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .title-area h1 { font-size: 1.3rem; font-weight: 800; letter-spacing: -0.5px; }
+
+        .stats { display: flex; gap: 16px; align-items: center; font-size: 0.85rem; }
+        .tier-badge { background: var(--accent); color: #000; font-weight: 800; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 1px; }
+        .streak { color: #ff9500; font-weight: 700; }
+        .accuracy-stat { color: var(--muted); }
+
+        .xp-bar-container { width: 100%; height: 6px; background: rgba(255,255,255,0.08); flex-shrink: 0; }
+        .xp-bar { height: 100%; background: linear-gradient(90deg, var(--accent), #7c3aed); transition: width 0.4s ease; border-radius: 0 3px 3px 0; }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            min-height: 0;
+            gap: 20px;
+            position: relative;
+        }
+
+        .prompt { font-size: 1rem; color: var(--muted); text-align: center; }
+
+        .hint {
+            font-size: 0.85rem;
+            color: var(--muted);
+            background: var(--panel);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 500px;
+            font-style: italic;
+        }
+
+        .sentence-zone {
+            min-height: 64px;
+            width: 100%;
+            max-width: 600px;
+            background: var(--panel);
+            border: 2px dashed var(--border);
+            border-radius: 14px;
+            padding: 12px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            align-items: center;
+            justify-content: center;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .sentence-zone.correct-zone {
+            border-color: var(--success);
+            background: rgba(0, 255, 136, 0.06);
+        }
+
+        .sentence-zone.wrong-zone {
+            border-color: var(--error);
+            background: rgba(255, 51, 102, 0.06);
+            animation: shake 0.4s ease;
+        }
+
+        .word-bank {
+            width: 100%;
+            max-width: 600px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .word-chip {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 12px 18px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s, opacity 0.2s;
+            min-height: 48px;
+            display: flex;
+            align-items: center;
+            outline: none;
+            touch-action: manipulation;
+        }
+
+        .word-chip:hover, .word-chip:focus-visible {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .word-chip:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .word-chip:active { transform: scale(0.95); }
+        .word-chip.placed { opacity: 0.3; pointer-events: none; }
+        .word-chip.in-sentence { background: rgba(0, 212, 255, 0.12); border-color: var(--accent); cursor: pointer; }
+        .word-chip.in-sentence:hover { border-color: var(--error); background: rgba(255, 51, 102, 0.1); }
+
+        .actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .check-btn, .skip-btn {
+            padding: 12px 28px;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid;
+            transition: background 0.2s, transform 0.15s;
+            min-height: 48px;
+            outline: none;
+        }
+
+        .check-btn {
+            background: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+
+        .check-btn:hover { background: #00b8d9; }
+        .check-btn:active { transform: scale(0.97); }
+        .check-btn:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+        .check-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .skip-btn {
+            background: transparent;
+            color: var(--muted);
+            border-color: var(--border);
+        }
+
+        .skip-btn:hover { border-color: var(--muted); color: var(--text); }
+        .skip-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+        .feedback {
+            font-size: 1.1rem;
+            font-weight: 700;
+            min-height: 1.5rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.show { opacity: 1; }
+        .feedback.correct-fb { color: var(--success); }
+        .feedback.wrong-fb { color: var(--error); }
+
+        .correct-answer-display {
+            font-size: 0.95rem;
+            color: var(--success);
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.2);
+            padding: 10px 16px;
+            border-radius: 10px;
+            max-width: 600px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .correct-answer-display.show { opacity: 1; }
+
+        .level-up-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 32px 48px;
+            text-align: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        .level-up-banner.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .level-up-banner h2 { font-size: 1.6rem; margin-bottom: 8px; }
+        .level-up-banner .new-tier { font-size: 1.2rem; color: var(--accent); font-weight: 800; }
+
+        footer {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .reset-btn:hover, .reset-btn:focus-visible { border-color: var(--error); color: var(--error); }
+        .reset-btn:focus-visible { outline: 2px solid var(--error); outline-offset: 2px; }
+        .total-stat { font-size: 0.8rem; color: var(--muted); }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .word-chip { padding: 10px 14px; font-size: 0.9rem; }
+            .sentence-zone { min-height: 56px; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-area"><h1>Sentence Builder</h1></div>
+        <div class="stats">
+            <span class="streak" id="streak" aria-label="Current streak">0x</span>
+            <span class="tier-badge" id="tierBadge" aria-label="Current tier">ROOKIE</span>
+            <span class="accuracy-stat" id="accuracy" aria-label="Accuracy">0%</span>
+        </div>
+    </header>
+
+    <div class="xp-bar-container" role="progressbar" aria-label="Progress to next tier" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+        <div class="xp-bar" id="xpBar" style="width: 0%"></div>
+    </div>
+
+    <main class="game-area">
+        <p class="prompt">Tap words in the right order to build the sentence</p>
+        <div class="hint" id="hint" aria-live="polite"></div>
+        <div class="sentence-zone" id="sentenceZone" role="region" aria-label="Your sentence"></div>
+        <div class="word-bank" id="wordBank" role="group" aria-label="Available words"></div>
+        <div class="actions">
+            <button class="skip-btn" id="skipBtn" aria-label="Skip this sentence">Skip</button>
+            <button class="check-btn" id="checkBtn" disabled aria-label="Check your answer">Check</button>
+        </div>
+        <div class="feedback" id="feedback" aria-live="assertive"></div>
+        <div class="correct-answer-display" id="correctDisplay"></div>
+    </main>
+
+    <div class="level-up-banner" id="levelBanner" role="alert">
+        <h2>LEVEL UP!</h2>
+        <div class="new-tier" id="newTierLabel"></div>
+    </div>
+
+    <footer>
+        <button class="reset-btn" id="resetBtn" aria-label="Reset all progress">Reset Progress</button>
+        <span class="total-stat" id="totalStat">0 / 0</span>
+    </footer>
+
+    <script>
+    // ==================== ADAPTIVE ENGINE ====================
+    class AdaptiveEngine {
+        constructor(storageKey, questionBank) {
+            this.storageKey = storageKey;
+            this.bank = questionBank;
+            this.promoteThreshold = 4;
+            this.demoteThreshold = 2;
+            this.tierLabels = { 1: 'Rookie', 2: 'Starter', 3: 'Pro', 4: 'All-Star', 5: 'Legend' };
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.tier = data.tier || 1; this.correctStreak = data.correctStreak || 0;
+                this.wrongStreak = data.wrongStreak || 0; this.totalCorrect = data.totalCorrect || 0;
+                this.totalAttempts = data.totalAttempts || 0; this.seen = data.seen || {};
+            } else {
+                this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+                this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            }
+        }
+        get tierLabel() { return this.tierLabels[this.tier] || 'Rookie'; }
+        get accuracy() { return this.totalAttempts === 0 ? 0 : Math.round((this.totalCorrect / this.totalAttempts) * 100); }
+        next() {
+            const tierItems = this.bank[this.tier];
+            if (!tierItems || tierItems.length === 0) return null;
+            if (!this.seen[this.tier]) this.seen[this.tier] = [];
+            if (this.seen[this.tier].length >= tierItems.length) this.seen[this.tier] = [];
+            const unseenIndices = tierItems.map((_, i) => i).filter(i => !this.seen[this.tier].includes(i));
+            const pick = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+            this.seen[this.tier].push(pick);
+            return { ...tierItems[pick], tier: this.tier, tierLabel: this.tierLabel };
+        }
+        answer(correct) {
+            this.totalAttempts++;
+            if (correct) {
+                this.totalCorrect++; this.correctStreak++; this.wrongStreak = 0;
+                if (this.correctStreak >= this.promoteThreshold && this.tier < 5) {
+                    this.tier++; this.correctStreak = 0; this.save();
+                    return { promoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            } else {
+                this.wrongStreak++; this.correctStreak = 0;
+                if (this.wrongStreak >= this.demoteThreshold && this.tier > 1) {
+                    this.tier--; this.wrongStreak = 0; this.save();
+                    return { demoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            }
+            this.save();
+            return { promoted: false, demoted: false, tier: this.tier, tierLabel: this.tierLabel };
+        }
+        save() {
+            localStorage.setItem(this.storageKey, JSON.stringify({
+                tier: this.tier, correctStreak: this.correctStreak, wrongStreak: this.wrongStreak,
+                totalCorrect: this.totalCorrect, totalAttempts: this.totalAttempts, seen: this.seen
+            }));
+        }
+        reset() {
+            this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+            this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            localStorage.removeItem(this.storageKey);
+        }
+    }
+
+    // ==================== QUESTION BANK ====================
+    const questionBank = {
+        1: [
+            { words: ['I', 'am', 'happy.'], hint: 'Tell how you feel.' },
+            { words: ['She', 'is', 'tall.'], hint: 'Describe a girl.' },
+            { words: ['He', 'is', 'a', 'boy.'], hint: 'Tell about a boy.' },
+            { words: ['The', 'cat', 'is', 'small.'], hint: 'Describe an animal.' },
+            { words: ['I', 'like', 'food.'], hint: 'Talk about what you enjoy.' },
+            { words: ['We', 'go', 'to', 'school.'], hint: 'Where do you go?' },
+            { words: ['The', 'dog', 'is', 'big.'], hint: 'Describe an animal.' },
+            { words: ['I', 'have', 'a', 'book.'], hint: 'What do you have?' },
+            { words: ['She', 'has', 'a', 'pen.'], hint: 'What does she have?' },
+            { words: ['They', 'are', 'friends.'], hint: 'Tell about people.' },
+            { words: ['He', 'can', 'run.'], hint: 'What can he do?' },
+            { words: ['I', 'see', 'a', 'bird.'], hint: 'What do you see?' },
+            { words: ['The', 'sun', 'is', 'hot.'], hint: 'Describe the weather.' },
+            { words: ['We', 'eat', 'lunch.'], hint: 'What do you do at noon?' },
+            { words: ['She', 'is', 'my', 'friend.'], hint: 'Tell about someone you know.' },
+            { words: ['It', 'is', 'cold.'], hint: 'Describe the weather.' },
+            { words: ['I', 'want', 'water.'], hint: 'What do you need?' },
+            { words: ['He', 'has', 'a', 'ball.'], hint: 'What does he have?' },
+            { words: ['The', 'fish', 'can', 'swim.'], hint: 'What can a fish do?' },
+            { words: ['I', 'sit', 'in', 'a', 'chair.'], hint: 'Where are you?' },
+            { words: ['We', 'are', 'at', 'home.'], hint: 'Where are you?' },
+            { words: ['She', 'reads', 'a', 'book.'], hint: 'What does she do?' },
+        ],
+        2: [
+            { words: ['The', 'boy', 'plays', 'with', 'his', 'friend.'], hint: 'What does the boy do?' },
+            { words: ['She', 'goes', 'to', 'school', 'every', 'day.'], hint: 'Talk about a daily routine.' },
+            { words: ['My', 'family', 'eats', 'dinner', 'together.'], hint: 'What does your family do?' },
+            { words: ['The', 'teacher', 'helps', 'the', 'students.'], hint: 'What does the teacher do?' },
+            { words: ['I', 'like', 'to', 'play', 'soccer.'], hint: 'Talk about a sport you enjoy.' },
+            { words: ['They', 'are', 'watching', 'a', 'movie.'], hint: 'What are they doing right now?' },
+            { words: ['He', 'is', 'eating', 'his', 'breakfast.'], hint: 'What is he doing in the morning?' },
+            { words: ['We', 'have', 'a', 'test', 'tomorrow.'], hint: 'What is happening at school?' },
+            { words: ['The', 'weather', 'is', 'very', 'cold', 'today.'], hint: 'Describe today.' },
+            { words: ['She', 'wants', 'to', 'buy', 'a', 'new', 'phone.'], hint: 'What does she want?' },
+            { words: ['I', 'need', 'to', 'finish', 'my', 'homework.'], hint: 'What do you need to do?' },
+            { words: ['The', 'dog', 'runs', 'in', 'the', 'park.'], hint: 'What does the dog do?' },
+            { words: ['He', 'listens', 'to', 'music', 'after', 'school.'], hint: 'What does he do after school?' },
+            { words: ['My', 'mom', 'cooks', 'really', 'good', 'food.'], hint: 'Talk about your mom.' },
+            { words: ['They', 'walk', 'to', 'the', 'bus', 'stop.'], hint: 'How do they get to school?' },
+            { words: ['I', 'wake', 'up', 'at', 'seven', 'o\'clock.'], hint: 'When do you wake up?' },
+            { words: ['She', 'is', 'wearing', 'a', 'blue', 'shirt.'], hint: 'What is she wearing?' },
+            { words: ['We', 'speak', 'English', 'in', 'class.'], hint: 'What do you speak in school?' },
+            { words: ['The', 'library', 'has', 'many', 'books.'], hint: 'What is in the library?' },
+            { words: ['He', 'always', 'does', 'his', 'work.'], hint: 'Describe a good student.' },
+        ],
+        3: [
+            { words: ['She', 'studied', 'for', 'the', 'test', 'because', 'she', 'wanted', 'a', 'good', 'grade.'], hint: 'Why did she study?' },
+            { words: ['If', 'it', 'rains,', 'we', 'will', 'stay', 'inside.'], hint: 'What happens when it rains?' },
+            { words: ['The', 'students', 'worked', 'together', 'to', 'finish', 'the', 'project.'], hint: 'How did the students complete their work?' },
+            { words: ['He', 'forgot', 'his', 'lunch', 'so', 'his', 'friend', 'shared.'], hint: 'What happened when he forgot lunch?' },
+            { words: ['They', 'were', 'excited', 'about', 'the', 'field', 'trip.'], hint: 'How did they feel about the trip?' },
+            { words: ['She', 'has', 'been', 'practicing', 'piano', 'for', 'three', 'years.'], hint: 'How long has she played piano?' },
+            { words: ['The', 'game', 'was', 'canceled', 'because', 'of', 'the', 'rain.'], hint: 'Why was the game canceled?' },
+            { words: ['I', 'would', 'like', 'to', 'travel', 'to', 'many', 'countries.'], hint: 'What would you like to do?' },
+            { words: ['Although', 'he', 'was', 'tired,', 'he', 'kept', 'working.'], hint: 'What did he do even when tired?' },
+            { words: ['My', 'brother', 'is', 'taller', 'than', 'me', 'but', 'I', 'am', 'faster.'], hint: 'Compare yourself to your brother.' },
+            { words: ['We', 'should', 'respect', 'everyone', 'regardless', 'of', 'their', 'differences.'], hint: 'How should we treat people?' },
+            { words: ['The', 'movie', 'was', 'interesting', 'but', 'it', 'was', 'too', 'long.'], hint: 'What did you think of the movie?' },
+            { words: ['She', 'asked', 'the', 'teacher', 'to', 'explain', 'the', 'problem', 'again.'], hint: 'What did she ask?' },
+            { words: ['Before', 'going', 'to', 'bed,', 'I', 'always', 'brush', 'my', 'teeth.'], hint: 'What do you do before bed?' },
+            { words: ['He', 'is', 'not', 'only', 'smart', 'but', 'also', 'very', 'kind.'], hint: 'Describe someone with two qualities.' },
+            { words: ['The', 'store', 'closes', 'at', 'nine', 'o\'clock', 'every', 'night.'], hint: 'When does the store close?' },
+            { words: ['We', 'need', 'to', 'save', 'water', 'because', 'it', 'is', 'important.'], hint: 'Why should we save water?' },
+            { words: ['After', 'school,', 'I', 'usually', 'go', 'to', 'the', 'gym.'], hint: 'What do you do after school?' },
+            { words: ['They', 'have', 'never', 'been', 'to', 'a', 'concert', 'before.'], hint: 'What is something they haven\'t done?' },
+            { words: ['The', 'principal', 'announced', 'that', 'there', 'would', 'be', 'no', 'school', 'Friday.'], hint: 'What did the principal say?' },
+        ],
+        4: [
+            { words: ['Even', 'though', 'the', 'assignment', 'was', 'difficult,', 'most', 'students', 'completed', 'it', 'on', 'time.'], hint: 'What happened with the hard assignment?' },
+            { words: ['She', 'would', 'have', 'passed', 'the', 'exam', 'if', 'she', 'had', 'studied', 'more.'], hint: 'What would have changed the result?' },
+            { words: ['The', 'community', 'organized', 'a', 'fundraiser', 'to', 'support', 'families', 'in', 'need.'], hint: 'What did the community do to help?' },
+            { words: ['Not', 'only', 'did', 'he', 'apologize,', 'but', 'he', 'also', 'promised', 'to', 'do', 'better.'], hint: 'What two things did he do?' },
+            { words: ['The', 'experiment', 'demonstrated', 'that', 'plants', 'grow', 'faster', 'with', 'more', 'sunlight.'], hint: 'What did the experiment show?' },
+            { words: ['In', 'order', 'to', 'succeed,', 'you', 'must', 'be', 'willing', 'to', 'make', 'sacrifices.'], hint: 'What is needed for success?' },
+            { words: ['Despite', 'the', 'challenges,', 'the', 'team', 'remained', 'positive', 'throughout', 'the', 'season.'], hint: 'How did the team handle challenges?' },
+            { words: ['The', 'teacher', 'recommended', 'that', 'everyone', 'read', 'at', 'least', 'thirty', 'minutes', 'daily.'], hint: 'What did the teacher suggest?' },
+            { words: ['He', 'realized', 'that', 'making', 'mistakes', 'is', 'an', 'essential', 'part', 'of', 'learning.'], hint: 'What did he learn about mistakes?' },
+            { words: ['Neither', 'the', 'coach', 'nor', 'the', 'players', 'were', 'satisfied', 'with', 'the', 'result.'], hint: 'How did everyone feel about the result?' },
+            { words: ['It', 'is', 'important', 'to', 'consider', 'other', 'perspectives', 'before', 'forming', 'an', 'opinion.'], hint: 'What should you do before making up your mind?' },
+            { words: ['The', 'documentary', 'explored', 'the', 'consequences', 'of', 'pollution', 'on', 'marine', 'life.'], hint: 'What was the documentary about?' },
+            { words: ['She', 'was', 'determined', 'to', 'prove', 'that', 'hard', 'work', 'leads', 'to', 'success.'], hint: 'What was she determined to do?' },
+            { words: ['By', 'the', 'time', 'we', 'arrived,', 'the', 'event', 'had', 'already', 'started.'], hint: 'What happened when you got there?' },
+            { words: ['Although', 'technology', 'has', 'many', 'benefits,', 'it', 'can', 'also', 'be', 'distracting.'], hint: 'What is both good and bad about technology?' },
+            { words: ['The', 'students', 'were', 'encouraged', 'to', 'participate', 'in', 'extracurricular', 'activities.'], hint: 'What were students encouraged to do?' },
+            { words: ['He', 'spoke', 'so', 'quietly', 'that', 'nobody', 'in', 'the', 'back', 'could', 'hear', 'him.'], hint: 'What was the problem with how he spoke?' },
+            { words: ['We', 'decided', 'to', 'postpone', 'the', 'trip', 'until', 'the', 'weather', 'improved.'], hint: 'Why did you change the plan?' },
+            { words: ['The', 'invention', 'of', 'the', 'internet', 'transformed', 'the', 'way', 'people', 'communicate.'], hint: 'What changed communication?' },
+            { words: ['She', 'managed', 'to', 'balance', 'her', 'schoolwork', 'with', 'her', 'part-time', 'job.'], hint: 'What did she balance?' },
+        ],
+        5: [
+            { words: ['Had', 'the', 'government', 'acted', 'sooner,', 'the', 'environmental', 'damage', 'could', 'have', 'been', 'minimized.'], hint: 'What could have changed the outcome?' },
+            { words: ['The', 'unprecedented', 'growth', 'in', 'technology', 'has', 'fundamentally', 'altered', 'modern', 'society.'], hint: 'What has technology done to society?' },
+            { words: ['While', 'some', 'argue', 'that', 'social', 'media', 'connects', 'people,', 'others', 'believe', 'it', 'isolates', 'them.'], hint: 'What are two opinions about social media?' },
+            { words: ['The', 'researchers', 'concluded', 'that', 'there', 'was', 'a', 'significant', 'correlation', 'between', 'exercise', 'and', 'mental', 'health.'], hint: 'What did the research find?' },
+            { words: ['It', 'is', 'paradoxical', 'that', 'the', 'more', 'connected', 'we', 'become,', 'the', 'more', 'isolated', 'we', 'feel.'], hint: 'What is strange about being connected?' },
+            { words: ['Notwithstanding', 'the', 'criticism,', 'the', 'policy', 'was', 'implemented', 'as', 'originally', 'planned.'], hint: 'What happened despite the criticism?' },
+            { words: ['The', 'athlete', 'demonstrated', 'remarkable', 'resilience', 'by', 'returning', 'to', 'competition', 'after', 'a', 'severe', 'injury.'], hint: 'How did the athlete show strength?' },
+            { words: ['Whether', 'or', 'not', 'artificial', 'intelligence', 'will', 'replace', 'human', 'workers', 'remains', 'a', 'subject', 'of', 'debate.'], hint: 'What is being debated?' },
+            { words: ['The', 'author\'s', 'use', 'of', 'juxtaposition', 'highlights', 'the', 'contrast', 'between', 'wealth', 'and', 'poverty.'], hint: 'What literary technique is being described?' },
+            { words: ['In', 'retrospect,', 'the', 'decision', 'to', 'invest', 'in', 'renewable', 'energy', 'proved', 'to', 'be', 'advantageous.'], hint: 'Looking back, what was a good decision?' },
+            { words: ['The', 'subtle', 'implication', 'of', 'his', 'speech', 'was', 'that', 'significant', 'changes', 'were', 'imminent.'], hint: 'What was he hinting at?' },
+            { words: ['Rather', 'than', 'dwelling', 'on', 'past', 'failures,', 'she', 'chose', 'to', 'focus', 'on', 'future', 'opportunities.'], hint: 'What did she decide to focus on?' },
+            { words: ['The', 'comprehensive', 'study', 'examined', 'the', 'long-term', 'effects', 'of', 'screen', 'time', 'on', 'adolescents.'], hint: 'What did the study look at?' },
+            { words: ['It', 'would', 'be', 'presumptuous', 'to', 'assume', 'that', 'one', 'solution', 'could', 'address', 'such', 'a', 'complex', 'problem.'], hint: 'Why is one solution not enough?' },
+            { words: ['Consequently,', 'the', 'organization', 'revised', 'its', 'guidelines', 'to', 'better', 'accommodate', 'diverse', 'perspectives.'], hint: 'What did the organization do as a result?' },
+            { words: ['The', 'phenomenon', 'of', 'climate', 'change', 'requires', 'collaborative', 'action', 'from', 'nations', 'worldwide.'], hint: 'What does climate change need?' },
+            { words: ['She', 'articulated', 'her', 'argument', 'with', 'such', 'precision', 'that', 'even', 'her', 'opponents', 'were', 'persuaded.'], hint: 'How well did she argue?' },
+            { words: ['The', 'ambivalent', 'response', 'from', 'the', 'public', 'suggested', 'that', 'opinions', 'were', 'deeply', 'divided.'], hint: 'What did the public\'s response show?' },
+            { words: ['Ultimately,', 'perseverance', 'and', 'adaptability', 'are', 'more', 'valuable', 'than', 'innate', 'talent', 'alone.'], hint: 'What matters more than natural talent?' },
+            { words: ['The', 'meticulous', 'attention', 'to', 'detail', 'in', 'her', 'work', 'distinguished', 'her', 'from', 'her', 'peers.'], hint: 'What made her stand out?' },
+        ]
+    };
+
+    // ==================== GAME LOGIC ====================
+    const engine = new AdaptiveEngine('esl-sentence-builder', questionBank);
+
+    const hintEl = document.getElementById('hint');
+    const sentenceZone = document.getElementById('sentenceZone');
+    const wordBankEl = document.getElementById('wordBank');
+    const checkBtn = document.getElementById('checkBtn');
+    const skipBtn = document.getElementById('skipBtn');
+    const feedbackEl = document.getElementById('feedback');
+    const correctDisplay = document.getElementById('correctDisplay');
+    const streakEl = document.getElementById('streak');
+    const tierBadge = document.getElementById('tierBadge');
+    const accuracyEl = document.getElementById('accuracy');
+    const xpBar = document.getElementById('xpBar');
+    const xpBarContainer = document.querySelector('.xp-bar-container');
+    const totalStat = document.getElementById('totalStat');
+    const levelBanner = document.getElementById('levelBanner');
+    const newTierLabel = document.getElementById('newTierLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let currentQuestion = null;
+    let placedWords = [];
+    let locked = false;
+
+    const encouragements = ['Nice!', 'Got it!', 'Yes!', 'Perfect!', 'Boom!', 'Nailed it!', 'Fire!', 'Clean!', 'Smooth!', 'Beast mode!'];
+    const wrongPhrases = ['Not quite.', 'Close one.', 'Try the next one.', 'Keep going.', 'Almost had it.'];
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function updateUI() {
+        streakEl.textContent = engine.correctStreak + 'x';
+        tierBadge.textContent = engine.tierLabel.toUpperCase();
+        accuracyEl.textContent = engine.accuracy + '%';
+        totalStat.textContent = engine.totalCorrect + ' / ' + engine.totalAttempts;
+        const progress = (engine.correctStreak / engine.promoteThreshold) * 100;
+        xpBar.style.width = progress + '%';
+        xpBarContainer.setAttribute('aria-valuenow', engine.correctStreak);
+    }
+
+    function showQuestion() {
+        locked = false;
+        placedWords = [];
+        feedbackEl.classList.remove('show');
+        feedbackEl.className = 'feedback';
+        correctDisplay.classList.remove('show');
+        sentenceZone.classList.remove('correct-zone', 'wrong-zone');
+        sentenceZone.innerHTML = '';
+        checkBtn.disabled = true;
+
+        currentQuestion = engine.next();
+        if (!currentQuestion) return;
+
+        hintEl.textContent = currentQuestion.hint;
+
+        const shuffled = shuffle(currentQuestion.words.map((w, i) => ({ text: w, index: i })));
+        wordBankEl.innerHTML = '';
+
+        shuffled.forEach(item => {
+            const chip = document.createElement('button');
+            chip.className = 'word-chip';
+            chip.textContent = item.text;
+            chip.dataset.index = item.index;
+            chip.setAttribute('aria-label', item.text);
+            chip.addEventListener('click', () => placeWord(chip, item));
+            wordBankEl.appendChild(chip);
+        });
+
+        updateUI();
+    }
+
+    function placeWord(chip, item) {
+        if (locked) return;
+        chip.classList.add('placed');
+        placedWords.push(item);
+
+        const sentenceChip = document.createElement('button');
+        sentenceChip.className = 'word-chip in-sentence';
+        sentenceChip.textContent = item.text;
+        sentenceChip.setAttribute('aria-label', 'Remove ' + item.text);
+        sentenceChip.addEventListener('click', () => removeWord(sentenceChip, chip, item));
+        sentenceZone.appendChild(sentenceChip);
+
+        checkBtn.disabled = placedWords.length !== currentQuestion.words.length;
+    }
+
+    function removeWord(sentenceChip, bankChip, item) {
+        if (locked) return;
+        sentenceChip.remove();
+        bankChip.classList.remove('placed');
+        placedWords = placedWords.filter(w => w !== item);
+        checkBtn.disabled = placedWords.length !== currentQuestion.words.length;
+    }
+
+    function checkAnswer() {
+        if (locked) return;
+        locked = true;
+
+        const playerSentence = placedWords.map(w => w.text).join(' ');
+        const correctSentence = currentQuestion.words.join(' ');
+        const correct = playerSentence === correctSentence;
+
+        const result = engine.answer(correct);
+
+        if (correct) {
+            sentenceZone.classList.add('correct-zone');
+            feedbackEl.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+            feedbackEl.className = 'feedback correct-fb show';
+        } else {
+            sentenceZone.classList.add('wrong-zone');
+            feedbackEl.textContent = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+            feedbackEl.className = 'feedback wrong-fb show';
+            correctDisplay.textContent = correctSentence;
+            correctDisplay.classList.add('show');
+        }
+
+        updateUI();
+
+        if (result.promoted) {
+            newTierLabel.textContent = result.tierLabel.toUpperCase();
+            levelBanner.classList.add('show');
+            setTimeout(() => {
+                levelBanner.classList.remove('show');
+                setTimeout(showQuestion, 300);
+            }, 1800);
+        } else {
+            setTimeout(showQuestion, correct ? 1000 : 2500);
+        }
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    skipBtn.addEventListener('click', () => {
+        if (!locked) {
+            engine.answer(false);
+            updateUI();
+            showQuestion();
+        }
+    });
+
+    resetBtn.addEventListener('click', () => {
+        if (confirm('Reset all progress? This cannot be undone.')) {
+            engine.reset();
+            updateUI();
+            showQuestion();
+        }
+    });
+
+    updateUI();
+    showQuestion();
+    </script>
+</body>
+</html>

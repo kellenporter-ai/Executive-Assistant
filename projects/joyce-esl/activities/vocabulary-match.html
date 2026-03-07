@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Vocab Match</title>
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg: #1a1a2e;
+            --bg2: #16213e;
+            --panel: rgba(255,255,255,0.05);
+            --border: rgba(255,255,255,0.1);
+            --accent: #00d4ff;
+            --success: #00ff88;
+            --error: #ff3366;
+            --text: #ffffff;
+            --muted: #8899aa;
+            --card-bg: rgba(255,255,255,0.07);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 100%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        header {
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .title-area h1 {
+            font-size: 1.3rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .stats {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .tier-badge {
+            background: var(--accent);
+            color: #000;
+            font-weight: 800;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .streak {
+            color: #ff9500;
+            font-weight: 700;
+        }
+
+        .accuracy-stat {
+            color: var(--muted);
+        }
+
+        .xp-bar-container {
+            width: 100%;
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            flex-shrink: 0;
+        }
+
+        .xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), #7c3aed);
+            transition: width 0.4s ease;
+            border-radius: 0 3px 3px 0;
+        }
+
+        .game-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            min-height: 0;
+            position: relative;
+        }
+
+        .prompt {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-bottom: 16px;
+        }
+
+        .word-display {
+            font-size: 2.2rem;
+            font-weight: 800;
+            margin-bottom: 28px;
+            text-align: center;
+            min-height: 3rem;
+        }
+
+        .choices {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .choice-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border);
+            border-radius: 14px;
+            color: var(--text);
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 18px 16px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s, transform 0.15s;
+            min-height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            outline: none;
+        }
+
+        .choice-btn:hover, .choice-btn:focus-visible {
+            border-color: var(--accent);
+            background: rgba(0, 212, 255, 0.08);
+        }
+
+        .choice-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
+        }
+
+        .choice-btn:active {
+            transform: scale(0.97);
+        }
+
+        .choice-btn.correct {
+            border-color: var(--success);
+            background: rgba(0, 255, 136, 0.15);
+            animation: pulse-green 0.4s ease;
+        }
+
+        .choice-btn.wrong {
+            border-color: var(--error);
+            background: rgba(255, 51, 102, 0.15);
+            animation: shake 0.4s ease;
+        }
+
+        .choice-btn.reveal {
+            border-color: var(--success);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .choice-btn[disabled] {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .feedback {
+            position: absolute;
+            bottom: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feedback.show {
+            opacity: 1;
+        }
+
+        .feedback.correct-fb { color: var(--success); }
+        .feedback.wrong-fb { color: var(--error); }
+
+        .level-up-banner {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.8);
+            background: linear-gradient(135deg, rgba(0,212,255,0.2), rgba(124,58,237,0.2));
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 32px 48px;
+            text-align: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s, transform 0.3s;
+            backdrop-filter: blur(20px);
+        }
+
+        .level-up-banner.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto;
+        }
+
+        .level-up-banner h2 {
+            font-size: 1.6rem;
+            margin-bottom: 8px;
+        }
+
+        .level-up-banner .new-tier {
+            font-size: 1.2rem;
+            color: var(--accent);
+            font-weight: 800;
+        }
+
+        footer {
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .reset-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .reset-btn:hover, .reset-btn:focus-visible {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        .reset-btn:focus-visible {
+            outline: 2px solid var(--error);
+            outline-offset: 2px;
+        }
+
+        .total-stat {
+            font-size: 0.8rem;
+            color: var(--muted);
+        }
+
+        @keyframes pulse-green {
+            0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+            70% { box-shadow: 0 0 0 12px rgba(0,255,136,0); }
+            100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-6px); }
+            80% { transform: translateX(6px); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .word-display { font-size: 1.7rem; }
+            .choices { gap: 8px; }
+            .choice-btn { padding: 14px 12px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="title-area">
+            <h1>Vocab Match</h1>
+        </div>
+        <div class="stats">
+            <span class="streak" id="streak" aria-label="Current streak">0x</span>
+            <span class="tier-badge" id="tierBadge" aria-label="Current tier">ROOKIE</span>
+            <span class="accuracy-stat" id="accuracy" aria-label="Accuracy">0%</span>
+        </div>
+    </header>
+
+    <div class="xp-bar-container" role="progressbar" aria-label="Progress to next tier" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0">
+        <div class="xp-bar" id="xpBar" style="width: 0%"></div>
+    </div>
+
+    <main class="game-area">
+        <p class="prompt" id="prompt">Match the word to its meaning</p>
+        <div class="word-display" id="wordDisplay" aria-live="polite"></div>
+        <div class="choices" id="choices" role="group" aria-label="Answer choices"></div>
+        <div class="feedback" id="feedback" aria-live="assertive"></div>
+    </main>
+
+    <div class="level-up-banner" id="levelBanner" role="alert">
+        <h2>LEVEL UP!</h2>
+        <div class="new-tier" id="newTierLabel"></div>
+    </div>
+
+    <footer>
+        <button class="reset-btn" id="resetBtn" aria-label="Reset all progress">Reset Progress</button>
+        <span class="total-stat" id="totalStat">0 / 0</span>
+    </footer>
+
+    <script>
+    // ==================== ADAPTIVE ENGINE ====================
+    class AdaptiveEngine {
+        constructor(storageKey, questionBank) {
+            this.storageKey = storageKey;
+            this.bank = questionBank;
+            this.promoteThreshold = 4;
+            this.demoteThreshold = 2;
+            this.tierLabels = { 1: 'Rookie', 2: 'Starter', 3: 'Pro', 4: 'All-Star', 5: 'Legend' };
+
+            const saved = localStorage.getItem(this.storageKey);
+            if (saved) {
+                const data = JSON.parse(saved);
+                this.tier = data.tier || 1;
+                this.correctStreak = data.correctStreak || 0;
+                this.wrongStreak = data.wrongStreak || 0;
+                this.totalCorrect = data.totalCorrect || 0;
+                this.totalAttempts = data.totalAttempts || 0;
+                this.seen = data.seen || {};
+            } else {
+                this.tier = 1;
+                this.correctStreak = 0;
+                this.wrongStreak = 0;
+                this.totalCorrect = 0;
+                this.totalAttempts = 0;
+                this.seen = {};
+            }
+        }
+
+        get tierLabel() { return this.tierLabels[this.tier] || 'Rookie'; }
+        get accuracy() { return this.totalAttempts === 0 ? 0 : Math.round((this.totalCorrect / this.totalAttempts) * 100); }
+
+        next() {
+            const tierItems = this.bank[this.tier];
+            if (!tierItems || tierItems.length === 0) return null;
+            if (!this.seen[this.tier]) this.seen[this.tier] = [];
+            if (this.seen[this.tier].length >= tierItems.length) this.seen[this.tier] = [];
+
+            const unseenIndices = tierItems.map((_, i) => i).filter(i => !this.seen[this.tier].includes(i));
+            const pick = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+            this.seen[this.tier].push(pick);
+            return { ...tierItems[pick], tier: this.tier, tierLabel: this.tierLabel };
+        }
+
+        answer(correct) {
+            this.totalAttempts++;
+            if (correct) {
+                this.totalCorrect++;
+                this.correctStreak++;
+                this.wrongStreak = 0;
+                if (this.correctStreak >= this.promoteThreshold && this.tier < 5) {
+                    this.tier++;
+                    this.correctStreak = 0;
+                    this.save();
+                    return { promoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            } else {
+                this.wrongStreak++;
+                this.correctStreak = 0;
+                if (this.wrongStreak >= this.demoteThreshold && this.tier > 1) {
+                    this.tier--;
+                    this.wrongStreak = 0;
+                    this.save();
+                    return { demoted: true, tier: this.tier, tierLabel: this.tierLabel };
+                }
+            }
+            this.save();
+            return { promoted: false, demoted: false, tier: this.tier, tierLabel: this.tierLabel };
+        }
+
+        save() {
+            localStorage.setItem(this.storageKey, JSON.stringify({
+                tier: this.tier, correctStreak: this.correctStreak, wrongStreak: this.wrongStreak,
+                totalCorrect: this.totalCorrect, totalAttempts: this.totalAttempts, seen: this.seen
+            }));
+        }
+
+        reset() {
+            this.tier = 1; this.correctStreak = 0; this.wrongStreak = 0;
+            this.totalCorrect = 0; this.totalAttempts = 0; this.seen = {};
+            localStorage.removeItem(this.storageKey);
+        }
+    }
+
+    // ==================== QUESTION BANK ====================
+    const questionBank = {
+        1: [
+            { word: 'big', definition: 'large in size', distractors: ['small', 'fast', 'old'] },
+            { word: 'small', definition: 'little in size', distractors: ['big', 'tall', 'new'] },
+            { word: 'happy', definition: 'feeling good or glad', distractors: ['sad', 'angry', 'tired'] },
+            { word: 'sad', definition: 'feeling unhappy', distractors: ['happy', 'fast', 'tall'] },
+            { word: 'fast', definition: 'moving quickly', distractors: ['slow', 'big', 'old'] },
+            { word: 'slow', definition: 'not moving quickly', distractors: ['fast', 'hot', 'new'] },
+            { word: 'hot', definition: 'very warm', distractors: ['cold', 'slow', 'sad'] },
+            { word: 'cold', definition: 'very low temperature', distractors: ['hot', 'fast', 'big'] },
+            { word: 'run', definition: 'move your legs fast', distractors: ['sit', 'eat', 'sleep'] },
+            { word: 'eat', definition: 'put food in your mouth', distractors: ['run', 'sleep', 'write'] },
+            { word: 'sleep', definition: 'close your eyes and rest', distractors: ['eat', 'run', 'talk'] },
+            { word: 'water', definition: 'clear liquid you drink', distractors: ['food', 'air', 'fire'] },
+            { word: 'food', definition: 'things you eat', distractors: ['water', 'house', 'book'] },
+            { word: 'house', definition: 'a building where people live', distractors: ['car', 'food', 'tree'] },
+            { word: 'book', definition: 'pages with words to read', distractors: ['pen', 'chair', 'door'] },
+            { word: 'school', definition: 'place where you learn', distractors: ['house', 'store', 'park'] },
+            { word: 'friend', definition: 'a person you like and trust', distractors: ['teacher', 'stranger', 'parent'] },
+            { word: 'good', definition: 'positive or nice', distractors: ['bad', 'old', 'new'] },
+            { word: 'bad', definition: 'not good', distractors: ['good', 'big', 'fast'] },
+            { word: 'new', definition: 'not old, recently made', distractors: ['old', 'bad', 'slow'] },
+            { word: 'old', definition: 'not new, existing a long time', distractors: ['new', 'big', 'hot'] },
+            { word: 'open', definition: 'not closed', distractors: ['close', 'stop', 'wait'] },
+            { word: 'close', definition: 'to shut something', distractors: ['open', 'run', 'sit'] },
+            { word: 'help', definition: 'to give support to someone', distractors: ['stop', 'break', 'hide'] },
+        ],
+        2: [
+            { word: 'beautiful', definition: 'very nice to look at', distractors: ['ugly', 'boring', 'quiet'] },
+            { word: 'dangerous', definition: 'could hurt you', distractors: ['safe', 'easy', 'quiet'] },
+            { word: 'important', definition: 'matters a lot', distractors: ['boring', 'small', 'empty'] },
+            { word: 'different', definition: 'not the same', distractors: ['similar', 'equal', 'boring'] },
+            { word: 'together', definition: 'with each other', distractors: ['alone', 'apart', 'away'] },
+            { word: 'between', definition: 'in the middle of two things', distractors: ['above', 'behind', 'outside'] },
+            { word: 'remember', definition: 'to think of something from before', distractors: ['forget', 'imagine', 'wonder'] },
+            { word: 'favorite', definition: 'the one you like the most', distractors: ['worst', 'boring', 'common'] },
+            { word: 'listen', definition: 'to pay attention to sounds', distractors: ['ignore', 'shout', 'whisper'] },
+            { word: 'understand', definition: 'to know the meaning of something', distractors: ['confuse', 'forget', 'ignore'] },
+            { word: 'answer', definition: 'a response to a question', distractors: ['question', 'problem', 'silence'] },
+            { word: 'question', definition: 'something you ask', distractors: ['answer', 'statement', 'silence'] },
+            { word: 'weather', definition: 'rain, sun, snow, or wind outside', distractors: ['season', 'climate', 'temperature'] },
+            { word: 'country', definition: 'a nation with borders and government', distractors: ['city', 'street', 'building'] },
+            { word: 'surprised', definition: 'not expecting something', distractors: ['bored', 'angry', 'calm'] },
+            { word: 'excited', definition: 'very happy about something coming', distractors: ['bored', 'tired', 'confused'] },
+            { word: 'practice', definition: 'to do something again to get better', distractors: ['quit', 'forget', 'ignore'] },
+            { word: 'mistake', definition: 'something done wrong', distractors: ['success', 'answer', 'truth'] },
+            { word: 'neighbor', definition: 'a person who lives near you', distractors: ['stranger', 'enemy', 'visitor'] },
+            { word: 'breakfast', definition: 'the first meal of the day', distractors: ['lunch', 'dinner', 'snack'] },
+            { word: 'enough', definition: 'as much as you need', distractors: ['extra', 'empty', 'less'] },
+            { word: 'explain', definition: 'to make something clear', distractors: ['confuse', 'hide', 'whisper'] },
+        ],
+        3: [
+            { word: 'accomplish', definition: 'to finish something successfully', distractors: ['fail', 'quit', 'delay'] },
+            { word: 'consequence', definition: 'a result of an action', distractors: ['cause', 'beginning', 'purpose'] },
+            { word: 'opportunity', definition: 'a chance to do something', distractors: ['problem', 'obstacle', 'threat'] },
+            { word: 'determine', definition: 'to find out or decide', distractors: ['guess', 'ignore', 'doubt'] },
+            { word: 'investigate', definition: 'to look into something carefully', distractors: ['ignore', 'assume', 'guess'] },
+            { word: 'responsible', definition: 'in charge of something', distractors: ['careless', 'lazy', 'reckless'] },
+            { word: 'communicate', definition: 'to share information with others', distractors: ['hide', 'ignore', 'avoid'] },
+            { word: 'environment', definition: 'the world around us', distractors: ['building', 'machine', 'vehicle'] },
+            { word: 'experience', definition: 'something that happens to you', distractors: ['dream', 'theory', 'opinion'] },
+            { word: 'demonstrate', definition: 'to show how something works', distractors: ['hide', 'confuse', 'destroy'] },
+            { word: 'persuade', definition: 'to convince someone to do something', distractors: ['force', 'trick', 'ignore'] },
+            { word: 'evaluate', definition: 'to judge how good something is', distractors: ['ignore', 'create', 'destroy'] },
+            { word: 'recognize', definition: 'to know something you have seen before', distractors: ['forget', 'ignore', 'confuse'] },
+            { word: 'previous', definition: 'coming before this one', distractors: ['next', 'current', 'final'] },
+            { word: 'frequently', definition: 'happening often', distractors: ['rarely', 'never', 'once'] },
+            { word: 'challenge', definition: 'something difficult to do', distractors: ['gift', 'reward', 'break'] },
+            { word: 'solution', definition: 'the answer to a problem', distractors: ['question', 'mistake', 'excuse'] },
+            { word: 'enormous', definition: 'extremely large', distractors: ['tiny', 'average', 'narrow'] },
+            { word: 'gradually', definition: 'slowly, step by step', distractors: ['suddenly', 'quickly', 'instantly'] },
+            { word: 'advantage', definition: 'something that helps you succeed', distractors: ['problem', 'weakness', 'obstacle'] },
+            { word: 'generous', definition: 'willing to give and share', distractors: ['selfish', 'greedy', 'stingy'] },
+        ],
+        4: [
+            { word: 'elaborate', definition: 'to explain in more detail', distractors: ['simplify', 'shorten', 'summarize'] },
+            { word: 'ambiguous', definition: 'having more than one meaning', distractors: ['clear', 'obvious', 'simple'] },
+            { word: 'inevitable', definition: 'certain to happen', distractors: ['unlikely', 'impossible', 'avoidable'] },
+            { word: 'significant', definition: 'important and meaningful', distractors: ['minor', 'trivial', 'useless'] },
+            { word: 'reluctant', definition: 'not wanting to do something', distractors: ['eager', 'excited', 'willing'] },
+            { word: 'controversy', definition: 'a public disagreement', distractors: ['agreement', 'celebration', 'silence'] },
+            { word: 'perspective', definition: 'a point of view', distractors: ['fact', 'rule', 'law'] },
+            { word: 'contribute', definition: 'to give or add to something', distractors: ['take', 'remove', 'subtract'] },
+            { word: 'interference', definition: 'getting in the way of something', distractors: ['assistance', 'support', 'cooperation'] },
+            { word: 'circumstance', definition: 'the conditions around an event', distractors: ['result', 'cause', 'decision'] },
+            { word: 'guarantee', definition: 'a promise that something will happen', distractors: ['risk', 'doubt', 'guess'] },
+            { word: 'accomplish', definition: 'to complete successfully', distractors: ['abandon', 'neglect', 'postpone'] },
+            { word: 'manipulate', definition: 'to control in a clever way', distractors: ['release', 'ignore', 'support'] },
+            { word: 'exaggerate', definition: 'to make something seem bigger than it is', distractors: ['minimize', 'hide', 'ignore'] },
+            { word: 'contradiction', definition: 'saying the opposite of something', distractors: ['agreement', 'confirmation', 'proof'] },
+            { word: 'anticipate', definition: 'to expect something to happen', distractors: ['forget', 'overlook', 'doubt'] },
+            { word: 'consequence', definition: 'a result, often negative', distractors: ['reward', 'benefit', 'advantage'] },
+            { word: 'distinguish', definition: 'to see the difference between things', distractors: ['confuse', 'combine', 'ignore'] },
+            { word: 'legitimate', definition: 'real, legal, or acceptable', distractors: ['fake', 'illegal', 'false'] },
+            { word: 'negotiate', definition: 'to discuss to reach an agreement', distractors: ['demand', 'refuse', 'surrender'] },
+            { word: 'emphasize', definition: 'to give special importance to', distractors: ['ignore', 'minimize', 'overlook'] },
+        ],
+        5: [
+            { word: 'juxtaposition', definition: 'placing two things side by side to compare', distractors: ['separation', 'isolation', 'combination'] },
+            { word: 'paradox', definition: 'a statement that contradicts itself but is true', distractors: ['fact', 'lie', 'theory'] },
+            { word: 'unprecedented', definition: 'never done or known before', distractors: ['common', 'expected', 'routine'] },
+            { word: 'comprehensive', definition: 'including everything or nearly everything', distractors: ['partial', 'limited', 'incomplete'] },
+            { word: 'subtle', definition: 'not obvious, hard to notice', distractors: ['obvious', 'loud', 'bold'] },
+            { word: 'implication', definition: 'a meaning that is suggested but not stated', distractors: ['statement', 'fact', 'command'] },
+            { word: 'contemplate', definition: 'to think deeply about something', distractors: ['ignore', 'dismiss', 'forget'] },
+            { word: 'deteriorate', definition: 'to become worse over time', distractors: ['improve', 'stabilize', 'recover'] },
+            { word: 'substantial', definition: 'large in amount or importance', distractors: ['tiny', 'minor', 'trivial'] },
+            { word: 'undermine', definition: 'to weaken something gradually', distractors: ['support', 'strengthen', 'build'] },
+            { word: 'versatile', definition: 'able to do many different things', distractors: ['limited', 'rigid', 'narrow'] },
+            { word: 'scrutinize', definition: 'to examine very carefully', distractors: ['glance', 'ignore', 'overlook'] },
+            { word: 'phenomenon', definition: 'a fact or event that can be observed', distractors: ['theory', 'opinion', 'myth'] },
+            { word: 'arbitrary', definition: 'based on random choice, not reason', distractors: ['logical', 'planned', 'fair'] },
+            { word: 'resilient', definition: 'able to recover from difficulties', distractors: ['fragile', 'weak', 'rigid'] },
+            { word: 'formidable', definition: 'inspiring fear or respect through size or power', distractors: ['weak', 'harmless', 'tiny'] },
+            { word: 'ambivalent', definition: 'having mixed feelings about something', distractors: ['certain', 'confident', 'decisive'] },
+            { word: 'corroborate', definition: 'to confirm or support with evidence', distractors: ['deny', 'contradict', 'disprove'] },
+            { word: 'provocative', definition: 'intended to cause a strong reaction', distractors: ['calming', 'boring', 'gentle'] },
+            { word: 'meticulous', definition: 'showing great attention to detail', distractors: ['careless', 'sloppy', 'hasty'] },
+            { word: 'infer', definition: 'to figure out from clues, not direct info', distractors: ['state', 'announce', 'declare'] },
+        ]
+    };
+
+    // ==================== GAME LOGIC ====================
+    const encouragements = ['Nice!', 'Got it!', 'Yes!', 'Correct!', 'Boom!', 'Nailed it!', 'Fire!', 'Easy!', 'Smooth!', 'Clean!'];
+    const wrongPhrases = ['Not quite.', 'Try again next time.', 'Almost.', 'Keep going.', 'Close one.'];
+
+    const engine = new AdaptiveEngine('esl-vocab-match', questionBank);
+
+    const wordDisplay = document.getElementById('wordDisplay');
+    const choicesEl = document.getElementById('choices');
+    const feedbackEl = document.getElementById('feedback');
+    const streakEl = document.getElementById('streak');
+    const tierBadge = document.getElementById('tierBadge');
+    const accuracyEl = document.getElementById('accuracy');
+    const xpBar = document.getElementById('xpBar');
+    const xpBarContainer = document.querySelector('.xp-bar-container');
+    const totalStat = document.getElementById('totalStat');
+    const levelBanner = document.getElementById('levelBanner');
+    const newTierLabel = document.getElementById('newTierLabel');
+    const resetBtn = document.getElementById('resetBtn');
+
+    let currentQuestion = null;
+    let locked = false;
+
+    function updateUI() {
+        streakEl.textContent = engine.correctStreak + 'x';
+        tierBadge.textContent = engine.tierLabel.toUpperCase();
+        accuracyEl.textContent = engine.accuracy + '%';
+        totalStat.textContent = engine.totalCorrect + ' / ' + engine.totalAttempts;
+
+        const progress = (engine.correctStreak / engine.promoteThreshold) * 100;
+        xpBar.style.width = progress + '%';
+        xpBarContainer.setAttribute('aria-valuenow', engine.correctStreak);
+    }
+
+    function shuffle(arr) {
+        const a = [...arr];
+        for (let i = a.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [a[i], a[j]] = [a[j], a[i]];
+        }
+        return a;
+    }
+
+    function showQuestion() {
+        locked = false;
+        feedbackEl.classList.remove('show');
+        feedbackEl.className = 'feedback';
+
+        currentQuestion = engine.next();
+        if (!currentQuestion) return;
+
+        wordDisplay.textContent = currentQuestion.word;
+
+        const options = shuffle([currentQuestion.definition, ...currentQuestion.distractors]);
+        choicesEl.innerHTML = '';
+
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = opt;
+            btn.setAttribute('aria-label', opt);
+            btn.addEventListener('click', () => handleChoice(btn, opt));
+            choicesEl.appendChild(btn);
+        });
+
+        updateUI();
+    }
+
+    function handleChoice(btn, chosen) {
+        if (locked) return;
+        locked = true;
+
+        const correct = chosen === currentQuestion.definition;
+        const result = engine.answer(correct);
+        const buttons = choicesEl.querySelectorAll('.choice-btn');
+
+        buttons.forEach(b => {
+            b.disabled = true;
+            if (b.textContent === currentQuestion.definition) {
+                b.classList.add('reveal');
+            }
+        });
+
+        if (correct) {
+            btn.classList.add('correct');
+            feedbackEl.textContent = encouragements[Math.floor(Math.random() * encouragements.length)];
+            feedbackEl.className = 'feedback correct-fb show';
+        } else {
+            btn.classList.add('wrong');
+            feedbackEl.textContent = wrongPhrases[Math.floor(Math.random() * wrongPhrases.length)];
+            feedbackEl.className = 'feedback wrong-fb show';
+        }
+
+        updateUI();
+
+        if (result.promoted) {
+            newTierLabel.textContent = result.tierLabel.toUpperCase();
+            levelBanner.classList.add('show');
+            setTimeout(() => {
+                levelBanner.classList.remove('show');
+                setTimeout(showQuestion, 300);
+            }, 1800);
+        } else if (result.demoted) {
+            setTimeout(showQuestion, 1200);
+        } else {
+            setTimeout(showQuestion, correct ? 800 : 1500);
+        }
+    }
+
+    resetBtn.addEventListener('click', () => {
+        if (confirm('Reset all progress? This cannot be undone.')) {
+            engine.reset();
+            updateUI();
+            showQuestion();
+        }
+    });
+
+    // Start
+    updateUI();
+    showQuestion();
+    </script>
+</body>
+</html>
