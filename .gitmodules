@@ -1,0 +1,3 @@
+[submodule "projects/Porters-Portal"]
+	path = projects/Porters-Portal
+	url = https://github.com/kellenporter-ai/Porters-Portal.git
