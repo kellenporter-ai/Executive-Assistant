@@ -152,8 +152,8 @@ Output from an agent audit. Located at `<workspace>/audit_report.json`.
 
 ```json
 {
-  "agent_name": "qa-bug-resolution",
-  "agent_path": ".claude/agents/qa-bug-resolution.md",
+  "agent_name": "qa-engineer",
+  "agent_path": "agents/qa-engineer.md",
   "audit_date": "2026-03-04",
   "sections": {
     "structure": {

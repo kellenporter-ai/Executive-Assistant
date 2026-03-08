@@ -1,12 +1,6 @@
 ---
 name: study-guide
-description: >
-  Generate condensed student-facing study guides from existing Porters-Portal lesson content and
-  question banks. Use this skill whenever the user mentions study guide, review sheet, exam prep,
-  cheat sheet, study material, review notes, unit summary, concept review, test prep, or wants to
-  create student-facing review content from existing lessons or question banks. Also trigger when
-  the user says things like "students need something to study from", "make a review for the test",
-  "summarize this unit for students", or "create practice problems with solutions".
+description: Generate condensed student-facing study guides from existing lesson content and question banks. Use this skill whenever the user mentions study guide, review sheet, exam prep, cheat sheet, study material, review notes, unit summary, concept review, test prep, or wants to create student-facing review content from existing lessons or question banks. Also trigger when the user says things like "students need something to study from", "make a review for the test", "summarize this unit for students", or "create practice problems with solutions".
 model: claude-haiku-4-5-20251001
 ---
 
@@ -24,7 +18,7 @@ The user can choose between two formats:
 An importable JSON array of lesson blocks that can be pasted directly into the Porters-Portal lesson editor via JSON import. This is the preferred format because it lives inside the portal, tracks engagement, and awards XP.
 
 ### 2. Printable HTML
-A standalone, self-contained HTML file with the portal's dark theme, optimized for printing (with a white print stylesheet). Saved to `/home/kp/Desktop/StudyGuides/<class>/`. Use this when the teacher wants physical handouts.
+A standalone, self-contained HTML file with the portal's dark theme, optimized for printing (with a white print stylesheet). Saved to `/home/kp/Desktop/Executive Assistant/assets/StudyGuides/<class>/`. Use this when the teacher wants physical handouts.
 
 ## Workflow
 
@@ -173,7 +167,7 @@ For math formulas in HTML mode, use plain Unicode symbols and HTML entities (e.g
 
 For JSON: display the block array in a code fence and tell the teacher how to import it (Lesson Editor → JSON Import → paste → import).
 
-For HTML: save to `/home/kp/Desktop/StudyGuides/<class>/[topic-slug]-study-guide.html` and confirm the file path.
+For HTML: save to `/home/kp/Desktop/Executive Assistant/assets/StudyGuides/<class>/[topic-slug]-study-guide.html` and confirm the file path.
 
 ## Writing Guidelines
 

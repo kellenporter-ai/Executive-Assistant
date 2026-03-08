@@ -9,7 +9,7 @@ model: claude-sonnet-4-6
 Generates a standalone, self-contained HTML file with an interactive 3D simulation using Babylon.js. The simulation integrates with Porter Portal's Proctor Bridge protocol and is optimized for student Chromebooks.
 
 **Subjects:** AP Physics, Honors Physics, Forensic Science
-**Output:** Single HTML file saved to `/home/kp/Desktop/Simulations/<class>/`
+**Output:** Single HTML file saved to `/home/kp/Desktop/Executive Assistant/assets/Simulations/<class>/`
 
 For Babylon.js coding patterns, performance budgets, and lighting recipes, see [babylon-reference.md](babylon-reference.md).
 For the example simulation to use as a structural reference, see [example-sim.md](example-sim.md).
@@ -42,7 +42,7 @@ Ask the user two questions:
 - Honors Physics
 - Forensic Science
 
-This determines the output subdirectory under `/home/kp/Desktop/Simulations/`.
+This determines the output subdirectory under `/home/kp/Desktop/Executive Assistant/assets/Simulations/`.
 
 **Mode:** Should this simulation be graded or exploratory?
 - **Graded** — includes assessment questions, calls `PortalBridge.answer()` and `PortalBridge.complete()`
@@ -111,7 +111,7 @@ window.addEventListener('load', () => PortalBridge.init());
 
 ### Dark Theme UI & Proctor Bridge
 
-Use the shared dark theme and Proctor Bridge patterns from [portal-bridge.md](../shared/portal-bridge.md).
+Use the shared dark theme and Proctor Bridge patterns from [portal-bridge.md](../../../references/portal-bridge.md).
 
 ### Babylon.js Scene Requirements
 
@@ -138,7 +138,7 @@ Follow the detailed patterns in [babylon-reference.md](babylon-reference.md). Th
 Save the HTML file to:
 
 ```
-/home/kp/Desktop/Simulations/<class>/<filename>.html
+/home/kp/Desktop/Executive Assistant/assets/Simulations/<class>/<filename>.html
 ```
 
 Where:
@@ -167,6 +167,6 @@ After writing the file, provide a brief summary:
 - **Mobile/touch support.** The ArcRotateCamera handles touch natively. Ensure UI buttons are large enough for touch (min 44px tap targets). Use `touch-action: none` on the canvas.
 - **Do NOT use Havok or Ammo.js physics engines** — they require additional large CDN downloads. Implement physics logic manually (gravity, velocity, collisions) in the render loop, as shown in the example simulation.
 - **Agent delegation.** After generating the HTML file, delegate to the project's specialized agents (always prioritize these over general-purpose):
-  - **qa-bug-resolution** — for validating the HTML output (accessibility of UI overlays, Proctor Bridge integration, Chromebook performance concerns). Delegate for graded simulations where correctness is critical.
-  - **content-strategist-ux-writer** — for reviewing instructional text, UI labels, and question wording within the simulation. Delegate when the simulation includes assessment questions or complex instructions.
+  - **qa-engineer** — for validating the HTML output (accessibility of UI overlays, Proctor Bridge integration, Chromebook performance concerns). Delegate for graded simulations where correctness is critical.
+  - **content-writer** — for reviewing instructional text, UI labels, and question wording within the simulation. Delegate when the simulation includes assessment questions or complex instructions.
   - Always use project agents first. Only fall back to general-purpose agents if project agents are unavailable.

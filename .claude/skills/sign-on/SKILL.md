@@ -30,7 +30,7 @@ Report which machine was detected.
 
 ### 2. Sync Repos
 
-Pull latest changes on both repos. Handle errors gracefully — report them, don't crash.
+Pull latest changes on all repos. Handle errors gracefully — report them, don't crash.
 
 ```bash
 # EA repo
@@ -39,11 +39,16 @@ git fetch --all
 git status
 git pull --rebase
 
-# Porter's Portal submodule
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-git fetch --all
-git status
-git pull --rebase
+# Discover and sync all project repos (submodules and git repos in projects/)
+for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
+  if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+    echo "=== $(basename "$dir") ==="
+    cd "$dir"
+    git fetch --all
+    git status
+    git pull --rebase
+  fi
+done
 ```
 
 **Check for problems:**
@@ -73,26 +78,25 @@ ollama list
 Display a concise dashboard with this information:
 
 ```bash
-# Current branch and recent commits — EA repo
+# EA repo status
 cd "/home/kp/Desktop/Executive Assistant"
 echo "=== EA Repo ==="
 git branch --show-current
 git log --oneline -5
-
-# Current branch and recent commits — Porter's Portal
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-echo "=== Porter's Portal ==="
-git branch --show-current
-git log --oneline -5
-
-# Uncommitted work in either repo
-cd "/home/kp/Desktop/Executive Assistant"
-echo "=== Uncommitted Changes (EA) ==="
+echo "--- Uncommitted ---"
 git status --short
 
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-echo "=== Uncommitted Changes (Portal) ==="
-git status --short
+# All project repos
+for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
+  if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+    echo "=== $(basename "$dir") ==="
+    cd "$dir"
+    git branch --show-current
+    git log --oneline -5
+    echo "--- Uncommitted ---"
+    git status --short
+  fi
+done
 ```
 
 ### 5. Show Current Priorities

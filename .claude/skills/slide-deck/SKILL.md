@@ -20,7 +20,7 @@ Generates a standalone, self-contained HTML file using Reveal.js that can be ope
 
 **Primary audience:** Students in class (projected by the teacher)
 **Secondary audiences:** Parent nights, admin presentations, professional development, student self-review
-**Output:** Single HTML file saved to `~/Desktop/Presentations/<class>/`
+**Output:** Single HTML file saved to `/home/kp/Desktop/Executive Assistant/assets/Presentations/<class>/`
 
 For Reveal.js patterns, theme presets, and animation recipes, see [references/reveal-patterns.md](references/reveal-patterns.md).
 
@@ -293,7 +293,7 @@ Define a consistent set of CSS custom properties that the theme presets populate
 Save to:
 
 ```
-~/Desktop/Presentations/<class>/<filename>.html
+/home/kp/Desktop/Executive Assistant/assets/Presentations/<class>/<filename>.html
 ```
 
 Where:

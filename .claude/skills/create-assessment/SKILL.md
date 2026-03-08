@@ -9,7 +9,7 @@ model: claude-sonnet-4-6
 Generates ISLE-pedagogy-aligned assessments with mixed question types (free response, interactive, simulation-based) for any course. Outputs either importable JSON lesson blocks or a standalone HTML file with Proctor Bridge integration. Every assessment includes a matching rubric using the 5-level grading scale (Missing/Emerging/Approaching/Developing/Refining).
 
 **Output formats:** JSON lesson blocks OR standalone HTML (user chooses)
-**Output location:** `/home/kp/Desktop/Assessments/<class>/`
+**Output location:** `/home/kp/Desktop/Executive Assistant/assets/Assessments/<class>/`
 
 For the rubric format specification and exemplars, see [rubric-format.md](rubric-format.md).
 For the ISLE pedagogy reference, see the lesson-plan skill's [isle-pedagogy.md](../lesson-plan/isle-pedagogy.md).
@@ -63,7 +63,7 @@ Design a mix of question types appropriate to the content:
 - **Interactive elements** — Choose the best fit for each question:
   - **2D HTML5 Canvas** — for graphs, drag-and-drop diagrams, sliders, bar charts (lightweight, best for most cases)
   - **Babylon.js 3D simulations** — for spatial/physics concepts where 3D interaction adds genuine value (projectile motion, force visualization, crime scene reconstruction)
-  - **Links to existing simulations** — when a relevant simulation already exists in `/home/kp/Desktop/Simulations/`
+  - **Links to existing simulations** — when a relevant simulation already exists in `/home/kp/Desktop/Executive Assistant/assets/Simulations/`
 - **Data tables and bar charts** — for quantitative analysis questions
 - **Sorting and ranking** — for classification and ordering tasks
 
@@ -143,7 +143,7 @@ Generate a single self-contained HTML file.
 
 #### Proctor Bridge & Dark Theme
 
-Use the shared Proctor Bridge and dark theme from [portal-bridge.md](../shared/portal-bridge.md). For teacher-graded assessments, call `PortalBridge.complete(0, numQuestions, 0)` on submit — the teacher overrides with actual grades. Call `PortalBridge.save()` on every input change to preserve progress.
+Use the shared Proctor Bridge and dark theme from [portal-bridge.md](../../../references/portal-bridge.md). For teacher-graded assessments, call `PortalBridge.complete(0, numQuestions, 0)` on submit — the teacher overrides with actual grades. Call `PortalBridge.save()` on every input change to preserve progress.
 
 Clean, readable layout — questions flow vertically. Mobile responsive for Chromebook screens.
 
@@ -162,7 +162,7 @@ When a question requires an interactive element:
 
 - **2D Canvas elements:** Build inline using HTML5 Canvas. Include drag-and-drop, sliders, and graphing tools as needed. Keep Canvas elements under 600x400px.
 - **Babylon.js 3D elements:** Only when 3D adds genuine value. Include `<script src="https://cdn.babylonjs.com/babylon.js"></script>` only if used. Follow the performance budgets from the 3d-activity skill (cap devicePixelRatio at 1.5, shadow maps at 1024, etc.).
-- **Links to existing simulations:** Check `/home/kp/Desktop/Simulations/` for relevant existing simulations. If one exists, embed a link or iframe rather than rebuilding it.
+- **Links to existing simulations:** Check `/home/kp/Desktop/Executive Assistant/assets/Simulations/` for relevant existing simulations. If one exists, embed a link or iframe rather than rebuilding it.
 
 #### Rubric Inclusion
 
@@ -175,7 +175,7 @@ Include the rubric as a collapsible section at the top of the assessment (visibl
 </details>
 ```
 
-Save the HTML file to: `/home/kp/Desktop/Assessments/<class>/<filename>.html`
+Save the HTML file to: `/home/kp/Desktop/Executive Assistant/assets/Assessments/<class>/<filename>.html`
 
 Where `<class>` matches the user's course choice and `<filename>` is descriptive kebab-case (e.g., `energy-conservation-assessment.html`).
 
@@ -244,6 +244,6 @@ Ask the user if they want to make any changes before finalizing.
 - **Teacher-graded.** These assessments are graded by the teacher using the rubric, not auto-graded. The assessment collects student responses; the teacher evaluates them.
 - **Print support.** HTML assessments must include print-friendly styles so students or teachers can print a paper copy if needed.
 - **Agent delegation.** For HTML mode assessments, delegate to the project's specialized agents (always prioritize these over general-purpose):
-  - **content-strategist-ux-writer** — for reviewing assessment instructions, question wording, and rubric clarity. Delegate when assessment copy needs refinement for student comprehension.
-  - **qa-bug-resolution** — for validating HTML output (accessibility, Proctor Bridge integration, print styles). Delegate after generating the HTML file to get a quality audit before delivering to the user.
+  - **content-writer** — for reviewing assessment instructions, question wording, and rubric clarity. Delegate when assessment copy needs refinement for student comprehension.
+  - **qa-engineer** — for validating HTML output (accessibility, Proctor Bridge integration, print styles). Delegate after generating the HTML file to get a quality audit before delivering to the user.
   - Always use project agents first. Only fall back to general-purpose agents if project agents are unavailable.

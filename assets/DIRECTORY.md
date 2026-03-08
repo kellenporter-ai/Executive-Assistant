@@ -45,52 +45,47 @@ All sound effect, music, and voiceover packs.
 
 ## Models
 
-All 3D model packs (characters, environments, props).
+All 3D model packs (characters, environments, props). GLB format for Babylon.js.
 
-### Kenney (CC0)
-- `models/kenney_animated-characters-1/` — Animated humanoid characters (set 1)
-- `models/kenney_animated-characters-2/` — Animated humanoid characters (set 2)
-- `models/kenney_animated-characters-3/` — Animated humanoid characters (set 3)
-- `models/kenney_building-kit/` — Modular building construction pieces
-- `models/kenney_city-kit-commercial_2.1/` — 3D commercial city building kit
-- `models/kenney_conveyor-kit/` — Conveyor belt and factory pieces
-- `models/kenney_food-kit/` — 3D food models
-- `models/kenney_furniture-kit/` — Chairs, desks, stools, bookcases, tables, appliances (GLB/OBJ/FBX)
-- `models/kenney_mini-arcade/` — Mini arcade cabinet models
-- `models/kenney_mini-characters/` — Low-poly mini character models
-- `models/kenney_mini-market/` — Market/shop item models
-- `models/kenney_modular-dungeon-kit_1.0/` — 3D modular dungeon pieces
-- `models/kenney_modular-space-kit_1.0/` — 3D modular space station pieces
-- `models/kenney_survival-kit/` — Survival/outdoor item models
-- `models/kenney_watercraft-pack/` — Boat and watercraft models
+### KayKit (CC0)
+- `models/kaykit_adventurers/` — Fantasy adventurer characters, weapons, and animations (31 models)
+- `models/kaykit_block-bits/` — Voxel/block building pieces (40 models)
+- `models/kaykit_character-animations/` — Reusable character animation library (16 animations, 2 mannequins)
+- `models/kaykit_city-builder-bits/` — City building props and structures (41 models)
+- `models/kaykit_dungeon-remastered/` — Dungeon environment pieces, walls, floors, props (211 models)
+- `models/kaykit_fantasy-weapons/` — Fantasy weapon models (31 models)
+- `models/kaykit_forest-nature/` — Forest trees, rocks, plants, and nature props (105 models)
+- `models/kaykit_furniture/` — Indoor furniture pieces (53 models)
+- `models/kaykit_halloween/` — Halloween-themed decorations and props (63 models)
+- `models/kaykit_holiday/` — Holiday/Christmas decorations and props (98 models)
+- `models/kaykit_medieval-hexagon/` — Medieval hex-tile buildings, decorations, and terrain (221 models)
+- `models/kaykit_platformer/` — Platformer game blocks, obstacles, and items (370 models)
+- `models/kaykit_prototype-bits/` — Greybox/prototype building pieces (72 models)
+- `models/kaykit_resource-bits/` — Harvestable resource props (76 models)
+- `models/kaykit_restaurant/` — Restaurant furniture, food, and kitchen props (144 models)
+- `models/kaykit_rpg-tools/` — RPG tool and equipment models (49 models)
+- `models/kaykit_skeletons/` — Skeleton enemy characters with animations (13 models)
+- `models/kaykit_space-base/` — Sci-fi space base building pieces (57 models)
 
 ### Quaternius (CC0)
 - `models/quaternius_animated-mech/` — Animated mech models
-- `models/quaternius_animated-men/` — Animated male character models
 - `models/quaternius_animated-monsters/` — Animated monster models
-- `models/quaternius_animated-women/` — Animated female character models
 - `models/quaternius_cube-world/` — Cube/voxel world environment kit
 - `models/quaternius_cyberpunk-game-kit/` — Cyberpunk-themed game assets
 - `models/quaternius_furniture/` — Furniture models
 - `models/quaternius_modular-character-outfits-fantasy/` — Fantasy character outfit modules
-- `models/quaternius_modular-scifi-guns/` — Modular sci-fi weapon models
 - `models/quaternius_modular-scifi-megakit/` — Large modular sci-fi environment kit
 - `models/quaternius_scifi-essentials/` — Essential sci-fi props and models
 - `models/quaternius_stylized-nature-megakit/` — Large stylized nature environment kit
 - `models/quaternius_survival/` — Survival-themed item models
 - `models/quaternius_toon-shooter-game-kit/` — Toon-style shooter game assets
 - `models/quaternius_ultimate-animated-animals/` — Animated animal models
-- `models/quaternius_ultimate-guns/` — Gun/weapon models
 - `models/quaternius_ultimate-house-interior/` — House interior props and furniture
-- `models/quaternius_ultimate-modular-men/` — Modular male character models
 - `models/quaternius_ultimate-modular-scifi/` — Modular sci-fi building pieces
-- `models/quaternius_ultimate-modular-women/` — Modular female character models
 - `models/quaternius_ultimate-monsters/` — Monster models
 - `models/quaternius_ultimate-rpg-items/` — RPG item models (weapons, potions, etc.)
 - `models/quaternius_ultimate-spaceships/` — Spaceship models
 - `models/quaternius_ultimate-stylized-nature/` — Stylized nature props (trees, rocks, etc.)
-- `models/quaternius_universal-animation-library/` — Reusable animation library
-- `models/quaternius_universal-base-characters/` — Base character models for customization
 
 ## Textures
 

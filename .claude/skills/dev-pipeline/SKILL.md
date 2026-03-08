@@ -1,147 +1,156 @@
 ---
 name: dev-pipeline
-description: Use when someone asks to fix a bug, implement a feature, add functionality, resolve an issue, or build something new in Porter's Portal. Also triggers on "dev pipeline", "fix and ship", or "build and deploy".
+description: Use when someone asks to fix a bug, implement a feature, add functionality, resolve an issue, or build something new. Works across any project with a `.agents/` directory. Also triggers on "dev pipeline", "fix and ship", or "build and deploy".
 model: claude-sonnet-4-6
 ---
 
 ## What This Skill Does
 
-Orchestrator-driven development pipeline for Porter's Portal. Takes a bug report or feature request, hands it to the portal-orchestrator who coordinates specialized agents to investigate, implement, and QA the work — then builds, commits, and deploys to Firebase production.
+Project-agnostic development pipeline. Takes a task, applies Backward Design, delegates to specialist agents with project-specific context, builds, and deploys. The EA handles all orchestration — no separate orchestrator agent.
 
-**Pipeline:** Orchestrate → Build → Deploy → Verify
-
-You are a thin dispatch layer. Your job is to launch agents, run builds, and deploy. You do NOT write production code or investigate bugs yourself.
+**Pipeline:** Backward Design → Delegate → QA → Build → Deploy → Verify
 
 ---
 
-## Step 1: Hand Off to the Orchestrator
+## Step 0: Detect Project
 
-Parse `<ARGUMENTS>` to extract the user's request. If no arguments are provided, ask: "What bug should I fix or feature should I build?"
+Determine the target project from `<ARGUMENTS>` or the working directory. If ambiguous, ask.
 
-Immediately launch the **portal-orchestrator** agent with the full request. The orchestrator's job is to:
-
-1. **Investigate** — deploy specialized agents to explore the affected systems and report back
-2. **Decompose** — break the work into atomic tasks assigned to the right agents
-3. **Delegate** — send each task to the specialist who owns that layer
-4. **Integrate** — ensure all agent outputs work together cleanly
-5. **QA** — send the integrated result to qa-bug-resolution for sign-off
-
-Prompt the orchestrator like this:
-
+Load the project's context file:
 ```
-The user wants: [full description from ARGUMENTS]
-
-Run your full protocol for this request:
-1. Investigate the relevant systems by delegating exploration to the appropriate specialist agents (ui-accessibility-engineer for frontend, backend-integration-engineer for backend/data, content-strategist-ux-writer for copy). Have them report back what they find before you plan any changes.
-2. Based on their investigation reports, decompose the work into tasks and delegate implementation to the responsible agents.
-3. After all agents complete their work, send the integrated result to qa-bug-resolution for audit.
-4. If QA rejects, route each bug back to the responsible agent, then re-run QA.
-5. Report back with: all files changed, QA sign-off status, and any issues encountered.
-
-This is autonomous — do not pause to ask the user questions. If requirements are ambiguous, investigate the codebase for answers rather than asking. Make your best judgment call and proceed.
-
-Available agents and their domains:
-- ui-accessibility-engineer: React components, Tailwind styling, WCAG compliance, responsive design
-- backend-integration-engineer: Cloud Functions, Firestore queries/rules/indexes, types.ts, dataService.ts
-- qa-bug-resolution: Testing, static analysis, accessibility audit, integration sign-off
-- content-strategist-ux-writer: UI copy, error messages, RPG flavor text, instructional content
-- data-analyst: Student data queries, engagement metrics (for data-driven investigation)
-- economy-designer: RPG economy items, abilities, loot, boss tuning (for gamification changes)
-- 3d-graphics-engineer: Visual effects, avatars, Babylon.js scenes (for graphics changes)
+projects/<project-name>/.agents/context.md
 ```
 
-Wait for the orchestrator to complete. It will return a summary of all work done, files changed, and QA status.
+This file contains: tech stack, build commands, deploy commands, architecture patterns, and project-specific QA criteria. All subsequent steps use this context.
+
+If no `.agents/` directory exists for the project, run a general pipeline without specialization and note that the project would benefit from a `.agents/context.md` file.
 
 ---
 
-## Step 2: Build
+## Step 1: Backward Design
 
-Once the orchestrator reports back with QA sign-off, you MUST actually execute the build — never skip it or predict the result. The orchestrator's QA is a code review; the build is a compiler check. Both are required.
+Before any implementation, apply Backward Design:
 
-```bash
-cd /home/kp/Desktop/Executive Assistant/projects/Porters-Portal && npm run build
+### 1. Define the Goal
+What does the finished product look like? How should it function? What does success look like from the user's perspective? Be specific — "the button saves the form" not "improve the save flow."
+
+### 2. Identify Components
+What pieces are required to achieve that goal? Which layers of the stack are affected (frontend, backend, data, content)? List every component that must exist or change.
+
+### 3. Plan the Build
+How will each component be built? How do they connect to achieve the goal? What's the dependency order — what must be built first?
+
+For **small tasks** (single-file bug fixes, copy changes): Backward Design can be a mental checklist — don't over-formalize it. State the goal, identify what changes, and proceed.
+
+For **large tasks** (new features, multi-component work): Write a brief plan before delegating. The plan doesn't need to be a formal spec — just goal, components, and build order.
+
+---
+
+## Step 2: Delegate to Specialist Agents
+
+For each component identified in Step 1, launch the appropriate agent. When building the agent prompt:
+
+1. Start with the task description.
+2. If `projects/<project-name>/.agents/<agent-name>.md` exists, append it as a project specialization block.
+3. Include relevant context from the Backward Design plan (what this component must achieve, how it connects to other components).
+
+**Available general agents** (in `agents/`):
+- `ui-engineer` — Frontend components, styling, accessibility, responsive design
+- `backend-engineer` — Server-side logic, APIs, database, security rules
+- `qa-engineer` — Testing, auditing, accessibility compliance, spec verification
+- `content-writer` — UI copy, instructional content, user-facing text
+- `data-analyst` — Data queries, engagement metrics, analytics reports
+- `graphics-engineer` — 3D scenes, SVG rendering, visual effects, animations
+- `deployment-monitor` — Post-deploy health checks
+
+**Project-only agents** (in `projects/<name>/.agents/`): Some projects may define agents that have no general counterpart (e.g., economy-designer for gamified projects). Check the `.agents/` directory.
+
+### Delegation format:
+```
+The user wants: [task description]
+
+Your goal for this delegation: [specific component goal from Backward Design]
+
+How this connects: [what other components depend on or feed into this work]
+
+Available agents for coordination: [other agents involved in this task]
+
+## Project Specialization
+[Contents of projects/<name>/.agents/<agent-name>.md, if it exists]
 ```
 
-If Cloud Functions were modified:
+Run agents in parallel when their tasks are independent. Stagger when there are dependencies (e.g., types/models before UI that consumes them).
 
-```bash
-cd /home/kp/Desktop/Executive Assistant/projects/Porters-Portal/functions && npm run build
-```
+---
+
+## Step 3: QA
+
+After all engineering agents complete, launch the **qa-engineer** with all changed files and the Backward Design goal. Include the project's QA specialization if it exists.
+
+If QA rejects:
+1. Read each bug report.
+2. Route each bug to the responsible agent.
+3. After fixes, re-run QA.
+
+---
+
+## Step 4: Build
+
+Once QA signs off, execute the build commands from `context.md`. Both frontend and backend if applicable.
 
 If the build fails:
-1. Read the errors — determine which agent's code caused them (frontend vs backend)
-2. Launch the responsible agent to fix the build errors
-3. Re-build until clean
+1. Read errors — determine which agent's code caused them.
+2. Launch the responsible agent to fix.
+3. Re-build until clean.
+
+**Never deploy broken code. Never skip the build.**
 
 ---
 
-## Step 3: Commit and Push
+## Step 5: Commit and Push
 
 ```bash
-cd /home/kp/Desktop/Executive Assistant/projects/Porters-Portal
+cd "<project-path>"
 git add <specific files that were modified>
-git commit -m "<concise description of what was fixed/added>
+git commit -m "<concise description>
 
 Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 git push origin main
 ```
 
-Stage specific files by name — never use `git add -A` or `git add .`. Write a commit message that describes the **why**, not the **what**. Keep the first line under 72 characters. Use imperative mood ("Fix X" not "Fixed X").
+Stage specific files — never `git add -A` or `git add .`. Imperative mood, under 72 chars first line.
 
 ---
 
-## Step 4: Deploy to Firebase
+## Step 6: Deploy
 
-Choose the narrowest scope that covers the changes:
-
-```bash
-# Only frontend changes (most common)
-firebase deploy --only hosting
-
-# Only Cloud Functions changed
-firebase deploy --only functions
-
-# Firestore rules or indexes changed
-firebase deploy --only firestore
-
-# Multiple layers changed
-firebase deploy
-```
-
-Skip deploy if the fix is purely local tooling, dev config, or documentation.
+Run the deploy commands from `context.md`, using the narrowest scope that covers the changes. Skip deploy if changes are purely local tooling, dev config, or documentation.
 
 ---
 
-## Step 5: Post-Deploy Verification
+## Step 7: Post-Deploy Verification
 
-Launch the **deployment-monitor** agent to verify production health:
-
-```
-Verify the deployment that just completed. Changes made: [summary from orchestrator].
-Check hosting status, Cloud Function logs for errors, and Firestore index deployment.
-```
+Launch the **deployment-monitor** agent with the project specialization to verify production health. Include a summary of what was just deployed.
 
 ---
 
-## Step 6: Report
+## Step 8: Report
 
 Provide a brief summary:
-
-- What was changed and why
+- What was changed and why (the Backward Design goal)
 - Which agents contributed
 - Files modified
 - Build + QA status
 - Deploy status
-- Post-deploy health check results
+- Post-deploy health
 
 ---
 
 ## Notes
 
-- **Orchestrator-first.** Every request goes through the portal-orchestrator. You never investigate bugs or implement features yourself — you dispatch, build, and deploy.
-- **Autonomous execution.** The full pipeline runs without pausing for user approval.
-- **Agent team is the workforce.** The orchestrator coordinates specialists. Each agent works on the layer they own. This produces better results than one generalist trying to do everything.
-- **Build must pass.** Never deploy broken code. If the build fails after agent work, route the errors back to the responsible agent.
-- **QA is mandatory.** The orchestrator must get qa-bug-resolution sign-off before you proceed to build. If QA rejects, the orchestrator routes bugs back to agents and re-tests.
-- **Deploy is production.** Firebase deploy goes to the live site students use. Build + QA must pass first.
-- **Post-deploy verification.** Always run the deployment-monitor after deploying to catch issues early.
+- **EA is the orchestrator.** You coordinate directly — no separate orchestrator agent.
+- **Backward Design scales.** Quick mental checklist for bugs, brief written plan for features.
+- **Project context is loaded, not hardcoded.** Build/deploy commands come from `.agents/context.md`.
+- **Agents get specialized at runtime.** General agent + project specialization file = project-aware specialist.
+- **Autonomous execution.** The full pipeline runs without pausing for user approval unless a decision is genuinely ambiguous.
+- **Build must pass.** QA sign-off + clean build are both required before deploy.

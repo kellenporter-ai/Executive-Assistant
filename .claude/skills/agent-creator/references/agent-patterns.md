@@ -20,8 +20,9 @@ memory: project
 
 | Model | Best For | Examples |
 |-------|----------|---------|
-| `opus` | Orchestration, complex reasoning, architectural planning, multi-agent coordination | portal-orchestrator |
-| `sonnet` | Specialist tasks, code generation, auditing, content writing, focused domain work | ui-accessibility-engineer, backend-integration-engineer, qa-bug-resolution, content-strategist-ux-writer |
+| `opus` | Orchestration, complex reasoning, architectural planning (handled by EA directly) | — |
+| `sonnet` | Specialist tasks, code generation, auditing, focused domain work | ui-engineer, backend-engineer, qa-engineer, graphics-engineer |
+| `haiku` | Content generation, data analysis, monitoring, simple tasks | content-writer, data-analyst, deployment-monitor |
 
 ### Color Palette
 
@@ -29,11 +30,11 @@ Pick a color that hasn't been used yet, or that makes semantic sense:
 
 | Color | Current Usage |
 |-------|---------------|
-| `purple` | portal-orchestrator |
-| `pink` | ui-accessibility-engineer |
-| `red` | backend-integration-engineer |
-| `blue` | qa-bug-resolution |
-| `green` | content-strategist-ux-writer |
+| `pink` | ui-engineer |
+| `red` | backend-engineer |
+| `blue` | qa-engineer |
+| `green` | content-writer |
+| `purple` | graphics-engineer |
 | `orange` | available |
 | `yellow` | available |
 

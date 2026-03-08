@@ -33,27 +33,27 @@ Executive Assistant/
 │   ├── slide-deck/            #   Reveal.js presentation generation
 │   └── study-guide/           #   Student review material generation
 │
-├── agents/                    # Sub-agent definitions (Claude Code subagents)
-│   ├── portal-orchestrator.md #   Coordinates multi-agent Portal work
-│   ├── 3d-graphics-engineer.md
-│   ├── backend-integration-engineer.md
-│   ├── content-strategist-ux-writer.md
-│   ├── data-analyst.md
-│   ├── deployment-monitor.md
-│   ├── economy-designer.md
+├── agents/                    # General-purpose sub-agent definitions
+│   ├── ui-engineer.md         #   Frontend + accessibility
+│   ├── backend-engineer.md    #   Server-side logic, APIs, databases
+│   ├── qa-engineer.md         #   Testing, auditing, gatekeeper
+│   ├── content-writer.md      #   UX copy, instructional content
+│   ├── data-analyst.md        #   Analytics, metrics, reports
+│   ├── graphics-engineer.md   #   3D/SVG rendering, visual effects
+│   ├── deployment-monitor.md  #   Post-deploy health checks
 │   ├── local-llm-assistant.md #   Local Ollama qwen3:14b sub-agent
-│   ├── qa-bug-resolution.md
-│   ├── ui-accessibility-engineer.md
 │   └── memory/                #   Per-agent persistent memory
 │
 ├── projects/
-│   └── Porters-Portal/        #   Git submodule — the main project (gamified LMS)
+│   ├── Porters-Portal/        #   Git submodule — gamified LMS
+│   │   └── .agents/           #   Project-specific agent specializations + context
+│   └── joyce-esl/             #   ESL activities for Joyce
 │
 ├── assets/                    #   Reusable media library (see assets/DIRECTORY.md)
 │   ├── Assessments/           #     Assessment content files
 │   ├── audio/                 #     Sound effects & music (Kenney CC0)
 │   ├── ImagePrompts/          #     Image generation prompts & outputs
-│   ├── models/                #     3D models (Kenney, Quaternius CC0)
+│   ├── models/                #     3D models (KayKit, Quaternius CC0; GLB format)
 │   ├── Presentations/         #     Slide decks
 │   ├── Questions/             #     Question banks
 │   ├── Simulations/           #     Interactive HTML simulations
@@ -94,6 +94,6 @@ Executive Assistant/
 
 - Start with `CLAUDE.md` for behavioral rules, then `context/` for who you're working for
 - Skills in `.claude/skills/` are auto-discovered — each has a `SKILL.md` with instructions
-- Agent definitions in `agents/` describe specialized workers you can delegate to
+- Agent definitions in `agents/` are general-purpose; project-specific specializations live in `projects/<name>/.agents/`
 - The `assets/DIRECTORY.md` file indexes all available media — read it before creating new assets
 - `decisions/` contains past architectural decisions — check before revisiting settled questions

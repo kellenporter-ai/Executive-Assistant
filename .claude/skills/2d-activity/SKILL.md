@@ -18,10 +18,10 @@ model: claude-sonnet-4-6
 Generates a standalone, self-contained HTML file with a lightweight 2D interactive activity. Uses HTML5 Canvas, SVG, CSS animations, and vanilla ES6+ JavaScript — no heavy 3D engine. Integrates with Porter Portal's Proctor Bridge and matches the portal's dark theme.
 
 **Subjects:** AP Physics 1, Honors Physics, Forensic Science
-**Output:** Single HTML file saved to `/home/kp/Desktop/Simulations/<class>/`
+**Output:** Single HTML file saved to `/home/kp/Desktop/Executive Assistant/assets/Simulations/<class>/`
 
 For 2D interaction patterns, Canvas recipes, and activity archetypes, see [2d-patterns.md](2d-patterns.md).
-For the shared Proctor Bridge and dark theme, see [portal-bridge.md](../shared/portal-bridge.md).
+For the shared Proctor Bridge and dark theme, see [portal-bridge.md](../../../references/portal-bridge.md).
 
 ---
 
@@ -64,7 +64,7 @@ If no arguments are provided, ask: "What topic should I build a 2D interactive a
 - Honors Physics
 - Forensic Science
 
-This determines the output subdirectory under `/home/kp/Desktop/Simulations/`.
+This determines the output subdirectory under `/home/kp/Desktop/Executive Assistant/assets/Simulations/`.
 
 **Mode:** Should this activity be graded or exploratory?
 - **Graded** — includes assessment checkpoints, calls `PortalBridge.answer()` and `PortalBridge.complete()`
@@ -145,7 +145,7 @@ Write a single self-contained HTML file following this structure:
 
 ### Proctor Bridge & Dark Theme
 
-Use the shared patterns from [portal-bridge.md](../shared/portal-bridge.md). Include the PortalBridge snippet and use the portal's CSS variables for all colors.
+Use the shared patterns from [portal-bridge.md](../../../references/portal-bridge.md). Include the PortalBridge snippet and use the portal's CSS variables for all colors.
 
 ### Technical Requirements
 
@@ -169,7 +169,7 @@ Use the shared patterns from [portal-bridge.md](../shared/portal-bridge.md). Inc
 - Prefer SVG for diagrams with labels and clickable regions; prefer Canvas for physics animations with many moving objects
 
 **CSS:**
-- Portal dark theme variables from [portal-bridge.md](../shared/portal-bridge.md)
+- Portal dark theme variables from [portal-bridge.md](../../../references/portal-bridge.md)
 - Responsive: activity must work on 1366x768 Chromebook screens (the most common resolution)
 - Glassmorphism panels: `backdrop-filter: blur(14px); background: var(--panel-bg); border: 1px solid var(--border); border-radius: 14px;`
 - Minimum 44px touch targets for all interactive elements
@@ -236,7 +236,7 @@ When the activity simulates physics on a 2D canvas:
 Save to:
 
 ```
-/home/kp/Desktop/Simulations/<class>/<filename>.html
+/home/kp/Desktop/Executive Assistant/assets/Simulations/<class>/<filename>.html
 ```
 
 Where:
@@ -265,5 +265,5 @@ After writing the file, provide:
 - **Chromebook-first.** Optimize for 1366x768, trackpad input, integrated GPU. If an animation stutters on low-end hardware, reduce complexity.
 - **2D means 2D.** If you find yourself wanting a camera, orbit controls, or z-depth, use the 3d-activity skill instead.
 - **Agent delegation.** After generating the HTML file, delegate to project agents:
-  - **qa-bug-resolution** — validate HTML output (accessibility, Proctor Bridge, Chromebook perf). Delegate for graded activities.
-  - **content-strategist-ux-writer** — review instructions, labels, question wording. Delegate when the activity has assessment questions or complex instructions.
+  - **qa-engineer** — validate HTML output (accessibility, Proctor Bridge, Chromebook perf). Delegate for graded activities.
+  - **content-writer** — review instructions, labels, question wording. Delegate when the activity has assessment questions or complex instructions.

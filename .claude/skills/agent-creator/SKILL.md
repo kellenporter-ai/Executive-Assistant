@@ -105,7 +105,7 @@ The description lives in the system prompt metadata and is always visible to Cla
 The body should follow these principles, drawn from what makes the best agents in this project effective:
 
 **1. Establish identity and boundaries first.**
-Open with a clear statement of who the agent is and what it does NOT do. The portal-orchestrator says "you never write production code." The QA agent says "you do NOT fix bugs yourself." These boundaries prevent scope creep and maintain clean handoffs.
+Open with a clear statement of who the agent is and what it does NOT do. The QA agent says "you do NOT fix bugs yourself." The content-writer says "you do NOT write code." These boundaries prevent scope creep and maintain clean handoffs.
 
 **2. Define protocols, not just instructions.**
 The best agents have named protocols (e.g., "Spec Before Code Protocol", "Bug Reporting Protocol") with numbered steps. This gives the agent a clear playbook to follow rather than vague guidance.

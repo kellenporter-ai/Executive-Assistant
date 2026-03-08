@@ -9,15 +9,19 @@
 | Karla Garcia | Principal | School administration |
 | Raquel Estremera | Principal | School administration |
 
-## AI Agent Team (Porter's Portal Development)
+## AI Agent Team
+General agents in `agents/` — project-specialized via `projects/<name>/.agents/`.
+
 | Agent | Role | Notes |
 |-------|------|-------|
-| portal-orchestrator | Lead coordinator | Delegates to specialists, holds architecture memory |
-| ui-accessibility-engineer | Frontend + WCAG | Best memory of all agents; component patterns |
-| backend-integration-engineer | Firebase/Cloud Functions | Server-side work, security rules |
-| qa-bug-resolution | Bug tracking | Reports only, does not fix; ~15 open bugs tracked |
-| content-strategist-ux-writer | Copy + pedagogy text | RPG/spy theme, ISLE pedagogy; no code output |
-| data-analyst | Analytics + reports | Engagement, EWS, grade distributions |
-| economy-designer | RPG economy | Items, abilities, loot tables, economy tuning |
-| deployment-monitor | Post-deploy QA | Function logs, hosting checks |
-| 3d-graphics-engineer | Babylon.js simulations | 3D activity visual quality |
+| ui-engineer | Frontend + accessibility | WCAG compliance, responsive design |
+| backend-engineer | Server-side logic | APIs, databases, security rules |
+| qa-engineer | Quality gatekeeper | Reports bugs, does not fix; audits before deploy |
+| content-writer | UX copy + content | User-facing text, instructional content |
+| data-analyst | Analytics + reports | Engagement, metrics, risk identification |
+| graphics-engineer | Visual rendering | 3D/SVG, effects, animations |
+| deployment-monitor | Post-deploy QA | Health checks, log review |
+| local-llm-assistant | Local LLM delegation | Ollama qwen3:14b for simple tasks |
+
+**Portal-only:** `economy-designer` lives in `projects/Porters-Portal/.agents/` (no general counterpart).
+**Orchestration:** EA handles directly — no separate orchestrator agent.

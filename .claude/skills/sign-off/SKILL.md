@@ -25,11 +25,15 @@ echo "=== EA Repo ==="
 git status --short
 git diff --stat
 
-# Porter's Portal submodule
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-echo "=== Porter's Portal ==="
-git status --short
-git diff --stat
+# All project repos
+for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
+  if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+    echo "=== $(basename "$dir") ==="
+    cd "$dir"
+    git status --short
+    git diff --stat
+  fi
+done
 ```
 
 Present a clear summary of what's uncommitted in each repo. If everything is clean, say so and move to step 4.
@@ -47,21 +51,23 @@ For each repo with uncommitted changes:
 4. Once confirmed, stage and commit:
 
 ```bash
+# EA repo
 cd "/home/kp/Desktop/Executive Assistant"
 git add -A
 git commit -m "the confirmed message"
 
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
+# Each project repo with uncommitted changes
+cd "/home/kp/Desktop/Executive Assistant/projects/<project>"
 git add -A
 git commit -m "the confirmed message"
 ```
 
-**Important:** If the Portal submodule was committed, also update the submodule reference in the EA repo:
+**Important:** If any submodule project was committed, also update the submodule reference in the EA repo:
 
 ```bash
 cd "/home/kp/Desktop/Executive Assistant"
-git add projects/Porters-Portal
-git commit -m "Update Porters-Portal submodule reference"
+git add projects/<project>
+git commit -m "Update <project> submodule reference"
 ```
 
 ### 3. Push to Remote
@@ -69,11 +75,17 @@ git commit -m "Update Porters-Portal submodule reference"
 Push both repos after commits are made:
 
 ```bash
+# EA repo
 cd "/home/kp/Desktop/Executive Assistant"
 git push
 
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-git push
+# All project repos that were committed
+for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
+  if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+    cd "$dir"
+    git push
+  fi
+done
 ```
 
 If a push fails (e.g., rejected due to remote changes), report the issue and ask how to proceed rather than force-pushing.
@@ -95,8 +107,14 @@ Scan for signals of incomplete work:
 cd "/home/kp/Desktop/Executive Assistant"
 git diff HEAD~1 --name-only 2>/dev/null | head -20
 
-cd "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal"
-git diff HEAD~1 --name-only 2>/dev/null | head -20
+# All project repos
+for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
+  if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
+    echo "=== $(basename "$dir") ==="
+    cd "$dir"
+    git diff HEAD~1 --name-only 2>/dev/null | head -20
+  fi
+done
 ```
 
 If recently modified files exist, scan them for TODO/FIXME/HACK markers. Also note any work that was discussed during the session but not completed.

@@ -64,9 +64,9 @@ Use AskUserQuestion:
 For each selected mode, spawn subagents to generate questions in parallel. Target: **500-1000 questions per mode**.
 
 **Agent priority:** Always use the project's custom agents first:
-- **content-strategist-ux-writer** — for question generation subagents (educational content is its specialty)
-- **qa-bug-resolution** — for validation passes
-- **backend-integration-engineer** — for config generation (boss/dungeon structures)
+- **content-writer** — for question generation subagents (educational content is its specialty)
+- **qa-engineer** — for validation passes
+- **backend-engineer** — for config generation (boss/dungeon structures)
 - Only fall back to **general-purpose** agents if project agents are busy or unavailable.
 
 **Batching strategy:**
@@ -241,4 +241,4 @@ Flag any issues (low counts, parse errors, deduplications).
 - **CRITICAL: Always shuffle answer positions.** LLMs consistently place the correct answer as option A or B (~90%+ of the time). The Fisher-Yates shuffle in Step 5.6 is MANDATORY. Never skip it. Never write question files without first shuffling. Verify the distribution is ~25% per position before writing files.
 - **The config files match the portal's import format.** The boss config matches what `QuizBossFormModal` expects; the dungeon config matches what `DungeonFormModal` expects. Teachers import, review, tweak, and deploy.
 - **Dungeon rooms need enough questions to resolve combat.** If a room runs out of questions before the enemy dies or the player dies, the run is permanently soft-locked with no recovery. A base student deals ~10 damage per correct answer (plus damageBonus), so a 200 HP enemy needs ~20 correct answers with no bonus, or ~6 with +25 bonus. Always embed generously — it's better to have unused questions than a soft-locked dungeon.
-- **Always prioritize project agents over general-purpose.** Use content-strategist-ux-writer for question generation, qa-bug-resolution for validation, backend-integration-engineer for config structures. General-purpose is a fallback only.
+- **Always prioritize project agents over general-purpose.** Use content-writer for question generation, qa-engineer for validation, backend-engineer for config structures. General-purpose is a fallback only.
