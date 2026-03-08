@@ -18,9 +18,9 @@
 - Recent focus areas (as of March 2026):
   - **Assessment security & analytics** — server-side telemetry validation, session tokens, anti-cheat; now tracking word count and words-per-second as behavioral integrity signals; 3-panel Google Classroom-style grading view
   - **Gamification expansion** — Flux Shop, cosmetics (auras, particles, frames, trails), boss fights, dungeons, PvP arena
-  - **Avatar customization** — operative avatar getting deep visual polish: hair path geometry (buzz, afro, pixie, braids, ponytail), fabric texture system, space background animation
+  - **3D avatar system (active)** — replaced SVG OperativeAvatar with Babylon.js 3D character models using Quaternius GLB assets; 8 models (2 free, 3 standard/200 Flux, 3 premium/400 Flux); integrated with Flux Store economy; PBR→StandardMaterial conversion for Chromebook compatibility; **next: 3D model customization** (color tinting for skin/hair/clothing like the 2D system)
   - **Simulation development** — Babylon.js 3D activities and 2D interactive activities for physics and forensic science; 3D rendering optimizations applied (Thin Instances, GreasedLine, static mesh freezing, LOD)
-  - **3D asset pipeline (planning)** — roadmap documented in `decisions/asset-pipeline-roadmap.md`; Phase 1 (external glTF + Meshoptimizer) is next sprint target
+  - **3D asset pipeline** — Phase 1 complete (external glTF loading via Babylon.js SceneLoader); roadmap in `decisions/asset-pipeline-roadmap.md`; Phase 2 (Meshoptimizer compression) next
   - **Grading UX** — side-by-side rubric grading, academic integrity analysis, AI-flagged submission handling
 
 ## AI Agent Team
