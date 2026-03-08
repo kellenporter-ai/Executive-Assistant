@@ -18,17 +18,18 @@
 - Recent focus areas (as of March 2026):
   - **Assessment security & analytics** — server-side telemetry validation, session tokens, anti-cheat; now tracking word count and words-per-second as behavioral integrity signals; 3-panel Google Classroom-style grading view
   - **Gamification expansion** — Flux Shop, cosmetics (auras, particles, frames, trails), boss fights, dungeons, PvP arena
-  - **3D avatar system (active)** — replaced SVG OperativeAvatar with Babylon.js 3D character models using Quaternius GLB assets; 8 models (2 free, 3 standard/200 Flux, 3 premium/400 Flux); integrated with Flux Store economy; PBR→StandardMaterial conversion for Chromebook compatibility; **next: 3D model customization** (color tinting for skin/hair/clothing like the 2D system)
+  - **3D avatar system** — replaced SVG OperativeAvatar with Babylon.js 3D character models using Quaternius GLB assets; 8 models (2 free, 3 standard/200 Flux, 3 premium/400 Flux); integrated with Flux Store economy; PBR→StandardMaterial conversion for Chromebook compatibility; **color customization complete** (skin tone, hair color, suit hue via gradient sliders; in-place material tinting; 16-tone palettes); **next: 3D hair styles** (requires Blender-created swappable hair mesh assets)
   - **Simulation development** — Babylon.js 3D activities and 2D interactive activities for physics and forensic science; 3D rendering optimizations applied (Thin Instances, GreasedLine, static mesh freezing, LOD)
-  - **3D asset pipeline** — Phase 1 complete (external glTF loading via Babylon.js SceneLoader); roadmap in `decisions/asset-pipeline-roadmap.md`; Phase 2 (Meshoptimizer compression) next
+  - **3D asset pipeline** — Phase 1 complete (external glTF loading via Babylon.js SceneLoader); **Phase 2 complete** (meshoptimizer compression via gltf-transform — 51% file size reduction across all character models; originals backed up to `.originals/`); roadmap in `decisions/asset-pipeline-roadmap.md`
   - **Grading UX** — side-by-side rubric grading, academic integrity analysis, AI-flagged submission handling
 
 ## AI Agent Team
-- 9 specialized agents managed from `agents/` in the Executive Assistant repo
-- Agents: portal-orchestrator, ui-accessibility-engineer, backend-integration-engineer, qa-bug-resolution, content-strategist-ux-writer, data-analyst, economy-designer, deployment-monitor, 3d-graphics-engineer
-- Agent memory stored in `agents/memory/` — captures patterns, bugs, architecture decisions
-- 13 skills in `.claude/skills/` — dev-pipeline, create-assessment, slide-deck, 3d-activity, 2d-activity, crime-scene-generator, context-sync, agent-creator, game-balance, generate-image, generate-questions, lesson-plan, study-guide
-- Leverage cheaper/faster models for sub-agent tasks
+- 8 general agents in `agents/`: ui-engineer, backend-engineer, qa-engineer, content-writer, data-analyst, graphics-engineer, deployment-monitor, local-llm-assistant
+- Project-specific specializations in `projects/<name>/.agents/` (context.md + per-agent overrides)
+- Portal-only agents: economy-designer (in `projects/Porters-Portal/.agents/`)
+- EA handles orchestration directly — no separate orchestrator
+- Agent memory in `agents/memory/` — cross-project institutional knowledge
+- Skills in `.claude/skills/` — dev-pipeline is now project-agnostic with Backward Design
 
 ## Guiding Principles
 - Social constructivism: students build understanding collaboratively
