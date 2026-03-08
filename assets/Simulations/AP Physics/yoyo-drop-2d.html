@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yo-Yo Drop Simulation</title>
+<style>
+  :root {
+    --bg: #0f0720;
+    --panel-bg: rgba(18, 10, 38, 0.88);
+    --border: rgba(160, 100, 255, 0.18);
+    --text: #e8e4f4;
+    --muted: #8a85a8;
+    --blue: #5b9cf6;
+    --green: #22d47a;
+    --purple: #9b6bff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  .container {
+    position: relative;
+    width: min(95vw, 900px);
+    height: min(90vh, 800px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .canvas-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 0;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 14px;
+    border: 1px solid var(--border);
+    user-select: none;
+    touch-action: none;
+  }
+
+  .inquiry-panel {
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    max-width: 280px;
+    padding: 18px 20px;
+    border-radius: 14px;
+    background: rgba(18, 10, 38, 0.72);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1px solid rgba(160, 100, 255, 0.22);
+    z-index: 2;
+  }
+  .inquiry-panel h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+  .inquiry-panel .prompt {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .inquiry-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 14px 0;
+  }
+  .inquiry-panel li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 4px 0 4px 16px;
+    position: relative;
+    line-height: 1.45;
+  }
+  .inquiry-panel li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 11px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple);
+  }
+  .inquiry-panel .panel-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .inquiry-panel button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  button {
+    min-width: 100px;
+    min-height: 40px;
+    padding: 9px 20px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: rgba(18, 10, 38, 0.85);
+    backdrop-filter: blur(14px);
+    color: var(--text);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button:hover { border-color: var(--purple); background: rgba(155, 107, 255, 0.15); }
+  button:active { background: rgba(155, 107, 255, 0.25); }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="canvas-wrap">
+    <canvas id="simCanvas" aria-label="Yo-yo drop physics simulation"></canvas>
+    <div class="inquiry-panel">
+      <h2>Yo-Yo Drop</h2>
+      <p class="prompt">Observe the yo-yo drop. Think about:</p>
+      <ul>
+        <li>What quantities could you measure?</li>
+        <li>What tools would you use to measure each one?</li>
+        <li>How would you set up each measurement?</li>
+      </ul>
+      <div class="panel-buttons">
+        <button id="dropBtn" aria-label="Drop the yo-yo">Drop</button>
+        <button id="resetBtn" aria-label="Reset simulation">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+try {
+
+// --- Portal Bridge (exploratory mode — init and save only) ---
+const PortalBridge = (() => {
+    const send = (type, data) => {
+        if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+    };
+    return {
+        init:     ()              => send('PROCTOR_READY'),
+        save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+        answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+        complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+    };
+})();
+window.addEventListener('load', () => PortalBridge.init());
+
+// --- Constants ---
+const g = 9.81;                // m/s²
+const PIXELS_PER_METER = 280;  // physics-to-pixel scale
+const VISUAL_YOYO_RADIUS = 38; // px — decoupled from physics for visual impact
+const yoyoMass = 0.06;         // kg
+const yoyoRadius = 0.03;       // m (outer radius R — physics only)
+const axleRadius = 0.006;      // m (inner spool radius r)
+const I = 0.5 * yoyoMass * yoyoRadius * yoyoRadius; // moment of inertia ½mR²
+const linAccel = g / (1 + I / (yoyoMass * axleRadius * axleRadius)); // a = g / (1 + I/(m*r²))
+const stringLength = 1.8;      // meters
+
+// --- Canvas setup ---
+const canvas = document.getElementById('simCanvas');
+const ctx = canvas.getContext('2d');
+const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+function resize() {
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener('resize', resize);
+
+// Logical dimensions
+function W() { return canvas.width / dpr; }
+function H() { return canvas.height / dpr; }
+
+// --- State ---
+let state = 'idle'; // idle | falling | stopped
+let yoyoY = 0;      // meters below anchor
+let velocity = 0;   // m/s downward
+let angle = 0;      // radians
+let angularVel = 0;  // rad/s
+let lastTime = null;
+let saveTimer = 0;
+
+// Trail history for motion afterimages
+const trail = []; // { x, y, angle, alpha }
+
+// --- Anchor position ---
+function anchorX() { return W() * 0.52; }
+function anchorTopPad() { return 68; }
+
+// Convert sim meters to pixel offset from anchor
+function metersToPixels(m) { return m * PIXELS_PER_METER; }
+
+// --- Reduced motion ---
+const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// --- Segment colors ---
+const segmentColors = ['#9b6bff', '#22d47a', '#ff6b9b', '#ffb822', '#6bc5ff', '#ff4466'];
+
+// --- Drawing: classroom background ---
+function drawBackground() {
+    const w = W(), h = H();
+    const floorY = h * 0.65;
+
+    // ── WALL: cinderblock texture ──
+    const wallBase = ctx.createLinearGradient(0, 0, 0, floorY);
+    wallBase.addColorStop(0, '#130b28');
+    wallBase.addColorStop(0.5, '#170d30');
+    wallBase.addColorStop(1, '#1a0f34');
+    ctx.fillStyle = wallBase;
+    ctx.fillRect(0, 0, w, floorY);
+
+    // Cinderblock rows — staggered bond pattern
+    const blockH = 22, blockW = 48, mortarW = 2;
+    const blockColors = ['rgba(30,20,55,0.35)', 'rgba(35,22,60,0.35)', 'rgba(28,18,50,0.35)', 'rgba(32,24,58,0.35)'];
+    ctx.lineWidth = mortarW;
+    ctx.strokeStyle = 'rgba(8,4,18,0.5)';
+    for (let row = 0; row < Math.ceil(floorY / blockH); row++) {
+        const offset = (row % 2) * (blockW / 2);
+        const by = row * blockH;
+        for (let col = -1; col < Math.ceil(w / blockW) + 1; col++) {
+            const bx = col * blockW + offset;
+            // Block face with subtle variation
+            const ci = (row * 7 + col * 3) & 3;
+            ctx.fillStyle = blockColors[ci];
+            ctx.fillRect(bx + mortarW, by + mortarW, blockW - mortarW * 2, blockH - mortarW * 2);
+            // Mortar lines
+            ctx.strokeRect(bx, by, blockW, blockH);
+        }
+    }
+
+    // Subtle warm light gradient from top (fluorescent glow)
+    const ceilGlow = ctx.createLinearGradient(0, 0, 0, 80);
+    ceilGlow.addColorStop(0, 'rgba(180, 170, 220, 0.06)');
+    ceilGlow.addColorStop(1, 'rgba(180, 170, 220, 0)');
+    ctx.fillStyle = ceilGlow;
+    ctx.fillRect(0, 0, w, 80);
+
+    // Fluorescent light fixture on ceiling
+    const lightW = w * 0.3, lightH = 10;
+    const lightX = w * 0.5 - lightW / 2, lightY = 6;
+    ctx.fillStyle = 'rgba(200, 195, 230, 0.12)';
+    ctx.beginPath();
+    ctx.roundRect(lightX, lightY, lightW, lightH, 3);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(160, 150, 200, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Light glow
+    const lightGlow = ctx.createRadialGradient(w * 0.5, lightY + lightH / 2, 0, w * 0.5, lightY + lightH / 2, lightW * 0.7);
+    lightGlow.addColorStop(0, 'rgba(200, 190, 240, 0.04)');
+    lightGlow.addColorStop(1, 'rgba(200, 190, 240, 0)');
+    ctx.fillStyle = lightGlow;
+    ctx.fillRect(0, 0, w, floorY * 0.5);
+
+    // ── WHITEBOARD ──
+    const wbW = w * 0.32, wbH = floorY * 0.32;
+    const wbX = w * 0.34 - wbW / 2, wbY = floorY * 0.12;
+    // Board surface — off-white
+    const wbGrad = ctx.createLinearGradient(wbX, wbY, wbX, wbY + wbH);
+    wbGrad.addColorStop(0, 'rgba(210, 205, 225, 0.18)');
+    wbGrad.addColorStop(1, 'rgba(190, 185, 210, 0.14)');
+    ctx.fillStyle = wbGrad;
+    ctx.beginPath();
+    ctx.roundRect(wbX, wbY, wbW, wbH, 3);
+    ctx.fill();
+    // Board frame
+    ctx.strokeStyle = 'rgba(120, 110, 160, 0.25)';
+    ctx.lineWidth = 2.5;
+    ctx.stroke();
+    // Tray at bottom
+    ctx.fillStyle = 'rgba(80, 70, 120, 0.2)';
+    ctx.fillRect(wbX + 4, wbY + wbH - 2, wbW - 8, 6);
+    // Marker scribbles on whiteboard — faint equations
+    ctx.save();
+    ctx.globalAlpha = 0.12;
+    ctx.strokeStyle = '#4466cc';
+    ctx.lineWidth = 1.5;
+    ctx.font = `${Math.max(10, wbH * 0.12)}px monospace`;
+    ctx.fillStyle = '#4466cc';
+    ctx.fillText('F = ma', wbX + wbW * 0.08, wbY + wbH * 0.3);
+    ctx.fillText('\u03C4 = I\u03B1', wbX + wbW * 0.08, wbY + wbH * 0.55);
+    ctx.fillStyle = '#cc4444';
+    ctx.fillText('v = r\u03C9', wbX + wbW * 0.55, wbY + wbH * 0.3);
+    ctx.fillText('KE = \u00BDI\u03C9\u00B2', wbX + wbW * 0.55, wbY + wbH * 0.55);
+    // Underline
+    ctx.beginPath();
+    ctx.moveTo(wbX + wbW * 0.06, wbY + wbH * 0.7);
+    ctx.lineTo(wbX + wbW * 0.92, wbY + wbH * 0.7);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── WINDOW (left side) ──
+    const winX = w * 0.04, winY = floorY * 0.1, winW = w * 0.12, winH = floorY * 0.5;
+    // Window recess shadow
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+    ctx.fillRect(winX - 3, winY - 3, winW + 6, winH + 6);
+    // Sky fill
+    const skyGrad = ctx.createLinearGradient(winX, winY, winX, winY + winH);
+    skyGrad.addColorStop(0, 'rgba(45, 60, 110, 0.4)');
+    skyGrad.addColorStop(0.6, 'rgba(55, 75, 130, 0.35)');
+    skyGrad.addColorStop(1, 'rgba(35, 50, 90, 0.3)');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(winX, winY, winW, winH);
+    // Window frame
+    ctx.strokeStyle = 'rgba(100, 90, 150, 0.3)';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(winX, winY, winW, winH);
+    // Mullions (cross pieces)
+    ctx.strokeStyle = 'rgba(100, 90, 150, 0.25)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(winX + winW / 2, winY);
+    ctx.lineTo(winX + winW / 2, winY + winH);
+    ctx.moveTo(winX, winY + winH * 0.4);
+    ctx.lineTo(winX + winW, winY + winH * 0.4);
+    ctx.stroke();
+    // Blinds — horizontal slats on top half
+    ctx.strokeStyle = 'rgba(140, 130, 180, 0.08)';
+    ctx.lineWidth = 1;
+    for (let by = winY + 4; by < winY + winH * 0.38; by += 5) {
+        ctx.beginPath();
+        ctx.moveTo(winX + 2, by);
+        ctx.lineTo(winX + winW - 2, by);
+        ctx.stroke();
+    }
+    // Light spill from window onto wall
+    const spillGrad = ctx.createLinearGradient(winX + winW, winY, winX + winW + w * 0.12, winY);
+    spillGrad.addColorStop(0, 'rgba(70, 85, 140, 0.06)');
+    spillGrad.addColorStop(1, 'rgba(70, 85, 140, 0)');
+    ctx.fillStyle = spillGrad;
+    ctx.fillRect(winX + winW, winY, w * 0.12, winH);
+
+    // ── PHYSICS POSTER (right side) ──
+    const postW = w * 0.09, postH = floorY * 0.3;
+    const postX = w * 0.82, postY = floorY * 0.15;
+    // Poster background
+    const postGrad = ctx.createLinearGradient(postX, postY, postX, postY + postH);
+    postGrad.addColorStop(0, 'rgba(70, 35, 100, 0.35)');
+    postGrad.addColorStop(1, 'rgba(50, 25, 80, 0.3)');
+    ctx.fillStyle = postGrad;
+    ctx.beginPath();
+    ctx.roundRect(postX, postY, postW, postH, 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(155, 107, 255, 0.12)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    // Poster content — Newton's cradle silhouette
+    ctx.save();
+    ctx.globalAlpha = 0.2;
+    ctx.strokeStyle = '#b8a0e0';
+    ctx.lineWidth = 1;
+    const cradleY = postY + postH * 0.35;
+    const cradleCx = postX + postW / 2;
+    // Horizontal bar
+    ctx.beginPath();
+    ctx.moveTo(postX + postW * 0.15, cradleY);
+    ctx.lineTo(postX + postW * 0.85, cradleY);
+    ctx.stroke();
+    // 5 pendulum balls
+    const ballR = postW * 0.06;
+    const ballSpacing = postW * 0.12;
+    for (let i = -2; i <= 2; i++) {
+        const bx = cradleCx + i * ballSpacing;
+        const lineBottom = cradleY + postH * 0.28;
+        ctx.beginPath();
+        ctx.moveTo(bx, cradleY);
+        ctx.lineTo(bx, lineBottom);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(bx, lineBottom + ballR, ballR, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(180, 160, 220, 0.25)';
+        ctx.fill();
+    }
+    // Poster title text
+    ctx.font = `${Math.max(7, postW * 0.12)}px sans-serif`;
+    ctx.fillStyle = 'rgba(200, 190, 240, 0.3)';
+    ctx.textAlign = 'center';
+    ctx.fillText('PHYSICS', cradleCx, postY + postH * 0.82);
+    ctx.restore();
+
+    // ── CLOCK on wall (upper right) ──
+    const clockR = Math.min(w, floorY) * 0.04;
+    const clockX = w * 0.92, clockY = floorY * 0.12;
+    ctx.beginPath();
+    ctx.arc(clockX, clockY, clockR, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(200, 195, 225, 0.1)';
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(150, 140, 190, 0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    // Clock hands
+    ctx.strokeStyle = 'rgba(180, 170, 220, 0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(clockX, clockY);
+    ctx.lineTo(clockX + clockR * 0.5, clockY - clockR * 0.3);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(clockX, clockY);
+    ctx.lineTo(clockX - clockR * 0.15, clockY - clockR * 0.65);
+    ctx.stroke();
+
+    // ── EQUIPMENT SHELF (far right, along wall) ──
+    const shelfX = w * 0.88, shelfW = w * 0.1;
+    const shelfY1 = floorY * 0.5, shelfY2 = floorY * 0.72;
+    // Shelf brackets
+    ctx.fillStyle = 'rgba(80, 65, 120, 0.2)';
+    ctx.fillRect(shelfX, shelfY1, shelfW, 4);
+    ctx.fillRect(shelfX, shelfY2, shelfW, 4);
+    // Items on shelves — beaker/flask shapes
+    ctx.strokeStyle = 'rgba(140, 160, 220, 0.12)';
+    ctx.lineWidth = 1.5;
+    // Beaker on top shelf
+    ctx.beginPath();
+    ctx.moveTo(shelfX + 8, shelfY1);
+    ctx.lineTo(shelfX + 5, shelfY1 - 16);
+    ctx.lineTo(shelfX + 22, shelfY1 - 16);
+    ctx.lineTo(shelfX + 19, shelfY1);
+    ctx.stroke();
+    // Flask on top shelf
+    ctx.beginPath();
+    ctx.arc(shelfX + shelfW * 0.65, shelfY1 - 10, 7, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(shelfX + shelfW * 0.65 - 2, shelfY1 - 17);
+    ctx.lineTo(shelfX + shelfW * 0.65 - 2, shelfY1 - 22);
+    ctx.lineTo(shelfX + shelfW * 0.65 + 2, shelfY1 - 22);
+    ctx.lineTo(shelfX + shelfW * 0.65 + 2, shelfY1 - 17);
+    ctx.stroke();
+    // Books on bottom shelf
+    ctx.fillStyle = 'rgba(100, 50, 140, 0.15)';
+    ctx.fillRect(shelfX + 3, shelfY2 - 18, 8, 18);
+    ctx.fillStyle = 'rgba(50, 80, 140, 0.15)';
+    ctx.fillRect(shelfX + 13, shelfY2 - 15, 7, 15);
+    ctx.fillStyle = 'rgba(140, 60, 80, 0.12)';
+    ctx.fillRect(shelfX + 22, shelfY2 - 20, 9, 20);
+
+    // ── BASEBOARD / MOLDING at wall-floor junction ──
+    ctx.fillStyle = 'rgba(20, 12, 40, 0.6)';
+    ctx.fillRect(0, floorY - 6, w, 6);
+    ctx.strokeStyle = 'rgba(80, 60, 130, 0.15)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, floorY - 6);
+    ctx.lineTo(w, floorY - 6);
+    ctx.stroke();
+
+    // ── FLOOR: VCT tile pattern ──
+    const floorBase = ctx.createLinearGradient(0, floorY, 0, h);
+    floorBase.addColorStop(0, '#1c1238');
+    floorBase.addColorStop(0.5, '#18102e');
+    floorBase.addColorStop(1, '#110a22');
+    ctx.fillStyle = floorBase;
+    ctx.fillRect(0, floorY, w, h - floorY);
+
+    // Perspective tile grid — proper vanishing point
+    const vpX = w * 0.5, vpY = floorY;
+    const tileCount = 10;
+    const floorDepth = h - floorY;
+
+    // Horizontal tile lines (receding with perspective)
+    ctx.strokeStyle = 'rgba(90, 70, 140, 0.1)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i <= 8; i++) {
+        // Perspective foreshortening: lines bunch up near the horizon
+        const t = i / 8;
+        const perspT = t * t; // quadratic for perspective compression
+        const ly = floorY + floorDepth * perspT;
+        ctx.beginPath();
+        ctx.moveTo(0, ly);
+        ctx.lineTo(w, ly);
+        ctx.stroke();
+    }
+
+    // Vertical tile lines (converging to vanishing point)
+    for (let i = -tileCount; i <= tileCount; i++) {
+        const bottomX = vpX + i * (w * 0.08);
+        ctx.beginPath();
+        ctx.moveTo(vpX, vpY);
+        ctx.lineTo(bottomX, h);
+        ctx.stroke();
+    }
+
+    // Tile fill — alternating subtle shade for checkerboard hint
+    // Just do a couple rows near the bottom where tiles are large enough to see
+    ctx.save();
+    ctx.globalAlpha = 0.04;
+    for (let row = 5; row < 8; row++) {
+        const t1 = (row / 8) * (row / 8);
+        const t2 = ((row + 1) / 8) * ((row + 1) / 8);
+        const y1 = floorY + floorDepth * t1;
+        const y2 = floorY + floorDepth * t2;
+        for (let col = -tileCount; col < tileCount; col++) {
+            if ((row + col) % 2 === 0) continue;
+            const frac1 = (col) / (tileCount * 2) + 0.5;
+            const frac2 = (col + 1) / (tileCount * 2) + 0.5;
+            // Interpolate x positions at both y levels
+            const x1top = vpX + (frac1 * 2 - 1) * (w * 0.8) * t1;
+            const x2top = vpX + (frac2 * 2 - 1) * (w * 0.8) * t1;
+            const x1bot = vpX + (frac1 * 2 - 1) * (w * 0.8) * t2;
+            const x2bot = vpX + (frac2 * 2 - 1) * (w * 0.8) * t2;
+            ctx.fillStyle = '#9b6bff';
+            ctx.beginPath();
+            ctx.moveTo(x1top, y1);
+            ctx.lineTo(x2top, y1);
+            ctx.lineTo(x2bot, y2);
+            ctx.lineTo(x1bot, y2);
+            ctx.closePath();
+            ctx.fill();
+        }
+    }
+    ctx.restore();
+
+    // Floor wax sheen — subtle reflection near the front
+    const sheenGrad = ctx.createLinearGradient(0, h - floorDepth * 0.3, 0, h);
+    sheenGrad.addColorStop(0, 'rgba(160, 140, 210, 0)');
+    sheenGrad.addColorStop(0.5, 'rgba(160, 140, 210, 0.02)');
+    sheenGrad.addColorStop(1, 'rgba(160, 140, 210, 0)');
+    ctx.fillStyle = sheenGrad;
+    ctx.fillRect(0, h - floorDepth * 0.3, w, floorDepth * 0.3);
+
+    // ── LAB TABLE (black resin top, metal frame) ──
+    const tableW = w * 0.4;
+    const tableTopThick = 10;
+    const tableLegH = (h - floorY) * 0.35;
+    const tableX = w * 0.5 - tableW / 2;
+    const tableY = floorY + (h - floorY) * 0.3;
+
+    // Table shadow on floor
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.12)';
+    ctx.beginPath();
+    ctx.ellipse(w * 0.5, tableY + tableLegH + 4, tableW * 0.45, 6, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Metal legs
+    const legColor = 'rgba(90, 80, 130, 0.35)';
+    const legW = 5;
+    ctx.fillStyle = legColor;
+    ctx.fillRect(tableX + 14, tableY + tableTopThick, legW, tableLegH);
+    ctx.fillRect(tableX + tableW - 19, tableY + tableTopThick, legW, tableLegH);
+    // Cross brace
+    ctx.strokeStyle = 'rgba(90, 80, 130, 0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(tableX + 16, tableY + tableTopThick + tableLegH * 0.6);
+    ctx.lineTo(tableX + tableW - 17, tableY + tableTopThick + tableLegH * 0.6);
+    ctx.stroke();
+
+    // Table top — black resin surface
+    const ttGrad = ctx.createLinearGradient(tableX, tableY, tableX, tableY + tableTopThick);
+    ttGrad.addColorStop(0, '#2a1e48');
+    ttGrad.addColorStop(0.3, '#1e1438');
+    ttGrad.addColorStop(1, '#16102a');
+    ctx.fillStyle = ttGrad;
+    ctx.beginPath();
+    ctx.roundRect(tableX, tableY, tableW, tableTopThick, 2);
+    ctx.fill();
+    // Top edge highlight
+    ctx.strokeStyle = 'rgba(180, 160, 230, 0.1)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(tableX + 2, tableY + 1);
+    ctx.lineTo(tableX + tableW - 2, tableY + 1);
+    ctx.stroke();
+    // Front edge (thickness)
+    ctx.fillStyle = 'rgba(18, 12, 32, 0.5)';
+    ctx.fillRect(tableX, tableY + tableTopThick, tableW, 3);
+
+    // ── STOOL tucked under table (left side) ──
+    const stoolX = tableX + tableW * 0.2;
+    const stoolSeatY = tableY + tableLegH * 0.7;
+    const stoolW = 22, stoolH = 3;
+    // Stool legs
+    ctx.strokeStyle = 'rgba(100, 85, 140, 0.2)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(stoolX - 6, stoolSeatY + stoolH);
+    ctx.lineTo(stoolX - 8, tableY + tableLegH + tableTopThick);
+    ctx.moveTo(stoolX + stoolW + 6, stoolSeatY + stoolH);
+    ctx.lineTo(stoolX + stoolW + 8, tableY + tableLegH + tableTopThick);
+    ctx.stroke();
+    // Stool seat
+    ctx.fillStyle = 'rgba(40, 28, 70, 0.35)';
+    ctx.beginPath();
+    ctx.roundRect(stoolX - 2, stoolSeatY, stoolW + 4, stoolH, 2);
+    ctx.fill();
+
+    // ── SECOND TABLE in background (right side, smaller due to depth) ──
+    const t2W = w * 0.18, t2H = 5;
+    const t2X = w * 0.72, t2Y = floorY + (h - floorY) * 0.12;
+    ctx.fillStyle = 'rgba(30, 20, 52, 0.3)';
+    ctx.beginPath();
+    ctx.roundRect(t2X, t2Y, t2W, t2H, 1);
+    ctx.fill();
+    // Legs
+    ctx.fillStyle = 'rgba(60, 50, 90, 0.15)';
+    ctx.fillRect(t2X + 6, t2Y + t2H, 3, (h - floorY) * 0.15);
+    ctx.fillRect(t2X + t2W - 9, t2Y + t2H, 3, (h - floorY) * 0.15);
+}
+
+// --- Drawing: hand and arm ---
+function drawHand(x, y) {
+    ctx.save();
+
+    // Forearm extending from upper-right
+    const armStartX = x + 80;
+    const armStartY = y - 80;
+    const armEndX = x + 8;
+    const armEndY = y - 18;
+
+    // Forearm shadow
+    ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+    ctx.lineWidth = 28;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(armStartX + 2, armStartY + 2);
+    ctx.lineTo(armEndX + 2, armEndY + 2);
+    ctx.stroke();
+
+    // Forearm
+    ctx.strokeStyle = '#c49a6c';
+    ctx.lineWidth = 24;
+    ctx.beginPath();
+    ctx.moveTo(armStartX, armStartY);
+    ctx.lineTo(armEndX, armEndY);
+    ctx.stroke();
+
+    // Forearm shading (darker underside)
+    ctx.strokeStyle = 'rgba(140, 100, 65, 0.4)';
+    ctx.lineWidth = 24;
+    ctx.beginPath();
+    ctx.moveTo(armStartX, armStartY + 4);
+    ctx.lineTo(armEndX, armEndY + 4);
+    ctx.stroke();
+
+    // Sleeve cuff
+    ctx.strokeStyle = '#2a1a45';
+    ctx.lineWidth = 26;
+    ctx.beginPath();
+    ctx.moveTo(armStartX + 3, armStartY + 3);
+    ctx.lineTo(armStartX - 6, armStartY + 14);
+    ctx.stroke();
+
+    ctx.translate(x, y);
+
+    // Palm / fist
+    ctx.fillStyle = '#c49a6c';
+    ctx.beginPath();
+    ctx.ellipse(0, -10, 14, 11, 0.15, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Palm shadow
+    ctx.fillStyle = 'rgba(150, 110, 70, 0.5)';
+    ctx.beginPath();
+    ctx.ellipse(0, -6, 12, 6, 0.1, 0, Math.PI);
+    ctx.fill();
+
+    // Fingers curled — four knuckle bumps
+    ctx.fillStyle = '#c49a6c';
+    for (let i = 0; i < 4; i++) {
+        const fx = -9 + i * 6;
+        ctx.beginPath();
+        ctx.ellipse(fx, -2, 4, 5, 0, 0, Math.PI * 2);
+        ctx.fill();
+    }
+
+    // Finger creases
+    ctx.strokeStyle = 'rgba(130, 90, 55, 0.5)';
+    ctx.lineWidth = 0.8;
+    for (let i = 0; i < 4; i++) {
+        const fx = -9 + i * 6;
+        ctx.beginPath();
+        ctx.arc(fx, -2, 4, Math.PI * 0.2, Math.PI * 0.8);
+        ctx.stroke();
+    }
+
+    // Thumb on the side
+    ctx.fillStyle = '#c49a6c';
+    ctx.beginPath();
+    ctx.ellipse(14, -12, 5, 9, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+    // Thumb highlight
+    ctx.fillStyle = 'rgba(210, 175, 130, 0.3)';
+    ctx.beginPath();
+    ctx.ellipse(13, -14, 3, 5, 0.3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Pinch point indicator — where string meets fingers
+    ctx.fillStyle = 'rgba(180, 140, 90, 0.4)';
+    ctx.beginPath();
+    ctx.ellipse(0, 4, 3, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// --- Drawing: string ---
+function drawString(x1, y1, x2, y2) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(232, 228, 244, 0.8)';
+    ctx.lineWidth = 2.8;
+    ctx.lineCap = 'round';
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    // Slight sag via quadratic curve — more pronounced
+    const dist = y2 - y1;
+    const sagAmount = Math.min(dist * 0.06, 12);
+    const midX = (x1 + x2) / 2 + sagAmount;
+    const midY = (y1 + y2) / 2;
+    ctx.quadraticCurveTo(midX, midY, x2, y2);
+    ctx.stroke();
+    ctx.restore();
+}
+
+// --- Drawing: yo-yo ---
+function drawYoyo(cx, cy, ang) {
+    const r = VISUAL_YOYO_RADIUS;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(ang);
+
+    // Outer disc gradient
+    const discGrad = ctx.createRadialGradient(0, 0, r * 0.3, 0, 0, r);
+    discGrad.addColorStop(0, '#2a1555');
+    discGrad.addColorStop(0.7, '#1e0f40');
+    discGrad.addColorStop(1, '#14082e');
+    ctx.fillStyle = discGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Colored segments — 6 distinct bright colors at high opacity
+    for (let i = 0; i < 6; i++) {
+        const startA = (i / 6) * Math.PI * 2;
+        const endA = ((i + 1) / 6) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, r * 0.78, startA, endA);
+        ctx.closePath();
+        ctx.fillStyle = segmentColors[i];
+        ctx.globalAlpha = 0.8;
+        ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+
+    // Segment divider lines
+    ctx.strokeStyle = 'rgba(10, 5, 25, 0.5)';
+    ctx.lineWidth = 1.5;
+    for (let i = 0; i < 6; i++) {
+        const a = (i / 6) * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(a) * r * 0.14, Math.sin(a) * r * 0.14);
+        ctx.lineTo(Math.cos(a) * r * 0.78, Math.sin(a) * r * 0.78);
+        ctx.stroke();
+    }
+
+    // Metallic rim ring
+    const rimGrad = ctx.createRadialGradient(0, 0, r * 0.82, 0, 0, r);
+    rimGrad.addColorStop(0, 'rgba(180, 160, 220, 0.25)');
+    rimGrad.addColorStop(0.5, 'rgba(220, 210, 245, 0.4)');
+    rimGrad.addColorStop(1, 'rgba(100, 80, 150, 0.3)');
+    ctx.fillStyle = rimGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.arc(0, 0, r * 0.82, 0, Math.PI * 2, true);
+    ctx.fill();
+
+    // Rim outline
+    ctx.strokeStyle = 'rgba(200, 180, 255, 0.45)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(180, 160, 230, 0.2)';
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.82, 0, Math.PI * 2);
+    ctx.stroke();
+
+    // Dark center hub
+    const hubGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 0.14);
+    hubGrad.addColorStop(0, '#2e1a4a');
+    hubGrad.addColorStop(0.6, '#1a0e33');
+    hubGrad.addColorStop(1, '#0e0620');
+    ctx.fillStyle = hubGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(155, 107, 255, 0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Axle dot
+    ctx.fillStyle = '#c0b8d8';
+    ctx.beginPath();
+    ctx.arc(0, 0, r * 0.05, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.restore();
+}
+
+// --- Drawing: glow ---
+function drawGlow(cx, cy) {
+    if (state !== 'falling') return;
+    const r = VISUAL_YOYO_RADIUS * 2.2;
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
+    grad.addColorStop(0, 'rgba(155, 107, 255, 0.2)');
+    grad.addColorStop(1, 'rgba(155, 107, 255, 0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// --- Drawing: motion trail ---
+function drawTrail() {
+    for (let i = 0; i < trail.length; i++) {
+        const t = trail[i];
+        ctx.save();
+        ctx.globalAlpha = t.alpha;
+        ctx.translate(t.x, t.y);
+        ctx.rotate(t.angle);
+
+        // Ghost circle
+        const r = VISUAL_YOYO_RADIUS;
+        ctx.fillStyle = 'rgba(155, 107, 255, 0.15)';
+        ctx.beginPath();
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.restore();
+    }
+}
+
+// --- Drawing: speed lines ---
+function drawSpeedLines(cx, cy, speed) {
+    if (speed < 0.5) return;
+    const intensity = Math.min(speed / 4, 1);
+    const count = Math.floor(3 + intensity * 4);
+    ctx.save();
+    ctx.strokeStyle = `rgba(200, 190, 240, ${0.15 + intensity * 0.2})`;
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 6]);
+    for (let i = 0; i < count; i++) {
+        const offsetX = (Math.random() - 0.5) * VISUAL_YOYO_RADIUS * 2.2;
+        const lineLen = 10 + intensity * 20;
+        const startY = cy - VISUAL_YOYO_RADIUS - 8 - Math.random() * 15;
+        ctx.beginPath();
+        ctx.moveTo(cx + offsetX, startY);
+        ctx.lineTo(cx + offsetX, startY - lineLen);
+        ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    ctx.restore();
+}
+
+// --- UI refs ---
+const dropBtn = document.getElementById('dropBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+// --- Simulation ---
+function resetSim() {
+    state = 'idle';
+    yoyoY = 0;
+    velocity = 0;
+    angle = 0;
+    angularVel = 0;
+    lastTime = null;
+    trail.length = 0;
+    dropBtn.textContent = 'Drop';
+}
+
+function startDrop() {
+    if (state === 'falling') return;
+    if (state === 'stopped') resetSim();
+    state = 'falling';
+    lastTime = null;
+    dropBtn.textContent = 'Dropping\u2026';
+    requestAnimationFrame(loop);
+}
+
+dropBtn.addEventListener('click', startDrop);
+resetBtn.addEventListener('click', () => { resetSim(); render(); });
+
+// Pointer events on canvas for potential future interaction
+canvas.addEventListener('pointerdown', (e) => { e.preventDefault(); });
+
+function physics(dt) {
+    if (state !== 'falling') return;
+
+    // Linear: a = g / (1 + I/(m*r²))
+    velocity += linAccel * dt;
+    yoyoY += velocity * dt;
+
+    // Angular: alpha = a / r (no-slip on axle)
+    angularVel = velocity / axleRadius;
+    angle += angularVel * dt;
+
+    // End of string
+    if (yoyoY >= stringLength) {
+        yoyoY = stringLength;
+        velocity = 0;
+        angularVel = 0;
+        state = 'stopped';
+        dropBtn.textContent = 'Reset & Drop';
+    }
+}
+
+// Seeded-ish random for consistent speed lines per frame
+let speedLineSeed = 0;
+
+function render() {
+    const w = W();
+    const h = H();
+    ctx.clearRect(0, 0, w, h);
+
+    // Classroom background
+    drawBackground();
+
+    const ax = anchorX();
+    const ay = anchorTopPad();
+
+    // Yo-yo position in pixels
+    const yoyoPx = ay + metersToPixels(yoyoY);
+    const yoyoCx = ax;
+
+    // Motion trail
+    if (!prefersReducedMotion) {
+        drawTrail();
+    }
+
+    // Glow
+    drawGlow(yoyoCx, yoyoPx);
+
+    // Speed lines
+    if (!prefersReducedMotion && state === 'falling') {
+        // Use a temporary seed for deterministic-ish lines within a frame
+        const savedRandom = Math.random;
+        speedLineSeed++;
+        drawSpeedLines(yoyoCx, yoyoPx, velocity);
+    }
+
+    // String — from hand pinch point to top of yo-yo
+    drawString(ax, ay + 4, yoyoCx, yoyoPx - VISUAL_YOYO_RADIUS);
+
+    // Yo-yo
+    drawYoyo(yoyoCx, yoyoPx, prefersReducedMotion ? 0 : angle);
+
+    // Hand and arm (drawn last to overlap string)
+    drawHand(ax, ay);
+}
+
+function loop(timestamp) {
+    try {
+        if (lastTime === null) lastTime = timestamp;
+        let dt = (timestamp - lastTime) / 1000;
+        lastTime = timestamp;
+        if (dt > 0.1) dt = 0.1; // cap dt
+
+        // Record trail positions before physics update
+        if (state === 'falling' && velocity > 0.3 && !prefersReducedMotion) {
+            const ax = anchorX();
+            const ay = anchorTopPad();
+            const yoyoPx = ay + metersToPixels(yoyoY);
+            trail.push({ x: ax, y: yoyoPx, angle: angle, alpha: 0.3 });
+            // Keep only last 4 trail entries
+            while (trail.length > 4) trail.shift();
+            // Decay alpha
+            for (let i = 0; i < trail.length; i++) {
+                trail[i].alpha = (i + 1) / (trail.length + 1) * 0.25;
+            }
+        }
+
+        physics(dt);
+
+        // Periodic save
+        saveTimer += dt;
+        if (saveTimer > 5) {
+            saveTimer = 0;
+            PortalBridge.save({ yoyoY, velocity, angle, state }, 0);
+        }
+    } catch (e) {
+        console.error('Simulation error:', e);
+    }
+
+    render();
+
+    if (state === 'falling') {
+        requestAnimationFrame(loop);
+    }
+}
+
+// Initial render
+render();
+
+} catch (e) {
+    console.error('Initialization error:', e);
+    document.body.innerHTML = '<p style="color:#e8e4f4;text-align:center;margin-top:40vh;">Simulation failed to load. Check console for details.</p>';
+}
+</script>
+</body>
+</html>

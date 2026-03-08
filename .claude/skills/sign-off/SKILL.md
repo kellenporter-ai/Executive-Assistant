@@ -124,7 +124,11 @@ Present any findings as a brief list:
 > - TODO in `src/grading.js:42` — implement rubric scoring
 > - Discussed but didn't start: parent communication automation
 
-### 6. Decision Log Check
+### 6. Memory Consolidation
+
+Run the `/remember` skill to capture any learnings from this session before wrapping up. Fold its output into the session summary (step 7) rather than printing it separately.
+
+### 7. Decision Log Check
 
 If significant decisions were made during this session (architecture choices, priority changes, tool adoptions, workflow changes), check whether they're logged in `decisions/`:
 
@@ -134,7 +138,7 @@ ls -t /home/kp/Desktop/Executive\ Assistant/decisions/ | head -5
 
 If a decision from today's session isn't logged, ask: "We made a decision about [X] today — want me to log it?"
 
-### 7. Session Summary
+### 8. Session Summary
 
 End with a concise summary of what got done:
 
