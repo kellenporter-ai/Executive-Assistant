@@ -2,6 +2,8 @@
 name: skill-name-here
 description: Describe exactly when and why this skill should be used.
 model: claude-sonnet-4-6
+effort: high          # low | medium | high | max — cognitive effort directive (optional, default: high)
+tools: []             # authorized tools/agents for this skill (optional)
 ---
 
 # Skill Name
@@ -19,6 +21,10 @@ What this skill does in one sentence.
 
 ## Output
 - What the skill produces
+
+## Error Handling
+- On [failure type]: [recovery action]
+- Escalation: [when to surface to Kellen vs. retry]
 
 ## API Keys (if applicable)
 This skill requires the following keys in `.env`:
