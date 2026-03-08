@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rotational & Linear Kinematics Simulation</title>
+    <style>
+        :root {
+            --primary: #2b5c8f;
+            --secondary: #e74c3c;
+            --bg-color: #f4f6f8;
+            --panel-bg: #ffffff;
+            --border-color: #d1d5db;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            overflow: hidden; 
+            color: #333;
+        }
+
+        .app-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 380px;
+            gap: 15px;
+            width: 100%;
+            height: 100%;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .controls-panel, .analysis-panel {
+            padding: 20px;
+        }
+
+        .canvas-panel {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: #fafafa;
+            overflow: hidden;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            background: transparent;
+        }
+
+        h2, h3 {
+            margin: 0 0 15px 0;
+            color: var(--primary);
+            border-bottom: 2px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.2s, opacity 0.2s;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .btn:hover:not(:disabled) { background-color: #1a3c61; }
+        .btn.active { background-color: var(--secondary); }
+        .btn:disabled { background-color: #95a5a6; cursor: not-allowed; opacity: 0.7; }
+
+        .btn-row { display: flex; gap: 10px; }
+        .btn-row .btn { flex: 1; }
+
+        .input-row {
+            display: flex; align-items: center; gap: 10px;
+            background: #f8f9fa; padding: 10px; border: 1px solid #e9ecef;
+            border-radius: 6px; margin-bottom: 10px;
+        }
+
+        .info-box {
+            background: #eef2f5; padding: 12px; border-radius: 6px;
+            font-size: 12px; font-family: monospace; border: 1px solid #dcdde1;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+        .delta-stats {
+            color: #d35400; font-weight: bold; margin-top: 10px;
+            border-top: 1px dashed #ccc; padding-top: 10px;
+        }
+
+        .screenshot-wrapper { display: flex; flex-direction: column; gap: 15px; margin-top: 10px; }
+
+        .screenshot-box {
+            display: none; border: 2px solid var(--border-color); border-radius: 6px;
+            padding: 5px; background: #fff; text-align: center;
+            font-size: 12px; font-weight: bold; color: var(--primary);
+        }
+
+        .screenshot-box img {
+            max-width: 100%; height: auto; border-radius: 4px; display: block;
+            margin-top: 5px; border: 1px solid #eee; cursor: zoom-in;
+            transition: transform 0.2s;
+        }
+        
+        .screenshot-box img:hover { transform: scale(1.02); border-color: var(--primary); }
+
+        /* Custom Context Menu */
+        #context-menu {
+            display: none; position: fixed; background: white; border: 1px solid #ccc;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); border-radius: 6px; padding: 12px;
+            z-index: 1000; min-width: 220px;
+        }
+
+        #context-menu h4 {
+            margin: 0 0 10px 0; font-size: 14px; border-bottom: 1px solid #eee;
+            padding-bottom: 6px; color: var(--primary);
+        }
+
+        #context-menu label {
+            font-weight: normal; display: flex; align-items: center; gap: 8px;
+            margin-bottom: 8px; cursor: pointer; justify-content: flex-start;
+        }
+
+        /* Image Modal (Lightbox) */
+        #imgModal {
+            display: none; position: fixed; z-index: 9999;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.85);
+            justify-content: center; align-items: center; flex-direction: column;
+        }
+        #imgModal img {
+            max-width: 90%; max-height: 90%;
+            border: 4px solid white; border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .close-modal {
+            position: absolute; top: 20px; right: 40px; color: white;
+            font-size: 40px; font-weight: bold; cursor: pointer; transition: color 0.2s;
+        }
+        .close-modal:hover { color: var(--secondary); }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    
+    <!-- LEFT PANEL -->
+    <div class="panel controls-panel">
+        <h2>Simulation Controls</h2>
+        
+        <div class="control-group">
+            <div class="btn-row">
+                <button id="playPauseBtn" class="btn active">Play Animation</button>
+                <button id="btnReset" class="btn" style="background-color: #d35400;">Reset to t=0</button>
+            </div>
+            <small style="color:#7f8c8d; text-align:center; font-style:italic; margin-top:5px;">Right-click any coin to toggle math annotations.</small>
+        </div>
+
+        <div class="control-group">
+            <label>Angular Velocity, ω <span id="valOmega">1.00 rad/s</span></label>
+            <input type="range" id="slideOmega" min="-3" max="3" step="0.05" value="1">
+            
+            <label style="margin-top: 5px;">Angular Accel., α <span id="valAlpha">0.00 rad/s²</span></label>
+            <input type="range" id="slideAlpha" min="-1.5" max="1.5" step="0.05" value="0">
+        </div>
+
+        <div class="control-group">
+            <label>Disk Max Radius, R <span id="valR">300</span></label>
+            <input type="range" id="slideR" min="150" max="350" step="5" value="300">
+            
+            <label style="margin-top: 5px;">Inner Coin Radius, r <span id="val_r">120</span></label>
+            <input type="range" id="slider" min="30" max="350" step="5" value="120">
+        </div>
+    </div>
+
+    <!-- CENTER PANEL -->
+    <div class="panel canvas-panel">
+        <!-- Canvas is taller to fit the unrolled linear kinematics at the bottom -->
+        <canvas id="simCanvas" width="800" height="1100"></canvas>
+        
+        <div id="context-menu">
+            <h4 id="menu-title">Coin Annotations</h4>
+            <label><input type="checkbox" id="chkPos"> Show position vector (<span style="color:#2980b9;font-weight:bold;">r</span>)</label>
+            <label><input type="checkbox" id="chkVel"> Show velocity vector (<span style="color:#27ae60;font-weight:bold;">v</span>)</label>
+            <label><input type="checkbox" id="chkAng"> Show angle arc (<span style="color:#8e44ad;font-weight:bold;">θ</span>)</label>
+            <label><input type="checkbox" id="chkArc"> Show path position (<span style="color:#e67e22;font-weight:bold;">s</span>)</label>
+            <button class="btn" style="width:100%; margin-top: 10px; padding: 6px;" onclick="closeContextMenu()">Close Menu</button>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="panel analysis-panel">
+        <h2>State Analysis</h2>
+        
+        <div class="control-group">
+            <p style="font-size: 12px; margin: 0 0 10px 0; color: #555;">Provide a time interval (Δt). The simulation will capture State A, advance by Δt, and capture State B.</p>
+            
+            <div class="input-row">
+                <label style="margin:0; width: 100%;">Time interval (Δt):</label>
+                <input type="number" id="inputDt" value="1.0" min="0.1" step="0.1" style="width: 70px; padding: 4px; font-weight: bold;">
+                <span>s</span>
+            </div>
+
+            <button id="btnStartCapture" class="btn" style="background-color: #27ae60;">Capture Sequence</button>
+            <button id="btnClearStates" class="btn" style="margin-top: 8px; background-color: #7f8c8d;">Clear All States</button>
+        </div>
+
+        <div class="info-box" id="stateDataPanel">
+            <div class="stats-grid">
+                <div>
+                    <strong>State A:</strong><br>
+                    t: <span id="outTA">--</span> s<br>
+                    θ: <span id="outThetaA">--</span> rad<br>
+                    s (in): <span id="outSinA">--</span> px<br>
+                    s (out): <span id="outSoutA">--</span> px<br>
+                    v (in): <span id="outVinA">--</span> px/s<br>
+                    v (out): <span id="outVoutA">--</span> px/s
+                </div>
+                <div>
+                    <strong>State B:</strong><br>
+                    t: <span id="outTB">--</span> s<br>
+                    θ: <span id="outThetaB">--</span> rad<br>
+                    s (in): <span id="outSinB">--</span> px<br>
+                    s (out): <span id="outSoutB">--</span> px<br>
+                    v (in): <span id="outVinB">--</span> px/s<br>
+                    v (out): <span id="outVoutB">--</span> px/s
+                </div>
+            </div>
+            <div class="delta-stats">
+                <strong>Δ Differences (B - A):</strong><br>
+                Δt = <span id="outDt">--</span> s<br>
+                Δθ = <span id="outDTheta">--</span> rad<br>
+                Δs (in) = <span id="outDSin">--</span> px<br>
+                Δs (out) = <span id="outDSout">--</span> px
+            </div>
+        </div>
+
+        <div class="screenshot-wrapper">
+            <div id="boxA" class="screenshot-box">
+                Captured State A <span style="font-weight:normal;font-size:10px;">(Click to expand)</span>
+                <img id="imgStateA" src="" alt="State A Screenshot">
+            </div>
+            <div id="boxB" class="screenshot-box">
+                Captured State B <span style="font-weight:normal;font-size:10px;">(Click to expand)</span>
+                <img id="imgStateB" src="" alt="State B Screenshot">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Expandable Image Modal -->
+<div id="imgModal">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <img id="modalImg" src="">
+</div>
+
+<script>
+    const canvas = document.getElementById('simCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // System constraints & settings
+    const width = canvas.width;
+    const height = canvas.height;
+    const cx = width / 2;
+    const cy = 400; // Center of the rotational disk
+    const coinSize = 16;
+    const maxR = 350; // max possible outer radius
+
+    let isPaused = true;
+    let time = 0;
+    let theta = 0; 
+    let omega = 1; 
+    let alpha = 0; 
+    let R = 300; 
+    let r = 120; 
+    let maxOmega = 3;
+
+    let isCapturingSequence = false;
+    let targetCaptureTime = 0;
+
+    const annotations = {
+        inner: { pos: false, vel: false, angle: false, s: false },
+        outer: { pos: false, vel: false, angle: false, s: false }
+    };
+
+    let stateA = null;
+    let stateB = null;
+
+    // Element bindings
+    const sOmega = document.getElementById('slideOmega');
+    const sAlpha = document.getElementById('slideAlpha');
+    const sR = document.getElementById('slideR');
+    const sr = document.getElementById('slider');
+    const vOmega = document.getElementById('valOmega');
+    const vAlpha = document.getElementById('valAlpha');
+    const vR = document.getElementById('valR');
+    const vr = document.getElementById('val_r');
+
+    sOmega.addEventListener('input', (e) => { omega = parseFloat(e.target.value); vOmega.textContent = omega.toFixed(2) + " rad/s"; });
+    sAlpha.addEventListener('input', (e) => { alpha = parseFloat(e.target.value); vAlpha.textContent = alpha.toFixed(2) + " rad/s²"; });
+    sR.addEventListener('input', (e) => { 
+        R = parseFloat(e.target.value); vR.textContent = R; sr.max = R; 
+        if(r > R) { r = R; sr.value = r; vr.textContent = r; }
+        if (isPaused) draw();
+    });
+    sr.addEventListener('input', (e) => { 
+        r = parseFloat(e.target.value); vr.textContent = r; 
+        if (isPaused) draw();
+    });
+
+    document.getElementById('playPauseBtn').addEventListener('click', () => {
+        isPaused = !isPaused;
+        updatePlayPauseUI();
+        if(!isPaused) lastTime = performance.now(); 
+    });
+
+    document.getElementById('btnReset').addEventListener('click', resetAnimation);
+    document.getElementById('btnStartCapture').addEventListener('click', startCaptureSequence);
+    document.getElementById('btnClearStates').addEventListener('click', clearStates);
+
+    // Modal Logic
+    const modal = document.getElementById('imgModal');
+    const modalImg = document.getElementById('modalImg');
+    
+    document.getElementById('imgStateA').addEventListener('click', function() {
+        modalImg.src = this.src;
+        modal.style.display = 'flex';
+    });
+    document.getElementById('imgStateB').addEventListener('click', function() {
+        modalImg.src = this.src;
+        modal.style.display = 'flex';
+    });
+    
+    function closeModal() { modal.style.display = 'none'; }
+    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+
+    function updatePlayPauseUI() {
+        const btn = document.getElementById('playPauseBtn');
+        btn.textContent = isPaused ? "Play Animation" : "Pause Animation";
+        btn.className = isPaused ? "btn" : "btn active";
+    }
+
+    function resetAnimation() {
+        time = 0; theta = 0;
+        omega = parseFloat(sOmega.value); alpha = parseFloat(sAlpha.value);
+        isPaused = true; isCapturingSequence = false;
+        updatePlayPauseUI();
+        clearStates();
+        document.getElementById('btnStartCapture').disabled = false;
+        document.getElementById('btnStartCapture').textContent = "Capture Sequence";
+        draw();
+    }
+
+    // Context Menu Logic
+    const contextMenu = document.getElementById('context-menu');
+    let activeMenuCoin = null;
+
+    canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const mx = (e.clientX - rect.left) * scaleX;
+        const my = (e.clientY - rect.top) * scaleY;
+
+        // Bounding boxes check for rotational panel
+        const inX = cx + r * Math.cos(theta); const inY = cy - r * Math.sin(theta);
+        const outX = cx + R * Math.cos(theta); const outY = cy - R * Math.sin(theta);
+
+        if (Math.hypot(mx - inX, my - inY) <= coinSize * 2) {
+            openContextMenu('inner', e.clientX, e.clientY);
+        } else if (Math.hypot(mx - outX, my - outY) <= coinSize * 2) {
+            openContextMenu('outer', e.clientX, e.clientY);
+        } else {
+            closeContextMenu();
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!contextMenu.contains(e.target) && e.target !== canvas) closeContextMenu();
+    });
+
+    function openContextMenu(coinType, x, y) {
+        activeMenuCoin = coinType;
+        document.getElementById('menu-title').textContent = (coinType === 'inner' ? 'Inner' : 'Outer') + " Coin Vectors";
+        document.getElementById('chkPos').checked = annotations[coinType].pos;
+        document.getElementById('chkVel').checked = annotations[coinType].vel;
+        document.getElementById('chkAng').checked = annotations[coinType].angle;
+        document.getElementById('chkArc').checked = annotations[coinType].s;
+        
+        contextMenu.style.left = (x + 15) + 'px';
+        contextMenu.style.top = (y + 15) + 'px';
+        contextMenu.style.display = 'block';
+    }
+
+    function closeContextMenu() {
+        contextMenu.style.display = 'none'; activeMenuCoin = null;
+    }
+
+    ['chkPos', 'chkVel', 'chkAng', 'chkArc'].forEach(id => {
+        document.getElementById(id).addEventListener('change', (e) => {
+            if (activeMenuCoin) {
+                const key = id === 'chkPos' ? 'pos' : (id === 'chkVel' ? 'vel' : (id === 'chkAng' ? 'angle' : 's'));
+                annotations[activeMenuCoin][key] = e.target.checked;
+                if (isPaused) draw();
+            }
+        });
+    });
+
+    // Capture Logic
+    function startCaptureSequence() {
+        const dtInput = parseFloat(document.getElementById('inputDt').value);
+        if (isNaN(dtInput) || dtInput <= 0) { alert("Please provide a valid positive time interval (Δt)."); return; }
+
+        captureState('A');
+        targetCaptureTime = time + dtInput;
+        isCapturingSequence = true;
+        
+        document.getElementById('btnStartCapture').disabled = true;
+        document.getElementById('btnStartCapture').textContent = "Capturing...";
+        
+        isPaused = false;
+        updatePlayPauseUI();
+        lastTime = performance.now();
+    }
+
+    function captureState(type) {
+        draw(); 
+        const stateObj = { 
+            t: time, theta: theta, omega: omega, 
+            sIn: theta * r, sOut: theta * R,
+            vIn: omega * r, vOut: omega * R, r: r, R: R 
+        };
+        
+        if (type === 'A') {
+            stateA = stateObj; stateB = null; 
+            document.getElementById('imgStateA').src = canvas.toDataURL("image/png");
+            document.getElementById('boxA').style.display = 'block';
+            document.getElementById('boxB').style.display = 'none';
+        } else if (type === 'B') {
+            stateB = stateObj;
+            document.getElementById('imgStateB').src = canvas.toDataURL("image/png");
+            document.getElementById('boxB').style.display = 'block';
+        }
+        updateStateUI();
+    }
+
+    function clearStates() {
+        stateA = null; stateB = null;
+        document.getElementById('boxA').style.display = 'none';
+        document.getElementById('boxB').style.display = 'none';
+        updateStateUI();
+        if (isPaused) draw();
+    }
+
+    function updateStateUI() {
+        const format = (num) => num.toFixed(2);
+        
+        if (stateA) {
+            document.getElementById('outTA').textContent = format(stateA.t);
+            document.getElementById('outThetaA').textContent = format(stateA.theta);
+            document.getElementById('outSinA').textContent = format(stateA.sIn);
+            document.getElementById('outSoutA').textContent = format(stateA.sOut);
+            document.getElementById('outVinA').textContent = format(stateA.vIn);
+            document.getElementById('outVoutA').textContent = format(stateA.vOut);
+        } else {
+            ['outTA', 'outThetaA', 'outSinA', 'outSoutA', 'outVinA', 'outVoutA'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+
+        if (stateB) {
+            document.getElementById('outTB').textContent = format(stateB.t);
+            document.getElementById('outThetaB').textContent = format(stateB.theta);
+            document.getElementById('outSinB').textContent = format(stateB.sIn);
+            document.getElementById('outSoutB').textContent = format(stateB.sOut);
+            document.getElementById('outVinB').textContent = format(stateB.vIn);
+            document.getElementById('outVoutB').textContent = format(stateB.vOut);
+        } else {
+            ['outTB', 'outThetaB', 'outSinB', 'outSoutB', 'outVinB', 'outVoutB'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+
+        if (stateA && stateB) {
+            document.getElementById('outDt').textContent = format(stateB.t - stateA.t);
+            document.getElementById('outDTheta').textContent = format(stateB.theta - stateA.theta);
+            document.getElementById('outDSin').textContent = format(stateB.sIn - stateA.sIn);
+            document.getElementById('outDSout').textContent = format(stateB.sOut - stateA.sOut);
+        } else {
+            ['outDt', 'outDTheta', 'outDSin', 'outDSout'].forEach(id => document.getElementById(id).textContent = '--');
+        }
+    }
+
+    let lastTime = performance.now();
+    function loop(now) {
+        const actualDt = (now - lastTime) / 1000;
+        lastTime = now;
+
+        if (!isPaused || isCapturingSequence) {
+            updatePhysics(actualDt); draw();
+        }
+        requestAnimationFrame(loop);
+    }
+
+    function updatePhysics(dt) {
+        if (isCapturingSequence && (time + dt >= targetCaptureTime)) {
+            dt = targetCaptureTime - time;
+            advanceKinematics(dt);
+            captureState('B');
+            isCapturingSequence = false; isPaused = true;
+            updatePlayPauseUI();
+            document.getElementById('btnStartCapture').disabled = false;
+            document.getElementById('btnStartCapture').textContent = "Capture Sequence";
+            return;
+        }
+        advanceKinematics(dt);
+    }
+
+    function advanceKinematics(dt) {
+        if (alpha !== 0) {
+            omega += alpha * dt;
+            if (omega > maxOmega) omega = maxOmega;
+            if (omega < -maxOmega) omega = -maxOmega;
+            sOmega.value = omega; vOmega.textContent = omega.toFixed(2) + " rad/s";
+        }
+        theta += omega * dt; time += dt;
+    }
+
+    // Drawing Utils
+    function drawArrow(x0, y0, x1, y1, color, label, invertText = false) {
+        const headLen = 14; const angle = Math.atan2(y1 - y0, x1 - x0);
+        ctx.beginPath(); ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.moveTo(x0, y0); ctx.lineTo(x1, y1); ctx.stroke();
+        
+        ctx.beginPath(); ctx.fillStyle = color;
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x1 - headLen * Math.cos(angle - Math.PI / 6), y1 - headLen * Math.sin(angle - Math.PI / 6));
+        ctx.lineTo(x1 - headLen * Math.cos(angle + Math.PI / 6), y1 - headLen * Math.sin(angle + Math.PI / 6));
+        ctx.fill();
+
+        if (label) {
+            ctx.fillStyle = color; ctx.font = "bold 18px sans-serif";
+            const offsetMultiplier = invertText ? -1.5 : 1;
+            ctx.fillText(label, x1 + (18 * offsetMultiplier) * Math.cos(angle), y1 + (18 * offsetMultiplier) * Math.sin(angle) - (invertText? 15 : 0));
+        }
+    }
+
+    function drawGhost(state, rVal, label) {
+        ctx.save(); ctx.globalAlpha = 0.35;
+        const x = cx + rVal * Math.cos(state.theta); const y = cy - rVal * Math.sin(state.theta);
+        ctx.beginPath(); ctx.arc(x, y, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = "#e67e22"; ctx.fill();
+        ctx.strokeStyle = "#d35400"; ctx.lineWidth = 2; ctx.stroke();
+        
+        ctx.beginPath(); ctx.setLineDash([5, 5]); ctx.moveTo(cx, cy); ctx.lineTo(x, y);
+        ctx.strokeStyle = "#888"; ctx.stroke();
+        ctx.fillStyle = "#d35400"; ctx.font = "bold 14px sans-serif"; ctx.fillText(label, x + 18, y - 18);
+        ctx.restore();
+    }
+
+    function drawCoinData(radiusVal, type) {
+        const x = cx + radiusVal * Math.cos(theta); const y = cy - radiusVal * Math.sin(theta);
+        const ann = annotations[type];
+        
+        // Angle & Position(s) arcs
+        if (ann.angle || ann.s) {
+            const arcR = radiusVal; 
+            let currentTheta = theta % (Math.PI * 2);
+            
+            if (!ann.pos && ann.angle) {
+                ctx.beginPath(); ctx.setLineDash([4, 4]); ctx.strokeStyle = "rgba(0,0,0,0.2)";
+                ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); ctx.setLineDash([]);
+            }
+
+            if (ann.angle) {
+                ctx.beginPath();
+                ctx.strokeStyle = type === 'inner' ? "rgba(155, 89, 182, 0.7)" : "rgba(142, 68, 173, 0.7)";
+                ctx.lineWidth = 4;
+                ctx.arc(cx, cy, arcR, 0, -currentTheta, currentTheta > 0); 
+                ctx.stroke();
+            }
+
+            const textAngle = -currentTheta; 
+            const labelRadius = arcR + coinSize + 15;
+            const tX = cx + labelRadius * Math.cos(textAngle);
+            const tY = cy + labelRadius * Math.sin(textAngle);
+            
+            ctx.textAlign = "center"; ctx.textBaseline = "middle";
+            if (ann.angle) {
+                ctx.fillStyle = type === 'inner' ? "#9b59b6" : "#8e44ad";
+                ctx.font = "bold 16px sans-serif";
+                ctx.fillText(type === 'inner' ? "θ(in)" : "θ(out)", tX, tY);
+            }
+            if (ann.s) {
+                ctx.fillStyle = "#d35400";
+                ctx.font = "bold 15px sans-serif";
+                ctx.fillText(`s=${(theta * radiusVal).toFixed(1)} px`, tX, tY + (ann.angle ? 20 : 0));
+            }
+            ctx.textAlign = "left"; ctx.textBaseline = "alphabetic";
+        }
+
+        if (ann.pos) drawArrow(cx, cy, x, y, "#2980b9", type === 'inner' ? 'r' : 'R');
+        if (ann.vel) {
+            const velScale = 0.25; 
+            const vx = -(radiusVal * omega) * Math.sin(theta);
+            const vy = -(radiusVal * omega) * Math.cos(theta); 
+            drawArrow(x, y, x + vx * velScale, y + vy * velScale, "#27ae60", 'v');
+        }
+
+        ctx.beginPath(); ctx.arc(x, y, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = "#e74c3c"; ctx.fill();
+        ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    function drawLinearTrack() {
+        const topY = 850;
+        
+        ctx.beginPath();
+        ctx.moveTo(0, topY); ctx.lineTo(width, topY);
+        ctx.strokeStyle = "#ddd"; ctx.lineWidth = 2; ctx.stroke();
+
+        ctx.fillStyle = "rgba(0,0,0,0.6)"; ctx.font = "bold 16px sans-serif";
+        ctx.fillText("Linear Kinematics Representation (Unrolled Path 0 to 2πR)", 40, topY + 30);
+
+        const startX = 60;
+        const maxTrackWidth = 680;
+        const pixelsPerUnit = maxTrackWidth / (2 * Math.PI * maxR);
+        
+        // Draw Outer Track
+        const outCircum = 2 * Math.PI * R;
+        const outVisualLen = outCircum * pixelsPerUnit;
+        const outY = topY + 90;
+        
+        ctx.beginPath(); ctx.moveTo(startX, outY); ctx.lineTo(startX + outVisualLen, outY);
+        ctx.strokeStyle = "#b0bec5"; ctx.lineWidth = 6; ctx.stroke();
+        ctx.fillStyle = "#555"; ctx.font = "14px sans-serif";
+        ctx.fillText(`Outer Path (R)`, startX, outY - 25);
+        
+        // Outer dot logic
+        const sOut = theta * R;
+        let xOutMod = ((sOut % outCircum) + outCircum) % outCircum;
+        const dotOutX = startX + xOutMod * pixelsPerUnit;
+
+        if(annotations.outer.vel) {
+            const vLen = Math.abs(omega * R * 0.25);
+            const dir = omega > 0 ? 1 : -1;
+            drawArrow(dotOutX, outY, dotOutX + dir * vLen, outY, "#27ae60", "v", omega < 0);
+        }
+        
+        if(annotations.outer.s) {
+            ctx.fillStyle = "#d35400"; ctx.font = "bold 14px sans-serif";
+            ctx.fillText(`s=${sOut.toFixed(1)} px`, dotOutX - 20, outY + 25);
+        }
+
+        ctx.beginPath(); ctx.arc(dotOutX, outY, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = "#e74c3c"; ctx.fill();
+        ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 3; ctx.stroke();
+
+        // Draw Inner Track
+        const inCircum = 2 * Math.PI * r;
+        const inVisualLen = inCircum * pixelsPerUnit;
+        const inY = topY + 180;
+        
+        ctx.beginPath(); ctx.moveTo(startX, inY); ctx.lineTo(startX + inVisualLen, inY);
+        ctx.strokeStyle = "#b0bec5"; ctx.lineWidth = 6; ctx.stroke();
+        ctx.fillStyle = "#555"; ctx.font = "14px sans-serif";
+        ctx.fillText(`Inner Path (r)`, startX, inY - 25);
+        
+        // Inner dot logic
+        const sIn = theta * r;
+        let xInMod = ((sIn % inCircum) + inCircum) % inCircum;
+        const dotInX = startX + xInMod * pixelsPerUnit;
+
+        if(annotations.inner.vel) {
+            const vLen = Math.abs(omega * r * 0.25);
+            const dir = omega > 0 ? 1 : -1;
+            drawArrow(dotInX, inY, dotInX + dir * vLen, inY, "#27ae60", "v", omega < 0);
+        }
+
+        if(annotations.inner.s) {
+            ctx.fillStyle = "#d35400"; ctx.font = "bold 14px sans-serif";
+            ctx.fillText(`s=${sIn.toFixed(1)} px`, dotInX - 20, inY + 25);
+        }
+
+        ctx.beginPath(); ctx.arc(dotInX, inY, coinSize, 0, Math.PI*2);
+        ctx.fillStyle = "#e74c3c"; ctx.fill();
+        ctx.strokeStyle = "#c0392b"; ctx.lineWidth = 3; ctx.stroke();
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Circular Kinematics View
+        ctx.beginPath(); ctx.strokeStyle = "rgba(0,0,0,0.25)"; ctx.lineWidth = 2; ctx.setLineDash([6, 6]);
+        ctx.moveTo(cx, cy); ctx.lineTo(width - 20, cy); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = "rgba(0,0,0,0.5)"; ctx.font = "14px sans-serif"; ctx.fillText("+x Reference (θ = 0)", width - 160, cy - 15);
+
+        ctx.beginPath(); ctx.arc(cx, cy, R, 0, Math.PI*2);
+        ctx.fillStyle = "#e0e6ed"; ctx.fill();
+        ctx.strokeStyle = "#b0bec5"; ctx.lineWidth = 3; ctx.stroke();
+
+        ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI*2);
+        ctx.fillStyle = "#2c3e50"; ctx.fill();
+
+        if (stateA) { drawGhost(stateA, stateA.R, 'A'); drawGhost(stateA, stateA.r, 'A'); }
+        if (stateB) { drawGhost(stateB, stateB.R, 'B'); drawGhost(stateB, stateB.r, 'B'); }
+
+        drawCoinData(R, 'outer'); drawCoinData(r, 'inner');
+        
+        ctx.fillStyle = "rgba(0,0,0,0.7)"; ctx.font = "bold 16px monospace";
+        ctx.fillText(`Time: ${time.toFixed(2)} s`, 15, 30);
+        ctx.fillText(`ω:    ${omega.toFixed(2)} rad/s`, 15, 55);
+        ctx.fillText(`α:    ${alpha.toFixed(2)} rad/s²`, 15, 80);
+        ctx.fillText(`θ:    ${theta.toFixed(2)} rad`, 15, 105);
+
+        // Linear View
+        drawLinearTrack();
+    }
+
+    resetAnimation();
+    requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>

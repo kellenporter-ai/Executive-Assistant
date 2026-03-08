@@ -1,0 +1,1684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Activity 7-2: The Break-In &mdash; DNA Profiling</title>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.92);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; overflow: hidden; }
+        #renderCanvas { width: 100vw; height: 100vh; display: block; touch-action: none; }
+        #ui-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+            display: flex; flex-direction: column;
+        }
+        .panel {
+            -webkit-backdrop-filter: blur(14px);
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            pointer-events: auto;
+            padding: 16px;
+            color: var(--text);
+        }
+        #top-bar {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 12px; gap: 12px; flex-wrap: wrap;
+        }
+        #header-panel { max-width: 420px; }
+        #header-panel h1 { font-size: 16px; margin-bottom: 4px; color: var(--purple); }
+        #header-panel .subtitle { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+        #phase-indicator {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 11px; font-weight: 600; text-transform: uppercase;
+            background: rgba(155, 107, 255, 0.2); color: var(--purple);
+        }
+        #step-panel {
+            max-width: 360px; max-height: 70vh; overflow-y: auto;
+        }
+        #step-panel h2 { font-size: 14px; margin-bottom: 8px; color: var(--blue); }
+        #step-panel p { font-size: 13px; line-height: 1.5; }
+        #step-panel .step-num {
+            display: inline-block; width: 24px; height: 24px; line-height: 24px;
+            text-align: center; border-radius: 50%; background: var(--purple);
+            color: #fff; font-size: 11px; font-weight: 700; margin-right: 8px;
+        }
+        #bottom-bar {
+            margin-top: auto; padding: 12px; display: flex;
+            justify-content: center; gap: 10px; flex-wrap: wrap;
+        }
+        .btn {
+            pointer-events: auto; padding: 10px 20px; border: none;
+            border-radius: 10px; font-size: 13px; font-weight: 600;
+            cursor: pointer; min-width: 44px; min-height: 44px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: var(--purple); color: #fff; }
+        .btn-primary:hover { background: #b084ff; }
+        .btn-secondary { background: rgba(91, 156, 246, 0.2); color: var(--blue); border: 1px solid rgba(91, 156, 246, 0.3); }
+        .btn-secondary:hover { background: rgba(91, 156, 246, 0.3); }
+        .btn-success { background: var(--green); color: #0a1a10; }
+        .btn-danger { background: rgba(232, 80, 74, 0.2); color: var(--red); border: 1px solid rgba(232, 80, 74, 0.3); }
+        .btn:focus-visible { outline: 3px solid var(--purple); outline-offset: 2px; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* Progress dots */
+        #progress-bar { display: flex; gap: 6px; align-items: center; margin-top: 8px; }
+        .progress-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: rgba(155, 107, 255, 0.2); border: 1px solid rgba(155, 107, 255, 0.3);
+            transition: all 0.3s;
+        }
+        .progress-dot.active { background: var(--purple); border-color: var(--purple); }
+        .progress-dot.complete { background: var(--green); border-color: var(--green); }
+        .progress-label { font-size: 10px; color: var(--muted); margin-left: 4px; }
+
+        /* Engage overlay */
+        #engage-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: flex;
+            justify-content: center; align-items: center; z-index: 200;
+            pointer-events: auto;
+        }
+        #engage-overlay.hidden { display: none; }
+        #engage-box {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 32px; max-width: 620px; width: 92%;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); text-align: center;
+        }
+        #engage-box h1 { color: var(--red); font-size: 20px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 2px; }
+        #engage-box .case-num { color: var(--orange); font-size: 12px; margin-bottom: 16px; }
+        #engage-box p { font-size: 14px; line-height: 1.7; margin-bottom: 14px; text-align: left; }
+        #engage-box .evidence-tag {
+            display: inline-block; background: rgba(245, 166, 35, 0.15);
+            border: 1px solid rgba(245, 166, 35, 0.3); border-radius: 6px;
+            padding: 8px 14px; font-size: 12px; color: var(--orange); margin: 4px;
+        }
+
+        /* Explain overlay */
+        #explain-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); display: none;
+            justify-content: center; align-items: center; z-index: 100;
+            pointer-events: auto;
+        }
+        #explain-overlay.active { display: flex; }
+        #explain-box {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 28px; max-width: 580px; width: 92%;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); max-height: 80vh; overflow-y: auto;
+        }
+        #explain-box h2 { color: var(--green); font-size: 16px; margin-bottom: 12px; }
+        #explain-box p { font-size: 13px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+
+        /* Gel electrophoresis panel */
+        #gel-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            justify-content: center; align-items: center; z-index: 150;
+            pointer-events: auto; overflow-y: auto; padding: 20px;
+        }
+        #gel-panel.active { display: flex; }
+        #gel-container {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 24px; max-width: 900px; width: 100%;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px);
+        }
+        #gel-container h2 { color: var(--blue); font-size: 16px; margin-bottom: 8px; }
+        #gel-container .subtitle { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+        #gel-canvas-wrap {
+            position: relative; background: #0a0515; border-radius: 12px;
+            border: 1px solid var(--border); padding: 16px; margin-bottom: 16px;
+        }
+        #gelCanvas { width: 100%; border-radius: 8px; display: block; }
+        #gel-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+        #gel-status { font-size: 12px; color: var(--muted); margin-top: 8px; }
+        .ruler-line {
+            position: absolute; left: 0; right: 0; height: 2px;
+            background: rgba(245, 166, 35, 0.6); cursor: ns-resize;
+            pointer-events: auto; z-index: 5;
+        }
+        .ruler-label {
+            position: absolute; right: 8px; transform: translateY(-100%);
+            font-size: 10px; color: var(--orange); background: rgba(0,0,0,0.7);
+            padding: 1px 6px; border-radius: 4px; white-space: nowrap;
+        }
+
+        /* Full-screen overlay panels */
+        .overlay-panel {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            justify-content: center; align-items: flex-start; z-index: 150;
+            pointer-events: auto; overflow-y: auto; padding: 20px;
+        }
+        .overlay-panel.active { display: flex; }
+        .overlay-container {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 24px; max-width: 800px; width: 100%;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); margin: auto;
+        }
+
+        /* Analysis worksheet styles */
+        .analysis-table {
+            width: 100%; border-collapse: collapse; margin: 12px 0;
+            font-size: 13px;
+        }
+        .analysis-table th {
+            background: rgba(155, 107, 255, 0.15); padding: 8px 10px;
+            text-align: left; font-size: 12px; color: var(--purple);
+            border: 1px solid var(--border);
+        }
+        .analysis-table td {
+            padding: 8px 10px; border: 1px solid var(--border);
+            vertical-align: top;
+        }
+        .analysis-table textarea {
+            width: 100%; min-height: 40px; padding: 6px; border-radius: 6px;
+            border: 1px solid var(--border); background: rgba(15, 7, 32, 0.6);
+            color: var(--text); font-size: 12px; font-family: inherit; resize: vertical;
+        }
+        .analysis-table textarea:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 2px rgba(155, 107, 255, 0.2); }
+        .analysis-table select {
+            background: rgba(15, 7, 32, 0.8); border: 1px solid var(--border);
+            color: var(--text); border-radius: 6px; padding: 6px; font-size: 12px;
+            width: 100%;
+        }
+        .analysis-table select:focus { outline: none; border-color: var(--purple); }
+
+        /* Feedback toast */
+        .feedback-toast {
+            position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+            padding: 12px 24px; border-radius: 12px; font-size: 13px; z-index: 300;
+            max-width: 500px; width: 90%; text-align: center;
+            animation: toastIn 0.3s ease-out;
+            pointer-events: auto;
+        }
+        .feedback-toast.correct { background: rgba(34, 212, 122, 0.2); border: 1px solid rgba(34, 212, 122, 0.4); color: var(--green); }
+        .feedback-toast.incorrect { background: rgba(232, 80, 74, 0.2); border: 1px solid rgba(232, 80, 74, 0.4); color: var(--red); }
+        .feedback-toast.hint { background: rgba(245, 166, 35, 0.2); border: 1px solid rgba(245, 166, 35, 0.4); color: var(--orange); }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+        /* Theory building */
+        .suspect-choice {
+            background: rgba(15, 7, 32, 0.5); border: 2px solid var(--border);
+            border-radius: 12px; padding: 14px; margin-bottom: 10px;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .suspect-choice:hover { border-color: var(--purple); }
+        .suspect-choice.selected { border-color: var(--green); background: rgba(34, 212, 122, 0.06); }
+        .suspect-choice h3 { font-size: 14px; margin-bottom: 4px; }
+        .suspect-choice p { font-size: 12px; color: var(--muted); }
+        .suspect-choice .radio-dot {
+            width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--border);
+            display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+            transition: all 0.2s;
+        }
+        .suspect-choice.selected .radio-dot { border-color: var(--green); background: var(--green); }
+        .suspect-choice.selected .radio-dot::after { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #0a1a10; }
+        .suspect-choice .none-option { font-style: italic; }
+
+        /* Debate prep */
+        .debate-section { margin-bottom: 20px; }
+        .debate-section h3 { font-size: 14px; color: var(--blue); margin-bottom: 8px; }
+        .debate-section textarea {
+            width: 100%; min-height: 80px; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border); background: rgba(15, 7, 32, 0.6);
+            color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;
+        }
+        .debate-section textarea:focus { outline: none; border-color: var(--purple); box-shadow: 0 0 0 3px rgba(155, 107, 255, 0.3); }
+        .char-count { font-size: 10px; color: var(--muted); text-align: right; margin-top: 2px; }
+
+        /* Completion screen */
+        #completion-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); display: none;
+            justify-content: center; align-items: center; z-index: 200;
+            pointer-events: auto;
+        }
+        #completion-overlay.active { display: flex; }
+        #completion-box {
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 18px; padding: 32px; max-width: 600px; width: 92%;
+            -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); text-align: center;
+        }
+        #completion-box h1 { color: var(--green); font-size: 20px; margin-bottom: 12px; }
+        #completion-box p { font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+
+        /* Evidence items */
+        .evidence-item {
+            background: rgba(15, 7, 32, 0.5); border: 1px solid var(--border);
+            border-radius: 10px; padding: 12px; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .evidence-icon {
+            width: 36px; height: 36px; border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0; background: rgba(155,107,255,0.15); color: var(--purple);
+        }
+        .evidence-feedback {
+            font-size: 11px; margin-top: 4px; padding: 4px 8px; border-radius: 6px;
+            display: none;
+        }
+        .evidence-feedback.show { display: block; }
+        .evidence-feedback.correct-fb { background: rgba(34,212,122,0.1); color: var(--green); }
+        .evidence-feedback.incorrect-fb { background: rgba(232,80,74,0.1); color: var(--red); }
+        .evidence-feedback.hint-fb { background: rgba(245,166,35,0.1); color: var(--orange); }
+
+        /* Tooltip for 3D objects */
+        #tooltip-3d {
+            position: fixed; padding: 6px 12px; border-radius: 8px;
+            background: var(--panel-bg); border: 1px solid var(--border);
+            font-size: 12px; color: var(--text); pointer-events: none;
+            z-index: 50; display: none; max-width: 200px;
+            -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+        }
+
+        /* Instruction callout */
+        .instruction-callout {
+            background: rgba(91, 156, 246, 0.1); border: 1px solid rgba(91, 156, 246, 0.25);
+            border-radius: 10px; padding: 12px 16px; margin-bottom: 16px;
+            font-size: 13px; line-height: 1.5; color: var(--blue);
+        }
+        .instruction-callout strong { color: var(--text); }
+
+        @media (max-width: 768px) {
+            #top-bar { flex-direction: column; }
+            #header-panel, #step-panel { max-width: 100%; }
+            #gel-container, .overlay-container { padding: 16px; }
+            .analysis-table { font-size: 11px; }
+            .analysis-table td, .analysis-table th { padding: 6px; }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const PortalBridge = (() => {
+            const send = (type, data) => {
+                if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+            };
+            return {
+                init:     ()              => send('PROCTOR_READY'),
+                save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+                answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+                complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+            };
+        })();
+        window.addEventListener('load', () => PortalBridge.init());
+    </script>
+
+    <canvas id="renderCanvas"></canvas>
+    <div id="tooltip-3d"></div>
+
+    <div id="ui-layer">
+        <div id="top-bar">
+            <div class="panel" id="header-panel">
+                <h1>Activity 7-2: The Break-In</h1>
+                <p class="subtitle">DNA Profiling and Gel Electrophoresis Analysis</p>
+                <span id="phase-indicator">Engage</span>
+                <div id="progress-bar">
+                    <div class="progress-dot active" data-phase="0"></div>
+                    <div class="progress-dot" data-phase="1"></div>
+                    <div class="progress-dot" data-phase="2"></div>
+                    <div class="progress-dot" data-phase="3"></div>
+                    <div class="progress-dot" data-phase="4"></div>
+                    <div class="progress-dot" data-phase="5"></div>
+                    <span class="progress-label" id="progress-label">1 / 6</span>
+                </div>
+            </div>
+            <div class="panel" id="step-panel">
+                <h2 id="step-title">Crime Scene Investigation</h2>
+                <p id="step-desc">Examine the crime scene. Click on highlighted evidence items to learn about them.</p>
+            </div>
+        </div>
+        <div id="bottom-bar">
+            <button class="btn btn-secondary" id="btn-help" onclick="showHelp()">How DNA Profiling Works</button>
+            <button class="btn btn-primary" id="btn-next" onclick="advancePhase()">Begin Investigation</button>
+        </div>
+    </div>
+
+    <!-- Engage Overlay -->
+    <div id="engage-overlay">
+        <div id="engage-box">
+            <h1>Case File: The Break-In</h1>
+            <p class="case-num">Forensic Science -- Activity 7-2 (Obj. 7.2, 7.3)</p>
+            <p>Late last night, a break-in occurred at a local high school. Several computers were stolen from the technology lab. The building was empty at the time, but a <strong>motion detector</strong> triggered a silent alarm that alerted police.</p>
+            <p>Officers arriving at the scene found <strong>doors propped open</strong> with paper wedged in the doorjamb. Near the propped door, they discovered a <strong>cold soft-drink can</strong> that appeared to have been recently left by the intruder.</p>
+            <p>A DNA sample was obtained from the <strong>lip of the can</strong>. A convenience store clerk identified <strong>three young men</strong> who purchased canned drinks shortly before the break-in. Surveillance video confirmed the purchase, and the clerk provided names.</p>
+            <p>All three suspects were fingerprinted and provided <strong>DNA mouth swab samples</strong>. Your job: analyze the DNA evidence using gel electrophoresis to determine if any suspect's DNA matches the crime-scene DNA.</p>
+            <p style="color: var(--orange); font-weight: 600; font-size: 13px; margin-top: 8px; text-align: center;">After your analysis, your class will hold a debate. You will need to argue for your conclusion.</p>
+            <div style="margin-top: 12px;">
+                <span class="evidence-tag">Soft-Drink Can (DNA)</span>
+                <span class="evidence-tag">3 Suspect Swabs</span>
+                <span class="evidence-tag">Propped Door</span>
+                <span class="evidence-tag">Surveillance Video</span>
+            </div>
+            <button class="btn btn-primary" style="margin-top: 20px;" onclick="dismissEngage()">Enter Crime Scene</button>
+        </div>
+    </div>
+
+    <!-- Explain Overlay (How DNA Profiling Works) -->
+    <div id="explain-overlay">
+        <div id="explain-box">
+            <h2>How DNA Profiling Works</h2>
+            <p><strong>DNA profiling</strong> (also called DNA fingerprinting) compares specific regions of DNA called <strong>Short Tandem Repeats (STRs)</strong>. These repeating sequences vary in length between individuals, making them useful for identification.</p>
+            <p><strong>Gel Electrophoresis</strong> separates DNA fragments by size. An electric current pulls DNA through a gel matrix. Smaller fragments travel farther from the wells (loading point) than larger fragments.</p>
+            <p><strong>Reading the Gel:</strong></p>
+            <ul style="font-size: 13px; line-height: 1.6; margin-left: 20px; margin-bottom: 10px;">
+                <li>Each vertical lane contains DNA from one sample</li>
+                <li>The <strong>ladder</strong> (first lane) contains fragments of known sizes for reference</li>
+                <li>Dark <strong>bands</strong> appear where DNA fragments of a particular size have accumulated</li>
+                <li>Bands at the same horizontal position in different lanes indicate fragments of the <strong>same size</strong></li>
+            </ul>
+            <p><strong>Matching:</strong> If a suspect's DNA profile shares <strong>all bands</strong> with the crime-scene DNA at identical positions, it is considered a match. The more STR loci tested, the stronger the identification.</p>
+            <p><strong>Important:</strong> Some bands may appear at common positions across many people because certain alleles are widespread in the population. A single shared band does NOT mean a match.</p>
+            <button class="btn btn-secondary" style="margin-top: 12px;" onclick="hideExplain()">Got It</button>
+        </div>
+    </div>
+
+    <!-- Gel Electrophoresis Lab Panel -->
+    <div id="gel-panel">
+        <div id="gel-container">
+            <h2>Gel Electrophoresis Lab</h2>
+            <p class="subtitle">Load DNA samples into the gel wells and run electrophoresis to separate DNA fragments by size.</p>
+            <div class="instruction-callout">
+                <strong>Your task:</strong> After the gel runs, use the <strong>alignment ruler</strong> to carefully compare band positions across lanes. Identify which bands in the suspect lanes line up with bands in the crime-scene lane. Take your time -- you will record your observations on the next screen.
+            </div>
+            <div id="gel-controls">
+                <button class="btn btn-primary" id="btn-load" onclick="loadSamples()">Load Samples</button>
+                <button class="btn btn-success" id="btn-run" onclick="runGel()" disabled>Run Current</button>
+                <button class="btn btn-secondary" id="btn-ruler" onclick="toggleRuler()" disabled>Alignment Ruler</button>
+                <span id="gel-status">Ready to load samples.</span>
+            </div>
+            <div id="gel-canvas-wrap">
+                <canvas id="gelCanvas" width="800" height="500"></canvas>
+                <div class="ruler-line" id="ruler" style="display:none; top: 50%;"></div>
+            </div>
+            <div style="display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="hideGel()">Back to Scene</button>
+                <button class="btn btn-primary" id="btn-to-analysis" onclick="showAnalysis()" disabled>Record My Observations</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Analysis Worksheet Panel -->
+    <div id="analysis-panel" class="overlay-panel">
+        <div class="overlay-container" style="max-width: 900px;">
+            <h2 style="color: var(--blue); margin-bottom: 4px;">DNA Analysis Worksheet</h2>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 12px;">Record your observations from the gel. You can return to the gel at any time to re-examine band positions.</p>
+
+            <div class="instruction-callout">
+                <strong>Instructions:</strong> For each suspect, examine their gel lane and compare it to the crime-scene lane. Record how many bands you think match, which positions they share, and whether you believe this suspect could be a match. Be specific -- describe what you see, not what you think the answer should be.
+            </div>
+
+            <!-- Band observation table -->
+            <h3 style="font-size: 14px; color: var(--purple); margin: 16px 0 8px;">Part 1: Band Comparison</h3>
+            <table class="analysis-table">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">Sample</th>
+                        <th style="width: 28%;">How many bands match the crime scene?</th>
+                        <th style="width: 54%;">Describe which band positions align (use ruler to identify)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="font-weight: 600;">Suspect 1<br><span style="color:var(--muted); font-weight:400; font-size:11px;">Marcus Chen</span></td>
+                        <td>
+                            <select id="match-count-1" onchange="updateAnalysis('matchCount1', this.value)">
+                                <option value="">Select...</option>
+                                <option value="0">0 bands</option>
+                                <option value="1">1 band</option>
+                                <option value="2">2 bands</option>
+                                <option value="3">3 bands</option>
+                                <option value="4">4 bands (all)</option>
+                            </select>
+                        </td>
+                        <td><textarea id="obs-1" placeholder="Describe which bands align and which don't. Reference their position (high/low on the gel)." oninput="updateAnalysis('obs1', this.value)"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">Suspect 2<br><span style="color:var(--muted); font-weight:400; font-size:11px;">Devon Harris</span></td>
+                        <td>
+                            <select id="match-count-2" onchange="updateAnalysis('matchCount2', this.value)">
+                                <option value="">Select...</option>
+                                <option value="0">0 bands</option>
+                                <option value="1">1 band</option>
+                                <option value="2">2 bands</option>
+                                <option value="3">3 bands</option>
+                                <option value="4">4 bands (all)</option>
+                            </select>
+                        </td>
+                        <td><textarea id="obs-2" placeholder="Describe which bands align and which don't. Reference their position (high/low on the gel)." oninput="updateAnalysis('obs2', this.value)"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight: 600;">Suspect 3<br><span style="color:var(--muted); font-weight:400; font-size:11px;">Tyler Brooks</span></td>
+                        <td>
+                            <select id="match-count-3" onchange="updateAnalysis('matchCount3', this.value)">
+                                <option value="">Select...</option>
+                                <option value="0">0 bands</option>
+                                <option value="1">1 band</option>
+                                <option value="2">2 bands</option>
+                                <option value="3">3 bands</option>
+                                <option value="4">4 bands (all)</option>
+                            </select>
+                        </td>
+                        <td><textarea id="obs-3" placeholder="Describe which bands align and which don't. Reference their position (high/low on the gel)." oninput="updateAnalysis('obs3', this.value)"></textarea></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Common band question -->
+            <h3 style="font-size: 14px; color: var(--purple); margin: 20px 0 8px;">Part 2: Common Alleles</h3>
+            <div class="instruction-callout" style="border-color: rgba(245, 166, 35, 0.3); background: rgba(245, 166, 35, 0.08); color: var(--orange);">
+                <strong>Think about this:</strong> Did you notice any band that appears at the same position in ALL samples (suspects and crime scene)? If so, what does that tell you?
+            </div>
+            <textarea id="common-allele-obs" style="width:100%; min-height: 60px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15,7,32,0.6); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;" placeholder="Describe any shared bands you noticed and what they might mean..." oninput="updateAnalysis('commonAllele', this.value)"></textarea>
+
+            <!-- Evidence matching -->
+            <h3 style="font-size: 14px; color: var(--purple); margin: 20px 0 8px;">Part 3: Evidence Catalog</h3>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 10px;">For each piece of evidence, select the most appropriate forensic test. Think about what each test analyzes before choosing.</p>
+            <div id="evidence-list"></div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="backToGel()">Back to Gel</button>
+                <button class="btn btn-primary" id="btn-to-theory" onclick="showTheory()">Build My Theory</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Theory Building Panel -->
+    <div id="theory-panel" class="overlay-panel">
+        <div class="overlay-container">
+            <h2 style="color: var(--orange); margin-bottom: 4px;">Theory Building</h2>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">Based on YOUR analysis, commit to a conclusion. You will defend this position in the class debate.</p>
+
+            <div class="instruction-callout" style="border-color: rgba(232, 80, 74, 0.3); background: rgba(232, 80, 74, 0.08); color: var(--red);">
+                <strong>Important:</strong> There is no "check your answer" button. This is YOUR interpretation of the evidence. Different investigators can look at the same evidence and reach different conclusions -- that is what makes forensic science challenging. Commit to your theory and be prepared to defend it.
+            </div>
+
+            <h3 style="font-size: 14px; color: var(--text); margin: 16px 0 10px;">Who do you believe left their DNA on the can at the crime scene?</h3>
+
+            <div id="suspect-choices"></div>
+
+            <h3 style="font-size: 14px; color: var(--text); margin: 20px 0 8px;">Explain your reasoning</h3>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Why did you choose this suspect (or "none of them")? Reference specific evidence from the gel.</p>
+            <textarea id="theory-reasoning" style="width:100%; min-height: 100px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15,7,32,0.6); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;" placeholder="I believe the DNA on the can belongs to _____ because..." oninput="updateTheory('reasoning', this.value)"></textarea>
+            <div class="char-count" id="cc-reasoning">0 characters</div>
+
+            <h3 style="font-size: 14px; color: var(--text); margin: 20px 0 8px;">Can you exclude any suspects? Which ones and why?</h3>
+            <textarea id="theory-exclusions" style="width:100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15,7,32,0.6); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;" placeholder="I can/cannot exclude _____ because..." oninput="updateTheory('exclusions', this.value)"></textarea>
+            <div class="char-count" id="cc-exclusions">0 characters</div>
+
+            <h3 style="font-size: 14px; color: var(--text); margin: 20px 0 8px;">What would someone who disagrees with you say?</h3>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Think of the strongest argument against your conclusion.</p>
+            <textarea id="theory-counterarg" style="width:100%; min-height: 80px; padding: 10px; border-radius: 8px; border: 1px solid var(--border); background: rgba(15,7,32,0.6); color: var(--text); font-size: 13px; font-family: inherit; resize: vertical;" placeholder="Someone could argue that..." oninput="updateTheory('counterarg', this.value)"></textarea>
+            <div class="char-count" id="cc-counterarg">0 characters</div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="backToAnalysis()">Back to Worksheet</button>
+                <button class="btn btn-primary" id="btn-to-debate" onclick="showDebatePrep()">Prepare for Debate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Debate Prep Panel -->
+    <div id="debate-panel" class="overlay-panel">
+        <div class="overlay-container">
+            <h2 style="color: var(--green); margin-bottom: 4px;">Debate Preparation</h2>
+            <p style="font-size: 12px; color: var(--muted); margin-bottom: 16px;">Strengthen your argument before the class debate. Consider these additional questions.</p>
+
+            <div class="debate-section">
+                <h3>1. Does DNA on a can prove someone committed the crime?</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Think carefully: the can was found near the propped door. What does DNA on the lip of a can actually prove?</p>
+                <textarea id="debate-dna-proof" placeholder="DNA on the can proves that... but it does NOT prove that..." oninput="updateDebate('dnaProof', this.value)"></textarea>
+                <div class="char-count" id="cc-dnaProof">0 characters</div>
+            </div>
+
+            <div class="debate-section">
+                <h3>2. Could any of the excluded suspects still be involved?</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">If a suspect's DNA does NOT match the can, does that mean they were not at the scene?</p>
+                <textarea id="debate-excluded" placeholder="Even if a suspect's DNA doesn't match the can, they could still..." oninput="updateDebate('excluded', this.value)"></textarea>
+                <div class="char-count" id="cc-excluded">0 characters</div>
+            </div>
+
+            <div class="debate-section">
+                <h3>3. What other evidence would strengthen or weaken your case?</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Think about the fingerprints, shoe impressions, fibers, and tool marks found at the scene.</p>
+                <textarea id="debate-other-evidence" placeholder="To build a stronger case, I would also want to analyze..." oninput="updateDebate('otherEvidence', this.value)"></textarea>
+                <div class="char-count" id="cc-otherEvidence">0 characters</div>
+            </div>
+
+            <div class="debate-section">
+                <h3>4. Should all three suspects' DNA be entered into the national database (NDIS)?</h3>
+                <p style="font-size: 12px; color: var(--muted); margin-bottom: 8px;">Consider privacy rights versus public safety. Only convicted individuals are typically in NDIS.</p>
+                <textarea id="debate-ndis" placeholder="I think DNA profiles should / should not be entered into NDIS because..." oninput="updateDebate('ndis', this.value)"></textarea>
+                <div class="char-count" id="cc-ndis">0 characters</div>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; flex-wrap: wrap;">
+                <button class="btn btn-secondary" onclick="backToTheory()">Back to Theory</button>
+                <button class="btn btn-success" id="btn-submit" onclick="submitAll()">Submit &amp; Prepare for Debate</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Overlay -->
+    <div id="completion-overlay">
+        <div id="completion-box">
+            <h1>Analysis Submitted</h1>
+            <p style="font-size: 18px; font-weight: 700; color: var(--orange); margin-bottom: 8px;">Time for the Class Debate</p>
+            <p>Your investigation and theory have been submitted. Below is a summary of your position -- use it as a reference during the debate.</p>
+
+            <div id="position-summary" style="background: rgba(15,7,32,0.5); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin: 16px 0; text-align: left;">
+            </div>
+
+            <div style="background: rgba(91, 156, 246, 0.1); border: 1px solid rgba(91, 156, 246, 0.25); border-radius: 10px; padding: 14px; text-align: left; margin-bottom: 16px;">
+                <p style="font-size: 13px; color: var(--blue); margin-bottom: 8px; font-weight: 600;">Debate Guidelines</p>
+                <ul style="font-size: 12px; line-height: 1.6; margin-left: 16px; color: var(--text);">
+                    <li>Present your conclusion and the evidence supporting it</li>
+                    <li>Listen to other investigators' interpretations</li>
+                    <li>Challenge claims with specific evidence, not opinions</li>
+                    <li>Consider: Does DNA on a can prove someone committed a crime?</li>
+                    <li>It is okay to change your mind if presented with better evidence</li>
+                </ul>
+            </div>
+
+            <p style="font-size: 12px; color: var(--muted);">Your instructor will lead the debate. Keep this screen visible for reference.</p>
+        </div>
+    </div>
+
+    <script>
+    // ======================== STATE ========================
+    let currentPhase = 0; // 0=engage/scene, 1=gel, 2=analysis, 3=theory, 4=debate-prep, 5=submitted
+    const phaseNames = ['Engage', 'Explore', 'Analyze', 'Theorize', 'Prepare', 'Debate'];
+    let gelState = 'ready'; // ready, loaded, running, done
+    let gelProgress = 0;
+    let gelAnimFrame = null;
+    let rulerVisible = false;
+    let rulerDragging = false;
+    let submitted = false;
+
+    // Student data -- no pre-computed results
+    let analysisData = {
+        matchCount1: '', matchCount2: '', matchCount3: '',
+        obs1: '', obs2: '', obs3: '',
+        commonAllele: ''
+    };
+    let evidenceAnswers = {};
+    let theoryData = { suspect: -1, reasoning: '', exclusions: '', counterarg: '' };
+    let debateData = { dnaProof: '', excluded: '', otherEvidence: '', ndis: '' };
+
+    // DNA band data (position in base pairs - higher = closer to wells)
+    // Students NEVER see these numbers directly -- they must read the gel
+    const DNA_DATA = {
+        ladder: [10000, 8000, 6000, 4000, 2000, 1000],
+        suspect1: [8500, 5500, 3000, 1800],
+        suspect2: [7000, 5000, 3000, 2500],
+        suspect3: [7000, 4500, 3000, 1500],
+        crime: [7000, 5000, 3000, 2500]
+    };
+
+    const SUSPECT_NAMES = ['Marcus Chen', 'Devon Harris', 'Tyler Brooks'];
+    const LANE_LABELS = ['Ladder', 'Suspect 1', 'Suspect 2', 'Suspect 3', 'Crime Scene'];
+
+    // Evidence items with correct test mappings and feedback
+    const EVIDENCE_ITEMS = [
+        {
+            id: 'can', name: 'Soft-drink can (lip area)', icon: '\u{1F964}',
+            description: 'Found near propped door, cold to touch',
+            correctTest: 1,
+            feedback: {
+                correct: 'Correct! DNA Analysis (STR profiling) is the right test for biological material like saliva on a can.',
+                wrong: {
+                    2: 'Not quite. Fingerprints might be on the can surface, but the LIP area specifically has saliva -- a biological sample best analyzed with DNA profiling.',
+                    3: 'Fiber analysis examines textile materials. The lip of a can would have biological material (saliva), not fibers.',
+                    4: 'Shoe print comparison analyzes footwear impressions. The can lip has biological material that needs DNA analysis.',
+                    5: 'Tool marks are scratches or impressions left by tools. The can lip has biological evidence (saliva) for DNA analysis.',
+                    6: 'Document analysis examines handwriting and paper. The can lip contains biological material for DNA analysis.',
+                    7: 'Video analysis could identify who held the can, but the lip itself has biological evidence (saliva) for DNA analysis.',
+                    8: 'Trace evidence analysis is close, but saliva on a can is specifically best analyzed with DNA profiling (STR analysis).',
+                    9: 'Toxicology screens test for drugs or poisons. The lip of a can has biological material best analyzed with DNA profiling.'
+                }
+            }
+        },
+        {
+            id: 'paper', name: 'Paper in doorjamb', icon: '\u{1F4C4}',
+            description: 'Used to prop doors open',
+            correctTest: 6,
+            feedback: {
+                correct: 'Correct! Handwriting/Document Analysis can examine the paper for writing, printer source, or paper composition.',
+                wrong: {
+                    1: 'DNA analysis could work if there are skin cells, but document analysis is the primary forensic test for paper evidence -- examining the paper itself, any writing, fold patterns, or printer source.',
+                    2: 'Fingerprints could be lifted from paper, and that would be a valid secondary test. However, the paper itself is best examined through document analysis first.',
+                    3: 'Fiber analysis examines textiles, not paper. Document/handwriting analysis is the correct approach for paper evidence.',
+                    4: 'Shoe print comparison analyzes footwear marks. Paper evidence is examined through document analysis.',
+                    5: 'Tool mark analysis examines impressions from tools. Paper is examined through document/handwriting analysis.',
+                    7: 'Video analysis examines recordings. Physical paper evidence is examined through document analysis.',
+                    8: 'While paper could have trace evidence on it, the paper itself as evidence is best examined through document analysis.',
+                    9: 'Toxicology screens test for chemicals in biological samples. Paper evidence requires document analysis.'
+                }
+            }
+        },
+        {
+            id: 'fingerprints', name: 'Fingerprints on door handle', icon: '\u{1F590}\u{FE0F}',
+            description: 'Latent prints found on interior door handles',
+            correctTest: 2,
+            feedback: {
+                correct: 'Correct! Fingerprint Comparison (AFIS) is the standard method for analyzing latent fingerprints.',
+                wrong: {
+                    1: 'DNA can sometimes be recovered from fingerprints (touch DNA), but fingerprint evidence is primarily analyzed through fingerprint comparison using AFIS.',
+                    3: 'Fiber analysis examines textile materials. Fingerprints on a door handle need fingerprint comparison (AFIS).',
+                    4: 'Shoe print comparison analyzes footwear. Fingerprints need fingerprint comparison (AFIS).',
+                    5: 'Tool mark analysis examines tool impressions. Fingerprints are analyzed through fingerprint comparison (AFIS).',
+                    6: 'Document analysis examines paper and writing. Fingerprints are analyzed through comparison using AFIS.',
+                    7: 'Video analysis examines recordings. Physical fingerprint evidence is analyzed through AFIS comparison.',
+                    8: 'Fingerprints are not "trace evidence" in the forensic sense. They are analyzed through fingerprint comparison (AFIS).',
+                    9: 'Toxicology tests for chemicals. Fingerprints are analyzed through AFIS comparison.'
+                }
+            }
+        },
+        {
+            id: 'footprints', name: 'Shoe impressions', icon: '\u{1F45F}',
+            description: 'Muddy shoe prints near entrance',
+            correctTest: 4,
+            feedback: {
+                correct: 'Correct! Shoe Print Comparison (tread pattern analysis) matches sole patterns, wear marks, and size.',
+                wrong: {
+                    1: 'DNA analysis is for biological material. Shoe impressions are physical pattern evidence analyzed through tread pattern comparison.',
+                    2: 'Fingerprint comparison analyzes ridge patterns on fingers. Shoe impressions need shoe print/tread pattern comparison.',
+                    3: 'Fiber analysis might identify material transferred FROM shoes, but the impressions themselves need shoe print comparison.',
+                    5: 'Tool mark analysis is close (both examine physical impressions), but shoe prints specifically require shoe print comparison methodology.',
+                    6: 'Document analysis examines paper. Shoe impressions are physical evidence needing tread pattern comparison.',
+                    7: 'Video might show someone walking, but the physical shoe impressions are analyzed through tread pattern comparison.',
+                    8: 'Soil in the footprint could be trace evidence, but the shoe impression itself is analyzed through tread pattern comparison.',
+                    9: 'Toxicology tests for chemicals. Shoe impressions are physical pattern evidence.'
+                }
+            }
+        },
+        {
+            id: 'fibers', name: 'Clothing fibers', icon: '\u{1F9F5}',
+            description: 'Fibers caught on broken window latch',
+            correctTest: 3,
+            feedback: {
+                correct: 'Correct! Fiber Analysis (microscopy) examines fiber type, color, weave pattern, and composition.',
+                wrong: {
+                    1: 'DNA could potentially be on fibers, but fiber evidence itself is analyzed through fiber analysis (microscopy) to identify material type and source.',
+                    2: 'Fingerprint comparison analyzes ridge patterns. Fibers are examined through fiber analysis (microscopy).',
+                    4: 'Shoe print comparison analyzes footwear impressions. Textile fibers need fiber analysis (microscopy).',
+                    5: 'Tool mark analysis examines tool impressions. Fiber evidence needs microscopy analysis.',
+                    6: 'Document analysis examines paper. Textile fibers need fiber analysis (microscopy).',
+                    7: 'Video analysis examines recordings. Physical fiber evidence is examined through microscopy.',
+                    8: 'Fibers ARE a type of trace evidence, but the specific forensic test is fiber analysis (microscopy), not general "trace evidence" analysis.',
+                    9: 'Toxicology tests for chemicals. Textile fibers need fiber analysis (microscopy).'
+                }
+            }
+        },
+        {
+            id: 'video', name: 'Surveillance video', icon: '\u{1F4F9}',
+            description: 'Convenience store footage of suspects',
+            correctTest: 7,
+            feedback: {
+                correct: 'Correct! Video Enhancement / Facial Recognition is used to analyze surveillance footage.',
+                wrong: {
+                    1: 'DNA analysis requires biological samples. Video footage is analyzed through video enhancement and facial recognition technology.',
+                    2: 'Fingerprint comparison requires physical fingerprints. Video is analyzed through video enhancement/facial recognition.',
+                    3: 'Fiber analysis examines physical textile materials. Video footage needs video enhancement analysis.',
+                    4: 'Shoe print comparison analyzes physical footwear impressions. Video footage needs video enhancement analysis.',
+                    5: 'Tool mark analysis examines physical tool impressions. Video footage needs video enhancement analysis.',
+                    6: 'Document analysis examines paper. Video recordings are analyzed through video enhancement/facial recognition.',
+                    8: 'Trace evidence analysis examines physical materials. Video footage needs video enhancement analysis.',
+                    9: 'Toxicology tests for chemicals. Video footage is analyzed through video enhancement/facial recognition.'
+                }
+            }
+        },
+        {
+            id: 'tool_marks', name: 'Tool marks on window', icon: '\u{1F527}',
+            description: 'Scratches near window lock',
+            correctTest: 5,
+            feedback: {
+                correct: 'Correct! Tool Mark Analysis compares scratch patterns and impressions to identify the type and specific tool used.',
+                wrong: {
+                    1: 'DNA analysis requires biological material. Scratches on a window are physical pattern evidence for tool mark analysis.',
+                    2: 'Fingerprint comparison analyzes fingerprints. Tool marks are physical impressions analyzed through tool mark analysis.',
+                    3: 'Fiber analysis examines textiles. Scratches and impressions on surfaces need tool mark analysis.',
+                    4: 'Shoe print comparison analyzes footwear. Scratches on surfaces are analyzed through tool mark analysis.',
+                    6: 'Document analysis examines paper. Physical marks on surfaces need tool mark analysis.',
+                    7: 'Video analysis examines recordings. Physical tool marks are examined through tool mark analysis.',
+                    8: 'Tool marks could leave trace evidence (metal shavings), but the marks themselves are analyzed through tool mark analysis.',
+                    9: 'Toxicology tests for chemicals. Physical tool marks need tool mark analysis.'
+                }
+            }
+        }
+    ];
+
+    const FORENSIC_TESTS = [
+        'Select a test...',
+        'DNA Analysis (STR profiling)',
+        'Fingerprint Comparison (AFIS)',
+        'Fiber Analysis (microscopy)',
+        'Shoe Print Comparison (tread pattern)',
+        'Tool Mark Analysis',
+        'Handwriting / Document Analysis',
+        'Video Enhancement / Facial Recognition',
+        'Trace Evidence (hair, soil)',
+        'Toxicology Screen'
+    ];
+
+    // ======================== BABYLON.JS SCENE ========================
+    const canvas = document.getElementById('renderCanvas');
+    const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio, 1.5));
+
+    const scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.059, 0.027, 0.125, 1.0);
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+    scene.fogColor = new BABYLON.Color3(0.059, 0.027, 0.125);
+    scene.fogDensity = 0.012;
+
+    // Camera
+    const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, 1.2, 14, new BABYLON.Vector3(0, 1.5, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 5;
+    camera.upperRadiusLimit = 22;
+    camera.upperBetaLimit = Math.PI / 2 - 0.05;
+    camera.inertia = 0.7;
+    camera.wheelPrecision = 5;
+    camera.panningSensibility = 80;
+
+    // Lighting
+    const hemi = new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), scene);
+    hemi.intensity = 0.35;
+    hemi.diffuse = new BABYLON.Color3(0.8, 0.82, 1.0);
+    hemi.groundColor = new BABYLON.Color3(0.1, 0.06, 0.2);
+
+    const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.5, -1.5, -0.7), scene);
+    sun.position = new BABYLON.Vector3(5, 10, 7);
+    sun.intensity = 0.85;
+
+    const accent = new BABYLON.PointLight("accent", new BABYLON.Vector3(0, 2.5, -1), scene);
+    accent.diffuse = new BABYLON.Color3(0.5, 0.4, 1.0);
+    accent.specular = BABYLON.Color3.Black();
+    accent.intensity = 1.8;
+    accent.range = 8.0;
+
+    // Shadows
+    const shadowGen = new BABYLON.ShadowGenerator(1024, sun);
+    shadowGen.useBlurExponentialShadowMap = true;
+    shadowGen.blurKernel = 16;
+    shadowGen.darkness = 0.4;
+
+    // Post-processing
+    const pipeline = new BABYLON.DefaultRenderingPipeline("pipe", true, scene, [camera]);
+    pipeline.fxaaEnabled = true;
+    pipeline.samples = 2;
+    pipeline.imageProcessingEnabled = true;
+    pipeline.imageProcessing.contrast = 1.1;
+    pipeline.imageProcessing.exposure = 1.05;
+    pipeline.imageProcessing.toneMappingEnabled = true;
+
+    // Highlight layer for clickable objects
+    const hl = new BABYLON.HighlightLayer("hl", scene);
+
+    // ======================== MATERIALS ========================
+    function pbr(name, hexColor, roughness, metallic) {
+        const m = new BABYLON.PBRMaterial(name, scene);
+        m.albedoColor = BABYLON.Color3.FromHexString(hexColor);
+        m.roughness = roughness;
+        m.metallic = metallic;
+        return m;
+    }
+
+    const matFloor = pbr("floor", "#3a3a40", 0.7, 0.0);
+    const matWall = pbr("wall", "#2a2535", 0.9, 0.0);
+    const matDoor = pbr("door", "#5a4a35", 0.75, 0.0);
+    const matDoorFrame = pbr("doorFrame", "#4a4a50", 0.5, 0.5);
+    const matMetal = pbr("metal", "#888888", 0.25, 0.8);
+    const matCan = pbr("can", "#cc2244", 0.3, 0.7);
+    const matCanTop = pbr("canTop", "#aaaaaa", 0.2, 0.9);
+    const matTable = pbr("table", "#1a1a22", 0.3, 0.0);
+    const matTableLeg = pbr("tableLeg", "#555555", 0.3, 0.8);
+    const matComputer = pbr("computer", "#222233", 0.4, 0.1);
+    const matScreen = pbr("screen", "#111122", 0.1, 0.0);
+    const matPaper = pbr("paper", "#d4c9a8", 0.95, 0.0);
+    const matEvMarker = pbr("evMarker", "#ffcc00", 0.6, 0.0);
+    const matTape = pbr("tape", "#cccc22", 0.8, 0.0);
+    const matLocker = pbr("locker", "#3d5a7a", 0.5, 0.4);
+    const matCeiling = pbr("ceiling", "#222230", 0.9, 0.0);
+    const matTile = pbr("tile", "#4a4a55", 0.6, 0.05);
+
+    // ======================== ENVIRONMENT ========================
+    const floor = BABYLON.MeshBuilder.CreateGround("floor", { width: 20, height: 16, subdivisions: 1 }, scene);
+    floor.material = matTile;
+    floor.receiveShadows = true;
+
+    const ceiling = BABYLON.MeshBuilder.CreateGround("ceiling", { width: 20, height: 16 }, scene);
+    ceiling.position.y = 3.5;
+    ceiling.rotation.x = Math.PI;
+    ceiling.material = matCeiling;
+
+    const wallBack = BABYLON.MeshBuilder.CreateBox("wallBack", { width: 20, height: 3.5, depth: 0.2 }, scene);
+    wallBack.position.set(0, 1.75, -8);
+    wallBack.material = matWall;
+
+    const wallLeft = BABYLON.MeshBuilder.CreateBox("wallLeft", { width: 0.2, height: 3.5, depth: 16 }, scene);
+    wallLeft.position.set(-10, 1.75, 0);
+    wallLeft.material = matWall;
+
+    const wallRight = BABYLON.MeshBuilder.CreateBox("wallRight", { width: 0.2, height: 3.5, depth: 16 }, scene);
+    wallRight.position.set(10, 1.75, 0);
+    wallRight.material = matWall;
+
+    const wallFrontLeft = BABYLON.MeshBuilder.CreateBox("wallFL", { width: 7, height: 3.5, depth: 0.2 }, scene);
+    wallFrontLeft.position.set(-6.5, 1.75, 8);
+    wallFrontLeft.material = matWall;
+
+    const wallFrontRight = BABYLON.MeshBuilder.CreateBox("wallFR", { width: 7, height: 3.5, depth: 0.2 }, scene);
+    wallFrontRight.position.set(6.5, 1.75, 8);
+    wallFrontRight.material = matWall;
+
+    const wallAboveDoor = BABYLON.MeshBuilder.CreateBox("wallAD", { width: 6, height: 1.0, depth: 0.2 }, scene);
+    wallAboveDoor.position.set(0, 3.0, 8);
+    wallAboveDoor.material = matWall;
+
+    // Door frame
+    const doorFrameL = BABYLON.MeshBuilder.CreateBox("dfL", { width: 0.12, height: 2.5, depth: 0.25 }, scene);
+    doorFrameL.position.set(-3, 1.25, 8);
+    doorFrameL.material = matDoorFrame;
+
+    const doorFrameR = BABYLON.MeshBuilder.CreateBox("dfR", { width: 0.12, height: 2.5, depth: 0.25 }, scene);
+    doorFrameR.position.set(3, 1.25, 8);
+    doorFrameR.material = matDoorFrame;
+
+    const doorFrameTop = BABYLON.MeshBuilder.CreateBox("dfT", { width: 6.24, height: 0.12, depth: 0.25 }, scene);
+    doorFrameTop.position.set(0, 2.56, 8);
+    doorFrameTop.material = matDoorFrame;
+
+    // Double doors (propped open)
+    const doorLeft = BABYLON.MeshBuilder.CreateBox("doorL", { width: 2.8, height: 2.4, depth: 0.08 }, scene);
+    doorLeft.position.set(-2.4, 1.2, 7.3);
+    doorLeft.rotation.y = 0.6;
+    doorLeft.material = matDoor;
+    shadowGen.addShadowCaster(doorLeft);
+
+    const doorRight = BABYLON.MeshBuilder.CreateBox("doorR", { width: 2.8, height: 2.4, depth: 0.08 }, scene);
+    doorRight.position.set(2.4, 1.2, 7.3);
+    doorRight.rotation.y = -0.6;
+    doorRight.material = matDoor;
+    shadowGen.addShadowCaster(doorRight);
+
+    // Paper wedged in doorjamb (evidence)
+    const paperWedge = BABYLON.MeshBuilder.CreateBox("paper", { width: 0.15, height: 0.08, depth: 0.12 }, scene);
+    paperWedge.position.set(2.95, 0.04, 8.0);
+    paperWedge.material = matPaper;
+    paperWedge.metadata = { evidence: true, name: 'Paper in doorjamb', desc: 'Folded paper used to prop the door open. Could contain fingerprints, fibers, or handwriting. What forensic test would you use on this?' };
+    shadowGen.addShadowCaster(paperWedge);
+
+    // Soft-drink can (evidence - key item)
+    const canGroup = new BABYLON.TransformNode("canGroup", scene);
+    canGroup.position.set(1.5, 0, 6.5);
+
+    const canBody = BABYLON.MeshBuilder.CreateCylinder("canBody", { diameter: 0.065, height: 0.12, tessellation: 24 }, scene);
+    canBody.material = matCan;
+    canBody.parent = canGroup;
+    canBody.position.y = 0.06;
+    shadowGen.addShadowCaster(canBody);
+
+    const canTopRim = BABYLON.MeshBuilder.CreateCylinder("canTop", { diameter: 0.06, height: 0.005, tessellation: 24 }, scene);
+    canTopRim.material = matCanTop;
+    canTopRim.parent = canGroup;
+    canTopRim.position.y = 0.122;
+
+    const canTab = BABYLON.MeshBuilder.CreateBox("canTab", { width: 0.02, height: 0.002, depth: 0.015 }, scene);
+    canTab.material = matCanTop;
+    canTab.parent = canGroup;
+    canTab.position.set(0.01, 0.125, 0);
+
+    canGroup.metadata = { evidence: true, name: 'Soft-drink can', desc: 'Cold to touch. A DNA sample was obtained from the lip area. This is the key physical evidence linking someone to the scene. But remember: DNA on a can only proves someone drank from it, not that they committed a crime.' };
+
+    // Evidence markers
+    function createEvidenceMarker(num, x, z) {
+        const group = new BABYLON.TransformNode("marker" + num, scene);
+        const cone = BABYLON.MeshBuilder.CreateCylinder("cone" + num, { diameterTop: 0, diameterBottom: 0.12, height: 0.18, tessellation: 4 }, scene);
+        cone.material = matEvMarker;
+        cone.parent = group;
+        cone.position.y = 0.09;
+        shadowGen.addShadowCaster(cone);
+
+        const labelTex = new BABYLON.DynamicTexture("label" + num, { width: 64, height: 64 }, scene, false);
+        const ctx = labelTex.getContext();
+        ctx.fillStyle = "#000";
+        ctx.font = "bold 40px Arial";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(String(num), 32, 32);
+        labelTex.update();
+
+        const labelPlane = BABYLON.MeshBuilder.CreatePlane("lbl" + num, { width: 0.08, height: 0.08 }, scene);
+        const labelMat = new BABYLON.StandardMaterial("lblMat" + num, scene);
+        labelMat.diffuseTexture = labelTex;
+        labelMat.emissiveColor = new BABYLON.Color3(0.9, 0.8, 0);
+        labelMat.disableLighting = true;
+        labelMat.backFaceCulling = false;
+        labelPlane.material = labelMat;
+        labelPlane.parent = group;
+        labelPlane.position.y = 0.2;
+        labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        group.position.set(x, 0, z);
+        return group;
+    }
+
+    createEvidenceMarker(1, 1.5, 6.5);
+    createEvidenceMarker(2, 2.9, 7.8);
+    createEvidenceMarker(3, -1, 5.5);
+
+    // Crime scene tape
+    function createTape(x1, z1, x2, z2, y) {
+        const dx = x2 - x1, dz = z2 - z1;
+        const len = Math.sqrt(dx * dx + dz * dz);
+        const angle = Math.atan2(dx, dz);
+        const tape = BABYLON.MeshBuilder.CreateBox("tape", { width: 0.04, height: len, depth: 0.002 }, scene);
+        tape.material = matTape;
+        tape.position.set((x1 + x2) / 2, y, (z1 + z2) / 2);
+        tape.rotation.set(Math.PI / 2, 0, angle);
+        return tape;
+    }
+    createTape(-4, 5, 4, 5, 0.8);
+    createTape(-4, 5, -4, 8, 0.8);
+    createTape(4, 5, 4, 8, 0.8);
+
+    // Lockers
+    for (let i = 0; i < 6; i++) {
+        const locker = BABYLON.MeshBuilder.CreateBox("locker" + i, { width: 0.6, height: 2.0, depth: 0.45 }, scene);
+        locker.position.set(-7 + i * 1.2, 1.0, -7.6);
+        locker.material = matLocker;
+        shadowGen.addShadowCaster(locker);
+    }
+
+    // Desks
+    function createDesk(x, z) {
+        const group = new BABYLON.TransformNode("desk", scene);
+        const top = BABYLON.MeshBuilder.CreateBox("deskTop", { width: 1.4, height: 0.04, depth: 0.7 }, scene);
+        top.material = matTable;
+        top.parent = group;
+        top.position.y = 0.75;
+        shadowGen.addShadowCaster(top);
+        for (const [lx, lz] of [[-0.6, -0.3], [0.6, -0.3], [-0.6, 0.3], [0.6, 0.3]]) {
+            const leg = BABYLON.MeshBuilder.CreateCylinder("dleg", { diameter: 0.04, height: 0.73, tessellation: 12 }, scene);
+            leg.material = matTableLeg;
+            leg.parent = group;
+            leg.position.set(lx, 0.365, lz);
+        }
+        group.position.set(x, 0, z);
+        return group;
+    }
+
+    const desk1 = createDesk(-4, -3);
+    const desk2 = createDesk(-2, -3);
+    const desk3 = createDesk(0, -3);
+    const desk4 = createDesk(2, -3);
+
+    function createComputer(parent, hasMonitor) {
+        if (!hasMonitor) return;
+        const monitor = BABYLON.MeshBuilder.CreateBox("mon", { width: 0.45, height: 0.3, depth: 0.03 }, scene);
+        monitor.material = matComputer;
+        monitor.parent = parent;
+        monitor.position.set(0, 1.05, 0);
+
+        const screen = BABYLON.MeshBuilder.CreateBox("scr", { width: 0.42, height: 0.26, depth: 0.005 }, scene);
+        screen.material = matScreen;
+        screen.parent = parent;
+        screen.position.set(0, 1.05, -0.02);
+
+        const stand = BABYLON.MeshBuilder.CreateCylinder("stand", { diameter: 0.04, height: 0.14, tessellation: 12 }, scene);
+        stand.material = matMetal;
+        stand.parent = parent;
+        stand.position.set(0, 0.84, 0);
+
+        const base = BABYLON.MeshBuilder.CreateCylinder("base", { diameter: 0.15, height: 0.02, tessellation: 16 }, scene);
+        base.material = matMetal;
+        base.parent = parent;
+        base.position.set(0, 0.78, 0);
+    }
+
+    createComputer(desk1, true);
+    createComputer(desk2, false); // stolen
+    createComputer(desk3, false); // stolen
+    createComputer(desk4, true);
+
+    // Empty cables on stolen desks
+    for (const d of [desk2, desk3]) {
+        const cable = BABYLON.MeshBuilder.CreateTube("cable", {
+            path: [new BABYLON.Vector3(0, 0.77, 0.2), new BABYLON.Vector3(0.1, 0.77, 0.15), new BABYLON.Vector3(0.15, 0.5, 0.1), new BABYLON.Vector3(0.15, 0.02, 0.1)],
+            radius: 0.008, tessellation: 8
+        }, scene);
+        cable.material = matMetal;
+        cable.parent = d;
+    }
+
+    // Fluorescent lights
+    for (let i = -2; i <= 2; i += 2) {
+        const lightBox = BABYLON.MeshBuilder.CreateBox("light" + i, { width: 1.2, height: 0.05, depth: 0.3 }, scene);
+        const lightMat = new BABYLON.StandardMaterial("lightMat" + i, scene);
+        lightMat.emissiveColor = new BABYLON.Color3(0.7, 0.7, 0.8);
+        lightMat.disableLighting = true;
+        lightBox.material = lightMat;
+        lightBox.position.set(i * 3, 3.45, 0);
+    }
+
+    // ======================== INTERACTIVITY (3D Scene) ========================
+    const tooltip = document.getElementById('tooltip-3d');
+    const clickableObjects = [];
+
+    [canBody, paperWedge].forEach(mesh => {
+        const parent = mesh.parent || mesh;
+        const meta = parent.metadata || mesh.metadata;
+        if (meta && meta.evidence) {
+            clickableObjects.push({ mesh, meta });
+            hl.addMesh(mesh, BABYLON.Color3.FromHexString("#f5a623"));
+        }
+    });
+
+    scene.onPointerObservable.add((pointerInfo) => {
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERMOVE) {
+            const pick = scene.pick(scene.pointerX, scene.pointerY);
+            if (pick.hit) {
+                const found = clickableObjects.find(o => o.mesh === pick.pickedMesh || (pick.pickedMesh.parent && pick.pickedMesh.parent === o.mesh.parent));
+                if (found) {
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (pointerInfo.event.clientX + 15) + 'px';
+                    tooltip.style.top = (pointerInfo.event.clientY - 10) + 'px';
+                    tooltip.textContent = found.meta.name;
+                    canvas.style.cursor = 'pointer';
+                    return;
+                }
+            }
+            tooltip.style.display = 'none';
+            canvas.style.cursor = 'default';
+        }
+        if (pointerInfo.type === BABYLON.PointerEventTypes.POINTERTAP) {
+            const pick = scene.pick(scene.pointerX, scene.pointerY);
+            if (pick.hit) {
+                const found = clickableObjects.find(o => o.mesh === pick.pickedMesh || (pick.pickedMesh.parent && pick.pickedMesh.parent === o.mesh.parent));
+                if (found && found.meta) {
+                    showEvidenceDetail(found.meta);
+                }
+            }
+        }
+    });
+
+    function showEvidenceDetail(meta) {
+        const el = document.getElementById('explain-box');
+        el.innerHTML = `<h2 style="color:var(--orange)">Evidence: ${meta.name}</h2><p style="line-height:1.7;">${meta.desc}</p><button class="btn btn-secondary" style="margin-top:12px;" onclick="hideExplain()">Close</button>`;
+        document.getElementById('explain-overlay').classList.add('active');
+    }
+
+    // ======================== GEL ELECTROPHORESIS ========================
+    const gelCanvas = document.getElementById('gelCanvas');
+    const gCtx = gelCanvas.getContext('2d');
+
+    function bpToY(bp) {
+        const minBP = 500, maxBP = 11000;
+        const topY = 60, bottomY = 460;
+        const logMin = Math.log10(minBP), logMax = Math.log10(maxBP);
+        const logBP = Math.log10(bp);
+        const frac = (logBP - logMin) / (logMax - logMin);
+        return bottomY - frac * (bottomY - topY);
+    }
+
+    function drawGel(progress) {
+        const w = gelCanvas.width, h = gelCanvas.height;
+        gCtx.clearRect(0, 0, w, h);
+
+        // Gel background
+        const gelGrad = gCtx.createLinearGradient(0, 0, 0, h);
+        gelGrad.addColorStop(0, '#0a1628');
+        gelGrad.addColorStop(1, '#0d2040');
+        gCtx.fillStyle = gelGrad;
+        gCtx.fillRect(0, 0, w, h);
+
+        const laneWidth = w / 6;
+        const lanes = ['Ladder', 'Suspect 1\n(Marcus)', 'Suspect 2\n(Devon)', 'Suspect 3\n(Tyler)', 'Crime\nScene'];
+        const laneKeys = ['ladder', 'suspect1', 'suspect2', 'suspect3', 'crime'];
+
+        // Wells
+        gCtx.fillStyle = '#162840';
+        for (let i = 0; i < 5; i++) {
+            const cx = laneWidth * (i + 1);
+            gCtx.fillRect(cx - 18, 20, 36, 12);
+            gCtx.strokeStyle = '#2a4a6a';
+            gCtx.lineWidth = 1;
+            gCtx.strokeRect(cx - 18, 20, 36, 12);
+        }
+
+        // Lane labels
+        gCtx.fillStyle = '#8a95a8';
+        gCtx.font = '11px Segoe UI, sans-serif';
+        gCtx.textAlign = 'center';
+        for (let i = 0; i < 5; i++) {
+            const cx = laneWidth * (i + 1);
+            const lines = lanes[i].split('\n');
+            lines.forEach((line, li) => {
+                gCtx.fillText(line, cx, 12 + li * 12);
+            });
+        }
+
+        if (progress <= 0) return;
+
+        // Draw bands -- NO bp labels on suspect/crime lanes (students must figure this out)
+        const bandColors = {
+            ladder: '#4488cc',
+            suspect1: '#cc5566',
+            suspect2: '#55bb77',
+            suspect3: '#cc9944',
+            crime: '#bb66cc'
+        };
+
+        for (let i = 0; i < 5; i++) {
+            const key = laneKeys[i];
+            const bands = DNA_DATA[key];
+            const cx = laneWidth * (i + 1);
+            const color = bandColors[key];
+
+            bands.forEach(bp => {
+                const targetY = bpToY(bp);
+                const wellY = 32;
+                const currentY = wellY + (targetY - wellY) * Math.min(progress, 1);
+
+                if (currentY > wellY + 5) {
+                    // Band glow
+                    const grad = gCtx.createRadialGradient(cx, currentY, 0, cx, currentY, 24);
+                    grad.addColorStop(0, color + '40');
+                    grad.addColorStop(1, color + '00');
+                    gCtx.fillStyle = grad;
+                    gCtx.fillRect(cx - 24, currentY - 6, 48, 12);
+
+                    // Band itself
+                    gCtx.fillStyle = color;
+                    gCtx.globalAlpha = 0.85;
+                    const bandWidth = key === 'ladder' ? 28 : 22;
+                    const bandHeight = key === 'ladder' ? 3 : 4;
+                    gCtx.fillRect(cx - bandWidth / 2, currentY - bandHeight / 2, bandWidth, bandHeight);
+                    gCtx.globalAlpha = 1.0;
+
+                    // BP labels ONLY for ladder
+                    if (key === 'ladder' && progress >= 1) {
+                        gCtx.fillStyle = '#6688aa';
+                        gCtx.font = '9px monospace';
+                        gCtx.textAlign = 'left';
+                        gCtx.fillText(bp + ' bp', cx + 18, currentY + 3);
+                        gCtx.textAlign = 'center';
+                    }
+                }
+            });
+        }
+
+        // Polarity labels
+        if (progress > 0.1) {
+            gCtx.fillStyle = '#ff4444';
+            gCtx.font = 'bold 10px sans-serif';
+            gCtx.textAlign = 'center';
+            gCtx.fillText('(-)', w / 2, 42);
+            gCtx.fillStyle = '#44ff44';
+            gCtx.fillText('(+)', w / 2, h - 8);
+        }
+    }
+
+    drawGel(0);
+
+    function loadSamples() {
+        gelState = 'loaded';
+        drawGel(0);
+        document.getElementById('btn-load').disabled = true;
+        document.getElementById('btn-run').disabled = false;
+        document.getElementById('gel-status').textContent = 'Samples loaded into wells. Ready to run electric current.';
+
+        const w = gelCanvas.width;
+        const laneWidth = w / 6;
+        const colors = ['#4488cc', '#cc5566', '#55bb77', '#cc9944', '#bb66cc'];
+        for (let i = 0; i < 5; i++) {
+            const cx = laneWidth * (i + 1);
+            gCtx.fillStyle = colors[i] + '80';
+            gCtx.fillRect(cx - 16, 22, 32, 8);
+        }
+    }
+
+    function runGel() {
+        if (gelState !== 'loaded') return;
+        gelState = 'running';
+        gelProgress = 0;
+        document.getElementById('btn-run').disabled = true;
+        document.getElementById('gel-status').textContent = 'Electrophoresis running... DNA fragments separating by size.';
+
+        function animate() {
+            gelProgress += 0.005;
+            drawGel(gelProgress);
+
+            if (gelProgress >= 1) {
+                gelState = 'done';
+                document.getElementById('gel-status').textContent = 'Electrophoresis complete. Use the alignment ruler to compare band positions across lanes. Take your time before recording observations.';
+                document.getElementById('btn-ruler').disabled = false;
+                document.getElementById('btn-to-analysis').disabled = false;
+                return;
+            }
+            gelAnimFrame = requestAnimationFrame(animate);
+        }
+        animate();
+    }
+
+    // Ruler functionality
+    function toggleRuler() {
+        rulerVisible = !rulerVisible;
+        const ruler = document.getElementById('ruler');
+        ruler.style.display = rulerVisible ? 'block' : 'none';
+        document.getElementById('btn-ruler').textContent = rulerVisible ? 'Hide Ruler' : 'Alignment Ruler';
+    }
+
+    const ruler = document.getElementById('ruler');
+    ruler.addEventListener('mousedown', (e) => { rulerDragging = true; e.preventDefault(); });
+    ruler.addEventListener('touchstart', (e) => { rulerDragging = true; e.preventDefault(); }, { passive: false });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!rulerDragging) return;
+        const wrap = document.getElementById('gel-canvas-wrap');
+        const rect = wrap.getBoundingClientRect();
+        const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
+        ruler.style.top = y + 'px';
+    });
+    document.addEventListener('touchmove', (e) => {
+        if (!rulerDragging) return;
+        const wrap = document.getElementById('gel-canvas-wrap');
+        const rect = wrap.getBoundingClientRect();
+        const y = Math.max(0, Math.min(rect.height, e.touches[0].clientY - rect.top));
+        ruler.style.top = y + 'px';
+    }, { passive: false });
+    document.addEventListener('mouseup', () => { rulerDragging = false; });
+    document.addEventListener('touchend', () => { rulerDragging = false; });
+
+    // ======================== ANALYSIS WORKSHEET ========================
+    function showAnalysis() {
+        document.getElementById('gel-panel').classList.remove('active');
+        document.getElementById('analysis-panel').classList.add('active');
+        setPhase(2);
+        buildEvidenceList();
+    }
+
+    function buildEvidenceList() {
+        const list = document.getElementById('evidence-list');
+        if (list.children.length > 0) return; // already built
+
+        EVIDENCE_ITEMS.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'evidence-item';
+            div.id = 'ev-item-' + item.id;
+            div.innerHTML = `
+                <div class="evidence-icon">${item.icon}</div>
+                <div style="flex:1;">
+                    <div style="font-size:13px; font-weight:600; margin-bottom:2px;">${item.name}</div>
+                    <div style="font-size:11px; color:var(--muted);">${item.description}</div>
+                    <select onchange="checkEvidenceTest('${item.id}', this.value)" aria-label="Forensic test for ${item.name}" style="margin-top: 6px; background: rgba(15,7,32,0.8); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 6px 8px; font-size: 12px; min-width: 200px;">
+                        ${FORENSIC_TESTS.map((t, i) => `<option value="${i}"${evidenceAnswers[item.id] === i ? ' selected' : ''}>${t}</option>`).join('')}
+                    </select>
+                    <div class="evidence-feedback" id="ev-feedback-${item.id}"></div>
+                </div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function checkEvidenceTest(itemId, testIdx) {
+        testIdx = parseInt(testIdx);
+        if (testIdx === 0) return; // "Select a test..."
+
+        evidenceAnswers[itemId] = testIdx;
+        const item = EVIDENCE_ITEMS.find(e => e.id === itemId);
+        const feedbackEl = document.getElementById('ev-feedback-' + itemId);
+
+        if (testIdx === item.correctTest) {
+            feedbackEl.className = 'evidence-feedback show correct-fb';
+            feedbackEl.textContent = item.feedback.correct;
+        } else {
+            const wrongMsg = item.feedback.wrong[testIdx] || 'That is not the best forensic test for this type of evidence. Think about what material this evidence is made of and what test analyzes that material.';
+            feedbackEl.className = 'evidence-feedback show incorrect-fb';
+            feedbackEl.textContent = wrongMsg;
+        }
+
+        saveState();
+    }
+
+    function updateAnalysis(key, value) {
+        analysisData[key] = value;
+        saveState();
+    }
+
+    function backToGel() {
+        document.getElementById('analysis-panel').classList.remove('active');
+        document.getElementById('gel-panel').classList.add('active');
+        setPhase(1);
+    }
+
+    // ======================== THEORY BUILDING ========================
+    function showTheory() {
+        document.getElementById('analysis-panel').classList.remove('active');
+        document.getElementById('theory-panel').classList.add('active');
+        setPhase(3);
+        buildSuspectChoices();
+    }
+
+    function buildSuspectChoices() {
+        const container = document.getElementById('suspect-choices');
+        if (container.children.length > 0) return; // already built
+
+        const choices = [
+            ...SUSPECT_NAMES.map((name, i) => ({ idx: i, name: `Suspect ${i+1}: ${name}`, desc: 'I believe this suspect\'s DNA matches the crime-scene evidence.' })),
+            { idx: 3, name: 'None of them', desc: 'I do not believe any suspect\'s DNA is a definitive match.', none: true }
+        ];
+
+        choices.forEach(choice => {
+            const div = document.createElement('div');
+            div.className = 'suspect-choice' + (theoryData.suspect === choice.idx ? ' selected' : '');
+            div.id = 'choice-' + choice.idx;
+            div.setAttribute('role', 'radio');
+            div.setAttribute('aria-checked', theoryData.suspect === choice.idx ? 'true' : 'false');
+            div.setAttribute('tabindex', '0');
+            div.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <div class="radio-dot"></div>
+                    <div>
+                        <h3 style="color: var(--text)">${choice.name}</h3>
+                        <p${choice.none ? ' class="none-option"' : ''}>${choice.desc}</p>
+                    </div>
+                </div>
+            `;
+            div.addEventListener('click', () => selectSuspect(choice.idx));
+            div.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectSuspect(choice.idx); } });
+            container.appendChild(div);
+        });
+    }
+
+    function selectSuspect(idx) {
+        theoryData.suspect = idx;
+        document.querySelectorAll('.suspect-choice').forEach((el, i) => {
+            const isSelected = i === idx;
+            el.classList.toggle('selected', isSelected);
+            el.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+        });
+        saveState();
+    }
+
+    function updateTheory(key, value) {
+        theoryData[key] = value;
+        const cc = document.getElementById('cc-' + key);
+        if (cc) cc.textContent = value.length + ' characters';
+        saveState();
+    }
+
+    function backToAnalysis() {
+        document.getElementById('theory-panel').classList.remove('active');
+        document.getElementById('analysis-panel').classList.add('active');
+        setPhase(2);
+    }
+
+    // ======================== DEBATE PREP ========================
+    function showDebatePrep() {
+        // Validate theory has content
+        if (theoryData.suspect === -1) {
+            showToast('Please select which suspect you think left their DNA on the can (or "None of them").', 'hint');
+            return;
+        }
+        if (!theoryData.reasoning || theoryData.reasoning.trim().length < 20) {
+            showToast('Please explain your reasoning in more detail (at least a few sentences).', 'hint');
+            return;
+        }
+
+        document.getElementById('theory-panel').classList.remove('active');
+        document.getElementById('debate-panel').classList.add('active');
+        setPhase(4);
+    }
+
+    function updateDebate(key, value) {
+        debateData[key] = value;
+        const cc = document.getElementById('cc-' + key);
+        if (cc) cc.textContent = value.length + ' characters';
+        saveState();
+    }
+
+    function backToTheory() {
+        document.getElementById('debate-panel').classList.remove('active');
+        document.getElementById('theory-panel').classList.add('active');
+        setPhase(3);
+    }
+
+    // ======================== SUBMISSION ========================
+    function submitAll() {
+        // Check minimum content
+        const debateFields = ['dnaProof', 'excluded', 'otherEvidence', 'ndis'];
+        const emptyDebate = debateFields.filter(f => !debateData[f] || debateData[f].trim().length < 10);
+        if (emptyDebate.length > 0) {
+            if (!confirm(`You have ${emptyDebate.length} debate prep question(s) with very short or empty answers. Submit anyway?`)) return;
+        }
+
+        submitted = true;
+
+        // Send all answers via PortalBridge
+        // Analysis worksheet
+        PortalBridge.answer('band-analysis-s1', true, 1);
+        PortalBridge.answer('band-analysis-s2', true, 1);
+        PortalBridge.answer('band-analysis-s3', true, 1);
+        PortalBridge.answer('common-allele', true, 1);
+        // Theory
+        PortalBridge.answer('theory-suspect', true, 1);
+        PortalBridge.answer('theory-reasoning', true, 1);
+        PortalBridge.answer('theory-exclusions', true, 1);
+        PortalBridge.answer('theory-counterarg', true, 1);
+        // Debate prep
+        debateFields.forEach(f => PortalBridge.answer('debate-' + f, true, 1));
+        // Evidence matching
+        EVIDENCE_ITEMS.forEach(item => {
+            const correct = evidenceAnswers[item.id] === item.correctTest;
+            PortalBridge.answer('evidence-' + item.id, correct, 1);
+        });
+
+        PortalBridge.complete(0, 19, 0); // Teacher-graded
+        saveState();
+
+        // Build position summary
+        const suspectName = theoryData.suspect >= 0 && theoryData.suspect < 3
+            ? `Suspect ${theoryData.suspect + 1}: ${SUSPECT_NAMES[theoryData.suspect]}`
+            : 'None of the suspects';
+
+        const summary = document.getElementById('position-summary');
+        summary.innerHTML = `
+            <p style="font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 8px;">Your Position: ${suspectName}</p>
+            <p style="font-size: 13px; line-height: 1.6; margin-bottom: 10px;"><strong style="color: var(--blue);">Your reasoning:</strong> ${escapeHTML(theoryData.reasoning)}</p>
+            <p style="font-size: 13px; line-height: 1.6; margin-bottom: 10px;"><strong style="color: var(--blue);">Exclusions:</strong> ${escapeHTML(theoryData.exclusions)}</p>
+            <p style="font-size: 13px; line-height: 1.6;"><strong style="color: var(--blue);">Counterargument you anticipated:</strong> ${escapeHTML(theoryData.counterarg)}</p>
+        `;
+
+        // Show completion
+        document.getElementById('debate-panel').classList.remove('active');
+        document.getElementById('completion-overlay').classList.add('active');
+        setPhase(5);
+    }
+
+    function escapeHTML(str) {
+        if (!str) return '(not provided)';
+        return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    // ======================== FEEDBACK TOAST ========================
+    let toastTimer = null;
+    function showToast(message, type) {
+        // Remove existing
+        document.querySelectorAll('.feedback-toast').forEach(t => t.remove());
+        clearTimeout(toastTimer);
+
+        const toast = document.createElement('div');
+        toast.className = 'feedback-toast ' + type;
+        toast.textContent = message;
+        document.body.appendChild(toast);
+
+        toastTimer = setTimeout(() => toast.remove(), 5000);
+    }
+
+    // ======================== PHASE MANAGEMENT ========================
+    function setPhase(phase) {
+        currentPhase = phase;
+        const indicator = document.getElementById('phase-indicator');
+        indicator.textContent = phaseNames[phase];
+
+        document.querySelectorAll('.progress-dot').forEach((dot, i) => {
+            dot.classList.remove('active', 'complete');
+            if (i < phase) dot.classList.add('complete');
+            if (i === phase) dot.classList.add('active');
+        });
+        document.getElementById('progress-label').textContent = (phase + 1) + ' / 6';
+
+        const titles = [
+            'Crime Scene Investigation',
+            'Gel Electrophoresis Lab',
+            'DNA Analysis Worksheet',
+            'Build Your Theory',
+            'Debate Preparation',
+            'Class Debate'
+        ];
+        const descs = [
+            'Examine the crime scene. Click on highlighted evidence items to learn about them. Orbit the camera to explore.',
+            'Load DNA samples and run electrophoresis. Use the alignment ruler to compare band positions. Look carefully!',
+            'Record your gel observations. For each suspect, note how many bands match the crime scene and describe what you see.',
+            'Based on YOUR analysis, choose who you think left their DNA at the scene. Defend your position with evidence.',
+            'Strengthen your argument. Consider the legal and ethical implications of the evidence.',
+            'Your analysis is submitted. Use the summary below as a reference during the class debate.'
+        ];
+
+        document.getElementById('step-title').textContent = titles[phase] || '';
+        document.getElementById('step-desc').textContent = descs[phase] || '';
+
+        // Update bottom bar button
+        const btnNext = document.getElementById('btn-next');
+        switch (phase) {
+            case 0:
+                btnNext.textContent = 'Enter Lab';
+                btnNext.disabled = false;
+                btnNext.onclick = () => { document.getElementById('gel-panel').classList.add('active'); setPhase(1); };
+                break;
+            case 1:
+                btnNext.textContent = 'Record Observations';
+                btnNext.onclick = () => { if (gelState === 'done') showAnalysis(); };
+                btnNext.disabled = gelState !== 'done';
+                break;
+            case 2:
+                btnNext.textContent = 'Build My Theory';
+                btnNext.onclick = () => showTheory();
+                btnNext.disabled = false;
+                break;
+            case 3:
+                btnNext.textContent = 'Prepare for Debate';
+                btnNext.onclick = () => showDebatePrep();
+                btnNext.disabled = false;
+                break;
+            case 4:
+                btnNext.textContent = 'Submit Analysis';
+                btnNext.onclick = () => submitAll();
+                btnNext.disabled = false;
+                break;
+            case 5:
+                btnNext.textContent = 'Submitted';
+                btnNext.disabled = true;
+                btnNext.onclick = null;
+                break;
+        }
+
+        saveState();
+    }
+
+    function advancePhase() {
+        const btnNext = document.getElementById('btn-next');
+        if (btnNext.onclick) btnNext.onclick();
+    }
+
+    function dismissEngage() {
+        document.getElementById('engage-overlay').classList.add('hidden');
+        setPhase(0);
+        BABYLON.Animation.CreateAndStartAnimation("camZoom", camera, "radius", 30, 60, camera.radius, 10, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camAlpha", camera, "alpha", 30, 60, camera.alpha, -1.2, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camBeta", camera, "beta", 30, 60, camera.beta, 1.0, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    }
+
+    function showHelp() {
+        const el = document.getElementById('explain-box');
+        el.innerHTML = `
+            <h2>How DNA Profiling Works</h2>
+            <p><strong>DNA profiling</strong> (also called DNA fingerprinting) compares specific regions of DNA called <strong>Short Tandem Repeats (STRs)</strong>. These repeating sequences vary in length between individuals, making them useful for identification.</p>
+            <p><strong>Gel Electrophoresis</strong> separates DNA fragments by size. An electric current pulls DNA through a gel matrix. Smaller fragments travel farther from the wells (loading point) than larger fragments.</p>
+            <p><strong>Reading the Gel:</strong></p>
+            <ul style="font-size:13px; line-height:1.6; margin-left:20px; margin-bottom:10px;">
+                <li>Each vertical lane contains DNA from one sample</li>
+                <li>The <strong>ladder</strong> (first lane) contains fragments of known sizes for reference</li>
+                <li>Dark <strong>bands</strong> appear where DNA fragments of a particular size accumulated</li>
+                <li>Bands at the same horizontal position = fragments of the <strong>same size</strong></li>
+            </ul>
+            <p><strong>Matching:</strong> If a suspect's DNA shares <strong>all bands</strong> with crime-scene DNA at the same positions, it is a match.</p>
+            <p><strong>Common alleles:</strong> Some STR lengths are very common in the population. A single shared band does not mean a match -- ALL bands must align.</p>
+            <p><strong>Important:</strong> DNA evidence can tell you WHO left biological material, but it cannot tell you WHEN or WHY they were there.</p>
+            <button class="btn btn-secondary" style="margin-top:12px;" onclick="hideExplain()">Got It</button>
+        `;
+        document.getElementById('explain-overlay').classList.add('active');
+    }
+
+    function hideExplain() {
+        document.getElementById('explain-overlay').classList.remove('active');
+    }
+
+    function hideGel() {
+        document.getElementById('gel-panel').classList.remove('active');
+    }
+
+    // ======================== STATE SAVE ========================
+    function saveState() {
+        const state = {
+            phase: currentPhase,
+            gelState,
+            gelProgress,
+            analysisData,
+            evidenceAnswers,
+            theoryData,
+            debateData,
+            submitted
+        };
+        PortalBridge.save(state, currentPhase);
+    }
+
+    // ======================== RENDER LOOP ========================
+    let pulseTime = 0;
+    scene.onBeforeRenderObservable.add(() => {
+        pulseTime += engine.getDeltaTime() / 1000;
+        accent.intensity = 1.8 + Math.sin(pulseTime * 2) * 0.3;
+    });
+
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener('resize', () => engine.resize());
+
+    // Initial camera position
+    camera.alpha = -Math.PI / 2;
+    camera.beta = 0.9;
+    camera.radius = 16;
+    camera.target = new BABYLON.Vector3(0, 1.5, 2);
+    </script>
+</body>
+</html>

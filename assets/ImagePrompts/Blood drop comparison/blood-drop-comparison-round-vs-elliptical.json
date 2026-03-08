@@ -1,0 +1,81 @@
+{
+  "user_intent": "Forensic evidence photograph showing a side-by-side comparison of two bloodstain patterns on a light tile floor: Drop A is a perfectly round circular blood drop indicating a 90-degree perpendicular impact, and Drop B is a highly elongated elliptical blood drop with satellite spatter trailing from its pointed end indicating a low-angle oblique impact. Labeled with white text. Shot overhead with a macro lens under even clinical forensic lighting.",
+  "meta": {
+    "aspect_ratio": "16:9",
+    "quality": "ultra_photorealistic",
+    "steps": 50,
+    "guidance_scale": 9.0
+  },
+  "subject": [
+    {
+      "id": "drop_a",
+      "type": "object",
+      "description": "A single perfectly round circular blood drop on a light-colored tile floor. The drop has smooth, well-defined edges with no distortion or spines. Deep crimson center gradually thinning to translucent red at the perimeter. The surface tension creates a slight dome shape catching overhead light with a subtle specular highlight. Approximately 8mm in diameter. Indicates a 90-degree perpendicular impact angle.",
+      "position": "left"
+    },
+    {
+      "id": "drop_b",
+      "type": "object",
+      "description": "A highly elongated elliptical blood drop on a light-colored tile floor. The drop is stretched into a narrow teardrop or oval shape with a length-to-width ratio of roughly 4:1. The leading edge is rounded while the trailing edge tapers to a sharp point with distinct satellite spatter — small secondary droplets scattered in a trail extending beyond the pointed end. The main stain shows directional flow patterns within the blood. Deep crimson with visible surface tension. Indicates a low-angle oblique impact of approximately 10-20 degrees.",
+      "position": "right"
+    }
+  ],
+  "scene": {
+    "location": "light-colored ceramic tile floor in a forensic laboratory or crime scene documentation area",
+    "lighting": {
+      "type": "soft_diffused",
+      "direction": "above",
+      "color_temperature": "neutral",
+      "intensity": "bright"
+    },
+    "background_elements": [
+      "light beige ceramic tile with subtle grout lines",
+      "clean uniform surface with no debris"
+    ]
+  },
+  "technical": {
+    "camera_model": "Canon EOS R5",
+    "lens": "macro_100mm",
+    "aperture": "f/5.6",
+    "shutter_speed": "1/125",
+    "iso": "200"
+  },
+  "composition": {
+    "framing": "close_up",
+    "angle": "overhead",
+    "focus_point": "whole_scene",
+    "rule": "symmetrical"
+  },
+  "text_rendering": {
+    "enabled": true,
+    "text_content": "Drop A / Drop B",
+    "placement": "floating_in_air",
+    "font_style": "bold_sans_serif",
+    "color": "matte white"
+  },
+  "style_modifiers": {
+    "medium": "photography",
+    "color_palette": "muted_earth",
+    "texture": "sharp",
+    "era": "contemporary"
+  },
+  "advanced": {
+    "negative_prompt": [
+      "blurry",
+      "watermark",
+      "text overlay",
+      "deformed",
+      "low quality",
+      "jpeg artifacts",
+      "oversaturated",
+      "cartoon",
+      "illustration",
+      "artistic interpretation",
+      "3d render",
+      "extra blood drops",
+      "fingerprints",
+      "smeared blood"
+    ],
+    "hdr_mode": true
+  }
+}

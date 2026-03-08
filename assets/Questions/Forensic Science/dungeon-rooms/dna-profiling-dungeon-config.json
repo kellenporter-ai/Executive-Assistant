@@ -1,0 +1,561 @@
+{
+  "name": "The Helix Vault: Crime Lab of the Damned",
+  "description": "Deep beneath the city's forensic institute lies a corrupted crime lab where evidence has gone rogue and the very building blocks of life have turned hostile. DNA sequences writhe on contaminated walls, CODIS terminals flicker with malevolent data, and the air smells of ethidium bromide and dread. Only the sharpest forensic minds can navigate the Helix Vault and restore order to the evidence chain.",
+  "classType": "FORENSIC_SCIENCE",
+  "rooms": [
+    {
+      "id": "rm01",
+      "name": "The Contaminated Evidence Locker",
+      "description": "Biohazard tape lines the walls of this dimly lit storage bay. Evidence bags have ruptured, spilling degraded biological samples across the floor. Something stirs in the contamination \u2014 a specter born of mishandled DNA, hungry for clean samples.",
+      "type": "COMBAT",
+      "difficulty": "EASY",
+      "enemyHp": 175,
+      "enemyDamage": 18,
+      "enemyName": "Contaminated Sample Specter",
+      "healAmount": 0,
+      "questions": [
+        {
+          "id": "r01q001",
+          "stem": "What does DNA stand for?",
+          "options": [
+            "Deoxyribonucleic acid",
+            "Diribonucleic acid",
+            "Deoxyribose nucleic acid",
+            "Deoxyribonuclear acid"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r01q002",
+          "stem": "How many base pairs does human DNA contain?",
+          "options": [
+            "~3 billion",
+            "~46 thousand",
+            "~3 million",
+            "~6 billion"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r01q003",
+          "stem": "Which scientist developed DNA fingerprinting?",
+          "options": [
+            "Dr. Francis Crick",
+            "Dr. James Watson",
+            "Dr. Alec Jeffreys",
+            "Dr. Rosalind Franklin"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r01q004",
+          "stem": "In what year did Dr. Jeffreys develop DNA fingerprinting?",
+          "options": [
+            "1984",
+            "1991",
+            "1976",
+            "1998"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r01q005",
+          "stem": "How many chromosomes do humans have?",
+          "options": [
+            "46",
+            "48",
+            "23",
+            "44"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r01q006",
+          "stem": "Which of the following is NOT one of the four DNA bases?",
+          "options": [
+            "Guanine",
+            "Uracil",
+            "Thymine",
+            "Adenine"
+          ],
+          "correctAnswer": 1,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        }
+      ]
+    },
+    {
+      "id": "rm02",
+      "name": "The Electrophoresis Chamber",
+      "description": "A massive gel electrophoresis rig dominates this room, its lanes glowing an eerie blue-white under UV light. The DNA fragments have scrambled themselves into a cryptic pattern. To unlock the exit, you must decode the banding sequence before the voltage spikes and destroys the evidence.",
+      "type": "PUZZLE",
+      "difficulty": "EASY",
+      "enemyHp": 0,
+      "enemyDamage": 0,
+      "enemyName": "",
+      "healAmount": 0,
+      "questions": [
+        {
+          "id": "r02q001",
+          "stem": "Why are STRs particularly useful in forensic analysis of degraded DNA samples?",
+          "options": [
+            "They can be amplified without PCR",
+            "They are found only in noncoding regions and resist degradation",
+            "They are shorter and easier to recover from degraded samples",
+            "They do not require fluorescent labeling"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r02q002",
+          "stem": "What is the term for an individual who has two different alleles at a given STR locus?",
+          "options": [
+            "Polymorphic",
+            "Diploid",
+            "Homozygous",
+            "Heterozygous"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r02q003",
+          "stem": "What is the term for an individual who has two identical alleles at a given STR locus?",
+          "options": [
+            "Haploid",
+            "Homozygous",
+            "Heterozygous",
+            "Monomorphic"
+          ],
+          "correctAnswer": 1,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r02q004",
+          "stem": "Forensic DNA polymorphisms are found primarily in which regions of DNA?",
+          "options": [
+            "Coding (exon) regions",
+            "Promoter regions only",
+            "Noncoding (intron) regions",
+            "Telomere regions only"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r02q005",
+          "stem": "Why is it important to air-dry biological evidence before packaging?",
+          "options": [
+            "Air drying removes contaminants",
+            "Drying makes DNA more visible",
+            "Moisture promotes bacterial growth and DNA degradation",
+            "Wet samples cannot be analyzed by PCR"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        },
+        {
+          "id": "r02q006",
+          "stem": "What information does the AMEL locus provide in a DNA STR profile?",
+          "options": [
+            "The health status of the contributor",
+            "The ethnicity of the contributor",
+            "The age of the contributor",
+            "The biological sex of the contributor"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "EASY",
+          "damageBonus": 0
+        }
+      ]
+    },
+    {
+      "id": "rm03",
+      "name": "The PCR Replication Engine",
+      "description": "The thermal cycler in this room has gone haywire, endlessly replicating a hostile sequence that has taken physical form. Heat waves distort the air as the Polymerase Chain Reaction Golem assembles itself from amplified strands, growing larger with every cycle. Stop it before it reaches full replication.",
+      "type": "COMBAT",
+      "difficulty": "MEDIUM",
+      "enemyHp": 300,
+      "enemyDamage": 25,
+      "enemyName": "PCR Replication Golem",
+      "healAmount": 0,
+      "questions": [
+        {
+          "id": "r03q001",
+          "stem": "A forensic scientist receives a blood sample from a crime scene that has been sitting in a warm, moist environment for three days. Which DNA analysis technique would be MOST appropriate to attempt?",
+          "options": [
+            "Full genome sequencing",
+            "Gel electrophoresis without PCR",
+            "Restriction fragment length polymorphism (RFLP) analysis",
+            "STR analysis using PCR amplification"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r03q002",
+          "stem": "A DNA profile from a crime scene shows alleles 14 and 17 at locus D3S1358. The suspect's profile shows alleles 14 and 14 at the same locus. What can be concluded?",
+          "options": [
+            "The suspect is the source of the crime scene DNA",
+            "The suspect is excluded as the source of the crime scene DNA",
+            "The suspect may be the source but further testing is needed",
+            "The profiles are inconclusive due to a laboratory error"
+          ],
+          "correctAnswer": 1,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r03q003",
+          "stem": "Investigators find a very small blood stain on a wall at a crime scene. There is not enough DNA to analyze directly. What is the MOST logical next step?",
+          "options": [
+            "Use restriction enzymes to cut the DNA first",
+            "Perform gel electrophoresis directly on the stain",
+            "Submit the sample to CODIS without processing",
+            "Use PCR to amplify the DNA before STR analysis"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r03q004",
+          "stem": "A suspect claims the DNA at a crime scene is from a close male relative, not himself. Which analysis could help distinguish between the suspect and a paternal half-brother?",
+          "options": [
+            "Nuclear STR analysis at multiple loci",
+            "Y-STR analysis alone",
+            "Karyotype analysis",
+            "mtDNA analysis alone"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r03q005",
+          "stem": "A crime scene technician collects a hair sample. The hair has no root attached. Which DNA analysis would be MOST useful?",
+          "options": [
+            "RFLP analysis",
+            "Y-STR analysis from the nuclear DNA",
+            "Nuclear STR analysis",
+            "mtDNA analysis from the hair shaft"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r03q006",
+          "stem": "An investigator packages wet blood-stained fabric in a sealed plastic bag and stores it in a warm evidence room. What problem is MOST likely to occur?",
+          "options": [
+            "DNA degradation due to bacterial growth in the moist environment",
+            "The DNA will spontaneously replicate and contaminate the evidence",
+            "The sample will dry out and become unanalyzable",
+            "The plastic will chemically denature the DNA"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        }
+      ]
+    },
+    {
+      "id": "rm04",
+      "name": "The Analyst's Safe Room",
+      "description": "A reinforced break room tucked behind a biometric lock \u2014 one of the few clean spaces left in the Vault. Sterile benches, a functioning centrifuge humming a low lullaby, and a half-finished evidence report on the counter. Rest here before the darkness deepens.",
+      "type": "REST",
+      "difficulty": "MEDIUM",
+      "enemyHp": 0,
+      "enemyDamage": 0,
+      "enemyName": "",
+      "healAmount": 30,
+      "questions": [
+        {
+          "id": "r04q001",
+          "stem": "A forensic scientist collects a blood sample from a crime scene and a cheek swab from a suspect. Both samples undergo STR analysis. The blood sample shows alleles 14 and 17 at a locus; the suspect shows alleles 14 and 14 at the same locus. What does this indicate?",
+          "options": [
+            "The suspect is heterozygous and is excluded",
+            "The samples are inconclusive due to allele overlap",
+            "The suspect is homozygous and is excluded as a contributor to the blood sample",
+            "The suspect is homozygous and cannot be excluded"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r04q002",
+          "stem": "In a paternity case, the mother has alleles 12 and 15 at a locus, and the child has alleles 13 and 15. Which of the following could be the biological father at this locus?",
+          "options": [
+            "A man with alleles 12 and 14",
+            "A man with alleles 11 and 12",
+            "A man with alleles 15 and 15",
+            "A man with alleles 13 and 16"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r04q003",
+          "stem": "A forensic scientist finds that a crime scene sample matches a suspect at 7 out of 13 CODIS STR loci. What is the most appropriate conclusion?",
+          "options": [
+            "More loci are needed before any conclusion can be drawn",
+            "The suspect is the source of the sample with high probability",
+            "The suspect is excluded as the source of the sample",
+            "The suspect cannot be excluded as a contributor"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r04q004",
+          "stem": "Why does gel electrophoresis separate DNA fragments by size?",
+          "options": [
+            "Smaller fragments move more easily through the gel matrix toward the positive electrode",
+            "DNA fragments are positively charged and move toward the negative electrode",
+            "Larger fragments carry more negative charge and move faster",
+            "Larger fragments have more fluorescent dye attached and glow brighter"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r04q005",
+          "stem": "A DNA sample collected from a crime scene is found to be heavily degraded. Which alternative analysis method would be most appropriate for identifying maternal lineage?",
+          "options": [
+            "Mitochondrial DNA (mtDNA) analysis",
+            "Y STR analysis using paternal markers",
+            "CODIS STR analysis using all 13 core loci",
+            "Karyotype analysis"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        },
+        {
+          "id": "r04q006",
+          "stem": "An allele at a particular STR locus has a frequency of 0.08 in the general population. If this allele is found in both the evidence and suspect samples, what does this frequency tell an investigator?",
+          "options": [
+            "The allele is common enough that 8 out of every 100 people in the population carry it",
+            "The allele is so rare that a match is definitive proof of guilt",
+            "The sample is contaminated because common alleles are unreliable",
+            "Only 8% of the population could have contributed the sample, strengthening the match"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "MEDIUM",
+          "damageBonus": 25
+        }
+      ]
+    },
+    {
+      "id": "rm05",
+      "name": "The CODIS Server Crypt",
+      "description": "Rows of humming servers stretch into the darkness, their LEDs pulsing like a dying heartbeat. The national DNA database has been corrupted, and its guardian \u2014 a terrifying construct of mismatched allele profiles \u2014 patrols the aisles, deleting forensic records with every pass. The evidence of a thousand cases hangs in the balance.",
+      "type": "COMBAT",
+      "difficulty": "HARD",
+      "enemyHp": 450,
+      "enemyDamage": 35,
+      "enemyName": "CODIS Database Wraith",
+      "healAmount": 0,
+      "questions": [
+        {
+          "id": "r05q001",
+          "stem": "A crime scene sample produces an electropherogram showing peaks at alleles 12 and 15 at locus D3S1358. A suspect's profile shows alleles 12 and 15 at the same locus. A second suspect's profile also shows alleles 12 and 15 at this locus. Both suspects match. What is the critical next step a forensic scientist must perform?",
+          "options": [
+            "Declare the DNA evidence inadmissible because two individuals share the same profile at one locus",
+            "Use Y STR analysis to determine which suspect was at the scene",
+            "Analyze additional STR loci to further discriminate between the two individuals",
+            "Declare both suspects equally guilty because they match the evidence"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r05q002",
+          "stem": "A forensic scientist analyzes a sexual assault sample and finds a 13-locus STR profile. The defense argues that the probability of a coincidental match should be calculated using the profile frequency from the general population. The prosecution argues for using a frequency from the local ethnic community. Which argument is statistically more sound and why?",
+          "options": [
+            "Neither argument is valid; only binary inclusion or exclusion is permissible in court testimony",
+            "The prosecution is correct; local ethnic community frequencies are more accurate because allele frequencies vary by population",
+            "The defense is correct; general population frequencies are always more conservative and favor the defendant",
+            "Both arguments are equally valid because STR allele frequencies do not vary significantly between ethnic groups"
+          ],
+          "correctAnswer": 1,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r05q003",
+          "stem": "A forensic scientist recovers a fingernail clipping from a victim. She expects to find epithelial cells under the nail from a struggle. However, the STR profile from the nail scrapings matches only the victim. What is the most scientifically precise explanation for this finding?",
+          "options": [
+            "The suspect wore gloves, preventing any skin cell transfer during the struggle",
+            "The suspect and victim are identical twins, which is why only one profile appears",
+            "DNA from epithelial cells cannot be amplified by PCR and so would not appear in the profile",
+            "The skin cells from the suspect may have been present but lost during sample collection or degraded before analysis"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r05q004",
+          "stem": "mtDNA analysis is described as more useful for degraded samples than nuclear STR analysis. What is the underlying biological reason for this advantage?",
+          "options": [
+            "mtDNA uses a different set of bases that do not bond to water molecules, preventing hydrolytic damage",
+            "mtDNA is double-stranded and circular, making it chemically resistant to all forms of nuclease degradation",
+            "Mitochondria replicate independently of cell division, producing more copies of mtDNA than nuclear DNA throughout life",
+            "Each cell contains hundreds to thousands of mitochondria, each with its own copy of mtDNA, vastly outnumbering the two nuclear copies"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r05q005",
+          "stem": "An investigator uses familial DNA searching in CODIS and finds a partial match to a crime scene profile in the offender database. The partial match belongs to a convicted felon. What inference can be drawn from this finding?",
+          "options": [
+            "The partial match is statistically meaningless and should not be used to guide the investigation",
+            "A biological relative of the convicted felon may be the source of the crime scene DNA",
+            "The DNA sample is contaminated with DNA from the felon who processed the database sample",
+            "The convicted felon is the source of the crime scene DNA and should be arrested immediately"
+          ],
+          "correctAnswer": 1,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r05q006",
+          "stem": "A forensic scientist uses the product rule to calculate a random match probability across 13 STR loci. She multiplies the frequencies of each genotype together. This method assumes which critical condition that may not always hold?",
+          "options": [
+            "All individuals in the population are equally likely to be tested in the CODIS database",
+            "Each STR locus is located on a different chromosome, ensuring independent segregation",
+            "The STR repeats at each locus mutate at the same rate across all ethnic populations",
+            "The STR alleles at different loci are inherited independently (linkage equilibrium), with no association between loci"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        }
+      ]
+    },
+    {
+      "id": "rm06",
+      "name": "The Double Helix Throne Room",
+      "description": "At the deepest level of the Vault, twin spiral staircases of corrupted DNA wind toward a vaulted ceiling where restriction enzymes float like sentinels. Upon a throne of shattered evidence slides sits the Restriction Enzyme Overlord \u2014 the architect of this entire biohazard nightmare. It has rewritten the genetic code of the lab itself, and only a master of forensic science can cut it down.",
+      "type": "BOSS",
+      "difficulty": "HARD",
+      "enemyHp": 575,
+      "enemyDamage": 42,
+      "enemyName": "The Restriction Enzyme Overlord",
+      "healAmount": 0,
+      "questions": [
+        {
+          "id": "r06q001",
+          "stem": "A forensic team recovers DNA evidence at a scene and generates a 13-locus profile. The random match probability is 1 in 10^18. The defense argues this number is meaningless because the true question is not 'what is the probability of a random match' but 'what is the probability that the defendant is the source given all evidence?' Which statistical framework does the defense's argument correctly invoke, and what does it require that the random match probability alone does not provide?",
+          "options": [
+            "The defense invokes the chi-square test, which requires chi-square tables not available in standard forensic labs",
+            "The defense invokes the product rule, which requires allele frequencies from at least three separate population databases to be valid",
+            "The defense invokes Hardy-Weinberg equilibrium, which requires confirmation that the reference population is not subject to genetic drift",
+            "The defense invokes Bayesian reasoning, which requires prior probability estimates of the defendant's guilt based on all non-DNA evidence \u2014 something the random match probability alone cannot supply"
+          ],
+          "correctAnswer": 3,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r06q002",
+          "stem": "The Romanov identification used both autosomal STR and mtDNA analysis. Tsar Nicholas II's remains were identified partly through Y STR comparison with living male-line relatives. Tsarina Alexandra's remains were identified partly through mtDNA comparison with Prince Philip of the United Kingdom. What specific genealogical relationship made Prince Philip a valid mtDNA reference for the Tsarina?",
+          "options": [
+            "Prince Philip was married into the British Royal Family and shared the Tsarina's German ancestry, giving him a compatible but not identical mtDNA profile",
+            "Prince Philip was the Tsarina's grandson, sharing 25% of her nuclear DNA and her complete mtDNA through direct descent",
+            "Prince Philip was descended from the Tsarina's mother through an unbroken maternal line, meaning he shared the same maternal mtDNA haplogroup and sequence",
+            "Prince Philip's mtDNA was used only to confirm geographic origin, not direct maternal lineage, because too many generations had passed for sequence identity"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r06q003",
+          "stem": "Forensic scientists analyzing a mixed DNA sample from a violent crime scene must determine the number of contributors. The electropherogram shows a maximum of 4 alleles at two different loci, 3 alleles at six loci, and 2 alleles at five loci. What is the minimum number of contributors that must have been present?",
+          "options": [
+            "2 contributors, because 4 alleles at a single locus is the maximum expected from 2 heterozygous individuals, and all observations are consistent with this",
+            "2 contributors, because any locus with up to 4 alleles is consistent with 2 heterozygous individuals",
+            "3 contributors, because 4 alleles at a single locus cannot be explained by fewer than 3 contributors if each contributes up to 2 different alleles \u2014 but wait, 2 contributors can have at most 4 unique alleles. Reanalyzing: 4 alleles at a locus requires a minimum of 2 contributors, but the pattern across loci is consistent with 2.",
+            "4 contributors, because each of the 4 alleles observed at one locus came from a separate individual"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r06q004",
+          "stem": "A forensic scientist must testify about a cold hit from CODIS. The prosecutor wants her to say 'the probability that someone other than the defendant left this DNA is 1 in a trillion.' The scientist knows this is not precisely what the statistic means. What is the specific logical fallacy embedded in the prosecutor's phrasing?",
+          "options": [
+            "The multiple comparisons fallacy \u2014 failing to account for the number of database searches performed before the hit was found",
+            "The base rate neglect fallacy \u2014 failing to account for the total number of STR loci analyzed in the match probability calculation",
+            "The prosecutor's fallacy (transposing the conditional) \u2014 confusing the probability of the evidence given innocence with the probability of innocence given the evidence",
+            "The gambler's fallacy \u2014 assuming that previous DNA matches make the current match more likely to be correct"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r06q005",
+          "stem": "A forensic investigator is asked to evaluate three crime scenes: Scene A yielded abundant fresh blood on a hard surface; Scene B yielded a five-year-old hair shaft found in a buried object; Scene C yielded a 20-year-old envelope flap with possible saliva residue stored in an attic. Rank these scenes from highest to lowest expected DNA quality and explain the key variable for each ranking.",
+          "options": [
+            "A > B > C: Fresh blood has intact nuclear DNA; hair shafts lack nuclei but have mtDNA; degraded saliva on an envelope has undergone years of hydrolytic and oxidative damage",
+            "B > A > C: Hair shafts are naturally preserved by the keratin matrix; blood degrades rapidly after deposition; saliva on envelopes is always completely degraded",
+            "A > C > B: Fresh blood is best; saliva on paper may be protected from UV by enclosure; hair shafts have no nuclear DNA",
+            "C > A > B: Enclosed spaces preserve DNA best; hair shafts are second; exposed blood deteriorates fastest in outdoor scenes"
+          ],
+          "correctAnswer": 0,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        },
+        {
+          "id": "r06q006",
+          "stem": "A forensic analyst discovers that a crime scene STR profile matches a CODIS offender, but the offender died in prison 18 months before the crime was committed. Investigators verify chain of custody and find no evidence of sample mix-up. A biological relative is identified as a possible subject through familial searching. What additional analysis would most efficiently discriminate between the deceased offender's profile and that of a first-degree male relative?",
+          "options": [
+            "Repeat the STR analysis using a larger PCR cycle number to produce sharper peaks",
+            "Request that the relative submit to a karyotype test to confirm they are not a chimera",
+            "Analyze Y STR haplotypes if the relative is male \u2014 related males share Y haplotypes, confirming the familial link but potentially identifying additional unique Y STR differences; also increase autosomal loci beyond 13 for finer discrimination",
+            "Run the CODIS search again with the updated 20-locus panel to see if the deceased offender still matches"
+          ],
+          "correctAnswer": 2,
+          "difficulty": "HARD",
+          "damageBonus": 50
+        }
+      ]
+    }
+  ],
+  "rewards": {
+    "xp": 600,
+    "flux": 150,
+    "itemRarity": "RARE"
+  },
+  "minLevel": 5,
+  "minGearScore": 25,
+  "resetsAt": "WEEKLY"
+}

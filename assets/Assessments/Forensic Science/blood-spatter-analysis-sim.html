@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Blood Spatter Analysis Lab</title>
+    <style>
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.88);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* Full-screen crime scene layout - no tab bar */
+        #scene-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            outline: none;
+            touch-action: none;
+        }
+
+        /* Evidence panel */
+        .evidence-panel {
+            position: absolute;
+            right: 12px;
+            top: 12px;
+            width: 300px;
+            max-height: calc(100% - 24px);
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 10;
+            transition: opacity 0.3s, transform 0.3s;
+        }
+        .evidence-panel.hidden {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateX(20px);
+        }
+        .evidence-panel h3 {
+            color: var(--purple);
+            margin-bottom: 12px;
+            font-size: 16px;
+            padding-right: 28px; /* space for close button */
+        }
+        .evidence-panel p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: var(--text);
+        }
+        .evidence-panel .close-btn {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: var(--muted);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .evidence-panel .close-btn:hover { color: var(--text); background: rgba(255,255,255,0.15); }
+
+        /* Bottom instruction bar */
+        .scene-instructions {
+            position: absolute;
+            bottom: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 10px 20px;
+            font-size: 13px;
+            color: var(--muted);
+            z-index: 10;
+            text-align: center;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+
+        /* Marker legend - left side, numbered only */
+        .marker-legend {
+            position: absolute;
+            left: 12px;
+            top: 12px;
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            z-index: 10;
+            font-size: 13px;
+        }
+        .marker-legend h4 { color: var(--purple); margin-bottom: 10px; font-size: 14px; }
+        .marker-legend .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 8px;
+            margin: 0 -8px;
+            color: var(--muted);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: background 0.15s, color 0.15s;
+        }
+        .marker-legend .legend-item:hover {
+            background: rgba(155, 107, 255, 0.15);
+            color: var(--text);
+        }
+        .marker-legend .legend-item:active {
+            background: rgba(155, 107, 255, 0.25);
+        }
+        .marker-legend .legend-item.active {
+            background: rgba(155, 107, 255, 0.2);
+            color: var(--purple);
+        }
+        .marker-legend .legend-item.active .legend-dot {
+            background: var(--purple);
+        }
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: var(--muted);
+            transition: background 0.15s;
+        }
+
+        @media print {
+            .scene-instructions, .marker-legend, .evidence-panel { display: none !important; }
+            body { background: white; color: black; }
+        }
+
+        @media (max-width: 768px) {
+            .evidence-panel { width: calc(100% - 24px); right: 12px; left: 12px; }
+            .marker-legend { display: none; }
+            .scene-instructions { white-space: normal; width: calc(100% - 24px); }
+        }
+    </style>
+</head>
+<body>
+
+<script>
+const PortalBridge = (() => {
+    const send = (type, data) => {
+        if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+    };
+    return {
+        init:     ()              => send('PROCTOR_READY'),
+        save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+        answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+        complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+    };
+})();
+window.addEventListener('load', () => PortalBridge.init());
+</script>
+
+<!-- Full-screen 3D Crime Scene -->
+<div id="scene-container">
+    <canvas id="renderCanvas"></canvas>
+
+    <!-- Left legend: numbered markers only, no pattern-type labels -->
+    <div class="marker-legend">
+        <h4>Evidence Markers</h4>
+        <div class="legend-item" data-evidence-id="1" onclick="focusEvidence(1)"><div class="legend-dot"></div> #1</div>
+        <div class="legend-item" data-evidence-id="2" onclick="focusEvidence(2)"><div class="legend-dot"></div> #2</div>
+        <div class="legend-item" data-evidence-id="3" onclick="focusEvidence(3)"><div class="legend-dot"></div> #3</div>
+        <div class="legend-item" data-evidence-id="4" onclick="focusEvidence(4)"><div class="legend-dot"></div> #4</div>
+        <div class="legend-item" data-evidence-id="5" onclick="focusEvidence(5)"><div class="legend-dot"></div> #5</div>
+        <div class="legend-item" data-evidence-id="6" onclick="focusEvidence(6)"><div class="legend-dot"></div> #6</div>
+    </div>
+
+    <!-- Right evidence panel: neutral physical description only, no interpretation -->
+    <div id="evidencePanel" class="evidence-panel hidden">
+        <button class="close-btn" onclick="closePanel()">&times;</button>
+        <h3 id="evidenceTitle"></h3>
+        <p id="evidenceDesc"></p>
+    </div>
+
+    <div class="scene-instructions">Click numbered markers to examine evidence &nbsp;|&nbsp; Drag to orbit &nbsp;|&nbsp; Scroll to zoom</div>
+</div>
+
+<script src="https://cdn.babylonjs.com/babylon.js"></script>
+<script>
+// ==============================
+// EVIDENCE DATA
+// Descriptions are PHYSICAL OBSERVATIONS ONLY.
+// No interpretation, no forensic analysis, no cause explanation.
+// Students must identify patterns themselves.
+// ==============================
+const evidenceData = {
+    1: {
+        title: "Evidence #1",
+        desc: "A cluster of round blood drops on the floor near the overturned chair. Each drop is nearly circular with minimal distortion."
+    },
+    2: {
+        title: "Evidence #2",
+        desc: "A series of elongated blood drops arranged in a sweeping arc across the upper portion of the back wall. The drops are spaced in a curved line."
+    },
+    3: {
+        title: "Evidence #3",
+        desc: "A radial spray of medium-sized drops on the back wall. The drops radiate outward from a central area, with smaller satellite droplets visible at the edges."
+    },
+    4: {
+        title: "Evidence #4",
+        desc: "A smeared blood trail on the floor. One edge is sharply defined while the opposite edge is irregular and feathered. The trail extends from the chair area toward the door."
+    },
+    5: {
+        title: "Evidence #5",
+        desc: "A partial blood mark on the door frame near the handle. The mark shows distinct streaked regions consistent with contact, with a broader lower area and narrower upper projections."
+    },
+    6: {
+        title: "Evidence #6",
+        desc: "A rectangular area on the back wall that is conspicuously free of blood drops, surrounded on all sides by blood spatter."
+    }
+};
+
+// ==============================
+// BABYLON.JS CRIME SCENE
+// ==============================
+let engine, scene, camera;
+
+// Simple lerp-based camera tween state
+const camTween = {
+    active: false,
+    duration: 0.6,   // seconds
+    elapsed: 0,
+    fromAlpha: 0, toAlpha: 0,
+    fromBeta:  0, toBeta:  0,
+    fromRadius: 0, toRadius: 0,
+    fromTargetX: 0, toTargetX: 0,
+    fromTargetY: 0, toTargetY: 0,
+    fromTargetZ: 0, toTargetZ: 0,
+};
+
+function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+}
+
+function startCamTween(p) {
+    camTween.fromAlpha   = camera.alpha;
+    camTween.fromBeta    = camera.beta;
+    camTween.fromRadius  = camera.radius;
+    camTween.fromTargetX = camera.target.x;
+    camTween.fromTargetY = camera.target.y;
+    camTween.fromTargetZ = camera.target.z;
+    camTween.toAlpha     = p.alpha;
+    camTween.toBeta      = p.beta;
+    camTween.toRadius    = p.radius;
+    camTween.toTargetX   = p.target.x;
+    camTween.toTargetY   = p.target.y;
+    camTween.toTargetZ   = p.target.z;
+    camTween.elapsed     = 0;
+    camTween.active      = true;
+}
+
+function tickCamTween(deltaSeconds) {
+    if (!camTween.active) return;
+    camTween.elapsed += deltaSeconds;
+    const raw = Math.min(camTween.elapsed / camTween.duration, 1);
+    const t = easeInOut(raw);
+
+    // Helper for angle interpolation: take the shortest arc
+    function lerpAngle(a, b, t) {
+        let diff = b - a;
+        // Normalise to [-PI, PI]
+        while (diff >  Math.PI) diff -= Math.PI * 2;
+        while (diff < -Math.PI) diff += Math.PI * 2;
+        return a + diff * t;
+    }
+
+    camera.alpha  = lerpAngle(camTween.fromAlpha,  camTween.toAlpha,  t);
+    camera.beta   = camTween.fromBeta   + (camTween.toBeta   - camTween.fromBeta)   * t;
+    camera.radius = camTween.fromRadius + (camTween.toRadius - camTween.fromRadius) * t;
+    camera.target.x = camTween.fromTargetX + (camTween.toTargetX - camTween.fromTargetX) * t;
+    camera.target.y = camTween.fromTargetY + (camTween.toTargetY - camTween.fromTargetY) * t;
+    camera.target.z = camTween.fromTargetZ + (camTween.toTargetZ - camTween.fromTargetZ) * t;
+
+    if (raw >= 1) camTween.active = false;
+}
+
+function initScene() {
+    const canvas = document.getElementById('renderCanvas');
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: false, stencil: false }, false);
+    engine.setHardwareScalingLevel(1 / dpr);
+    scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.06, 0.03, 0.12, 1);
+    scene.ambientColor = new BABYLON.Color3(0.15, 0.12, 0.2);
+
+    // Camera
+    camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 3, Math.PI / 3, 12, new BABYLON.Vector3(0, 1.5, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 4;
+    camera.upperRadiusLimit = 20;
+    camera.wheelPrecision = 40;
+    camera.minZ = 0.1;
+
+    // Lighting
+    const hemi = new BABYLON.HemisphericLight("hemi", new BABYLON.Vector3(0, 1, 0), scene);
+    hemi.intensity = 0.7;
+    hemi.diffuse = new BABYLON.Color3(0.95, 0.9, 0.85);
+    const point = new BABYLON.PointLight("point", new BABYLON.Vector3(-2, 3.5, -2), scene);
+    point.intensity = 0.5;
+    point.diffuse = new BABYLON.Color3(1, 0.95, 0.8);
+
+    // --- Room ---
+    const floorMat = new BABYLON.StandardMaterial("floorMat", scene);
+    floorMat.diffuseColor = new BABYLON.Color3(0.35, 0.3, 0.25);
+    floorMat.specularColor = new BABYLON.Color3(0.05, 0.05, 0.05);
+    const floor = BABYLON.MeshBuilder.CreateGround("floor", { width: 10, height: 10 }, scene);
+    floor.material = floorMat;
+
+    const wallMat = new BABYLON.StandardMaterial("wallMat", scene);
+    wallMat.diffuseColor = new BABYLON.Color3(0.82, 0.78, 0.72);
+    wallMat.specularColor = new BABYLON.Color3(0.02, 0.02, 0.02);
+    // FIX: disable back-face culling so the camera always sees the wall face
+    wallMat.backFaceCulling = false;
+
+    const backWall = BABYLON.MeshBuilder.CreatePlane("backWall", { width: 10, height: 5 }, scene);
+    backWall.position = new BABYLON.Vector3(0, 2.5, -5);
+    backWall.material = wallMat;
+
+    const sideWall = BABYLON.MeshBuilder.CreatePlane("sideWall", { width: 10, height: 5 }, scene);
+    sideWall.position = new BABYLON.Vector3(-5, 2.5, 0);
+    sideWall.rotation.y = Math.PI / 2;
+    sideWall.material = wallMat;
+
+    // --- Furniture ---
+    const tableMat = new BABYLON.StandardMaterial("tableMat", scene);
+    tableMat.diffuseColor = new BABYLON.Color3(0.35, 0.22, 0.12);
+    const tableTop = BABYLON.MeshBuilder.CreateBox("table", { width: 1.2, height: 0.05, depth: 0.8 }, scene);
+    tableTop.position = new BABYLON.Vector3(-1, 0.75, -2);
+    tableTop.material = tableMat;
+    const tableLeg1 = BABYLON.MeshBuilder.CreateCylinder("tl1", { diameter: 0.06, height: 0.75 }, scene);
+    tableLeg1.position = new BABYLON.Vector3(-1.5, 0.375, -2.3);
+    tableLeg1.material = tableMat;
+    const tableLeg2 = tableLeg1.clone("tl2");
+    tableLeg2.position.x = -0.5;
+    const tableLeg3 = tableLeg1.clone("tl3");
+    tableLeg3.position.z = -1.7;
+    const tableLeg4 = tableLeg1.clone("tl4");
+    tableLeg4.position = new BABYLON.Vector3(-0.5, 0.375, -1.7);
+
+    // Overturned chair
+    const chairMat = new BABYLON.StandardMaterial("chairMat", scene);
+    chairMat.diffuseColor = new BABYLON.Color3(0.3, 0.18, 0.1);
+    const chairSeat = BABYLON.MeshBuilder.CreateBox("chair", { width: 0.5, height: 0.04, depth: 0.5 }, scene);
+    chairSeat.position = new BABYLON.Vector3(0.3, 0.2, -2.5);
+    chairSeat.rotation.z = Math.PI / 2.5;
+    chairSeat.rotation.y = 0.3;
+    chairSeat.material = chairMat;
+
+    // Door frame on side wall
+    const doorMat = new BABYLON.StandardMaterial("doorMat", scene);
+    doorMat.diffuseColor = new BABYLON.Color3(0.45, 0.35, 0.25);
+    const doorFrame = BABYLON.MeshBuilder.CreateBox("door", { width: 0.1, height: 2.2, depth: 1 }, scene);
+    doorFrame.position = new BABYLON.Vector3(-4.95, 1.1, 2.5);
+    doorFrame.material = doorMat;
+
+    // Blood evidence and markers
+    createBloodEvidence(scene);
+    createEvidenceMarkers(scene);
+
+    // Hook the render loop to tick the camera tween
+    let lastTime = performance.now();
+    engine.runRenderLoop(() => {
+        const now = performance.now();
+        const delta = (now - lastTime) / 1000;
+        lastTime = now;
+        tickCamTween(delta);
+        scene.render();
+    });
+
+    window.addEventListener('resize', () => engine.resize());
+}
+
+function createBloodDrop(scene, x, y, z, rx, ry, rz, scaleX, scaleZ, parent, darkness) {
+    const d = darkness || 0;
+    const drop = BABYLON.MeshBuilder.CreateDisc("blood", { radius: 0.04, tessellation: 24 }, scene);
+    drop.position = new BABYLON.Vector3(x, y, z);
+    if (rx !== undefined) drop.rotation.x = rx;
+    if (ry !== undefined) drop.rotation.y = ry;
+    if (rz !== undefined) drop.rotation.z = rz;
+    drop.scaling.x = scaleX || 1;
+    drop.scaling.z = scaleZ || 1;
+    const mat = new BABYLON.StandardMaterial("bm" + Math.random(), scene);
+    const r = 0.55 - d * 0.15 + Math.random() * 0.08;
+    const g = 0.02 + Math.random() * 0.03;
+    const b = 0.02 + Math.random() * 0.02;
+    mat.diffuseColor = new BABYLON.Color3(r, g, b);
+    mat.specularColor = new BABYLON.Color3(0.1, 0.02, 0.02);
+    // Discs also need backFaceCulling off so they read from all camera angles
+    mat.backFaceCulling = false;
+    drop.material = mat;
+    if (parent) drop.parent = parent;
+    return drop;
+}
+
+function createBloodEvidence(scene) {
+    // Evidence #1: Passive drops on floor (round)
+    const passiveGroup = new BABYLON.TransformNode("passive", scene);
+    for (let i = 0; i < 12; i++) {
+        const x = -0.3 + Math.random() * 1.5;
+        const z = -2.8 + Math.random() * 1.2;
+        const s = 0.8 + Math.random() * 0.6;
+        createBloodDrop(scene, x, 0.002, z, Math.PI / 2, 0, 0, s, s, passiveGroup, Math.random() * 0.3);
+    }
+
+    // Evidence #2: Cast-off on back wall (arc of elongated drops)
+    const castoffGroup = new BABYLON.TransformNode("castoff", scene);
+    for (let i = 0; i < 18; i++) {
+        const t = i / 17;
+        const x = -2.5 + t * 5;
+        const y = 3.2 + Math.sin(t * Math.PI) * 1.0;
+        const angle = Math.atan2(Math.cos(t * Math.PI) * 1.0, 1) + Math.PI / 2;
+        const drop = createBloodDrop(scene, x, y, -4.998, 0, 0, angle, 1, 2.5 + Math.random(), castoffGroup, 0.1);
+        drop.scaling.x *= 0.5 + Math.random() * 0.3;
+    }
+
+    // Evidence #3: Impact spatter on back wall (radial spray)
+    const impactGroup = new BABYLON.TransformNode("impact", scene);
+    const impactCenter = new BABYLON.Vector3(0.5, 1.8, -4.998);
+    for (let i = 0; i < 40; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const dist = 0.15 + Math.random() * 1.2;
+        const x = impactCenter.x + Math.cos(angle) * dist;
+        const y = impactCenter.y + Math.sin(angle) * dist;
+        const radialAngle = angle + Math.PI / 2;
+        const elongation = 1 + dist * 1.5;
+        const size = 0.3 + Math.random() * 0.7;
+        const drop = createBloodDrop(scene, x, y, -4.998, 0, 0, radialAngle, size, size * elongation, impactGroup, Math.random() * 0.4);
+        // Satellites
+        if (dist > 0.6 && Math.random() > 0.5) {
+            const sx = x + Math.cos(angle) * 0.08;
+            const sy = y + Math.sin(angle) * 0.08;
+            createBloodDrop(scene, sx, sy, -4.997, 0, 0, radialAngle, 0.15, 0.25, impactGroup, 0.2);
+        }
+    }
+
+    // Evidence #4: Swipe on floor
+    const swipeGroup = new BABYLON.TransformNode("swipe", scene);
+    for (let i = 0; i < 30; i++) {
+        const t = i / 29;
+        const x = 0.8 + t * 3.0;
+        const z = -1.5 + Math.sin(t * 0.5) * 0.3 + (Math.random() - 0.5) * 0.25;
+        createBloodDrop(scene, x, 0.002, z, Math.PI / 2, 0, 0.1, 1.5 + Math.random(), 0.6 + 0.15 + t * 0.25, swipeGroup, t * 0.5);
+    }
+
+    // Evidence #5: Transfer pattern on side wall (handprint area)
+    const transferGroup = new BABYLON.TransformNode("transfer", scene);
+    // Palm area
+    for (let i = 0; i < 15; i++) {
+        const x = -4.998;
+        const y = 1.0 + (Math.random() - 0.5) * 0.3;
+        const z = 2.3 + (Math.random() - 0.5) * 0.25;
+        createBloodDrop(scene, x, y, z, 0, Math.PI / 2, 0, 1.5 + Math.random(), 1.2 + Math.random(), transferGroup, 0.1);
+    }
+    // Finger streaks
+    for (let f = 0; f < 4; f++) {
+        for (let j = 0; j < 4; j++) {
+            const x = -4.998;
+            const y = 1.35 + j * 0.05;
+            const z = 2.1 + f * 0.15;
+            createBloodDrop(scene, x, y, z, 0, Math.PI / 2, 0, 0.6, 1.5, transferGroup, 0.15);
+        }
+    }
+
+    // Evidence #6: Void on back wall
+    // Spatter surrounds a clean rectangular region
+    const voidGroup = new BABYLON.TransformNode("void", scene);
+    for (let i = 0; i < 25; i++) {
+        let x, y;
+        do {
+            x = -2.5 + Math.random() * 2.0;
+            y = 1.0 + Math.random() * 2.0;
+        } while (x > -2.2 && x < -1.0 && y > 1.2 && y < 2.4);
+        const angle = Math.random() * Math.PI * 2;
+        createBloodDrop(scene, x, y, -4.997, 0, 0, angle, 0.4 + Math.random() * 0.5, 0.8 + Math.random() * 1.0, voidGroup, Math.random() * 0.3);
+    }
+}
+
+function createEvidenceMarkers(scene) {
+    // All markers use a neutral grey-white color - no color-coding by pattern type
+    const markerPositions = [
+        { pos: new BABYLON.Vector3(0.5,  0.6,  -2.2), id: 1 },
+        { pos: new BABYLON.Vector3(0,    3.8,  -4.5), id: 2 },
+        { pos: new BABYLON.Vector3(0.5,  2.5,  -4.5), id: 3 },
+        { pos: new BABYLON.Vector3(2.3,  0.5,  -1.5), id: 4 },
+        { pos: new BABYLON.Vector3(-4.5, 1.1,   2.3), id: 5 },
+        { pos: new BABYLON.Vector3(-1.6, 1.8,  -4.5), id: 6 },
+    ];
+
+    const markerColor = new BABYLON.Color3(0.9, 0.85, 1.0);
+
+    markerPositions.forEach(({ pos, id }) => {
+        const marker = BABYLON.MeshBuilder.CreateSphere("marker" + id, { diameter: 0.25 }, scene);
+        marker.position = pos;
+        const mat = new BABYLON.StandardMaterial("mm" + id, scene);
+        mat.diffuseColor = markerColor;
+        mat.emissiveColor = markerColor.scale(0.4);
+        mat.specularColor = new BABYLON.Color3(0.3, 0.3, 0.3);
+        marker.material = mat;
+        marker.metadata = { evidenceId: id };
+
+        // Number label using a billboard plane with dynamic texture
+        const labelPlane = BABYLON.MeshBuilder.CreatePlane("label" + id, { size: 0.18 }, scene);
+        labelPlane.position = pos.add(new BABYLON.Vector3(0, 0.22, 0));
+        labelPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        const labelTex = new BABYLON.DynamicTexture("dt" + id, { width: 64, height: 64 }, scene);
+        const labelMat = new BABYLON.StandardMaterial("lm" + id, scene);
+        labelMat.diffuseTexture = labelTex;
+        labelMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        labelMat.disableLighting = true;
+        labelMat.backFaceCulling = false;
+        labelTex.hasAlpha = true;
+        const ctx = labelTex.getContext();
+        ctx.clearRect(0, 0, 64, 64);
+        ctx.font = "bold 40px Arial";
+        ctx.fillStyle = "white";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(id.toString(), 32, 32);
+        labelTex.update();
+        labelPlane.material = labelMat;
+
+        // Pulsing animation (offset each marker so they don't all pulse in sync)
+        let time = (id - 1) * (Math.PI / 3);
+        scene.registerBeforeRender(() => {
+            time += 0.03;
+            const pulse = 1 + Math.sin(time) * 0.15;
+            marker.scaling.setAll(pulse);
+        });
+    });
+
+    // Click to open evidence panel
+    scene.onPointerDown = (evt, pickResult) => {
+        if (pickResult.hit && pickResult.pickedMesh &&
+            pickResult.pickedMesh.metadata &&
+            pickResult.pickedMesh.metadata.evidenceId) {
+            const id = pickResult.pickedMesh.metadata.evidenceId;
+            focusEvidence(id);
+        }
+    };
+}
+
+// Camera focus positions for each evidence marker
+const focusPositions = {
+    1: { alpha: -0.5,  beta: 1.2, radius: 6, target: new BABYLON.Vector3( 0.5, 0.3, -2.2) },
+    2: { alpha:  1.2,  beta: 0.9, radius: 7, target: new BABYLON.Vector3( 0,   3.2, -4.0) },
+    3: { alpha:  1.4,  beta: 1.0, radius: 5, target: new BABYLON.Vector3( 0.5, 1.8, -4.0) },
+    4: { alpha: -0.3,  beta: 1.3, radius: 5, target: new BABYLON.Vector3( 2.3, 0.3, -1.5) },
+    5: { alpha:  0.3,  beta: 1.1, radius: 5, target: new BABYLON.Vector3(-4.5, 1.1,  2.3) },
+    6: { alpha:  1.5,  beta: 1.0, radius: 5, target: new BABYLON.Vector3(-1.6, 1.8, -4.0) },
+};
+
+function focusEvidence(id) {
+    const p = focusPositions[id];
+    if (!p || !camera) return;
+
+    // Highlight active legend item
+    document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+    const activeItem = document.querySelector(`.legend-item[data-evidence-id="${id}"]`);
+    if (activeItem) activeItem.classList.add('active');
+
+    // Smooth tween - no conflicting simultaneous animations
+    startCamTween(p);
+    showEvidencePanel(id);
+}
+
+function showEvidencePanel(id) {
+    const data = evidenceData[id];
+    if (!data) return;
+    document.getElementById('evidenceTitle').textContent = data.title;
+    document.getElementById('evidenceDesc').textContent  = data.desc;
+    document.getElementById('evidencePanel').classList.remove('hidden');
+    PortalBridge.save({ viewedEvidence: id }, 'scene');
+}
+
+function closePanel() {
+    document.getElementById('evidencePanel').classList.add('hidden');
+    document.querySelectorAll('.legend-item').forEach(el => el.classList.remove('active'));
+}
+
+// ==============================
+// INIT
+// ==============================
+window.addEventListener('DOMContentLoaded', () => {
+    initScene();
+});
+</script>
+</body>
+</html>

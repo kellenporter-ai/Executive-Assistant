@@ -1,0 +1,68 @@
+[
+  {
+    "type": "SECTION_HEADER",
+    "icon": "\ud83e\ude78",
+    "title": "Blood & Blood Spatter Assessment",
+    "subtitle": "Composition of Blood, Spatter Patterns, and Crime-Scene Investigation"
+  },
+  {
+    "type": "OBJECTIVES",
+    "title": "Skills Being Assessed",
+    "items": [
+      "I am able to describe the components of blood and explain the forensic significance of blood typing.",
+      "I am able to identify and classify bloodstain patterns and explain what events at a crime scene created them.",
+      "I am able to qualitatively assess the angle of impact of a blood drop based on whether the stain is round or elliptical, and determine the direction of travel.",
+      "I am able to analyze blood evidence at a crime scene and reconstruct a sequence of events with supporting reasoning."
+    ]
+  },
+  {
+    "type": "TEXT",
+    "content": "This assessment has two parts: (1) the Blood Spatter Crime Scene simulation, and (2) these written response questions. Use the simulation to explore the crime scene evidence as you answer the questions below. Show your reasoning in every response."
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "SHORT_ANSWER",
+    "content": "Question 1: A forensic investigator finds blood at a crime scene and determines it is Type B+ blood. The suspect has Type O\u2212 blood. (a) Describe what antigens and Rh factors are present in Type B+ blood and what antigens are present in Type O\u2212 blood. (b) Explain what this evidence tells the investigator about the suspect. (c) Explain why blood-type evidence is considered \u201cclass evidence\u201d rather than individual evidence, and what type of evidence would be needed to make an individual identification.",
+    "acceptedAnswers": []
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "TEXT",
+    "content": "Two blood drops were found at a crime scene. Drop A is nearly perfectly round. Drop B is highly elongated (much longer than it is wide) with a pointed tail and several small satellite droplets ahead of the tail."
+  },
+  {
+    "type": "IMAGE",
+    "url": "PLACEHOLDER: Side-by-side comparison of a round blood drop (Drop A) and a highly elliptical blood drop with satellites (Drop B)",
+    "caption": "Drop A (left): Round stain. Drop B (right): Elongated stain with tail and satellites.",
+    "alt": "Two blood drops \u2014 Drop A is circular, Drop B is elongated with a pointed tail end and satellite droplets"
+  },
+  {
+    "type": "SHORT_ANSWER",
+    "content": "Question 2: Without calculating any angles, compare Drop A and Drop B. For each drop: (a) What does the shape tell you about the angle at which the blood struck the surface? (b) Can you determine the direction the blood was traveling? How? (c) What type of event might have produced each drop? Support your reasoning with concepts from the chapter (cohesion, adhesion, surface tension).",
+    "acceptedAnswers": []
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "SHORT_ANSWER",
+    "content": "Question 3: Open the crime scene simulation and examine the six evidence markers. Choose any THREE markers. For each one: (a) Describe what you observe (shape, size, location, and arrangement of the bloodstains). (b) Identify what type of bloodstain pattern it is. (c) Explain what event or action most likely created that pattern. Cite specific details from the simulation to support your identification.",
+    "acceptedAnswers": []
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "SHORT_ANSWER",
+    "content": "Question 4: Review all six evidence markers in the simulation crime scene. Based on the blood evidence you observe, reconstruct what you believe happened in this room. Your reconstruction should tell the story of events in chronological order, citing specific evidence markers to support each claim. Address: where the victim was, what type of attack occurred, and what happened afterward.",
+    "acceptedAnswers": []
+  }
+]

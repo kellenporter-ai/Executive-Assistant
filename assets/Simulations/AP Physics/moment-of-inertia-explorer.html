@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Moment of Inertia Explorer</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.88);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+        }
+        body { overflow: hidden; background: var(--bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        #renderCanvas { width: 100vw; height: 100vh; display: block; touch-action: none; outline: none; }
+        #ui-layer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 14px; gap: 10px; z-index: 10;
+        }
+        .panel {
+            pointer-events: auto;
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px; color: var(--text);
+        }
+        .top-section { display: flex; gap: 10px; align-items: flex-start; }
+        .header-panel h1 { font-size: 1.05rem; font-weight: 600; letter-spacing: -0.02em; }
+        .header-panel .subtitle { font-size: 0.75rem; color: var(--muted); margin-top: 3px; }
+        .info-panel { flex: 1; max-width: 340px; min-height: 60px; }
+        .info-panel .shape-name { font-size: 0.95rem; font-weight: 600; margin-bottom: 4px; }
+        .info-panel .formula-big { font-size: 1.2rem; font-weight: 700; margin-bottom: 4px; }
+        .info-panel .calc-line { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+        .info-panel .axis-desc { font-size: 0.72rem; color: var(--muted); font-style: italic; margin-bottom: 6px; }
+        .info-panel .note { font-size: 0.72rem; color: var(--muted); margin-top: 6px; border-top: 1px solid var(--border); padding-top: 6px; }
+        .info-placeholder { font-size: 0.8rem; color: var(--muted); }
+        .bottom-section { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .compare-panel { flex: 1; max-width: 400px; }
+        .compare-panel h3 { font-size: 0.78rem; color: var(--muted); margin-bottom: 8px; font-weight: 500; }
+        .bar-item { display: flex; align-items: center; gap: 5px; margin-bottom: 4px; cursor: pointer; }
+        .bar-item:hover .bar-name { color: var(--text); }
+        .bar-item.selected .bar-name { color: var(--text); font-weight: 600; }
+        .bar-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+        .bar-name { font-size: 0.66rem; color: var(--muted); width: 100px; flex-shrink: 0; transition: color 0.2s; }
+        .bar-track { flex: 1; height: 9px; background: rgba(255,255,255,0.05); border-radius: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+        .bar-val { font-size: 0.64rem; color: var(--muted); width: 50px; text-align: right; flex-shrink: 0; }
+        .controls-panel { min-width: 300px; max-width: 400px; }
+        .mode-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+        .tab {
+            background: transparent; border: 1px solid var(--border); color: var(--muted);
+            padding: 5px 14px; border-radius: 8px; cursor: pointer; font-size: 0.78rem;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .tab.active { background: rgba(91,156,246,0.15); color: var(--blue); border-color: rgba(91,156,246,0.4); }
+        .tab:hover { color: var(--text); }
+        .slider-row { display: flex; gap: 14px; margin-bottom: 8px; }
+        .slider-group { flex: 1; }
+        .slider-group label { font-size: 0.72rem; color: var(--muted); display: block; margin-bottom: 3px; }
+        .slider-group label span { color: var(--text); font-weight: 600; }
+        .slider-group input[type="range"] { width: 100%; accent-color: var(--purple); height: 4px; }
+        .btn-row { display: flex; gap: 8px; margin-top: 6px; }
+        .btn {
+            padding: 7px 16px; border-radius: 8px; border: 1px solid transparent;
+            cursor: pointer; font-size: 0.78rem; font-weight: 500;
+            transition: all 0.2s; font-family: inherit;
+        }
+        .btn-primary { background: rgba(91,156,246,0.18); color: var(--blue); border-color: rgba(91,156,246,0.35); }
+        .btn-primary:hover { background: rgba(91,156,246,0.3); }
+        .btn-success { background: rgba(34,212,122,0.18); color: var(--green); border-color: rgba(34,212,122,0.35); }
+        .btn-success:hover { background: rgba(34,212,122,0.3); }
+        .btn-ghost { background: rgba(138,133,168,0.1); color: var(--muted); border-color: var(--border); }
+        .btn-ghost:hover { color: var(--text); }
+        .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+        #raceControls { display: none; }
+        .race-result { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 0.78rem; }
+        .race-place { width: 24px; font-weight: 700; }
+        .race-dot { width: 8px; height: 8px; border-radius: 50%; }
+        .race-rname { flex: 1; }
+        .race-time { color: var(--muted); }
+        .spin-legend { font-size: 0.7rem; color: var(--muted); margin-top: 6px; }
+        @media (max-width: 768px) {
+            .top-section { flex-direction: column; }
+            .info-panel { max-width: none; }
+            .bottom-section { flex-direction: column; align-items: stretch; }
+            .compare-panel, .controls-panel { max-width: none; min-width: auto; }
+            #ui-layer { padding: 8px; gap: 6px; }
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+</head>
+<body>
+    <script>
+        const PortalBridge = (() => {
+            const send = (type, data) => {
+                if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+            };
+            return {
+                init:     ()              => send('PROCTOR_READY'),
+                save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+                answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+                complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+            };
+        })();
+        window.addEventListener('load', () => PortalBridge.init());
+    </script>
+
+    <canvas id="renderCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="top-section">
+            <div class="panel header-panel">
+                <h1>Moment of Inertia Explorer</h1>
+                <p class="subtitle">Rotational Inertia of Standard Shapes</p>
+            </div>
+            <div class="panel info-panel" id="infoPanel">
+                <div class="info-placeholder">Click a shape to explore its moment of inertia</div>
+            </div>
+        </div>
+        <div class="bottom-section">
+            <div class="panel compare-panel" id="comparePanel">
+                <h3>Moment of Inertia Comparison (I in kg·m²)</h3>
+                <div id="barChart"></div>
+            </div>
+            <div class="panel controls-panel">
+                <div class="mode-tabs">
+                    <button class="tab active" id="tabExplore" onclick="switchMode('explore')">Explore</button>
+                    <button class="tab" id="tabRace" onclick="switchMode('race')">Rolling Race</button>
+                </div>
+                <div id="exploreControls">
+                    <div class="slider-row">
+                        <div class="slider-group">
+                            <label>Mass: <span id="massVal">2.0</span> kg</label>
+                            <input type="range" id="massSlider" min="0.5" max="5.0" step="0.1" value="2.0">
+                        </div>
+                        <div class="slider-group">
+                            <label>Radius: <span id="radiusVal">0.50</span> m</label>
+                            <input type="range" id="radiusSlider" min="0.10" max="1.00" step="0.05" value="0.50">
+                        </div>
+                    </div>
+                    <div class="btn-row">
+                        <button class="btn btn-primary" id="btnSpin" onclick="startSpin()">Apply Torque to All</button>
+                        <button class="btn btn-ghost" id="btnReset" onclick="resetSpin()">Reset</button>
+                    </div>
+                    <div class="spin-legend" id="spinLegend" style="display:none">Same torque applied — lower I spins faster</div>
+                </div>
+                <div id="raceControls">
+                    <p style="font-size:0.75rem;color:var(--muted);margin-bottom:8px">
+                        4 rollable shapes race down a 30° incline.<br>
+                        Rolling without slipping: a = g sin&theta; / (1 + I/MR²)
+                    </p>
+                    <div class="btn-row">
+                        <button class="btn btn-success" id="btnRace" onclick="startRace()">Start Race</button>
+                        <button class="btn btn-ghost" id="btnResetRace" onclick="resetRace()">Reset</button>
+                    </div>
+                    <div id="raceResults"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ===== ENGINE + SCENE =====
+    const canvas = document.getElementById('renderCanvas');
+    const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio, 1.5));
+
+    const scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.059, 0.027, 0.125, 1.0);
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+    scene.fogColor = new BABYLON.Color3(0.059, 0.027, 0.125);
+    scene.fogDensity = 0.010;
+
+    // ===== CAMERA =====
+    const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, 1.05, 14, new BABYLON.Vector3(0, 0.9, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 4;
+    camera.upperRadiusLimit = 26;
+    camera.upperBetaLimit = Math.PI / 2 - 0.05;
+    camera.inertia = 0.7;
+    camera.wheelPrecision = 5;
+    camera.panningInertia = 0.8;
+    camera.panningSensibility = 80;
+
+    // ===== LIGHTING =====
+    const hemi = new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), scene);
+    hemi.intensity = 0.35;
+    hemi.diffuse = new BABYLON.Color3(0.8, 0.82, 1.0);
+    hemi.groundColor = new BABYLON.Color3(0.1, 0.06, 0.2);
+
+    const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.5, -1.5, -0.7), scene);
+    sun.position = new BABYLON.Vector3(5, 10, 7);
+    sun.intensity = 0.9;
+
+    const accent = new BABYLON.PointLight("accent", new BABYLON.Vector3(0, 3, -1), scene);
+    accent.diffuse = new BABYLON.Color3(0.5, 0.4, 1.0);
+    accent.specular = BABYLON.Color3.Black();
+    accent.intensity = 2.0;
+    accent.range = 10.0;
+
+    // ===== SHADOWS =====
+    const shadowGen = new BABYLON.ShadowGenerator(1024, sun);
+    shadowGen.useBlurExponentialShadowMap = true;
+    shadowGen.blurKernel = 16;
+    shadowGen.darkness = 0.4;
+
+    // ===== POST-PROCESSING =====
+    const pipeline = new BABYLON.DefaultRenderingPipeline("pipe", true, scene, [camera]);
+    pipeline.fxaaEnabled = true;
+    pipeline.samples = 2;
+    pipeline.imageProcessingEnabled = true;
+    pipeline.imageProcessing.contrast = 1.1;
+    pipeline.imageProcessing.exposure = 1.05;
+    pipeline.imageProcessing.toneMappingEnabled = true;
+
+    const glow = new BABYLON.GlowLayer("glow", scene);
+    glow.intensity = 1.2;
+
+    const hl = new BABYLON.HighlightLayer("hl", scene);
+
+    // ===== HELPERS =====
+    function pbr(name, hex, rough, metal) {
+        const m = new BABYLON.PBRMaterial(name, scene);
+        m.albedoColor = BABYLON.Color3.FromHexString(hex);
+        m.roughness = rough;
+        m.metallic = metal;
+        return m;
+    }
+
+    function createLabel(text1, text2, hex) {
+        const w = 256, h = 80;
+        const uid = Math.random().toString(36).slice(2, 6);
+        const tex = new BABYLON.DynamicTexture("lbl_" + uid, { width: w, height: h }, scene, false);
+        tex.hasAlpha = true;
+        const ctx = tex.getContext();
+        ctx.clearRect(0, 0, w, h);
+        ctx.fillStyle = "rgba(15,7,32,0.7)";
+        ctx.beginPath();
+        ctx.roundRect(4, 4, w - 8, h - 8, 8);
+        ctx.fill();
+        ctx.font = "bold 18px 'Segoe UI', system-ui, sans-serif";
+        ctx.fillStyle = hex;
+        ctx.textAlign = "center";
+        ctx.fillText(text1, w / 2, 30);
+        ctx.font = "15px 'Segoe UI', system-ui, sans-serif";
+        ctx.fillStyle = "#c0bcd4";
+        ctx.fillText(text2, w / 2, 56);
+        tex.update();
+
+        const plane = BABYLON.MeshBuilder.CreatePlane("lbl_p_" + uid, { width: 1.3, height: 0.42 }, scene);
+        const mat = new BABYLON.StandardMaterial("lbl_m_" + uid, scene);
+        mat.diffuseTexture = tex;
+        mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        mat.disableLighting = true;
+        mat.backFaceCulling = false;
+        mat.useAlphaFromDiffuseTexture = true;
+        plane.material = mat;
+        plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+        return plane;
+    }
+
+    // ===== ENVIRONMENT =====
+    const floor = BABYLON.MeshBuilder.CreateGround("floor", { width: 30, height: 16, subdivisions: 1 }, scene);
+    floor.material = pbr("floorMat", "#1a1520", 0.8, 0.0);
+    floor.receiveShadows = true;
+
+    const wall = BABYLON.MeshBuilder.CreatePlane("wall", { width: 30, height: 5 }, scene);
+    wall.position.set(0, 2.5, 5);
+    wall.material = pbr("wallMat", "#14101e", 0.95, 0.0);
+
+    // Display surface (long table for 10 shapes)
+    const tableTop = BABYLON.MeshBuilder.CreateBox("tableTop", { width: 19, height: 0.06, depth: 2.4 }, scene);
+    tableTop.position.set(0, 0.82, 0);
+    tableTop.material = pbr("tableMat", "#1c1828", 0.3, 0.05);
+    tableTop.receiveShadows = true;
+    shadowGen.addShadowCaster(tableTop);
+
+    // Table legs
+    for (const lx of [-9, -4.5, 0, 4.5, 9]) {
+        for (const lz of [-0.9, 0.9]) {
+            const leg = BABYLON.MeshBuilder.CreateCylinder("tleg", { diameter: 0.06, height: 0.82, tessellation: 10 }, scene);
+            leg.position.set(lx, 0.41, lz);
+            leg.material = pbr("tlegM", "#444450", 0.3, 0.7);
+        }
+    }
+
+    // ===== SHAPE DATA (10 entries — includes axis variants) =====
+    const SHAPES = [
+        {
+            id: 'hoop', name: 'Hoop (\u22A5)', formula: 'I = MR\u00B2',
+            axis: 'Symmetry axis (\u22A5 to plane of hoop)',
+            color: '#e8504a', cFactor: 1.0, canRoll: true,
+            calcI: (M, R) => M * R * R,
+            calcText: (M, R) => `I = (${M.toFixed(1)})(${R.toFixed(2)}\u00B2) = ${(M * R * R).toFixed(3)} kg\u00B7m\u00B2`,
+            note: 'All mass at distance R from axis \u2192 maximum I for given M and R'
+        },
+        {
+            id: 'hoop_diam', name: 'Hoop (diam.)', formula: 'I = \u00BDMR\u00B2',
+            axis: 'Any diameter (axis in the plane of the hoop)',
+            color: '#c44040', cFactor: 0.5, canRoll: false,
+            calcI: (M, R) => 0.5 * M * R * R,
+            calcText: (M, R) => `I = \u00BD(${M.toFixed(1)})(${R.toFixed(2)}\u00B2) = ${(0.5 * M * R * R).toFixed(3)} kg\u00B7m\u00B2`,
+            note: 'Half of symmetry-axis I \u2014 mass is closer to the diameter axis on average'
+        },
+        {
+            id: 'solidCyl', name: 'Solid Cylinder', formula: 'I = \u00BDMR\u00B2',
+            axis: 'Central axis (along length)',
+            color: '#5b9cf6', cFactor: 0.5, canRoll: true,
+            calcI: (M, R) => 0.5 * M * R * R,
+            calcText: (M, R) => `I = \u00BD(${M.toFixed(1)})(${R.toFixed(2)}\u00B2) = ${(0.5 * M * R * R).toFixed(3)} kg\u00B7m\u00B2`,
+            note: 'Mass distributed from center to R \u2192 less I than hoop'
+        },
+        {
+            id: 'solidSphere', name: 'Solid Sphere', formula: 'I = \u2156MR\u00B2',
+            axis: 'Any diameter',
+            color: '#22d47a', cFactor: 0.4, canRoll: true,
+            calcI: (M, R) => 0.4 * M * R * R,
+            calcText: (M, R) => `I = \u2156(${M.toFixed(1)})(${R.toFixed(2)}\u00B2) = ${(0.4 * M * R * R).toFixed(3)} kg\u00B7m\u00B2`,
+            note: 'Mass distributed throughout volume \u2192 lowest I for solid rolling shapes'
+        },
+        {
+            id: 'shell', name: 'Spherical Shell', formula: 'I = \u2154MR\u00B2',
+            axis: 'Any diameter',
+            color: '#9b6bff', cFactor: 2 / 3, canRoll: true,
+            calcI: (M, R) => (2 / 3) * M * R * R,
+            calcText: (M, R) => `I = \u2154(${M.toFixed(1)})(${R.toFixed(2)}\u00B2) = ${((2 / 3) * M * R * R).toFixed(3)} kg\u00B7m\u00B2`,
+            note: 'All mass at surface (distance R) \u2192 higher I than solid sphere'
+        },
+        {
+            id: 'annular', name: 'Annular Cyl.', formula: 'I = \u00BDM(R\u2081\u00B2+R\u2082\u00B2)',
+            axis: 'Central axis',
+            color: '#f5a623', cFactor: null, canRoll: false,
+            calcI: (M, R) => 0.5 * M * (R * R + (0.5 * R) * (0.5 * R)),
+            calcText: (M, R) => {
+                const R2 = (0.5 * R).toFixed(2);
+                const val = 0.5 * M * (R * R + 0.25 * R * R);
+                return `I = \u00BD(${M.toFixed(1)})((${R.toFixed(2)})\u00B2+(${R2})\u00B2) = ${val.toFixed(3)} kg\u00B7m\u00B2`;
+            },
+            note: 'R\u2081 = outer radius, R\u2082 = inner radius (shown as R/2)'
+        },
+        {
+            id: 'rod', name: 'Rod (center)', formula: 'I = \u00B9\u2044\u2081\u2082ML\u00B2',
+            axis: 'Through center, \u22A5 to length',
+            color: '#ff6b9d', cFactor: null, canRoll: false,
+            calcI: (M, R) => (1 / 12) * M * (2 * R) * (2 * R),
+            calcText: (M, R) => {
+                const L = (2 * R).toFixed(2);
+                const val = (1 / 12) * M * 4 * R * R;
+                return `I = (1/12)(${M.toFixed(1)})(${L})\u00B2 = ${val.toFixed(3)} kg\u00B7m\u00B2  [L=${L}m]`;
+            },
+            note: 'Axis through center; L set to 2R for comparison'
+        },
+        {
+            id: 'rod_end', name: 'Rod (end)', formula: 'I = \u00B9\u2044\u2083ML\u00B2',
+            axis: 'Through one end, \u22A5 to length',
+            color: '#cc4e7a', cFactor: null, canRoll: false,
+            calcI: (M, R) => (1 / 3) * M * (2 * R) * (2 * R),
+            calcText: (M, R) => {
+                const L = (2 * R).toFixed(2);
+                const val = (1 / 3) * M * 4 * R * R;
+                return `I = (1/3)(${M.toFixed(1)})(${L})\u00B2 = ${val.toFixed(3)} kg\u00B7m\u00B2  [L=${L}m]`;
+            },
+            note: '4\u00D7 the center-axis I \u2014 mass is farther from the end than from the center (parallel axis theorem)'
+        },
+        {
+            id: 'slab', name: 'Slab (\u22A5 face)', formula: 'I = \u00B9\u2044\u2081\u2082M(a\u00B2+b\u00B2)',
+            axis: 'Center, \u22A5 to face',
+            color: '#4ecdc4', cFactor: null, canRoll: false,
+            calcI: (M, R) => (1 / 12) * M * (R * R + 0.36 * R * R),
+            calcText: (M, R) => {
+                const a = R.toFixed(2), b = (0.6 * R).toFixed(2);
+                const val = (1 / 12) * M * 1.36 * R * R;
+                return `I = (1/12)(${M.toFixed(1)})((${a})\u00B2+(${b})\u00B2) = ${val.toFixed(3)} kg\u00B7m\u00B2`;
+            },
+            note: 'Axis \u22A5 to face uses both dimensions; a=R, b=0.6R'
+        },
+        {
+            id: 'slab_edge', name: 'Slab (\u2225 edge)', formula: 'I = \u00B9\u2044\u2081\u2082Ma\u00B2',
+            axis: 'Center, along b-edge (parallel to one side)',
+            color: '#3aa69e', cFactor: null, canRoll: false,
+            calcI: (M, R) => (1 / 12) * M * R * R,
+            calcText: (M, R) => {
+                const a = R.toFixed(2);
+                const val = (1 / 12) * M * R * R;
+                return `I = (1/12)(${M.toFixed(1)})(${a})\u00B2 = ${val.toFixed(3)} kg\u00B7m\u00B2  [a=${a}m]`;
+            },
+            note: 'Only the perpendicular dimension (a) matters; smaller I than the \u22A5-to-face axis'
+        }
+    ];
+
+    // ===== BUILD GALLERY SHAPES =====
+    const galleryItems = [];
+    const xPositions = [-6.75, -5.25, -3.75, -2.25, -0.75, 0.75, 2.25, 3.75, 5.25, 6.75];
+
+    // Axis indicator material
+    const axisMat = new BABYLON.StandardMaterial("axisMat", scene);
+    axisMat.emissiveColor = new BABYLON.Color3(0.6, 0.5, 1.0);
+    axisMat.disableLighting = true;
+    axisMat.alpha = 0.6;
+
+    // Pedestal glow material
+    const pedGlowMat = new BABYLON.StandardMaterial("pedGlow", scene);
+    pedGlowMat.emissiveColor = new BABYLON.Color3(0.15, 0.1, 0.3);
+    pedGlowMat.disableLighting = true;
+    pedGlowMat.alpha = 0.5;
+
+    SHAPES.forEach((data, i) => {
+        const node = new BABYLON.TransformNode(data.id + "_node", scene);
+        node.position.set(xPositions[i], 0.85 + 0.03, 0);
+
+        // Pedestal disc
+        const ped = BABYLON.MeshBuilder.CreateCylinder(data.id + "_ped", {
+            diameter: 1.2, height: 0.03, tessellation: 28
+        }, scene);
+        ped.parent = node;
+        ped.position.y = 0;
+        ped.material = pedGlowMat;
+
+        // Build shape meshes
+        const mat = pbr(data.id + "_mat", data.color, 0.32, 0.12);
+        let meshes = [];
+        let mainMesh;
+        const shapeYBase = 0.04;
+
+        // ----- Hoop: symmetry axis (lies flat in XZ plane) -----
+        if (data.id === 'hoop') {
+            const m = BABYLON.MeshBuilder.CreateTorus(data.id + "_m", {
+                diameter: 0.86, thickness: 0.07, tessellation: 32
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            // Flat — spinning node about Y = rotation about symmetry axis
+            m.position.y = shapeYBase + 0.04;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Hoop: about diameter (stands upright in XY plane) -----
+        else if (data.id === 'hoop_diam') {
+            const m = BABYLON.MeshBuilder.CreateTorus(data.id + "_m", {
+                diameter: 0.86, thickness: 0.07, tessellation: 32
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            // Upright — spinning node about Y = rotation about a vertical diameter
+            m.rotation.x = Math.PI / 2;
+            m.position.y = shapeYBase + 0.43;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Solid Cylinder -----
+        else if (data.id === 'solidCyl') {
+            const m = BABYLON.MeshBuilder.CreateCylinder(data.id + "_m", {
+                diameter: 0.76, height: 0.42, tessellation: 28
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.position.y = shapeYBase + 0.21;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Solid Sphere -----
+        else if (data.id === 'solidSphere') {
+            const m = BABYLON.MeshBuilder.CreateSphere(data.id + "_m", {
+                diameter: 0.76, segments: 28
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.position.y = shapeYBase + 0.38;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Spherical Shell -----
+        else if (data.id === 'shell') {
+            const outerMat = pbr(data.id + "_omat", data.color, 0.15, 0.05);
+            outerMat.alpha = 0.42;
+            outerMat.backFaceCulling = false;
+            const outer = BABYLON.MeshBuilder.CreateSphere(data.id + "_outer", {
+                diameter: 0.76, segments: 28
+            }, scene);
+            outer.material = outerMat;
+            outer.parent = node;
+            outer.position.y = shapeYBase + 0.38;
+
+            const innerMat = pbr(data.id + "_imat", "#2a1848", 0.5, 0.0);
+            innerMat.emissiveColor = BABYLON.Color3.FromHexString(data.color).scale(0.08);
+            const inner = BABYLON.MeshBuilder.CreateSphere(data.id + "_inner", {
+                diameter: 0.66, segments: 20
+            }, scene);
+            inner.material = innerMat;
+            inner.parent = node;
+            inner.position.y = shapeYBase + 0.38;
+
+            meshes = [outer, inner]; mainMesh = outer;
+        }
+        // ----- Annular Cylinder -----
+        else if (data.id === 'annular') {
+            const innerR = 0.16, outerR = 0.38, h = 0.33;
+            const profile = [
+                new BABYLON.Vector3(innerR, -h / 2, 0),
+                new BABYLON.Vector3(outerR, -h / 2, 0),
+                new BABYLON.Vector3(outerR, h / 2, 0),
+                new BABYLON.Vector3(innerR, h / 2, 0)
+            ];
+            const m = BABYLON.MeshBuilder.CreateLathe(data.id + "_m", {
+                shape: profile, tessellation: 28
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.position.y = shapeYBase + 0.165;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Thin Rod: axis through center -----
+        else if (data.id === 'rod') {
+            const m = BABYLON.MeshBuilder.CreateCylinder(data.id + "_m", {
+                diameter: 0.06, height: 1.2, tessellation: 12
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.rotation.z = Math.PI / 2;
+            m.position.y = shapeYBase + 0.32;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Thin Rod: axis through one end -----
+        else if (data.id === 'rod_end') {
+            const m = BABYLON.MeshBuilder.CreateCylinder(data.id + "_m", {
+                diameter: 0.06, height: 1.2, tessellation: 12
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.rotation.z = Math.PI / 2;
+            m.position.y = shapeYBase + 0.32;
+            // Offset so the left end sits at the node center (pivot at end)
+            m.position.x = 0.6;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Rectangular Slab: axis perpendicular to face -----
+        else if (data.id === 'slab') {
+            const m = BABYLON.MeshBuilder.CreateBox(data.id + "_m", {
+                width: 0.82, height: 0.08, depth: 0.52
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            m.position.y = shapeYBase + 0.04;
+            meshes = [m]; mainMesh = m;
+        }
+        // ----- Rectangular Slab: axis along one edge -----
+        else if (data.id === 'slab_edge') {
+            const m = BABYLON.MeshBuilder.CreateBox(data.id + "_m", {
+                width: 0.82, height: 0.08, depth: 0.52
+            }, scene);
+            m.material = mat;
+            m.parent = node;
+            // Stand upright — spinning about Y = axis along the b-edge
+            m.rotation.x = Math.PI / 2;
+            m.position.y = shapeYBase + 0.26;
+            meshes = [m]; mainMesh = m;
+        }
+
+        // Shadow casters
+        meshes.forEach(m => shadowGen.addShadowCaster(m));
+
+        // Rotation axis line (vertical — all shapes spin about node Y)
+        const axisLine = BABYLON.MeshBuilder.CreateCylinder(data.id + "_axis", {
+            diameter: 0.018, height: 1.1, tessellation: 8
+        }, scene);
+        axisLine.material = axisMat;
+        axisLine.parent = node;
+        axisLine.position.y = shapeYBase + 0.35;
+        axisLine.setEnabled(false);
+        glow.addIncludedOnlyMesh(axisLine);
+
+        // Label below
+        const label = createLabel(data.name, data.formula, data.color);
+        label.parent = node;
+        label.position.y = -0.3;
+
+        galleryItems.push({
+            data, node, meshes, mainMesh, axisLine, label,
+            omega: 0, baseRotY: 0
+        });
+    });
+
+    // ===== RACE ELEMENTS =====
+    const RAMP_ANGLE = Math.PI / 6;
+    const RAMP_LENGTH = 7;
+    const RACE_RADIUS = 0.28;
+
+    const rampNode = new BABYLON.TransformNode("rampNode", scene);
+    rampNode.position.set(0, 2.8, 0);
+    rampNode.rotation.x = RAMP_ANGLE;
+    rampNode.setEnabled(false);
+
+    const rampSurface = BABYLON.MeshBuilder.CreateBox("rampSurf", {
+        width: 4.6, height: 0.08, depth: RAMP_LENGTH
+    }, scene);
+    rampSurface.material = pbr("rampMat", "#1e1830", 0.4, 0.15);
+    rampSurface.parent = rampNode;
+    rampSurface.receiveShadows = true;
+
+    for (const sx of [-2.2, 2.2]) {
+        const rail = BABYLON.MeshBuilder.CreateBox("rail", { width: 0.06, height: 0.14, depth: RAMP_LENGTH }, scene);
+        rail.material = pbr("railMat", "#333345", 0.3, 0.6);
+        rail.parent = rampNode;
+        rail.position.set(sx, 0.08, 0);
+    }
+
+    for (const lx of [-1.05, 0, 1.05]) {
+        const div = BABYLON.MeshBuilder.CreateBox("div", { width: 0.015, height: 0.02, depth: RAMP_LENGTH - 0.5 }, scene);
+        div.material = pbr("divMat", "#444460", 0.5, 0.3);
+        div.parent = rampNode;
+        div.position.set(lx, 0.05, 0);
+    }
+
+    for (const [z, hex] of [[-RAMP_LENGTH / 2 + 0.4, "#f5a623"], [RAMP_LENGTH / 2 - 0.3, "#22d47a"]]) {
+        const line = BABYLON.MeshBuilder.CreateBox("line", { width: 4.2, height: 0.015, depth: 0.06 }, scene);
+        const lineMat = new BABYLON.StandardMaterial("lineM" + z, scene);
+        lineMat.emissiveColor = BABYLON.Color3.FromHexString(hex);
+        lineMat.disableLighting = true;
+        line.material = lineMat;
+        line.parent = rampNode;
+        line.position.set(0, 0.05, z);
+        glow.addIncludedOnlyMesh(line);
+    }
+
+    // Race shapes (4 rollable)
+    const RACE_SHAPES = SHAPES.filter(s => s.canRoll);
+    const raceLanes = [-1.58, -0.53, 0.53, 1.58];
+    const raceItems = [];
+
+    RACE_SHAPES.forEach((data, i) => {
+        const rNode = new BABYLON.TransformNode(data.id + "_race", scene);
+        rNode.parent = rampNode;
+        rNode.position.set(raceLanes[i], 0.04 + RACE_RADIUS, -RAMP_LENGTH / 2 + 0.6);
+
+        const rMat = pbr(data.id + "_rmat", data.color, 0.3, 0.15);
+        let mesh;
+
+        if (data.id === 'hoop') {
+            mesh = BABYLON.MeshBuilder.CreateTorus(data.id + "_rm", {
+                diameter: RACE_RADIUS * 2, thickness: 0.04, tessellation: 28
+            }, scene);
+            mesh.rotation.z = Math.PI / 2;
+        } else if (data.id === 'solidCyl') {
+            mesh = BABYLON.MeshBuilder.CreateCylinder(data.id + "_rm", {
+                diameter: RACE_RADIUS * 2, height: 0.28, tessellation: 24
+            }, scene);
+            mesh.rotation.z = Math.PI / 2;
+        } else if (data.id === 'solidSphere') {
+            mesh = BABYLON.MeshBuilder.CreateSphere(data.id + "_rm", {
+                diameter: RACE_RADIUS * 2, segments: 24
+            }, scene);
+        } else if (data.id === 'shell') {
+            const oMat = pbr(data.id + "_romat", data.color, 0.15, 0.05);
+            oMat.alpha = 0.55;
+            oMat.backFaceCulling = false;
+            mesh = BABYLON.MeshBuilder.CreateSphere(data.id + "_rm", {
+                diameter: RACE_RADIUS * 2, segments: 24
+            }, scene);
+            mesh.material = oMat;
+        }
+
+        if (data.id !== 'shell') mesh.material = rMat;
+        mesh.parent = rNode;
+        shadowGen.addShadowCaster(mesh);
+
+        const rLabel = createLabel(data.name, '', data.color);
+        rLabel.parent = rampNode;
+        rLabel.position.set(raceLanes[i], 0.6, -RAMP_LENGTH / 2 + 0.3);
+
+        raceItems.push({
+            data, node: rNode, mesh, label: rLabel,
+            v: 0, s: 0, a: 0, finished: false, finishTime: 0, startZ: -RAMP_LENGTH / 2 + 0.6
+        });
+    });
+
+    // ===== STATE =====
+    let mode = 'explore';
+    let selectedIndex = -1;
+    let spinning = false;
+    let spinTime = 0;
+    const TORQUE = 1.0;
+    const TORQUE_DURATION = 3.0;
+    let M = 2.0, R = 0.5;
+    let racing = false;
+    let raceTime = 0;
+    let raceFinishOrder = [];
+    let saveTimer = 0;
+
+    // ===== UI MANAGEMENT =====
+    const massSlider = document.getElementById('massSlider');
+    const radiusSlider = document.getElementById('radiusSlider');
+    const massVal = document.getElementById('massVal');
+    const radiusVal = document.getElementById('radiusVal');
+    const infoPanel = document.getElementById('infoPanel');
+    const barChart = document.getElementById('barChart');
+
+    function updateSliders() {
+        M = parseFloat(massSlider.value);
+        R = parseFloat(radiusSlider.value);
+        massVal.textContent = M.toFixed(1);
+        radiusVal.textContent = R.toFixed(2);
+        updateBarChart();
+        if (selectedIndex >= 0) updateInfoPanel(selectedIndex);
+    }
+    massSlider.addEventListener('input', updateSliders);
+    radiusSlider.addEventListener('input', updateSliders);
+
+    function updateInfoPanel(idx) {
+        if (idx < 0) {
+            infoPanel.innerHTML = '<div class="info-placeholder">Click a shape to explore its moment of inertia</div>';
+            return;
+        }
+        const d = SHAPES[idx];
+        infoPanel.innerHTML = `
+            <div class="shape-name" style="color:${d.color}">${d.name}</div>
+            <div class="axis-desc">Axis: ${d.axis}</div>
+            <div class="formula-big" style="color:${d.color}">${d.formula}</div>
+            <div class="calc-line">${d.calcText(M, R)}</div>
+            <div class="note">${d.note}</div>
+        `;
+    }
+
+    function updateBarChart() {
+        const values = SHAPES.map(d => d.calcI(M, R));
+        const maxVal = Math.max(...values);
+        let html = '';
+        SHAPES.forEach((d, i) => {
+            const pct = maxVal > 0 ? (values[i] / maxVal * 100) : 0;
+            const sel = i === selectedIndex ? ' selected' : '';
+            html += `<div class="bar-item${sel}" onclick="selectShape(${i})">
+                <div class="bar-dot" style="background:${d.color}"></div>
+                <div class="bar-name">${d.name}</div>
+                <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${d.color}"></div></div>
+                <div class="bar-val">${values[i].toFixed(3)}</div>
+            </div>`;
+        });
+        barChart.innerHTML = html;
+    }
+
+    function switchMode(newMode) {
+        mode = newMode;
+        document.getElementById('tabExplore').classList.toggle('active', mode === 'explore');
+        document.getElementById('tabRace').classList.toggle('active', mode === 'race');
+        document.getElementById('exploreControls').style.display = mode === 'explore' ? 'block' : 'none';
+        document.getElementById('raceControls').style.display = mode === 'race' ? 'block' : 'none';
+
+        if (mode === 'explore') {
+            resetSpin();
+            rampNode.setEnabled(false);
+            galleryItems.forEach(g => g.node.setEnabled(true));
+            tableTop.setEnabled(true);
+            animateCamera(-Math.PI / 2, 1.05, 14, new BABYLON.Vector3(0, 0.9, 0));
+        } else {
+            resetSpin();
+            resetRace();
+            galleryItems.forEach(g => g.node.setEnabled(false));
+            tableTop.setEnabled(false);
+            rampNode.setEnabled(true);
+            animateCamera(-Math.PI / 2, 0.85, 12, new BABYLON.Vector3(0, 1.8, 0.5));
+        }
+    }
+
+    function animateCamera(alpha, beta, radius, target) {
+        const fps = 30, frames = 35;
+        BABYLON.Animation.CreateAndStartAnimation("camA", camera, "alpha", fps, frames, camera.alpha, alpha, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camB", camera, "beta", fps, frames, camera.beta, beta, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camR", camera, "radius", fps, frames, camera.radius, radius, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camTX", camera, "target.x", fps, frames, camera.target.x, target.x, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camTY", camera, "target.y", fps, frames, camera.target.y, target.y, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camTZ", camera, "target.z", fps, frames, camera.target.z, target.z, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    }
+
+    // ===== SELECTION =====
+    window.selectShape = function(idx) {
+        if (selectedIndex >= 0) {
+            const prev = galleryItems[selectedIndex];
+            prev.axisLine.setEnabled(false);
+            prev.meshes.forEach(m => hl.removeMesh(m));
+        }
+        selectedIndex = idx;
+        if (idx >= 0 && mode === 'explore') {
+            const item = galleryItems[idx];
+            item.axisLine.setEnabled(true);
+            item.meshes.forEach(m => hl.addMesh(m, BABYLON.Color3.FromHexString(item.data.color)));
+            const tx = xPositions[idx] * 0.25;
+            animateCamera(camera.alpha, camera.beta, 11, new BABYLON.Vector3(tx, 0.9, 0));
+        }
+        updateInfoPanel(idx);
+        updateBarChart();
+    };
+
+    scene.onPointerDown = (evt, pickResult) => {
+        if (mode !== 'explore' || evt.button !== 0) return;
+        if (pickResult.hit) {
+            const picked = pickResult.pickedMesh;
+            for (let i = 0; i < galleryItems.length; i++) {
+                if (galleryItems[i].meshes.some(m => m === picked) ||
+                    picked === galleryItems[i].mainMesh) {
+                    selectShape(i);
+                    return;
+                }
+            }
+        }
+        selectShape(-1);
+    };
+
+    // ===== SPIN LOGIC =====
+    window.startSpin = function() {
+        if (spinning) return;
+        spinning = true;
+        spinTime = 0;
+        document.getElementById('btnSpin').disabled = true;
+        document.getElementById('spinLegend').style.display = 'block';
+        galleryItems.forEach(g => g.axisLine.setEnabled(true));
+    };
+
+    window.resetSpin = function() {
+        spinning = false;
+        spinTime = 0;
+        document.getElementById('btnSpin').disabled = false;
+        document.getElementById('spinLegend').style.display = 'none';
+        galleryItems.forEach(g => {
+            g.omega = 0;
+            g.node.rotation.y = 0;
+            if (galleryItems.indexOf(g) !== selectedIndex) {
+                g.axisLine.setEnabled(false);
+            }
+        });
+    };
+
+    // ===== RACE LOGIC =====
+    const G = 9.81;
+    const RACE_DISTANCE = RAMP_LENGTH - 1.2;
+
+    window.startRace = function() {
+        if (racing) return;
+        racing = true;
+        raceTime = 0;
+        raceFinishOrder = [];
+        document.getElementById('btnRace').disabled = true;
+        document.getElementById('raceResults').innerHTML = '<div style="font-size:0.75rem;color:var(--muted);margin-top:8px">Racing...</div>';
+
+        raceItems.forEach(ri => {
+            ri.v = 0;
+            ri.s = 0;
+            ri.finished = false;
+            ri.finishTime = 0;
+            ri.a = (G * Math.sin(RAMP_ANGLE)) / (1 + ri.data.cFactor);
+        });
+    };
+
+    window.resetRace = function() {
+        racing = false;
+        raceTime = 0;
+        raceFinishOrder = [];
+        document.getElementById('btnRace').disabled = false;
+        document.getElementById('raceResults').innerHTML = '';
+
+        raceItems.forEach(ri => {
+            ri.v = 0;
+            ri.s = 0;
+            ri.finished = false;
+            ri.node.position.z = ri.startZ;
+            ri.mesh.rotation.x = 0;
+            ri.mesh.rotation.z = ri.data.id === 'hoop' || ri.data.id === 'solidCyl' ? Math.PI / 2 : 0;
+        });
+    };
+
+    function updateRaceResults() {
+        if (raceFinishOrder.length === 0) return;
+        const places = ['1st', '2nd', '3rd', '4th'];
+        let html = '';
+        raceFinishOrder.forEach((ri, idx) => {
+            html += `<div class="race-result">
+                <span class="race-place">${places[idx]}</span>
+                <span class="race-dot" style="background:${ri.data.color}"></span>
+                <span class="race-rname">${ri.data.name}</span>
+                <span class="race-time">${ri.finishTime.toFixed(2)}s</span>
+            </div>`;
+        });
+        raceItems.forEach(ri => {
+            if (!ri.finished) {
+                const pct = Math.min(100, (ri.s / RACE_DISTANCE * 100)).toFixed(0);
+                html += `<div class="race-result">
+                    <span class="race-place">--</span>
+                    <span class="race-dot" style="background:${ri.data.color}"></span>
+                    <span class="race-rname">${ri.data.name}</span>
+                    <span class="race-time">${pct}%</span>
+                </div>`;
+            }
+        });
+        document.getElementById('raceResults').innerHTML = html;
+    }
+
+    // ===== RENDER LOOP =====
+    const IDLE_SPIN = 0.12;
+
+    scene.onBeforeRenderObservable.add(() => {
+        const dt = Math.min(engine.getDeltaTime() / 1000, 0.1);
+
+        if (mode === 'explore') {
+            galleryItems.forEach(g => {
+                if (spinning) {
+                    const I = g.data.calcI(M, R);
+                    if (spinTime < TORQUE_DURATION) {
+                        g.omega += (TORQUE / I) * dt;
+                    } else {
+                        g.omega *= (1 - 0.3 * dt);
+                    }
+                    g.node.rotation.y += g.omega * dt;
+                } else {
+                    g.node.rotation.y += IDLE_SPIN * dt;
+                }
+            });
+            if (spinning) spinTime += dt;
+        }
+
+        if (mode === 'race' && racing) {
+            raceTime += dt;
+            let allDone = true;
+            raceItems.forEach(ri => {
+                if (ri.finished) return;
+                allDone = false;
+                ri.v += ri.a * dt;
+                ri.s += ri.v * dt;
+                ri.node.position.z = ri.startZ + ri.s;
+                ri.mesh.rotation.x += (ri.v / RACE_RADIUS) * dt;
+
+                if (ri.s >= RACE_DISTANCE) {
+                    ri.finished = true;
+                    ri.finishTime = raceTime;
+                    raceFinishOrder.push(ri);
+                    updateRaceResults();
+                }
+            });
+            if (allDone && racing) {
+                racing = false;
+                document.getElementById('btnRace').disabled = false;
+                updateRaceResults();
+            }
+        }
+
+        saveTimer += dt;
+        if (saveTimer > 15) {
+            saveTimer = 0;
+            PortalBridge.save({
+                mode, selectedIndex, M, R,
+                spinning, spinTime, racing, raceTime
+            }, 0);
+        }
+    });
+
+    // ===== INIT =====
+    updateSliders();
+    updateBarChart();
+
+    camera.alpha = -Math.PI / 2 + 0.8;
+    camera.radius = 20;
+    camera.beta = 0.7;
+    setTimeout(() => {
+        animateCamera(-Math.PI / 2, 1.05, 14, new BABYLON.Vector3(0, 0.9, 0));
+    }, 200);
+
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener('resize', () => engine.resize());
+    </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+{
+  "user_intent": "A photorealistic side-by-side comparison of a female figure skater on an ice rink demonstrating conservation of angular momentum. Left half: she spins slowly with both arms and one leg extended outward, with a clean white label reading 'Large I, Small ω' overlaid below her. Right half: she spins rapidly with arms and leg pulled tight against her body, motion blur visible, with a clean white label reading 'Small I, Large ω' overlaid below her. A thin vertical dividing line separates the two halves. Neutral even lighting, educational physics diagram style.",
+  "meta": {
+    "aspect_ratio": "16:9",
+    "quality": "ultra_photorealistic",
+    "steps": 45,
+    "guidance_scale": 8.5
+  },
+  "subject": [
+    {
+      "id": "skater_left",
+      "type": "person",
+      "description": "Female figure skater spinning slowly with both arms fully extended outward and one leg stretched out behind her, large rotational inertia pose",
+      "gender": "female",
+      "age": "young adult",
+      "position": "left",
+      "pose": "spinning slowly on one foot with both arms extended horizontally and one leg extended behind her",
+      "expression": "confident",
+      "hair": {
+        "style": "ponytail",
+        "color": "brown"
+      },
+      "clothing": [
+        {
+          "type": "figure skating dress",
+          "color": "deep blue",
+          "fabric": "satin",
+          "fit": "fitted",
+          "details": "long sleeves with subtle sparkle accents"
+        },
+        {
+          "type": "white figure skates",
+          "color": "white"
+        }
+      ]
+    },
+    {
+      "id": "skater_right",
+      "type": "person",
+      "description": "The same female figure skater now spinning very rapidly with arms pulled tight against her chest and leg tucked in, small rotational inertia pose, visible motion blur on hair and edges",
+      "gender": "female",
+      "age": "young adult",
+      "position": "right",
+      "pose": "spinning rapidly on one foot with both arms pulled tightly against her chest and leg tucked close to her body",
+      "expression": "confident",
+      "hair": {
+        "style": "ponytail",
+        "color": "brown"
+      },
+      "clothing": [
+        {
+          "type": "figure skating dress",
+          "color": "deep blue",
+          "fabric": "satin",
+          "fit": "fitted",
+          "details": "long sleeves with subtle sparkle accents, edges show motion blur"
+        },
+        {
+          "type": "white figure skates",
+          "color": "white"
+        }
+      ]
+    }
+  ],
+  "scene": {
+    "location": "indoor ice skating rink with clean white ice surface",
+    "lighting": {
+      "type": "studio",
+      "direction": "three_point",
+      "color_temperature": "neutral",
+      "intensity": "bright"
+    },
+    "background_elements": [
+      "smooth white ice surface",
+      "soft out-of-focus rink boards in the far background",
+      "thin vertical white dividing line between left and right halves"
+    ]
+  },
+  "technical": {
+    "camera_model": "Sony A7R IV",
+    "lens": "35mm",
+    "aperture": "f/4",
+    "shutter_speed": "1/250",
+    "iso": "400"
+  },
+  "composition": {
+    "framing": "full_body",
+    "angle": "eye_level",
+    "focus_point": "whole_scene",
+    "rule": "symmetrical"
+  },
+  "text_rendering": {
+    "enabled": true,
+    "text_content": "Large I, Small ω",
+    "placement": "floating_in_air",
+    "font_style": "bold_sans_serif",
+    "color": "clean white with subtle drop shadow"
+  },
+  "style_modifiers": {
+    "medium": "photography",
+    "color_palette": "cool_tones",
+    "texture": "sharp",
+    "era": "contemporary"
+  },
+  "advanced": {
+    "negative_prompt": ["blurry", "watermark", "text overlay errors", "deformed", "extra limbs", "low quality", "jpeg artifacts", "oversaturated", "cartoon", "illustration", "anime"],
+    "hdr_mode": true,
+    "face_detail_enhancer": true
+  }
+}

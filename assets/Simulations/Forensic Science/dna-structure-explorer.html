@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>DNA Structure Explorer</title>
+    <style>
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.88);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+            --adenine: #e8504a;
+            --thymine: #5b9cf6;
+            --cytosine: #22d47a;
+            --guanine: #f5a623;
+            --phosphate: #00bcd4;
+            --sugar: #ff9800;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        #renderCanvas { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+        #ui-layer {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; display: flex; flex-direction: column;
+            justify-content: space-between; padding: 14px; gap: 10px;
+        }
+        .panel {
+            pointer-events: auto;
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px; color: var(--text);
+        }
+        .top-row { display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+        .header-panel { max-width: 380px; }
+        .header-panel h1 { font-size: 1.15rem; font-weight: 700; margin-bottom: 4px; }
+        .header-panel .subtitle { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+        .legend-panel { max-width: 260px; }
+        .legend-panel h2 { font-size: 0.9rem; font-weight: 600; margin-bottom: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; font-size: 0.8rem; }
+        .legend-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+        .legend-line { width: 14px; height: 4px; border-radius: 2px; flex-shrink: 0; }
+        .bottom-row { display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap; }
+        .controls-panel { max-width: 420px; }
+        .controls-panel h2 { font-size: 0.9rem; font-weight: 600; margin-bottom: 10px; }
+        .control-group { margin-bottom: 10px; }
+        .control-group:last-child { margin-bottom: 0; }
+        .control-label { font-size: 0.78rem; color: var(--muted); margin-bottom: 4px; display: block; }
+        .slider-row { display: flex; align-items: center; gap: 10px; }
+        .slider-row input[type="range"] {
+            flex: 1; -webkit-appearance: none; appearance: none;
+            height: 6px; border-radius: 3px; background: rgba(155,107,255,0.25); outline: none;
+        }
+        .slider-row input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+            background: var(--purple); cursor: pointer; border: 2px solid rgba(255,255,255,0.3);
+        }
+        .slider-val { font-size: 0.8rem; color: var(--text); min-width: 36px; text-align: right; }
+        .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn {
+            padding: 7px 14px; border-radius: 8px; border: 1px solid var(--border);
+            background: rgba(155,107,255,0.15); color: var(--text); font-size: 0.78rem;
+            cursor: pointer; transition: all 0.2s; font-family: inherit;
+        }
+        .btn:hover { background: rgba(155,107,255,0.3); }
+        .btn.active { background: rgba(155,107,255,0.45); border-color: var(--purple); }
+        .info-panel {
+            max-width: 340px; margin-left: auto; transition: opacity 0.3s, transform 0.3s;
+        }
+        .info-panel.hidden { opacity: 0; transform: translateY(10px); pointer-events: none; }
+        .info-panel h2 { font-size: 0.95rem; font-weight: 600; margin-bottom: 6px; }
+        .info-panel .info-text { font-size: 0.8rem; color: var(--muted); line-height: 1.5; }
+        .info-panel .bp-label { font-size: 1rem; font-weight: 700; margin-bottom: 4px; }
+        .info-panel .bond-info { font-size: 0.82rem; color: var(--text); margin-top: 4px; }
+        .hint {
+            position: absolute; bottom: 50%; left: 50%; transform: translateX(-50%);
+            pointer-events: none; color: var(--muted); font-size: 0.8rem;
+            opacity: 0; transition: opacity 0.5s;
+        }
+        .hint.show { opacity: 1; }
+        @media (max-width: 768px) {
+            #ui-layer { padding: 8px; }
+            .top-row, .bottom-row { flex-direction: column; }
+            .header-panel, .legend-panel, .controls-panel, .info-panel { max-width: 100%; }
+            .info-panel { margin-left: 0; }
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+</head>
+<body>
+    <script>
+    const PortalBridge = (() => {
+        const send = (type, data) => {
+            if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+        };
+        return {
+            init:     ()              => send('PROCTOR_READY'),
+            save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+            answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+            complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+        };
+    })();
+    window.addEventListener('load', () => PortalBridge.init());
+    </script>
+
+    <canvas id="renderCanvas"></canvas>
+
+    <div id="ui-layer">
+        <div class="top-row">
+            <div class="panel header-panel">
+                <h1>DNA Structure Explorer</h1>
+                <p class="subtitle">Explore the double helix — click on base pairs to learn about their structure. Use the controls to unwind, rotate, and examine DNA components.</p>
+            </div>
+            <div class="panel legend-panel">
+                <h2>Legend</h2>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--adenine)"></div> Adenine (A)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--thymine)"></div> Thymine (T)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--cytosine)"></div> Cytosine (C)</div>
+                <div class="legend-item"><div class="legend-dot" style="background:var(--guanine)"></div> Guanine (G)</div>
+                <div class="legend-item"><div class="legend-line" style="background:var(--phosphate)"></div> Sugar-Phosphate Backbone</div>
+                <div class="legend-item"><div class="legend-line" style="background:rgba(255,255,255,0.4)"></div> Hydrogen Bonds</div>
+            </div>
+        </div>
+        <div class="bottom-row">
+            <div class="panel controls-panel">
+                <h2>Controls</h2>
+                <div class="control-group">
+                    <span class="control-label">Unwind Helix</span>
+                    <div class="slider-row">
+                        <input type="range" id="unwindSlider" min="0" max="100" value="100">
+                        <span class="slider-val" id="unwindVal">100%</span>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <span class="control-label">Auto-Rotate Speed</span>
+                    <div class="slider-row">
+                        <input type="range" id="rotateSlider" min="0" max="100" value="20">
+                        <span class="slider-val" id="rotateVal">20%</span>
+                    </div>
+                </div>
+                <div class="btn-row">
+                    <button class="btn active" id="btnBonds">H-Bonds</button>
+                    <button class="btn active" id="btnLabels">Labels</button>
+                    <button class="btn" id="btnNucleotide">Nucleotide View</button>
+                    <button class="btn" id="btnReset">Reset</button>
+                </div>
+            </div>
+            <div class="panel info-panel hidden" id="infoPanel">
+                <h2>Base Pair Info</h2>
+                <div class="bp-label" id="bpLabel">—</div>
+                <div class="info-text" id="bpInfo">Click a base pair to see details.</div>
+                <div class="bond-info" id="bondInfo"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="hint" id="hintText">Click on a base pair to explore</div>
+
+    <script>
+    // ── ENGINE & SCENE ──
+    const canvas = document.getElementById('renderCanvas');
+    const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+    engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio, 1.5));
+
+    const scene = new BABYLON.Scene(engine);
+    scene.clearColor = new BABYLON.Color4(0.059, 0.027, 0.125, 1.0);
+    scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+    scene.fogColor = new BABYLON.Color3(0.059, 0.027, 0.125);
+    scene.fogDensity = 0.012;
+
+    // ── CAMERA ──
+    const camera = new BABYLON.ArcRotateCamera("cam", -Math.PI / 2, 1.1, 18, new BABYLON.Vector3(0, 3, 0), scene);
+    camera.attachControl(canvas, true);
+    camera.lowerRadiusLimit = 6;
+    camera.upperRadiusLimit = 35;
+    camera.upperBetaLimit = Math.PI / 2 + 0.8;
+    camera.inertia = 0.7;
+    camera.wheelPrecision = 3;
+    camera.panningInertia = 0.8;
+    camera.panningSensibility = 80;
+
+    // ── LIGHTING ──
+    const hemi = new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), scene);
+    hemi.intensity = 0.35;
+    hemi.diffuse = new BABYLON.Color3(0.8, 0.82, 1.0);
+    hemi.groundColor = new BABYLON.Color3(0.1, 0.06, 0.2);
+
+    const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.5, -1.5, -0.7), scene);
+    sun.position = new BABYLON.Vector3(5, 12, 7);
+    sun.intensity = 0.85;
+
+    const accent = new BABYLON.PointLight("accent", new BABYLON.Vector3(0, 5, 0), scene);
+    accent.diffuse = new BABYLON.Color3(0.5, 0.4, 1.0);
+    accent.specular = BABYLON.Color3.Black();
+    accent.intensity = 1.8;
+    accent.range = 12;
+
+    // ── SHADOWS ──
+    const shadowGen = new BABYLON.ShadowGenerator(1024, sun);
+    shadowGen.useBlurExponentialShadowMap = true;
+    shadowGen.blurKernel = 16;
+    shadowGen.darkness = 0.4;
+
+    // ── POST-PROCESSING ──
+    const pipeline = new BABYLON.DefaultRenderingPipeline("pipe", true, scene, [camera]);
+    pipeline.fxaaEnabled = true;
+    pipeline.samples = 2;
+    pipeline.imageProcessingEnabled = true;
+    pipeline.imageProcessing.contrast = 1.1;
+    pipeline.imageProcessing.exposure = 1.05;
+    pipeline.imageProcessing.toneMappingEnabled = true;
+
+    const hl = new BABYLON.HighlightLayer("hl", scene);
+
+    // ── MATERIALS ──
+    function pbr(name, hexColor, roughness, metallic) {
+        const m = new BABYLON.PBRMaterial(name, scene);
+        m.albedoColor = BABYLON.Color3.FromHexString(hexColor);
+        m.roughness = roughness;
+        m.metallic = metallic;
+        return m;
+    }
+
+    const matAdenine = pbr("matA", "#e8504a", 0.4, 0.0);
+    const matThymine = pbr("matT", "#5b9cf6", 0.4, 0.0);
+    const matCytosine = pbr("matC", "#22d47a", 0.4, 0.0);
+    const matGuanine = pbr("matG", "#f5a623", 0.4, 0.0);
+
+    const matBackbone1 = pbr("matBB1", "#00bcd4", 0.35, 0.1);
+    const matBackbone2 = pbr("matBB2", "#00acc1", 0.35, 0.1);
+
+    const matPhosphate = pbr("matPhos", "#00bcd4", 0.3, 0.2);
+    const matSugar = pbr("matSugar", "#ff9800", 0.45, 0.0);
+
+    const matHBond = new BABYLON.StandardMaterial("matHBond", scene);
+    matHBond.diffuseColor = new BABYLON.Color3(0.8, 0.8, 0.8);
+    matHBond.emissiveColor = new BABYLON.Color3(0.15, 0.15, 0.15);
+    matHBond.alpha = 0.6;
+
+    const matFloor = pbr("matFloor", "#1a1525", 0.85, 0.0);
+
+    // ── ENVIRONMENT ──
+    const floor = BABYLON.MeshBuilder.CreateGround("floor", { width: 40, height: 40, subdivisions: 1 }, scene);
+    floor.material = matFloor;
+    floor.receiveShadows = true;
+    floor.position.y = -1;
+
+    // ── DNA DATA ──
+    const BASE_PAIRS = [
+        { left: 'A', right: 'T', bonds: 2 },
+        { left: 'C', right: 'G', bonds: 3 },
+        { left: 'T', right: 'A', bonds: 2 },
+        { left: 'G', right: 'C', bonds: 3 },
+        { left: 'A', right: 'T', bonds: 2 },
+        { left: 'C', right: 'G', bonds: 3 },
+        { left: 'T', right: 'A', bonds: 2 },
+        { left: 'A', right: 'T', bonds: 2 },
+        { left: 'G', right: 'C', bonds: 3 },
+        { left: 'C', right: 'G', bonds: 3 },
+        { left: 'T', right: 'A', bonds: 2 },
+        { left: 'A', right: 'T', bonds: 2 },
+    ];
+
+    const BASE_INFO = {
+        'A': { name: 'Adenine', type: 'Purine (double ring)', mat: matAdenine, color: '#e8504a' },
+        'T': { name: 'Thymine', type: 'Pyrimidine (single ring)', mat: matThymine, color: '#5b9cf6' },
+        'C': { name: 'Cytosine', type: 'Pyrimidine (single ring)', mat: matCytosine, color: '#22d47a' },
+        'G': { name: 'Guanine', type: 'Purine (double ring)', mat: matGuanine, color: '#f5a623' }
+    };
+
+    // ── HELIX PARAMETERS ──
+    const HELIX_RADIUS = 2.0;
+    const HELIX_PITCH = 0.85;
+    const NUM_PAIRS = BASE_PAIRS.length;
+    const TURN_ANGLE = (2 * Math.PI) / 10;
+
+    // ── BUILD DNA MODEL ──
+    let unwindFactor = 1.0;
+    let autoRotateSpeed = 0.002;
+    const dnaRoot = new BABYLON.TransformNode("dnaRoot", scene);
+
+    const allBasePairGroups = [];
+    const allHBonds = [];
+    const allLabels = [];
+    const allBackboneSegments = [];
+    const allPhosphates = [];
+    const allSugars = [];
+
+    function getBaseMaterial(base) {
+        return BASE_INFO[base].mat;
+    }
+
+    // Create base shape - purines are larger (double ring), pyrimidines smaller
+    function createBaseShape(name, base, scene) {
+        const isPurine = (base === 'A' || base === 'G');
+        const group = new BABYLON.TransformNode(name, scene);
+
+        if (isPurine) {
+            // Double ring - torus + sphere
+            const ring1 = BABYLON.MeshBuilder.CreateTorus(name + "_r1", { diameter: 0.55, thickness: 0.14, tessellation: 24 }, scene);
+            ring1.material = getBaseMaterial(base);
+            ring1.parent = group;
+            ring1.rotation.x = Math.PI / 2;
+
+            const ring2 = BABYLON.MeshBuilder.CreateTorus(name + "_r2", { diameter: 0.45, thickness: 0.14, tessellation: 24 }, scene);
+            ring2.material = getBaseMaterial(base);
+            ring2.parent = group;
+            ring2.position.x = 0.3;
+            ring2.rotation.x = Math.PI / 2;
+
+            const fill1 = BABYLON.MeshBuilder.CreateCylinder(name + "_f1", { diameter: 0.42, height: 0.12, tessellation: 24 }, scene);
+            fill1.material = getBaseMaterial(base);
+            fill1.parent = group;
+            fill1.rotation.x = Math.PI / 2;
+
+            const fill2 = BABYLON.MeshBuilder.CreateCylinder(name + "_f2", { diameter: 0.32, height: 0.12, tessellation: 24 }, scene);
+            fill2.material = getBaseMaterial(base);
+            fill2.parent = group;
+            fill2.position.x = 0.3;
+            fill2.rotation.x = Math.PI / 2;
+        } else {
+            // Single ring
+            const ring = BABYLON.MeshBuilder.CreateTorus(name + "_r", { diameter: 0.55, thickness: 0.14, tessellation: 24 }, scene);
+            ring.material = getBaseMaterial(base);
+            ring.parent = group;
+            ring.rotation.x = Math.PI / 2;
+
+            const fill = BABYLON.MeshBuilder.CreateCylinder(name + "_f", { diameter: 0.42, height: 0.12, tessellation: 24 }, scene);
+            fill.material = getBaseMaterial(base);
+            fill.parent = group;
+            fill.rotation.x = Math.PI / 2;
+        }
+
+        return group;
+    }
+
+    // Create a label using DynamicTexture
+    function createLabel(text, position, color) {
+        const isLong = text.length > 5;
+        const texW = isLong ? 256 : 128;
+        const texH = 56;
+        const planeWidth = isLong ? 1.6 : 0.8;
+        const planeHeight = 0.35;
+        const fontSize = isLong ? 24 : 30;
+        const plane = BABYLON.MeshBuilder.CreatePlane("label_" + text + Math.random(), { width: planeWidth, height: planeHeight }, scene);
+        plane.position = position.clone();
+        plane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+
+        const tex = new BABYLON.DynamicTexture("labelTex_" + text + Math.random(), { width: texW, height: texH }, scene, false);
+        const ctx = tex.getContext();
+        ctx.clearRect(0, 0, texW, texH);
+        ctx.fillStyle = "rgba(15,7,32,0.7)";
+        ctx.beginPath();
+        ctx.roundRect(4, 4, texW - 8, texH - 8, 8);
+        ctx.fill();
+        ctx.font = "bold " + fontSize + "px Segoe UI, sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillStyle = color;
+        ctx.fillText(text, texW / 2, texH / 2);
+        tex.update();
+
+        const mat = new BABYLON.StandardMaterial("labelMat_" + text + Math.random(), scene);
+        mat.diffuseTexture = tex;
+        mat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+        mat.disableLighting = true;
+        mat.hasAlpha = true;
+        tex.hasAlpha = true;
+        mat.backFaceCulling = false;
+        plane.material = mat;
+
+        return plane;
+    }
+
+    // ── BUILD EACH BASE PAIR ──
+    for (let i = 0; i < NUM_PAIRS; i++) {
+        const bp = BASE_PAIRS[i];
+        const bpGroup = new BABYLON.TransformNode("bp_" + i, scene);
+        bpGroup.parent = dnaRoot;
+
+        const angle = i * TURN_ANGLE;
+        const y = i * HELIX_PITCH;
+
+        // Store original positions for unwind interpolation
+        bpGroup.metadata = {
+            index: i,
+            basePair: bp,
+            angle: angle,
+            y: y,
+            leftBase: bp.left,
+            rightBase: bp.right
+        };
+
+        // Left base (strand 1)
+        const leftPos = new BABYLON.Vector3(
+            HELIX_RADIUS * Math.cos(angle),
+            y,
+            HELIX_RADIUS * Math.sin(angle)
+        );
+        const leftBaseShape = createBaseShape("leftBase_" + i, bp.left, scene);
+        leftBaseShape.parent = bpGroup;
+        leftBaseShape.position = leftPos;
+        leftBaseShape.metadata = { side: 'left', base: bp.left, pairIndex: i };
+
+        // Right base (strand 2) - offset by PI
+        const rightPos = new BABYLON.Vector3(
+            HELIX_RADIUS * Math.cos(angle + Math.PI),
+            y,
+            HELIX_RADIUS * Math.sin(angle + Math.PI)
+        );
+        const rightBaseShape = createBaseShape("rightBase_" + i, bp.right, scene);
+        rightBaseShape.parent = bpGroup;
+        rightBaseShape.position = rightPos;
+        rightBaseShape.metadata = { side: 'right', base: bp.right, pairIndex: i };
+
+        // Phosphate spheres on backbones
+        const phos1 = BABYLON.MeshBuilder.CreateSphere("phos1_" + i, { diameter: 0.28, segments: 16 }, scene);
+        phos1.material = matPhosphate;
+        phos1.parent = bpGroup;
+        const phos1Pos = new BABYLON.Vector3(
+            (HELIX_RADIUS + 0.4) * Math.cos(angle),
+            y,
+            (HELIX_RADIUS + 0.4) * Math.sin(angle)
+        );
+        phos1.position = phos1Pos;
+        shadowGen.addShadowCaster(phos1);
+        allPhosphates.push({ mesh: phos1, angle: angle, y: y, strand: 1 });
+
+        const phos2 = BABYLON.MeshBuilder.CreateSphere("phos2_" + i, { diameter: 0.28, segments: 16 }, scene);
+        phos2.material = matPhosphate;
+        phos2.parent = bpGroup;
+        const phos2Pos = new BABYLON.Vector3(
+            (HELIX_RADIUS + 0.4) * Math.cos(angle + Math.PI),
+            y,
+            (HELIX_RADIUS + 0.4) * Math.sin(angle + Math.PI)
+        );
+        phos2.position = phos2Pos;
+        shadowGen.addShadowCaster(phos2);
+        allPhosphates.push({ mesh: phos2, angle: angle + Math.PI, y: y, strand: 2 });
+
+        // Sugar (deoxyribose) - pentagon between phosphate and base
+        const sugar1 = BABYLON.MeshBuilder.CreateCylinder("sugar1_" + i, { diameter: 0.22, height: 0.16, tessellation: 5 }, scene);
+        sugar1.material = matSugar;
+        sugar1.parent = bpGroup;
+        sugar1.position = BABYLON.Vector3.Lerp(phos1Pos, leftPos, 0.5);
+        sugar1.rotation.x = Math.PI / 2;
+        allSugars.push(sugar1);
+
+        const sugar2 = BABYLON.MeshBuilder.CreateCylinder("sugar2_" + i, { diameter: 0.22, height: 0.16, tessellation: 5 }, scene);
+        sugar2.material = matSugar;
+        sugar2.parent = bpGroup;
+        sugar2.position = BABYLON.Vector3.Lerp(phos2Pos, rightPos, 0.5);
+        sugar2.rotation.x = Math.PI / 2;
+        allSugars.push(sugar2);
+
+        // Hydrogen bonds between base pairs
+        const bondGroup = new BABYLON.TransformNode("bonds_" + i, scene);
+        bondGroup.parent = bpGroup;
+        const midPoint = BABYLON.Vector3.Lerp(leftPos, rightPos, 0.5);
+        const bondDir = rightPos.subtract(leftPos);
+        const bondLen = bondDir.length();
+        const bondAngle = Math.atan2(bondDir.z, bondDir.x);
+
+        for (let b = 0; b < bp.bonds; b++) {
+            const offset = (b - (bp.bonds - 1) / 2) * 0.15;
+            const bond = BABYLON.MeshBuilder.CreateCylinder("hbond_" + i + "_" + b, {
+                diameter: 0.04, height: bondLen * 0.55, tessellation: 8
+            }, scene);
+            bond.material = matHBond;
+            bond.parent = bondGroup;
+            bond.position = midPoint.clone();
+            bond.position.y += offset;
+            bond.rotation.z = Math.PI / 2;
+            bond.rotation.y = -bondAngle;
+            allHBonds.push(bond);
+        }
+
+        // Labels
+        const leftLabel = createLabel(bp.left, leftPos.add(new BABYLON.Vector3(0, 0.45, 0)), BASE_INFO[bp.left].color);
+        leftLabel.parent = bpGroup;
+        allLabels.push(leftLabel);
+
+        const rightLabel = createLabel(bp.right, rightPos.add(new BABYLON.Vector3(0, 0.45, 0)), BASE_INFO[bp.right].color);
+        rightLabel.parent = bpGroup;
+        allLabels.push(rightLabel);
+
+        // Clickable area for the pair
+        const clickArea = BABYLON.MeshBuilder.CreateBox("click_" + i, { width: bondLen, height: 0.6, depth: 0.6 }, scene);
+        clickArea.position = midPoint;
+        clickArea.rotation.y = -bondAngle;
+        clickArea.parent = bpGroup;
+        clickArea.visibility = 0;
+        clickArea.isPickable = true;
+        clickArea.metadata = { pairIndex: i, bp: bp };
+
+        allBasePairGroups.push({
+            group: bpGroup,
+            leftShape: leftBaseShape,
+            rightShape: rightBaseShape,
+            clickArea: clickArea,
+            bondGroup: bondGroup,
+            leftLabel: leftLabel,
+            rightLabel: rightLabel,
+            phos1: phos1, phos2: phos2,
+            sugar1: sugar1, sugar2: sugar2,
+            data: bp, index: i
+        });
+    }
+
+    // ── BACKBONE TUBES ──
+    function buildBackbones(twist) {
+        // Remove old backbone tubes
+        allBackboneSegments.forEach(m => m.dispose());
+        allBackboneSegments.length = 0;
+
+        const pathLeft = [];
+        const pathRight = [];
+
+        for (let i = 0; i < NUM_PAIRS; i++) {
+            const angle = i * TURN_ANGLE * twist;
+            const y = i * HELIX_PITCH;
+            pathLeft.push(new BABYLON.Vector3(
+                (HELIX_RADIUS + 0.4) * Math.cos(angle),
+                y,
+                (HELIX_RADIUS + 0.4) * Math.sin(angle)
+            ));
+            pathRight.push(new BABYLON.Vector3(
+                (HELIX_RADIUS + 0.4) * Math.cos(angle + Math.PI),
+                y,
+                (HELIX_RADIUS + 0.4) * Math.sin(angle + Math.PI)
+            ));
+        }
+
+        if (pathLeft.length >= 2) {
+            const tube1 = BABYLON.MeshBuilder.CreateTube("bb1", {
+                path: pathLeft, radius: 0.08, tessellation: 12, cap: BABYLON.Mesh.CAP_ALL
+            }, scene);
+            tube1.material = matBackbone1;
+            tube1.parent = dnaRoot;
+            shadowGen.addShadowCaster(tube1);
+            allBackboneSegments.push(tube1);
+
+            const tube2 = BABYLON.MeshBuilder.CreateTube("bb2", {
+                path: pathRight, radius: 0.08, tessellation: 12, cap: BABYLON.Mesh.CAP_ALL
+            }, scene);
+            tube2.material = matBackbone2;
+            tube2.parent = dnaRoot;
+            shadowGen.addShadowCaster(tube2);
+            allBackboneSegments.push(tube2);
+        }
+    }
+
+    // ── UPDATE POSITIONS BASED ON UNWIND ──
+    function updateHelixPositions(twist) {
+        for (let i = 0; i < NUM_PAIRS; i++) {
+            const bpData = allBasePairGroups[i];
+            const angle = i * TURN_ANGLE * twist;
+            const y = i * HELIX_PITCH;
+
+            const leftPos = new BABYLON.Vector3(
+                HELIX_RADIUS * Math.cos(angle),
+                y,
+                HELIX_RADIUS * Math.sin(angle)
+            );
+            const rightPos = new BABYLON.Vector3(
+                HELIX_RADIUS * Math.cos(angle + Math.PI),
+                y,
+                HELIX_RADIUS * Math.sin(angle + Math.PI)
+            );
+
+            // Update base positions
+            bpData.leftShape.position = leftPos;
+            bpData.rightShape.position = rightPos;
+
+            // Update phosphates
+            const phos1Pos = new BABYLON.Vector3(
+                (HELIX_RADIUS + 0.4) * Math.cos(angle),
+                y,
+                (HELIX_RADIUS + 0.4) * Math.sin(angle)
+            );
+            const phos2Pos = new BABYLON.Vector3(
+                (HELIX_RADIUS + 0.4) * Math.cos(angle + Math.PI),
+                y,
+                (HELIX_RADIUS + 0.4) * Math.sin(angle + Math.PI)
+            );
+            bpData.phos1.position = phos1Pos;
+            bpData.phos2.position = phos2Pos;
+
+            // Update sugars
+            bpData.sugar1.position = BABYLON.Vector3.Lerp(phos1Pos, leftPos, 0.5);
+            bpData.sugar2.position = BABYLON.Vector3.Lerp(phos2Pos, rightPos, 0.5);
+
+            // Update hydrogen bonds
+            const midPoint = BABYLON.Vector3.Lerp(leftPos, rightPos, 0.5);
+            const bondDir = rightPos.subtract(leftPos);
+            const bondLen = bondDir.length();
+            const bondAngle = Math.atan2(bondDir.z, bondDir.x);
+
+            const bonds = bpData.bondGroup.getChildren();
+            for (let b = 0; b < bonds.length; b++) {
+                const offset = (b - (bpData.data.bonds - 1) / 2) * 0.15;
+                bonds[b].position = midPoint.clone();
+                bonds[b].position.y += offset;
+                bonds[b].rotation.z = Math.PI / 2;
+                bonds[b].rotation.y = -bondAngle;
+                bonds[b].scaling.y = bondLen / 4.0;
+            }
+
+            // Update labels
+            bpData.leftLabel.position = leftPos.add(new BABYLON.Vector3(0, 0.45, 0));
+            bpData.rightLabel.position = rightPos.add(new BABYLON.Vector3(0, 0.45, 0));
+        }
+
+        buildBackbones(twist);
+    }
+
+    // Initial build
+    buildBackbones(1.0);
+
+    // Center the helix vertically
+    const helixHeight = (NUM_PAIRS - 1) * HELIX_PITCH;
+    dnaRoot.position.y = -helixHeight / 2 + 2;
+
+    // ── NUCLEOTIDE DETAIL VIEW ──
+    let nucleotideViewActive = false;
+    const nucleotideGroup = new BABYLON.TransformNode("nucleotideView", scene);
+    nucleotideGroup.setEnabled(false);
+
+    // Build an enlarged single nucleotide
+    const nPhosphate = BABYLON.MeshBuilder.CreateSphere("nPhos", { diameter: 0.8, segments: 24 }, scene);
+    nPhosphate.material = matPhosphate;
+    nPhosphate.parent = nucleotideGroup;
+    nPhosphate.position.set(-2.5, 3, 0);
+
+    const nPhosLabel = createLabel("PO₄³⁻", new BABYLON.Vector3(-2.5, 4.0, 0), "#00bcd4");
+    nPhosLabel.parent = nucleotideGroup;
+
+    // Sugar pentagon
+    const nSugar = BABYLON.MeshBuilder.CreateCylinder("nSugar", { diameter: 1.0, height: 0.35, tessellation: 5 }, scene);
+    nSugar.material = matSugar;
+    nSugar.parent = nucleotideGroup;
+    nSugar.position.set(0, 3, 0);
+    nSugar.rotation.x = Math.PI / 2;
+
+    const nSugarLabel = createLabel("Deoxyribose", new BABYLON.Vector3(0, 4.0, 0), "#ff9800");
+    nSugarLabel.parent = nucleotideGroup;
+
+    // Base (adenine as example)
+    const nBase = BABYLON.MeshBuilder.CreateTorus("nBaseRing1", { diameter: 1.2, thickness: 0.25, tessellation: 24 }, scene);
+    nBase.material = matAdenine;
+    nBase.parent = nucleotideGroup;
+    nBase.position.set(2.8, 3, 0);
+    nBase.rotation.x = Math.PI / 2;
+
+    const nBaseFill = BABYLON.MeshBuilder.CreateCylinder("nBaseFill", { diameter: 0.9, height: 0.2, tessellation: 24 }, scene);
+    nBaseFill.material = matAdenine;
+    nBaseFill.parent = nucleotideGroup;
+    nBaseFill.position.set(2.8, 3, 0);
+    nBaseFill.rotation.x = Math.PI / 2;
+
+    const nBase2 = BABYLON.MeshBuilder.CreateTorus("nBaseRing2", { diameter: 1.0, thickness: 0.25, tessellation: 24 }, scene);
+    nBase2.material = matAdenine;
+    nBase2.parent = nucleotideGroup;
+    nBase2.position.set(3.7, 3, 0);
+    nBase2.rotation.x = Math.PI / 2;
+
+    const nBase2Fill = BABYLON.MeshBuilder.CreateCylinder("nBase2Fill", { diameter: 0.7, height: 0.2, tessellation: 24 }, scene);
+    nBase2Fill.material = matAdenine;
+    nBase2Fill.parent = nucleotideGroup;
+    nBase2Fill.position.set(3.7, 3, 0);
+    nBase2Fill.rotation.x = Math.PI / 2;
+
+    const nBaseLabel = createLabel("Base (A)", new BABYLON.Vector3(3.2, 4.2, 0), "#e8504a");
+    nBaseLabel.parent = nucleotideGroup;
+
+    // Connector lines
+    const conn1 = BABYLON.MeshBuilder.CreateCylinder("conn1", { diameter: 0.08, height: 1.5, tessellation: 8 }, scene);
+    conn1.material = pbr("connMat", "#666666", 0.5, 0.3);
+    conn1.parent = nucleotideGroup;
+    conn1.position.set(-1.25, 3, 0);
+    conn1.rotation.z = Math.PI / 2;
+
+    const conn2 = BABYLON.MeshBuilder.CreateCylinder("conn2", { diameter: 0.08, height: 2.0, tessellation: 8 }, scene);
+    conn2.material = pbr("connMat2", "#666666", 0.5, 0.3);
+    conn2.parent = nucleotideGroup;
+    conn2.position.set(1.4, 3, 0);
+    conn2.rotation.z = Math.PI / 2;
+
+    // Nucleotide description label
+    const nDescTex = new BABYLON.DynamicTexture("nDescTex", { width: 512, height: 128 }, scene, false);
+    const nDescCtx = nDescTex.getContext();
+    nDescCtx.clearRect(0, 0, 512, 128);
+    nDescCtx.fillStyle = "rgba(15,7,32,0.8)";
+    nDescCtx.beginPath();
+    nDescCtx.roundRect(4, 4, 504, 120, 12);
+    nDescCtx.fill();
+    nDescCtx.font = "22px Segoe UI, sans-serif";
+    nDescCtx.fillStyle = "#e8e4f4";
+    nDescCtx.textAlign = "center";
+    nDescCtx.fillText("A nucleotide = Phosphate + Sugar + Base", 256, 50);
+    nDescCtx.font = "18px Segoe UI, sans-serif";
+    nDescCtx.fillStyle = "#8a85a8";
+    nDescCtx.fillText("These three components form the building blocks of DNA", 256, 85);
+    nDescTex.update();
+    nDescTex.hasAlpha = true;
+
+    const nDescPlane = BABYLON.MeshBuilder.CreatePlane("nDescPlane", { width: 5, height: 1.25 }, scene);
+    nDescPlane.parent = nucleotideGroup;
+    nDescPlane.position.set(0.5, 1.2, 0);
+    nDescPlane.billboardMode = BABYLON.Mesh.BILLBOARDMODE_ALL;
+    const nDescMat = new BABYLON.StandardMaterial("nDescMat", scene);
+    nDescMat.diffuseTexture = nDescTex;
+    nDescMat.emissiveColor = new BABYLON.Color3(1, 1, 1);
+    nDescMat.disableLighting = true;
+    nDescMat.hasAlpha = true;
+    nDescMat.backFaceCulling = false;
+    nDescPlane.material = nDescMat;
+
+    // ── PICKING / INTERACTION ──
+    let selectedPairIndex = -1;
+
+    scene.onPointerDown = function(evt, pickResult) {
+        if (nucleotideViewActive) return;
+        if (pickResult.hit && pickResult.pickedMesh) {
+            const meta = pickResult.pickedMesh.metadata;
+            if (meta && meta.pairIndex !== undefined) {
+                selectBasePair(meta.pairIndex);
+            }
+        }
+    };
+
+    function selectBasePair(index) {
+        // Remove previous highlight
+        if (selectedPairIndex >= 0) {
+            const prev = allBasePairGroups[selectedPairIndex];
+            removeHighlightRecursive(prev.leftShape);
+            removeHighlightRecursive(prev.rightShape);
+        }
+
+        selectedPairIndex = index;
+        const bpData = allBasePairGroups[index];
+        const bp = bpData.data;
+
+        // Highlight selected bases
+        addHighlightRecursive(bpData.leftShape, BABYLON.Color3.FromHexString(BASE_INFO[bp.left].color));
+        addHighlightRecursive(bpData.rightShape, BABYLON.Color3.FromHexString(BASE_INFO[bp.right].color));
+
+        // Update info panel
+        const infoPanel = document.getElementById('infoPanel');
+        const bpLabel = document.getElementById('bpLabel');
+        const bpInfo = document.getElementById('bpInfo');
+        const bondInfo = document.getElementById('bondInfo');
+
+        infoPanel.classList.remove('hidden');
+
+        const leftInfo = BASE_INFO[bp.left];
+        const rightInfo = BASE_INFO[bp.right];
+
+        bpLabel.innerHTML = `<span style="color:${leftInfo.color}">${leftInfo.name} (${bp.left})</span> — <span style="color:${rightInfo.color}">${rightInfo.name} (${bp.right})</span>`;
+
+        bpInfo.innerHTML = `
+            <strong style="color:${leftInfo.color}">${bp.left}</strong> is a ${leftInfo.type}.<br>
+            <strong style="color:${rightInfo.color}">${bp.right}</strong> is a ${rightInfo.type}.<br><br>
+            ${bp.left === 'A' || bp.left === 'T'
+                ? 'Adenine always pairs with Thymine (A-T) through <strong>2 hydrogen bonds</strong>.'
+                : 'Cytosine always pairs with Guanine (C-G) through <strong>3 hydrogen bonds</strong>.'}
+        `;
+
+        bondInfo.innerHTML = `Hydrogen bonds: <strong>${bp.bonds}</strong> ${bp.bonds === 2 ? '(double line)' : '(triple line)'}`;
+
+        // Hide hint
+        document.getElementById('hintText').classList.remove('show');
+
+        // Save state
+        PortalBridge.save({ selectedPair: index, unwind: unwindFactor }, 0);
+    }
+
+    function addHighlightRecursive(node, color) {
+        if (node.getChildMeshes) {
+            node.getChildMeshes().forEach(m => hl.addMesh(m, color));
+        }
+        if (node.addToHighlightLayer) {
+            hl.addMesh(node, color);
+        }
+    }
+
+    function removeHighlightRecursive(node) {
+        if (node.getChildMeshes) {
+            node.getChildMeshes().forEach(m => hl.removeMesh(m));
+        }
+        if (node.removeFromHighlightLayer) {
+            hl.removeMesh(node);
+        }
+    }
+
+    // ── UI CONTROLS ──
+    const unwindSlider = document.getElementById('unwindSlider');
+    const unwindVal = document.getElementById('unwindVal');
+    const rotateSlider = document.getElementById('rotateSlider');
+    const rotateVal = document.getElementById('rotateVal');
+    const btnBonds = document.getElementById('btnBonds');
+    const btnLabels = document.getElementById('btnLabels');
+    const btnNucleotide = document.getElementById('btnNucleotide');
+    const btnReset = document.getElementById('btnReset');
+
+    let showBonds = true;
+    let showLabels = true;
+
+    unwindSlider.addEventListener('input', function() {
+        const val = parseInt(this.value);
+        unwindVal.textContent = val + '%';
+        unwindFactor = val / 100;
+        updateHelixPositions(unwindFactor);
+    });
+
+    rotateSlider.addEventListener('input', function() {
+        const val = parseInt(this.value);
+        rotateVal.textContent = val + '%';
+        autoRotateSpeed = val * 0.0001;
+    });
+
+    btnBonds.addEventListener('click', function() {
+        showBonds = !showBonds;
+        this.classList.toggle('active', showBonds);
+        allHBonds.forEach(b => b.setEnabled(showBonds));
+    });
+
+    btnLabels.addEventListener('click', function() {
+        showLabels = !showLabels;
+        this.classList.toggle('active', showLabels);
+        allLabels.forEach(l => l.setEnabled(showLabels));
+    });
+
+    btnNucleotide.addEventListener('click', function() {
+        nucleotideViewActive = !nucleotideViewActive;
+        this.classList.toggle('active', nucleotideViewActive);
+
+        if (nucleotideViewActive) {
+            dnaRoot.setEnabled(false);
+            nucleotideGroup.setEnabled(true);
+
+            BABYLON.Animation.CreateAndStartAnimation("camTarget", camera, "target.x", 30, 30, camera.target.x, 0.5, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("camTarget2", camera, "target.y", 30, 30, camera.target.y, 3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("camRadius", camera, "radius", 30, 30, camera.radius, 12, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        } else {
+            dnaRoot.setEnabled(true);
+            nucleotideGroup.setEnabled(false);
+
+            BABYLON.Animation.CreateAndStartAnimation("camTarget", camera, "target.x", 30, 30, camera.target.x, 0, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("camTarget2", camera, "target.y", 30, 30, camera.target.y, 3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+            BABYLON.Animation.CreateAndStartAnimation("camRadius", camera, "radius", 30, 30, camera.radius, 18, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        }
+    });
+
+    btnReset.addEventListener('click', function() {
+        // Reset unwind
+        unwindSlider.value = 100;
+        unwindVal.textContent = '100%';
+        unwindFactor = 1.0;
+        updateHelixPositions(1.0);
+
+        // Reset rotation
+        rotateSlider.value = 20;
+        rotateVal.textContent = '20%';
+        autoRotateSpeed = 0.002;
+
+        // Reset bonds and labels
+        showBonds = true;
+        showLabels = true;
+        btnBonds.classList.add('active');
+        btnLabels.classList.add('active');
+        allHBonds.forEach(b => b.setEnabled(true));
+        allLabels.forEach(l => l.setEnabled(true));
+
+        // Exit nucleotide view
+        if (nucleotideViewActive) {
+            nucleotideViewActive = false;
+            btnNucleotide.classList.remove('active');
+            dnaRoot.setEnabled(true);
+            nucleotideGroup.setEnabled(false);
+        }
+
+        // Deselect
+        if (selectedPairIndex >= 0) {
+            const prev = allBasePairGroups[selectedPairIndex];
+            removeHighlightRecursive(prev.leftShape);
+            removeHighlightRecursive(prev.rightShape);
+            selectedPairIndex = -1;
+        }
+        document.getElementById('infoPanel').classList.add('hidden');
+
+        // Reset camera
+        BABYLON.Animation.CreateAndStartAnimation("camAlpha", camera, "alpha", 30, 40, camera.alpha, -Math.PI / 2, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camBeta", camera, "beta", 30, 40, camera.beta, 1.1, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camRadius", camera, "radius", 30, 40, camera.radius, 18, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+        BABYLON.Animation.CreateAndStartAnimation("camTarget", camera, "target.y", 30, 40, camera.target.y, 3, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    });
+
+    // ── SHOW HINT ──
+    setTimeout(() => {
+        document.getElementById('hintText').classList.add('show');
+        setTimeout(() => document.getElementById('hintText').classList.remove('show'), 4000);
+    }, 2000);
+
+    // ── RENDER LOOP ──
+    scene.onBeforeRenderObservable.add(() => {
+        if (!nucleotideViewActive && autoRotateSpeed > 0) {
+            camera.alpha += autoRotateSpeed;
+        }
+    });
+
+    engine.runRenderLoop(() => scene.render());
+    window.addEventListener('resize', () => engine.resize());
+
+    // ── INTRO CAMERA ANIMATION ──
+    camera.alpha = -Math.PI;
+    camera.radius = 30;
+    BABYLON.Animation.CreateAndStartAnimation("introAlpha", camera, "alpha", 30, 60, -Math.PI, -Math.PI / 2, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    BABYLON.Animation.CreateAndStartAnimation("introRadius", camera, "radius", 30, 60, 30, 18, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT);
+    </script>
+</body>
+</html>

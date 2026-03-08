@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deriving the Change in Ability Equation — Honors Physics</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #0f0720;
+            --bg-secondary: #1a0a3e;
+            --bg-tertiary: #0d1f4a;
+            --text-primary: #e8e4f4;
+            --text-muted: #8a85a8;
+            --accent: #5b9cf6;
+            --highlight: #22d47a;
+            --warning: #f5a623;
+            --danger: #e8504a;
+            --increase: #22d47a;
+            --decrease: #e8504a;
+            --nochange: #f5a623;
+        }
+
+        .reveal {
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .reveal { position: relative; }
+        .ambient-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .reveal .slides { position: relative; z-index: 2; }
+
+        .ambient-overlay .orb-1,
+        .ambient-overlay .orb-2 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            width: 50vw; height: 50vh;
+        }
+        .ambient-overlay .orb-1 {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
+            top: -10vh; left: -10vw;
+            animation: orbFloat1 30s ease-in-out infinite;
+        }
+        .ambient-overlay .orb-2 {
+            background: radial-gradient(circle, var(--highlight) 0%, transparent 65%);
+            bottom: -10vh; right: -10vw;
+            animation: orbFloat2 25s ease-in-out infinite;
+        }
+        @keyframes orbFloat1 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(15vw, 10vh); }
+            66% { opacity: 0.15; transform: translate(-5vw, 20vh); }
+        }
+        @keyframes orbFloat2 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(-10vw, -15vh); }
+            66% { opacity: 0.15; transform: translate(10vw, -5vh); }
+        }
+
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            text-transform: none;
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 600; font-size: 2.2em; }
+        .reveal h3 { font-weight: 600; }
+
+        .reveal .slide-number { color: var(--text-muted); font-size: 0.6em; }
+
+        /* Pattern cards */
+        .pattern-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            padding: 1em 1.4em;
+            margin: 0.4em 0;
+            backdrop-filter: blur(4px);
+            text-align: left;
+            font-size: 0.85em;
+            line-height: 1.5;
+        }
+        .pattern-card.increase { border-left: 5px solid var(--increase); }
+        .pattern-card.decrease { border-left: 5px solid var(--decrease); }
+        .pattern-card.nochange { border-left: 5px solid var(--nochange); }
+        .pattern-card.amount { border-left: 5px solid var(--accent); }
+
+        .pattern-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.3em;
+        }
+
+        /* Task box */
+        .task-box {
+            background: rgba(91, 156, 246, 0.12);
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 1.2em 1.6em;
+            margin: 0.8em auto;
+            max-width: 85%;
+            text-align: center;
+        }
+        .task-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1em;
+            color: var(--accent);
+            margin-bottom: 0.4em;
+        }
+
+        /* Arrow diagrams */
+        .arrow-diagram {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2em;
+            margin: 0.8em 0;
+        }
+        .arrow-diagram svg { filter: drop-shadow(0 0 8px rgba(0,0,0,0.4)); }
+
+        /* Two-column */
+        .two-col {
+            display: flex;
+            gap: 2em;
+            align-items: center;
+            justify-content: center;
+        }
+        .two-col > div { flex: 1; }
+
+        /* Comparison layout */
+        .compare-row {
+            display: flex;
+            gap: 1.5em;
+            justify-content: center;
+            align-items: stretch;
+            margin: 0.6em 0;
+        }
+        .compare-box {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 1em 1.2em;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Equation build */
+        .eq-container {
+            background: rgba(91, 156, 246, 0.08);
+            border: 2px solid rgba(91, 156, 246, 0.3);
+            border-radius: 16px;
+            padding: 1em 2em;
+            margin: 0.6em auto;
+            display: inline-block;
+        }
+        .eq-big {
+            font-size: 2.4em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        .eq-huge {
+            font-size: 3em;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        /* Result glow */
+        .result-glow {
+            background: linear-gradient(135deg, rgba(34,212,122,0.15), rgba(91,156,246,0.15));
+            border: 2px solid var(--highlight);
+            border-radius: 20px;
+            padding: 1.2em 2em;
+            box-shadow: 0 0 40px rgba(34,212,122,0.2);
+            display: inline-block;
+        }
+
+        /* Check marks */
+        .check-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5em 1.5em;
+            max-width: 900px;
+            margin: 0.6em auto;
+            text-align: left;
+            font-size: 0.82em;
+        }
+        .check-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5em;
+            padding: 0.5em 0.7em;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+        }
+        .check-icon { font-size: 1.3em; flex-shrink: 0; }
+
+        /* Candidate equations */
+        .candidate-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+            max-width: 1000px;
+            margin: 0.8em auto;
+        }
+        .candidate {
+            background: rgba(255,255,255,0.04);
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 1em;
+            text-align: center;
+            transition: all 0.3s;
+        }
+        .candidate.eliminated {
+            opacity: 0.35;
+            border-color: var(--danger);
+            text-decoration: line-through;
+        }
+        .candidate.winner {
+            border-color: var(--highlight);
+            background: rgba(34,212,122,0.1);
+            box-shadow: 0 0 20px rgba(34,212,122,0.15);
+        }
+
+        /* Scenario visual */
+        .scenario-visual {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 1em;
+            display: inline-block;
+        }
+
+        /* Summary table */
+        .summary-table {
+            border-collapse: separate;
+            border-spacing: 0;
+            margin: 0.5em auto;
+            font-size: 0.72em;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .summary-table th {
+            background: rgba(91,156,246,0.2);
+            padding: 0.6em 1em;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            text-align: center;
+        }
+        .summary-table td {
+            background: rgba(255,255,255,0.03);
+            padding: 0.5em 0.8em;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            text-align: center;
+        }
+
+        /* Whiteboard prompt */
+        .wb-prompt {
+            background: linear-gradient(135deg, rgba(245,166,35,0.12), rgba(245,166,35,0.05));
+            border: 2px dashed var(--warning);
+            border-radius: 16px;
+            padding: 1em 1.6em;
+            margin: 0.6em auto;
+            max-width: 80%;
+        }
+        .wb-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: var(--warning);
+            font-size: 0.9em;
+            margin-bottom: 0.3em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="ambient-overlay">
+            <div class="orb-1"></div>
+            <div class="orb-2"></div>
+        </div>
+        <div class="slides">
+
+            <!-- SLIDE 1: Title -->
+            <section data-background-gradient="radial-gradient(ellipse at 30% 40%, #1a0a3e, #0f0720)">
+                <h1 style="font-size: 2.8em; line-height: 1.15;">Turning Our Crazy Idea<br>into a <span style="color: var(--accent);">Quantity</span><br>We Can <span style="color: var(--highlight);">Measure</span></h1>
+                <p style="color: var(--text-muted); font-size: 1.1em; margin-top: 1.5em;">Honors Physics &mdash; Mr. Porter</p>
+                <aside class="notes">
+                    This is the culmination of our investigation into ability. Students have the 5 patterns from their observations. Now they need to find the simplest math that captures all 5 patterns at once. Let them struggle with it — this is where the real thinking happens.
+                </aside>
+            </section>
+
+            <!-- SLIDE 2: Where we are -->
+            <section>
+                <h2>Where We Are</h2>
+                <p style="font-size: 1.2em; color: var(--text-muted); margin-bottom: 0.8em;">From our investigations, we discovered <span style="color: var(--accent);">five patterns</span>:</p>
+                <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; flex-wrap: wrap; max-width: 1100px; margin: 0 auto;">
+                    <div style="background: rgba(34,212,122,0.1); border: 1px solid var(--increase); border-radius: 12px; padding: 0.6em 1.2em; font-size: 0.85em;">
+                        <span style="color: var(--increase); font-weight: 600;">3 Direction Patterns</span>
+                    </div>
+                    <div style="background: rgba(91,156,246,0.1); border: 1px solid var(--accent); border-radius: 12px; padding: 0.6em 1.2em; font-size: 0.85em;">
+                        <span style="color: var(--accent); font-weight: 600;">2 Amount Patterns</span>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1.15em; margin-top: 1em;">Today's challenge: find <strong style="color: var(--warning);">one mathematical statement</strong><br>that agrees with <em>all five</em>.</p>
+                <aside class="notes">
+                    Quick recap. We have 5 crazy ideas from our observations. Three tell us about direction — when ability increases, decreases, or stays the same. Two tell us about amount — how force strength and displacement distance affect how much ability changes. Today we're going to turn all 5 into one equation.
+                </aside>
+            </section>
+
+            <!-- SLIDE 3: Direction Pattern 1 — Increase -->
+            <section>
+                <div class="pattern-label" style="color: var(--increase);">Direction Pattern 1</div>
+                <h2 style="font-size: 1.8em;">Increasing Ability</h2>
+                <div class="two-col" style="margin-top: 0.6em;">
+                    <div>
+                        <div class="pattern-card increase">
+                            In order to <strong style="color: var(--increase);">increase</strong> the potential ability or ability stored in a system, an external system has to exert a <strong style="color: var(--danger);">force</strong> in the <strong style="color: var(--highlight);">same direction</strong> as the <strong style="color: var(--warning);">displacement</strong> of things in the system.
+                        </div>
+                    </div>
+                    <div class="fragment fade-up">
+                        <div class="scenario-visual">
+                            <svg width="400" height="220" viewBox="0 0 400 220">
+                                <!-- Ground -->
+                                <rect x="0" y="170" width="400" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                                <!-- Cart body -->
+                                <rect x="100" y="120" width="120" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
+                                <text x="160" y="150" fill="var(--text-primary)" font-size="14" text-anchor="middle" font-family="Inter">system</text>
+                                <!-- Wheels -->
+                                <circle cx="125" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                                <circle cx="195" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                                <!-- Force arrow -->
+                                <line x1="240" y1="145" x2="350" y2="145" stroke="var(--danger)" stroke-width="4"/>
+                                <polygon points="350,135 370,145 350,155" fill="var(--danger)"/>
+                                <text x="305" y="132" fill="var(--danger)" font-size="18" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
+                                <!-- Displacement arrow -->
+                                <line x1="100" y1="200" x2="280" y2="200" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
+                                <polygon points="280,193 296,200 280,207" fill="var(--warning)"/>
+                                <text x="190" y="218" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
+                                <!-- Same direction indicator -->
+                                <text x="330" y="200" fill="var(--highlight)" font-size="30" text-anchor="middle" font-weight="800">&#10230;</text>
+                                <text x="330" y="218" fill="var(--highlight)" font-size="12" text-anchor="middle" font-family="Inter">same direction</text>
+                                <!-- Result -->
+                                <text x="160" y="108" fill="var(--increase)" font-size="16" text-anchor="middle" font-weight="600" font-family="Outfit">ability INCREASES</text>
+                                <text x="160" y="88" fill="var(--increase)" font-size="28" text-anchor="middle">&#9650;</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Start with the first direction pattern. Show the visual — force and displacement point the same way, and ability increases. This is what we saw with the brick being lifted, the launcher being pulled back, and the cart being pushed forward. The arrows always pointed the same way when ability went up.
+                </aside>
+            </section>
+
+            <!-- SLIDE 4: Direction Pattern 2 — Decrease -->
+            <section>
+                <div class="pattern-label" style="color: var(--decrease);">Direction Pattern 2</div>
+                <h2 style="font-size: 1.8em;">Decreasing Ability</h2>
+                <div class="two-col" style="margin-top: 0.6em;">
+                    <div>
+                        <div class="pattern-card decrease">
+                            In order to <strong style="color: var(--decrease);">decrease</strong> the potential ability or ability stored in a system, an external system has to exert a <strong style="color: var(--danger);">force</strong> in the <strong style="color: var(--highlight);">opposite direction</strong> as the <strong style="color: var(--warning);">displacement</strong> of things in the system.
+                        </div>
+                    </div>
+                    <div class="fragment fade-up">
+                        <div class="scenario-visual">
+                            <svg width="400" height="220" viewBox="0 0 400 220">
+                                <rect x="0" y="170" width="400" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                                <rect x="150" y="120" width="120" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
+                                <text x="210" y="150" fill="var(--text-primary)" font-size="14" text-anchor="middle" font-family="Inter">system</text>
+                                <circle cx="175" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                                <circle cx="245" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                                <!-- Force arrow pointing LEFT -->
+                                <line x1="150" y1="145" x2="50" y2="145" stroke="var(--danger)" stroke-width="4"/>
+                                <polygon points="50,135 30,145 50,155" fill="var(--danger)"/>
+                                <text x="100" y="132" fill="var(--danger)" font-size="18" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
+                                <!-- Displacement arrow pointing RIGHT -->
+                                <line x1="150" y1="200" x2="320" y2="200" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
+                                <polygon points="320,193 336,200 320,207" fill="var(--warning)"/>
+                                <text x="240" y="218" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
+                                <!-- Opposite direction indicator -->
+                                <text x="70" y="200" fill="var(--decrease)" font-size="22" text-anchor="middle" font-weight="800">&#8644;</text>
+                                <text x="70" y="218" fill="var(--decrease)" font-size="11" text-anchor="middle" font-family="Inter">opposite</text>
+                                <!-- Result -->
+                                <text x="210" y="108" fill="var(--decrease)" font-size="16" text-anchor="middle" font-weight="600" font-family="Outfit">ability DECREASES</text>
+                                <text x="210" y="88" fill="var(--decrease)" font-size="28" text-anchor="middle">&#9660;</text>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Second direction pattern. Now force and displacement point opposite ways — like when you lower a brick (force up from your hand, displacement down) or when friction slows the cart (force backward, displacement forward). Ability goes down.
+                </aside>
+            </section>
+
+            <!-- SLIDE 5: Direction Pattern 3 — No Change -->
+            <section>
+                <div class="pattern-label" style="color: var(--nochange);">Direction Pattern 3</div>
+                <h2 style="font-size: 1.8em;">No Change in Ability</h2>
+                <div class="pattern-card nochange" style="max-width: 80%; margin: 0.5em auto; font-size: 0.82em;">
+                    An external system <strong style="color: var(--nochange);">fails to change</strong> the potential ability or ability stored in a system if it <strong>cannot displace</strong> things in the system or if it exerts a <strong style="color: var(--danger);">force</strong> that is <strong style="color: var(--highlight);">perpendicular</strong> to the <strong style="color: var(--warning);">displacement</strong> of things in the system.
+                </div>
+                <div class="fragment fade-up" style="display: flex; gap: 2em; justify-content: center; margin-top: 0.6em;">
+                    <div class="scenario-visual">
+                        <svg width="260" height="200" viewBox="0 0 260 200">
+                            <text x="130" y="20" fill="var(--text-muted)" font-size="13" text-anchor="middle" font-family="Inter">perpendicular</text>
+                            <rect x="0" y="150" width="260" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                            <rect x="70" y="100" width="100" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
+                            <circle cx="95" cy="150" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                            <circle cx="145" cy="150" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                            <!-- Force UP -->
+                            <line x1="120" y1="98" x2="120" y2="40" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="112,40 120,22 128,40" fill="var(--danger)"/>
+                            <text x="138" y="55" fill="var(--danger)" font-size="16" font-weight="600" font-family="Inter">F</text>
+                            <!-- Displacement RIGHT -->
+                            <line x1="70" y1="175" x2="200" y2="175" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
+                            <polygon points="200,168 216,175 200,182" fill="var(--warning)"/>
+                            <text x="145" y="195" fill="var(--warning)" font-size="14" text-anchor="middle" font-family="Inter">&#916;x</text>
+                            <!-- 90 degree symbol -->
+                            <rect x="113" y="90" width="14" height="14" fill="none" stroke="var(--nochange)" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="scenario-visual">
+                        <svg width="220" height="200" viewBox="0 0 220 200">
+                            <text x="110" y="20" fill="var(--text-muted)" font-size="13" text-anchor="middle" font-family="Inter">no displacement</text>
+                            <rect x="0" y="150" width="220" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                            <rect x="50" y="100" width="100" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
+                            <!-- Force RIGHT -->
+                            <line x1="160" y1="125" x2="195" y2="125" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="195,117 210,125 195,133" fill="var(--danger)"/>
+                            <text x="185" y="112" fill="var(--danger)" font-size="16" font-weight="600" font-family="Inter">F</text>
+                            <!-- No displacement - X -->
+                            <text x="100" y="185" fill="var(--nochange)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x = 0</text>
+                        </svg>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="color: var(--nochange); font-size: 1.1em; margin-top: 0.5em;">In both cases: <strong>&#916;ability = 0</strong></p>
+                <aside class="notes">
+                    Two ways ability doesn't change: 1) the force is perpendicular to the displacement (like the rail pushing up on the cart rolling horizontally — those are at 90 degrees), or 2) there's no displacement at all (you push on a wall but nothing moves). Both give zero change in ability.
+                </aside>
+            </section>
+
+            <!-- SLIDE 6: Amount Pattern 4 — Force matters -->
+            <section>
+                <div class="pattern-label" style="color: var(--accent);">Amount Pattern 4</div>
+                <h2 style="font-size: 1.8em;">Stronger Force = More Ability</h2>
+                <div class="pattern-card amount" style="max-width: 80%; margin: 0.4em auto; font-size: 0.82em;">
+                    When an external system displaces a system the <strong>same amount</strong>, the system gains <strong style="color: var(--increase);">more ability</strong> when the <strong style="color: var(--danger);">force</strong> it exerts on the system is <strong style="color: var(--accent);">stronger</strong>.
+                </div>
+                <div class="fragment fade-up compare-row" style="max-width: 900px; margin: 0.6em auto;">
+                    <div class="compare-box">
+                        <svg width="300" height="130" viewBox="0 0 300 130">
+                            <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="60" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Small force -->
+                            <line x1="140" y1="82" x2="195" y2="82" stroke="var(--danger)" stroke-width="3"/>
+                            <polygon points="195,76 207,82 195,88" fill="var(--danger)"/>
+                            <text x="175" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">F<tspan font-size="9" dy="2">small</tspan></text>
+                            <!-- Displacement -->
+                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
+                            <polygon points="180,113 190,118 180,123" fill="var(--warning)"/>
+                            <text x="120" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">same &#916;x</text>
+                        </svg>
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Small force &rarr; <span style="color: var(--increase);">some</span> ability gained</p>
+                    </div>
+                    <div class="compare-box" style="border-color: var(--accent);">
+                        <svg width="300" height="130" viewBox="0 0 300 130">
+                            <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="60" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Big force -->
+                            <line x1="140" y1="82" x2="250" y2="82" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="250,73 268,82 250,91" fill="var(--danger)"/>
+                            <text x="200" y="70" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">F<tspan font-size="10" dy="2">BIG</tspan></text>
+                            <!-- Same displacement -->
+                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
+                            <polygon points="180,113 190,118 180,123" fill="var(--warning)"/>
+                            <text x="120" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">same &#916;x</text>
+                        </svg>
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Bigger force &rarr; <span style="color: var(--increase); font-weight: 600;">MORE</span> ability gained</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    This is what students observed with the meter stick and cart. Same displacement, but when you push harder, the cart gains more ability. Force and ability gained are directly related.
+                </aside>
+            </section>
+
+            <!-- SLIDE 7: Amount Pattern 5 — Displacement matters -->
+            <section>
+                <div class="pattern-label" style="color: var(--accent);">Amount Pattern 5</div>
+                <h2 style="font-size: 1.8em;">More Displacement = More Ability</h2>
+                <div class="pattern-card amount" style="max-width: 80%; margin: 0.4em auto; font-size: 0.82em;">
+                    When an external system exerts a <strong>same strength force</strong> on a system, the system gains <strong style="color: var(--increase);">more ability</strong> when it <strong style="color: var(--warning);">displaces</strong> the system <strong style="color: var(--accent);">further</strong>.
+                </div>
+                <div class="fragment fade-up compare-row" style="max-width: 900px; margin: 0.6em auto;">
+                    <div class="compare-box">
+                        <svg width="300" height="130" viewBox="0 0 300 130">
+                            <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="90" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Same force -->
+                            <line x1="170" y1="82" x2="235" y2="82" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="235,75 250,82 235,89" fill="var(--danger)"/>
+                            <text x="205" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">same F</text>
+                            <!-- Small displacement -->
+                            <line x1="90" y1="118" x2="155" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
+                            <polygon points="155,113 165,118 155,123" fill="var(--warning)"/>
+                            <text x="125" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">&#916;x<tspan font-size="8" dy="1">small</tspan></text>
+                        </svg>
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Short push &rarr; <span style="color: var(--increase);">some</span> ability gained</p>
+                    </div>
+                    <div class="compare-box" style="border-color: var(--accent);">
+                        <svg width="300" height="130" viewBox="0 0 300 130">
+                            <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="30" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Same force -->
+                            <line x1="110" y1="82" x2="175" y2="82" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="175,75 190,82 175,89" fill="var(--danger)"/>
+                            <text x="145" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">same F</text>
+                            <!-- Big displacement -->
+                            <line x1="30" y1="118" x2="260" y2="118" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="260,112 274,118 260,124" fill="var(--warning)"/>
+                            <text x="150" y="130" fill="var(--warning)" font-size="13" text-anchor="middle" font-weight="600" font-family="Inter">&#916;x<tspan font-size="9" dy="1">BIG</tspan></text>
+                        </svg>
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Long push &rarr; <span style="color: var(--increase); font-weight: 600;">MORE</span> ability gained</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Same experiment with meter stick and cart, but now force is constant and we vary displacement. Push the cart further with the same force, and it gains more ability. Displacement and ability gained are directly related too.
+                </aside>
+            </section>
+
+            <!-- SLIDE 8: The Challenge -->
+            <section data-transition="zoom" data-background-gradient="radial-gradient(ellipse at 50% 50%, #1a0a3e, #0f0720)">
+                <h2 style="font-size: 2.5em; color: var(--warning);">The Challenge</h2>
+                <div class="task-box" style="margin-top: 0.8em;">
+                    <div class="task-label">TASK</div>
+                    <p style="font-size: 1.2em; line-height: 1.5;">Think of the <em>simplest</em> mathematical statement<br>which agrees with <strong style="color: var(--warning);">ALL FIVE</strong> of our crazy ideas.</p>
+                </div>
+                <div class="fragment fade-up wb-prompt" style="margin-top: 0.8em;">
+                    <div class="wb-label">WHITEBOARD</div>
+                    <p style="font-size: 1em; margin: 0;">Write your mathematical statement on your group's whiteboard.<br>Prepare to <strong>defend</strong> your mathematical statement.</p>
+                </div>
+                <aside class="notes">
+                    This is the big moment. Give groups 4-5 minutes. Circulate and listen. Don't correct yet — let them struggle. Some will get close. Some will try addition. Some will try F times delta-x. All of that is valuable. After time is up, we'll test their ideas together against all 5 patterns.
+                </aside>
+            </section>
+
+            <!-- SLIDE 9: What do we know? -->
+            <section>
+                <h2>What Do We Know?</h2>
+                <p style="color: var(--text-muted); font-size: 1em;">Let's start simple. What <em>quantities</em> affect the change in ability?</p>
+                <div class="fragment fade-up" style="margin: 0.8em 0;">
+                    <p style="font-size: 1.1em;">From patterns 4 &amp; 5, the change in ability depends on:</p>
+                </div>
+                <div class="fragment fade-up compare-row" style="max-width: 700px; margin: 0.8em auto;">
+                    <div class="compare-box" style="border-color: var(--danger);">
+                        <p style="font-size: 2em; margin: 0; color: var(--danger); font-family: 'Outfit'; font-weight: 800;">F</p>
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0;">Force exerted<br>by external system</p>
+                    </div>
+                    <div style="display: flex; align-items: center; font-size: 1.6em; color: var(--text-muted);">and</div>
+                    <div class="compare-box" style="border-color: var(--warning);">
+                        <p style="font-size: 2em; margin: 0; color: var(--warning); font-family: 'Outfit'; font-weight: 800;">&#916;x</p>
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0;">Displacement<br>of things in the system</p>
+                    </div>
+                </div>
+                <div class="fragment fade-up eq-container" style="margin-top: 0.8em;">
+                    <span class="eq-big">$\Delta\text{ability} = f(\vec{F},\ \Delta\vec{x})$</span>
+                </div>
+                <p class="fragment fade-up" style="font-size: 0.9em; color: var(--text-muted); margin-top: 0.6em;">But <em>how</em> do F and &#916;x combine?</p>
+                <aside class="notes">
+                    Guide students to recognize that the two quantities that matter are F and delta-x. We write this as "change in ability is some function of F and delta-x". The question is: what's the function? How do they combine? Do we add them? Multiply them? Something else?
+                </aside>
+            </section>
+
+            <!-- SLIDE 10: Testing Candidates -->
+            <section>
+                <h2 style="font-size: 1.9em;">How Do F and &#916;x Combine?</h2>
+                <p style="color: var(--text-muted); font-size: 0.9em;">Let's consider the simplest possibilities:</p>
+                <div class="candidate-grid fragment fade-up">
+                    <div class="candidate" id="cand-add">
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Addition?</p>
+                        <p style="font-size: 1.6em; margin: 0; font-family: 'Outfit'; font-weight: 600;">$\Delta\text{ability} = F + \Delta x$</p>
+                    </div>
+                    <div class="candidate" id="cand-mult">
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Multiplication?</p>
+                        <p style="font-size: 1.6em; margin: 0; font-family: 'Outfit'; font-weight: 600;">$\Delta\text{ability} = F \cdot \Delta x$</p>
+                    </div>
+                    <div class="candidate" id="cand-div">
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Division?</p>
+                        <p style="font-size: 1.6em; margin: 0; font-family: 'Outfit'; font-weight: 600;">$\Delta\text{ability} = \dfrac{F}{\Delta x}$</p>
+                    </div>
+                    <div class="candidate" id="cand-sub">
+                        <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Subtraction?</p>
+                        <p style="font-size: 1.6em; margin: 0; font-family: 'Outfit'; font-weight: 600;">$\Delta\text{ability} = F - \Delta x$</p>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1.1em; color: var(--accent); margin-top: 0.6em;">Let's test each against our <strong>5 patterns</strong>.</p>
+                <aside class="notes">
+                    Write all four candidates on the board. Ask students: which of these did your group come up with? Now we need to test them. A good equation has to agree with ALL 5 crazy ideas, not just some. Let's be scientists and test them systematically.
+                </aside>
+            </section>
+
+            <!-- SLIDE 11: Test — No displacement (Pattern 3) -->
+            <section>
+                <h2 style="font-size: 1.7em;">Test: What If &#916;x = 0?</h2>
+                <p style="color: var(--text-muted); font-size: 0.95em;">Pattern 3 says: if you can't displace things, ability <strong style="color: var(--nochange);">doesn't change</strong>.</p>
+                <p style="color: var(--text-muted); font-size: 0.95em;">So &#916;ability must equal <strong>0</strong> when &#916;x = 0.</p>
+                <div style="margin-top: 0.6em;">
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.4em 0;">
+                        <div class="candidate eliminated" style="padding: 0.6em 1.2em; display: inline-block;">
+                            <span style="font-size: 1.1em;">$F + 0 = F \neq 0$</span>
+                        </div>
+                        <span style="color: var(--danger); font-size: 1.5em;">&#10007;</span>
+                        <span style="color: var(--text-muted); font-size: 0.85em;">Addition fails!</span>
+                    </div>
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.4em 0;">
+                        <div class="candidate winner" style="padding: 0.6em 1.2em; display: inline-block;">
+                            <span style="font-size: 1.1em;">$F \cdot 0 = 0$</span>
+                        </div>
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <span style="color: var(--highlight); font-size: 0.85em;">Multiplication works!</span>
+                    </div>
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.4em 0;">
+                        <div class="candidate eliminated" style="padding: 0.6em 1.2em; display: inline-block;">
+                            <span style="font-size: 1.1em;">$\frac{F}{0}$ = undefined</span>
+                        </div>
+                        <span style="color: var(--danger); font-size: 1.5em;">&#10007;</span>
+                        <span style="color: var(--text-muted); font-size: 0.85em;">Division breaks!</span>
+                    </div>
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.4em 0;">
+                        <div class="candidate eliminated" style="padding: 0.6em 1.2em; display: inline-block;">
+                            <span style="font-size: 1.1em;">$F - 0 = F \neq 0$</span>
+                        </div>
+                        <span style="color: var(--danger); font-size: 1.5em;">&#10007;</span>
+                        <span style="color: var(--text-muted); font-size: 0.85em;">Subtraction fails!</span>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Plug in delta-x = 0 and see what survives. Addition gives F, which isn't zero — fails. Multiplication gives zero — passes! Division by zero is undefined — fails hard. Subtraction gives F — also fails. Only multiplication survives this test. But we still need to check the remaining patterns.
+                </aside>
+            </section>
+
+            <!-- SLIDE 12: Multiplication survives -->
+            <section data-transition="fade">
+                <h2 style="font-size: 2em;">Only One Candidate Remains</h2>
+                <div class="eq-container" style="margin: 1em auto;">
+                    <span class="eq-big">$\Delta\text{ability} = F \cdot \Delta x$</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 1em; margin-top: 1em;">But does it agree with <em>all five</em> patterns?</p>
+                <div class="fragment fade-up task-box" style="margin-top: 0.8em;">
+                    <div class="task-label">TASK</div>
+                    <p style="font-size: 1em;">With your group, test $F \cdot \Delta x$ against <strong>each</strong> of the 5 patterns.<br>Does it agree with every single one?</p>
+                </div>
+                <aside class="notes">
+                    Give groups 2-3 minutes to verify F times delta-x against all 5 patterns. They should check: same direction gives positive, opposite gives negative, perpendicular gives zero, bigger F gives bigger result, bigger delta-x gives bigger result. Walk around and check their reasoning.
+                </aside>
+            </section>
+
+            <!-- SLIDE 13: Verification — Direction Patterns -->
+            <section>
+                <h2 style="font-size: 1.8em;">Checking Direction Patterns</h2>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 0.5em;">How does $F \cdot \Delta x$ handle <strong>direction</strong>?</p>
+                <div class="fragment fade-up" style="margin: 0.4em 0;">
+                    <div style="display: flex; gap: 1em; justify-content: center; align-items: center;">
+                        <div style="display: flex; gap: 0.5em; align-items: center;">
+                            <svg width="80" height="40" viewBox="0 0 80 40">
+                                <line x1="5" y1="13" x2="55" y2="13" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="55,7 70,13 55,19" fill="var(--danger)"/>
+                                <line x1="5" y1="30" x2="55" y2="30" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="55,25 68,30 55,35" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em;">Same direction:</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.2em;">$(+) \cdot (+) = $ <strong style="color: var(--increase);">positive</strong></span>
+                        </div>
+                        <span style="font-size: 1em;">&#8594; ability <strong style="color: var(--increase);">increases</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                </div>
+                <div class="fragment fade-up" style="margin: 0.4em 0;">
+                    <div style="display: flex; gap: 1em; justify-content: center; align-items: center;">
+                        <div style="display: flex; gap: 0.5em; align-items: center;">
+                            <svg width="80" height="40" viewBox="0 0 80 40">
+                                <line x1="70" y1="13" x2="20" y2="13" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="20,7 5,13 20,19" fill="var(--danger)"/>
+                                <line x1="5" y1="30" x2="55" y2="30" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="55,25 68,30 55,35" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em;">Opposite direction:</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.2em;">$(-) \cdot (+) = $ <strong style="color: var(--decrease);">negative</strong></span>
+                        </div>
+                        <span style="font-size: 1em;">&#8594; ability <strong style="color: var(--decrease);">decreases</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                </div>
+                <div class="fragment fade-up" style="margin: 0.4em 0;">
+                    <div style="display: flex; gap: 1em; justify-content: center; align-items: center;">
+                        <div style="display: flex; gap: 0.5em; align-items: center;">
+                            <svg width="80" height="40" viewBox="0 0 80 40">
+                                <line x1="40" y1="35" x2="40" y2="6" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="34,6 40,0 46,6" fill="var(--danger)"/>
+                                <line x1="5" y1="30" x2="55" y2="30" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="55,25 68,30 55,35" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em;">Perpendicular:</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.2em;">F has <strong style="color: var(--nochange);">no component</strong> along &#916;x</span>
+                        </div>
+                        <span style="font-size: 1em;">&#8594; ability <strong style="color: var(--nochange);">unchanged</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Walk through each direction pattern. Same direction means both are positive (or both negative), so the product is positive — ability increases. Opposite means one is positive and one negative, product is negative — ability decreases. Perpendicular means the force has no component along the displacement, so the product is zero — no change. All three direction patterns check out!
+                </aside>
+            </section>
+
+            <!-- SLIDE 14: Verification — Amount Patterns -->
+            <section>
+                <h2 style="font-size: 1.8em;">Checking Amount Patterns</h2>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 0.6em;">How does $F \cdot \Delta x$ handle <strong>amounts</strong>?</p>
+                <div class="fragment fade-up" style="margin: 0.6em 0;">
+                    <div style="display: flex; gap: 1.5em; justify-content: center; align-items: center;">
+                        <div class="compare-box" style="max-width: 350px;">
+                            <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Same &#916;x, stronger F:</p>
+                            <p style="font-size: 1.3em; margin: 0;">$\underbrace{F_{\text{big}}}_{\uparrow} \cdot \Delta x = \text{bigger result}$</p>
+                        </div>
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <span style="font-size: 0.9em;">More ability gained</span>
+                    </div>
+                </div>
+                <div class="fragment fade-up" style="margin: 0.6em 0;">
+                    <div style="display: flex; gap: 1.5em; justify-content: center; align-items: center;">
+                        <div class="compare-box" style="max-width: 350px;">
+                            <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Same F, further &#916;x:</p>
+                            <p style="font-size: 1.3em; margin: 0;">$F \cdot \underbrace{\Delta x_{\text{big}}}_{\uparrow} = \text{bigger result}$</p>
+                        </div>
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <span style="font-size: 0.9em;">More ability gained</span>
+                    </div>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 1em;">
+                    <p style="font-size: 1.3em; color: var(--highlight); font-weight: 600;">Multiplication captures both amount patterns!</p>
+                </div>
+                <aside class="notes">
+                    Amount check: if you keep delta-x constant and make F bigger, F times delta-x gives a bigger number — more ability. If you keep F constant and make delta-x bigger, same thing — bigger result. Multiplication naturally captures the idea that both quantities contribute proportionally to the change in ability.
+                </aside>
+            </section>
+
+            <!-- SLIDE 15: All 5 pass -->
+            <section data-transition="zoom">
+                <h2 style="font-size: 1.8em; color: var(--highlight);">All Five Patterns &#10003;</h2>
+                <table class="summary-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 60px;">#</th>
+                            <th>Pattern</th>
+                            <th style="width: 200px;">$F \cdot \Delta x$ says...</th>
+                            <th style="width: 80px;">Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="fragment fade-up">
+                            <td style="color: var(--increase); font-weight: 600;">1</td>
+                            <td style="text-align: left;">Same direction &#8594; increase</td>
+                            <td>$(+)(+) > 0$</td>
+                            <td style="color: var(--highlight);">&#10003;</td>
+                        </tr>
+                        <tr class="fragment fade-up">
+                            <td style="color: var(--decrease); font-weight: 600;">2</td>
+                            <td style="text-align: left;">Opposite direction &#8594; decrease</td>
+                            <td>$(-)(+) < 0$</td>
+                            <td style="color: var(--highlight);">&#10003;</td>
+                        </tr>
+                        <tr class="fragment fade-up">
+                            <td style="color: var(--nochange); font-weight: 600;">3</td>
+                            <td style="text-align: left;">Perpendicular or no &#916;x &#8594; no change</td>
+                            <td>$= 0$</td>
+                            <td style="color: var(--highlight);">&#10003;</td>
+                        </tr>
+                        <tr class="fragment fade-up">
+                            <td style="color: var(--accent); font-weight: 600;">4</td>
+                            <td style="text-align: left;">Same &#916;x, bigger F &#8594; more ability</td>
+                            <td>$F_{\uparrow} \cdot \Delta x = \text{bigger}$</td>
+                            <td style="color: var(--highlight);">&#10003;</td>
+                        </tr>
+                        <tr class="fragment fade-up">
+                            <td style="color: var(--accent); font-weight: 600;">5</td>
+                            <td style="text-align: left;">Same F, bigger &#916;x &#8594; more ability</td>
+                            <td>$F \cdot \Delta x_{\uparrow} = \text{bigger}$</td>
+                            <td style="color: var(--highlight);">&#10003;</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <aside class="notes">
+                    Build the table row by row. Each pattern passes. This is a powerful moment — a single simple equation captures all five observations. Let students see how elegant this is. Pause and celebrate the discovery.
+                </aside>
+            </section>
+
+            <!-- SLIDE 16: The Equation - Big reveal -->
+            <section data-transition="zoom" data-background-gradient="radial-gradient(ellipse at 50% 40%, #1a1058, #0f0720)">
+                <h2 style="font-size: 1.6em; color: var(--text-muted); margin-bottom: 0.6em;">Our Mathematical Statement</h2>
+                <div class="result-glow">
+                    <p class="eq-huge" style="margin: 0;">$\Delta\text{ability} = \vec{F} \cdot \Delta\vec{x}$</p>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 1.2em;">
+                    <p style="font-size: 1.15em; color: var(--text-muted); line-height: 1.6;">
+                        The <span style="color: var(--accent); font-weight: 600;">change in ability</span> done on a system<br>
+                        equals the <span style="color: var(--danger); font-weight: 600;">force</span> exerted by an external system<br>
+                        multiplied by the <span style="color: var(--warning); font-weight: 600;">displacement</span> of things in the system.
+                    </p>
+                </div>
+                <aside class="notes">
+                    This is the big payoff. The simplest mathematical statement that agrees with all five patterns is F dot delta-x. The vector arrows remind us that direction matters — that's what patterns 1-3 taught us. The multiplication captures patterns 4-5 about amounts. One equation, five patterns. This is what physics is about: finding simple math that describes complex observations.
+                </aside>
+            </section>
+
+            <!-- SLIDE 17: But wait — what about angles? -->
+            <section data-transition="zoom" data-background-gradient="radial-gradient(ellipse at 60% 40%, #1a0a3e, #0f0720)">
+                <h2 style="font-size: 2.4em; color: var(--warning);">But Wait...</h2>
+                <p class="fragment fade-up" style="font-size: 1.3em; color: var(--text-muted); margin-top: 0.8em;">
+                    Our patterns covered forces that are<br>
+                    <span style="color: var(--increase);">perfectly along</span>,
+                    <span style="color: var(--decrease);">perfectly opposite</span>, or
+                    <span style="color: var(--nochange);">perfectly perpendicular</span><br>
+                    to the displacement.
+                </p>
+                <p class="fragment fade-up" style="font-size: 1.5em; color: var(--accent); margin-top: 0.8em; font-weight: 600;">
+                    What if the force is at an <em>angle</em>?
+                </p>
+                <aside class="notes">
+                    Pause here for dramatic effect. We tested 0 degrees, 180 degrees, and 90 degrees. But forces in the real world aren't always perfectly aligned. What happens when you push something at a 30-degree angle? Or 60 degrees? Our equation needs to handle that too.
+                </aside>
+            </section>
+
+            <!-- SLIDE 18: The angle scenario -->
+            <section>
+                <h2 style="font-size: 1.8em;">Force at an Angle</h2>
+                <p style="color: var(--text-muted); font-size: 0.95em;">Imagine pushing a cart forward, but your force is angled upward.</p>
+                <div class="fragment fade-up" style="margin: 0.6em auto;">
+                    <div class="scenario-visual" style="display: inline-block;">
+                        <svg width="650" height="300" viewBox="0 0 650 300">
+                            <!-- Ground -->
+                            <rect x="0" y="220" width="650" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                            <!-- Cart body -->
+                            <rect x="150" y="170" width="140" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
+                            <text x="220" y="200" fill="var(--text-primary)" font-size="16" text-anchor="middle" font-family="Inter">system</text>
+                            <!-- Wheels -->
+                            <circle cx="180" cy="220" r="11" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                            <circle cx="260" cy="220" r="11" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
+                            <!-- Force arrow at angle (approx 40 degrees above horizontal) -->
+                            <line x1="300" y1="195" x2="500" y2="65" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="494,55 510,60 498,73" fill="var(--danger)"/>
+                            <text x="420" y="105" fill="var(--danger)" font-size="22" font-weight="600" font-family="Outfit">F</text>
+                            <!-- Displacement arrow horizontal -->
+                            <line x1="150" y1="260" x2="420" y2="260" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
+                            <polygon points="420,253 436,260 420,267" fill="var(--warning)"/>
+                            <text x="290" y="283" fill="var(--warning)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x</text>
+                            <!-- Angle arc -->
+                            <path d="M 340,195 A 45,45 0 0,0 345,160" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+                            <text x="365" y="170" fill="var(--accent)" font-size="22" font-weight="600" font-family="Outfit">&#952;</text>
+                            <!-- Dotted horizontal reference from force origin -->
+                            <line x1="300" y1="195" x2="410" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                        </svg>
+                    </div>
+                </div>
+                <div class="fragment fade-up task-box" style="margin-top: 0.4em;">
+                    <div class="task-label">TASK</div>
+                    <p style="font-size: 1em; margin: 0;">The force is <em>neither</em> along the displacement <em>nor</em> perpendicular to it.<br>Does <strong>all</strong> of the force change the system's ability? Or only <strong>part</strong> of it?</p>
+                </div>
+                <aside class="notes">
+                    Set up the problem visually. The force is at an angle theta to the displacement. Ask: does the entire force contribute to changing ability? Students should connect this to Pattern 3 — the perpendicular part doesn't change ability. So only the part of the force that's along the displacement matters. Give groups 1-2 minutes to discuss.
+                </aside>
+            </section>
+
+            <!-- SLIDE 19: Decompose the force -->
+            <section>
+                <h2 style="font-size: 1.8em;">Breaking the Force into Parts</h2>
+                <p style="color: var(--text-muted); font-size: 0.9em;">We can split the force into two <strong>components</strong>:</p>
+                <div class="fragment fade-up" style="margin: 0.5em auto;">
+                    <div class="scenario-visual" style="display: inline-block;">
+                        <svg width="700" height="320" viewBox="0 0 700 320">
+                            <!-- Ground -->
+                            <rect x="0" y="250" width="700" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
+                            <!-- Cart -->
+                            <rect x="80" y="200" width="120" height="50" rx="8" fill="rgba(91,156,246,0.2)" stroke="rgba(91,156,246,0.3)" stroke-width="1.5"/>
+                            <circle cx="107" cy="250" r="9" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+                            <circle cx="173" cy="250" r="9" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1.5"/>
+
+                            <!-- Original force (faded) -->
+                            <line x1="210" y1="225" x2="420" y2="88" stroke="var(--danger)" stroke-width="3" opacity="0.35"/>
+                            <polygon points="414,78 430,83 418,96" fill="var(--danger)" opacity="0.35"/>
+                            <text x="340" y="128" fill="var(--danger)" font-size="18" font-family="Outfit" font-weight="600" opacity="0.4">F</text>
+
+                            <!-- F parallel (horizontal component) - GREEN -->
+                            <line x1="210" y1="225" x2="385" y2="225" stroke="var(--increase)" stroke-width="4"/>
+                            <polygon points="385,216 403,225 385,234" fill="var(--increase)"/>
+                            <text x="300" y="215" fill="var(--increase)" font-size="20" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="12" dy="4">&#8741;</tspan></text>
+                            <text x="300" y="198" fill="var(--increase)" font-size="13" text-anchor="middle" font-family="Inter">(along &#916;x)</text>
+
+                            <!-- F perpendicular (vertical component) - YELLOW -->
+                            <line x1="385" y1="225" x2="385" y2="105" stroke="var(--nochange)" stroke-width="4"/>
+                            <polygon points="376,105 385,87 394,105" fill="var(--nochange)"/>
+                            <text x="415" y="165" fill="var(--nochange)" font-size="20" font-weight="600" font-family="Outfit">F<tspan font-size="12" dy="4">&#8869;</tspan></text>
+                            <text x="460" y="180" fill="var(--nochange)" font-size="13" font-family="Inter">(perp. to &#916;x)</text>
+
+                            <!-- Dashed right-angle marker -->
+                            <rect x="375" y="212" width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+                            <!-- Angle arc at origin -->
+                            <path d="M 260,225 A 55,55 0 0,0 250,182" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
+                            <text x="275" y="197" fill="var(--accent)" font-size="22" font-weight="600" font-family="Outfit">&#952;</text>
+
+                            <!-- Displacement arrow -->
+                            <line x1="80" y1="280" x2="350" y2="280" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
+                            <polygon points="350,273 366,280 350,287" fill="var(--warning)"/>
+                            <text x="220" y="302" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
+
+                            <!-- Annotations on the right -->
+                            <rect x="490" y="90" width="195" height="55" rx="10" fill="rgba(34,212,122,0.1)" stroke="var(--increase)" stroke-width="1.5"/>
+                            <text x="587" y="113" fill="var(--increase)" font-size="15" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="10" dy="3">&#8741;</tspan><tspan dy="-3"> changes ability</tspan></text>
+                            <text x="587" y="133" fill="var(--increase)" font-size="13" text-anchor="middle" font-family="Inter">(along displacement)</text>
+
+                            <rect x="490" y="165" width="195" height="55" rx="10" fill="rgba(245,166,35,0.1)" stroke="var(--nochange)" stroke-width="1.5"/>
+                            <text x="587" y="188" fill="var(--nochange)" font-size="15" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="10" dy="3">&#8869;</tspan><tspan dy="-3"> does NOT</tspan></text>
+                            <text x="587" y="208" fill="var(--nochange)" font-size="13" text-anchor="middle" font-family="Inter">(perpendicular &rarr; Pattern 3!)</text>
+                        </svg>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1.1em; margin-top: 0.3em;">Only the <strong style="color: var(--increase);">component along the displacement</strong> changes ability.</p>
+                <aside class="notes">
+                    This is the key insight. We can decompose any force into a part along the displacement and a part perpendicular to it. Pattern 3 already told us: perpendicular forces don't change ability. So only the parallel component matters. This is a direct consequence of what we already discovered — no new physics needed, just applying what we know.
+                </aside>
+            </section>
+
+            <!-- SLIDE 20: What is F parallel? -->
+            <section>
+                <h2 style="font-size: 1.8em;">How Big Is F<sub style="font-size: 0.6em;">&#8741;</sub> ?</h2>
+                <p style="color: var(--text-muted); font-size: 0.95em;">If we know the angle &#952; between the force and the displacement...</p>
+                <div class="fragment fade-up" style="margin: 0.6em auto;">
+                    <div class="scenario-visual" style="display: inline-block;">
+                        <svg width="500" height="280" viewBox="0 0 500 280">
+                            <!-- Right triangle -->
+                            <!-- Hypotenuse (F) -->
+                            <line x1="80" y1="220" x2="380" y2="30" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="374,20 392,24 380,38" fill="var(--danger)"/>
+                            <text x="250" y="100" fill="var(--danger)" font-size="26" font-weight="600" font-family="Outfit" transform="rotate(-32, 250, 100)">F</text>
+
+                            <!-- Adjacent (F parallel) -->
+                            <line x1="80" y1="220" x2="380" y2="220" stroke="var(--increase)" stroke-width="4"/>
+                            <polygon points="380,211 398,220 380,229" fill="var(--increase)"/>
+                            <text x="230" y="248" fill="var(--increase)" font-size="22" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="13" dy="4">&#8741;</tspan><tspan dy="-4"> = ?</tspan></text>
+
+                            <!-- Opposite (F perp) -->
+                            <line x1="380" y1="220" x2="380" y2="42" stroke="var(--nochange)" stroke-width="3" opacity="0.5"/>
+                            <text x="405" y="135" fill="var(--nochange)" font-size="18" font-family="Outfit" opacity="0.6">F<tspan font-size="11" dy="3">&#8869;</tspan></text>
+
+                            <!-- Right angle marker -->
+                            <rect x="367" y="207" width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+
+                            <!-- Angle -->
+                            <path d="M 140,220 A 65,65 0 0,0 128,182" fill="none" stroke="var(--accent)" stroke-width="3"/>
+                            <text x="155" y="195" fill="var(--accent)" font-size="26" font-weight="600" font-family="Outfit">&#952;</text>
+                        </svg>
+                    </div>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 0.3em;">
+                    <p style="font-size: 1em; color: var(--text-muted);">From the right triangle, the <span style="color: var(--increase);">adjacent side</span> is:</p>
+                    <div class="eq-container" style="margin-top: 0.4em;">
+                        <span class="eq-big">$F_{\parallel} = F \cdot \cos(\theta)$</span>
+                    </div>
+                </div>
+                <div class="fragment fade-up wb-prompt" style="margin-top: 0.6em;">
+                    <div class="wb-label">TASK</div>
+                    <p style="font-size: 0.9em; margin: 0;">If only $F_{\parallel}$ changes ability, rewrite our equation using $F \cdot \cos(\theta)$.<br>Write your updated equation on your whiteboard.</p>
+                </div>
+                <aside class="notes">
+                    Students already know trig from math class. The parallel component is the adjacent side of the right triangle formed by decomposing F. Adjacent over hypotenuse is cosine. So F-parallel equals F times cos(theta). Now ask them: if only the parallel component matters, what's the updated equation? Give them 1-2 minutes. They should get delta-ability = F cos(theta) times delta-x.
+                </aside>
+            </section>
+
+            <!-- SLIDE 21: The complete equation -->
+            <section data-transition="zoom" data-background-gradient="radial-gradient(ellipse at 50% 40%, #1a1058, #0f0720)">
+                <h2 style="font-size: 1.6em; color: var(--text-muted); margin-bottom: 0.5em;">The Complete Equation</h2>
+                <div class="result-glow">
+                    <p class="eq-huge" style="margin: 0;">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</p>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 1em; font-size: 1em; line-height: 1.8;">
+                    <p style="color: var(--text-muted); margin: 0;">
+                        where <span style="color: var(--accent); font-weight: 600;">&#952;</span> is the angle between the
+                        <span style="color: var(--danger); font-weight: 600;">force</span> and the
+                        <span style="color: var(--warning); font-weight: 600;">displacement</span>
+                    </p>
+                </div>
+                <aside class="notes">
+                    Here it is — the complete equation. The cosine of theta captures the direction relationship. F and delta-x capture the amounts. Everything from our 5 patterns is in this one equation, and now it works for ANY angle, not just the special cases of 0, 90, and 180 degrees.
+                </aside>
+            </section>
+
+            <!-- SLIDE 22: Does cos(theta) recover our special cases? -->
+            <section>
+                <h2 style="font-size: 1.7em;">Does cos(&#952;) Agree With Our Patterns?</h2>
+                <p style="color: var(--text-muted); font-size: 0.9em;">Let's check the three direction patterns using the special angles:</p>
+                <div style="margin-top: 0.5em;">
+                    <!-- Same direction -->
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.5em 0;">
+                        <div style="display: flex; align-items: center; gap: 0.6em; min-width: 200px;">
+                            <svg width="70" height="35" viewBox="0 0 70 35">
+                                <line x1="5" y1="10" x2="48" y2="10" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="48,5 60,10 48,15" fill="var(--danger)"/>
+                                <line x1="5" y1="27" x2="48" y2="27" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="48,22 60,27 48,32" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em; color: var(--increase);">Same direction</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.15em;">$\theta = 0° \quad\rightarrow\quad \cos(0°) = $ <strong style="color: var(--increase);">+1</strong></span>
+                        </div>
+                        <span style="font-size: 0.9em;">&#916;ability = <strong style="color: var(--increase);">+F&#916;x</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                    <!-- Perpendicular -->
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.5em 0;">
+                        <div style="display: flex; align-items: center; gap: 0.6em; min-width: 200px;">
+                            <svg width="70" height="35" viewBox="0 0 70 35">
+                                <line x1="35" y1="32" x2="35" y2="5" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="29,5 35,0 41,5" fill="var(--danger)"/>
+                                <line x1="5" y1="27" x2="48" y2="27" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="48,22 60,27 48,32" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em; color: var(--nochange);">Perpendicular</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.15em;">$\theta = 90° \quad\rightarrow\quad \cos(90°) = $ <strong style="color: var(--nochange);">0</strong></span>
+                        </div>
+                        <span style="font-size: 0.9em;">&#916;ability = <strong style="color: var(--nochange);">0</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                    <!-- Opposite -->
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; justify-content: center; align-items: center; margin: 0.5em 0;">
+                        <div style="display: flex; align-items: center; gap: 0.6em; min-width: 200px;">
+                            <svg width="70" height="35" viewBox="0 0 70 35">
+                                <line x1="60" y1="10" x2="17" y2="10" stroke="var(--danger)" stroke-width="3"/>
+                                <polygon points="17,5 5,10 17,15" fill="var(--danger)"/>
+                                <line x1="5" y1="27" x2="48" y2="27" stroke="var(--warning)" stroke-width="2" stroke-dasharray="4,2"/>
+                                <polygon points="48,22 60,27 48,32" fill="var(--warning)"/>
+                            </svg>
+                            <span style="font-size: 0.9em; color: var(--decrease);">Opposite</span>
+                        </div>
+                        <div class="eq-container" style="padding: 0.4em 1em;">
+                            <span style="font-size: 1.15em;">$\theta = 180° \quad\rightarrow\quad \cos(180°) = $ <strong style="color: var(--decrease);">-1</strong></span>
+                        </div>
+                        <span style="font-size: 0.9em;">&#916;ability = <strong style="color: var(--decrease);">-F&#916;x</strong></span>
+                        <span style="color: var(--highlight); font-size: 1.3em;">&#10003;</span>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1.15em; color: var(--highlight); font-weight: 600; margin-top: 0.6em;">
+                    The cos(&#952;) naturally handles all three direction patterns!
+                </p>
+                <aside class="notes">
+                    This is the beautiful part. Cos(0) = 1, so same direction gives positive delta-ability — pattern 1 works. Cos(90) = 0, so perpendicular gives zero — pattern 3 works. Cos(180) = -1, so opposite gives negative — pattern 2 works. The cosine function already "knows" about our direction patterns. It's not something extra we bolted on — it's the natural mathematical way to express what our observations told us.
+                </aside>
+            </section>
+
+            <!-- SLIDE 23: What about in-between angles? -->
+            <section>
+                <h2 style="font-size: 1.7em;">And Everything In Between</h2>
+                <p style="color: var(--text-muted); font-size: 0.9em;">The cos(&#952;) smoothly handles <em>every</em> angle, not just the special cases:</p>
+                <div class="fragment fade-up" style="margin: 0.6em auto;">
+                    <div class="scenario-visual" style="display: inline-block;">
+                        <svg width="750" height="320" viewBox="0 0 750 320">
+                            <!-- Semicircle visualization -->
+                            <!-- Base line -->
+                            <line x1="75" y1="250" x2="675" y2="250" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
+                            <!-- Center point -->
+                            <circle cx="375" cy="250" r="5" fill="var(--accent)"/>
+
+                            <!-- Semicircle arc -->
+                            <path d="M 575,250 A 200,200 0 0,0 175,250" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+
+                            <!-- 0 degrees - right -->
+                            <line x1="375" y1="250" x2="575" y2="250" stroke="var(--increase)" stroke-width="3"/>
+                            <polygon points="575,243 590,250 575,257" fill="var(--increase)"/>
+                            <text x="590" y="245" fill="var(--increase)" font-size="15" font-family="Outfit" font-weight="600">0°</text>
+                            <text x="590" y="265" fill="var(--increase)" font-size="12" font-family="Inter">cos = +1</text>
+
+                            <!-- 45 degrees -->
+                            <line x1="375" y1="250" x2="516" y2="109" stroke="rgba(34,212,122,0.6)" stroke-width="2.5"/>
+                            <polygon points="510,101 525,103 518,117" fill="rgba(34,212,122,0.6)"/>
+                            <text x="530" y="105" fill="rgba(34,212,122,0.7)" font-size="14" font-family="Outfit" font-weight="600">45°</text>
+                            <text x="540" y="122" fill="rgba(34,212,122,0.6)" font-size="12" font-family="Inter">cos = +0.71</text>
+
+                            <!-- 90 degrees - up -->
+                            <line x1="375" y1="250" x2="375" y2="55" stroke="var(--nochange)" stroke-width="3"/>
+                            <polygon points="368,55 375,40 382,55" fill="var(--nochange)"/>
+                            <text x="390" y="48" fill="var(--nochange)" font-size="15" font-family="Outfit" font-weight="600">90°</text>
+                            <text x="390" y="65" fill="var(--nochange)" font-size="12" font-family="Inter">cos = 0</text>
+
+                            <!-- 135 degrees -->
+                            <line x1="375" y1="250" x2="234" y2="109" stroke="rgba(232,80,74,0.6)" stroke-width="2.5"/>
+                            <polygon points="226,117 225,101 241,105" fill="rgba(232,80,74,0.6)"/>
+                            <text x="200" y="102" fill="rgba(232,80,74,0.7)" font-size="14" font-family="Outfit" font-weight="600">135°</text>
+                            <text x="168" y="119" fill="rgba(232,80,74,0.6)" font-size="12" font-family="Inter">cos = -0.71</text>
+
+                            <!-- 180 degrees - left -->
+                            <line x1="375" y1="250" x2="175" y2="250" stroke="var(--decrease)" stroke-width="3"/>
+                            <polygon points="175,243 160,250 175,257" fill="var(--decrease)"/>
+                            <text x="140" y="245" fill="var(--decrease)" font-size="15" font-family="Outfit" font-weight="600">180°</text>
+                            <text x="128" y="265" fill="var(--decrease)" font-size="12" font-family="Inter">cos = -1</text>
+
+                            <!-- Displacement reference -->
+                            <line x1="375" y1="290" x2="575" y2="290" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
+                            <polygon points="575,284 588,290 575,296" fill="var(--warning)"/>
+                            <text x="480" y="310" fill="var(--warning)" font-size="14" text-anchor="middle" font-family="Inter">&#916;x direction</text>
+
+                            <!-- Color gradient bar -->
+                            <defs>
+                                <linearGradient id="cosGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" style="stop-color:#e8504a"/>
+                                    <stop offset="50%" style="stop-color:#f5a623"/>
+                                    <stop offset="100%" style="stop-color:#22d47a"/>
+                                </linearGradient>
+                            </defs>
+                            <rect x="175" y="15" width="400" height="12" rx="6" fill="url(#cosGrad)" opacity="0.7"/>
+                            <text x="175" y="10" fill="var(--decrease)" font-size="11" text-anchor="middle" font-family="Inter">decreases</text>
+                            <text x="375" y="10" fill="var(--nochange)" font-size="11" text-anchor="middle" font-family="Inter">no change</text>
+                            <text x="575" y="10" fill="var(--increase)" font-size="11" text-anchor="middle" font-family="Inter">increases</text>
+                        </svg>
+                    </div>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1em; color: var(--text-muted); margin-top: 0.3em; line-height: 1.6;">
+                    At <span style="color: var(--increase);">45°</span>, about <strong>71%</strong> of the force changes ability.<br>
+                    At <span style="color: rgba(34,212,122,0.7);">60°</span>, only <strong>50%</strong> does. The steeper the angle, the less force goes into changing ability.
+                </p>
+                <aside class="notes">
+                    Show the full spectrum. At 0 degrees, 100% of the force changes ability. As the angle increases, less and less of the force contributes. At 90 degrees, none does. Past 90 degrees, the cosine goes negative — the force is now fighting the displacement and removing ability. At 180 degrees, 100% of the force goes into decreasing ability. The cosine smoothly captures this entire range. This is what makes it the right function.
+                </aside>
+            </section>
+
+            <!-- SLIDE 24: Apply the complete equation -->
+            <section>
+                <h2 style="font-size: 1.8em;">Let's Apply the Complete Equation</h2>
+                <div class="task-box" style="margin-top: 0.3em;">
+                    <div class="task-label">TASK</div>
+                    <p style="font-size: 0.9em; margin: 0;">For each scenario, use $\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$ to predict whether ability <strong style="color: var(--increase);">increases</strong>, <strong style="color: var(--decrease);">decreases</strong>, or <strong style="color: var(--nochange);">stays the same</strong>, and by <em>how much</em>.</p>
+                </div>
+                <div style="display: flex; gap: 0.8em; justify-content: center; margin-top: 0.5em; font-size: 0.8em;">
+                    <div class="compare-box fragment fade-up" style="max-width: 300px;">
+                        <svg width="220" height="110" viewBox="0 0 220 110">
+                            <rect x="0" y="75" width="220" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="40" y="45" width="55" height="30" rx="5" fill="rgba(91,156,246,0.25)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Force at angle -->
+                            <line x1="100" y1="60" x2="180" y2="60" stroke="var(--danger)" stroke-width="3"/>
+                            <polygon points="180,54 192,60 180,66" fill="var(--danger)"/>
+                            <!-- displacement -->
+                            <line x1="40" y1="93" x2="150" y2="93" stroke="var(--warning)" stroke-width="2" stroke-dasharray="5,3"/>
+                            <polygon points="150,88 160,93 150,98" fill="var(--warning)"/>
+                        </svg>
+                        <p style="margin: 0.2em 0 0; color: var(--accent); font-weight: 600;">&#952; = 0°</p>
+                        <p style="margin: 0; color: var(--text-muted); font-size: 0.9em;">F = 10 N, &#916;x = 3 m</p>
+                    </div>
+                    <div class="compare-box fragment fade-up" style="max-width: 300px;">
+                        <svg width="220" height="110" viewBox="0 0 220 110">
+                            <rect x="0" y="75" width="220" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="50" y="45" width="55" height="30" rx="5" fill="rgba(91,156,246,0.25)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Force at 60 degrees -->
+                            <line x1="110" y1="60" x2="175" y2="18" stroke="var(--danger)" stroke-width="3"/>
+                            <polygon points="170,10 185,12 177,25" fill="var(--danger)"/>
+                            <!-- angle arc -->
+                            <path d="M 132,60 A 25,25 0 0,0 128,42" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                            <text x="142" y="45" fill="var(--accent)" font-size="12" font-family="Outfit">60°</text>
+                            <!-- displacement -->
+                            <line x1="50" y1="93" x2="160" y2="93" stroke="var(--warning)" stroke-width="2" stroke-dasharray="5,3"/>
+                            <polygon points="160,88 170,93 160,98" fill="var(--warning)"/>
+                        </svg>
+                        <p style="margin: 0.2em 0 0; color: var(--accent); font-weight: 600;">&#952; = 60°</p>
+                        <p style="margin: 0; color: var(--text-muted); font-size: 0.9em;">F = 10 N, &#916;x = 3 m</p>
+                    </div>
+                    <div class="compare-box fragment fade-up" style="max-width: 300px;">
+                        <svg width="220" height="110" viewBox="0 0 220 110">
+                            <rect x="0" y="75" width="220" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="60" y="45" width="55" height="30" rx="5" fill="rgba(91,156,246,0.25)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <!-- Force backward at angle -->
+                            <line x1="60" y1="60" x2="10" y2="22" stroke="var(--danger)" stroke-width="3"/>
+                            <polygon points="15,14 5,17 8,30" fill="var(--danger)"/>
+                            <!-- angle arc -->
+                            <path d="M 40,60 A 22,22 0 0,1 48,43" fill="none" stroke="var(--accent)" stroke-width="1.5"/>
+                            <text x="24" y="46" fill="var(--accent)" font-size="12" font-family="Outfit">120°</text>
+                            <!-- displacement -->
+                            <line x1="60" y1="93" x2="170" y2="93" stroke="var(--warning)" stroke-width="2" stroke-dasharray="5,3"/>
+                            <polygon points="170,88 180,93 170,98" fill="var(--warning)"/>
+                        </svg>
+                        <p style="margin: 0.2em 0 0; color: var(--accent); font-weight: 600;">&#952; = 120°</p>
+                        <p style="margin: 0; color: var(--text-muted); font-size: 0.9em;">F = 10 N, &#916;x = 3 m</p>
+                    </div>
+                </div>
+                <div class="fragment fade-up wb-prompt" style="margin-top: 0.5em;">
+                    <div class="wb-label">WHITEBOARD</div>
+                    <p style="font-size: 0.9em; margin: 0;">Calculate &#916;ability for each scenario. Show your work!</p>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 0.4em; display: flex; gap: 1.5em; justify-content: center; font-size: 0.85em;">
+                    <div style="color: var(--increase);">0°: 10 &times; 3 &times; 1 = <strong>+30 units</strong></div>
+                    <div style="color: var(--accent);">60°: 10 &times; 3 &times; 0.5 = <strong>+15 units</strong></div>
+                    <div style="color: var(--decrease);">120°: 10 &times; 3 &times; (-0.5) = <strong>-15 units</strong></div>
+                </div>
+                <aside class="notes">
+                    Give groups 3-4 minutes. Walk around. The 0-degree case is straightforward — 30 units of ability. The 60-degree case: cos(60) = 0.5, so only half the force contributes — 15 units. The 120-degree case: cos(120) = -0.5, negative means ability decreases — the force is partially fighting the displacement. Reveal the answers after discussion. The key insight: same force, same displacement, but the angle completely changes how much ability transfers.
+                </aside>
+            </section>
+
+            <!-- SLIDE 25: The full picture -->
+            <section>
+                <h2 style="font-size: 1.8em;">The Full Picture</h2>
+                <div class="check-grid" style="margin-top: 0.6em;">
+                    <div class="check-item fragment fade-up">
+                        <span class="check-icon" style="color: var(--increase);">&#9650;</span>
+                        <div>
+                            <strong style="color: var(--increase);">&#952; &lt; 90°: Ability increases</strong><br>
+                            <span style="color: var(--text-muted);">cos(&#952;) is positive<br>&#8594; force has a component along &#916;x</span>
+                        </div>
+                    </div>
+                    <div class="check-item fragment fade-up">
+                        <span class="check-icon" style="color: var(--decrease);">&#9660;</span>
+                        <div>
+                            <strong style="color: var(--decrease);">&#952; &gt; 90°: Ability decreases</strong><br>
+                            <span style="color: var(--text-muted);">cos(&#952;) is negative<br>&#8594; force opposes the displacement</span>
+                        </div>
+                    </div>
+                    <div class="check-item fragment fade-up">
+                        <span class="check-icon" style="color: var(--nochange);">&#9644;</span>
+                        <div>
+                            <strong style="color: var(--nochange);">&#952; = 90°: No change</strong><br>
+                            <span style="color: var(--text-muted);">cos(90°) = 0<br>&#8594; force is entirely perpendicular</span>
+                        </div>
+                    </div>
+                    <div class="check-item fragment fade-up">
+                        <span class="check-icon" style="color: var(--accent);">&#9679;</span>
+                        <div>
+                            <strong style="color: var(--accent);">Bigger F, &#916;x, or smaller &#952;</strong><br>
+                            <span style="color: var(--text-muted);">All give a larger &#916;ability<br>&#8594; amount patterns still work</span>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Quick summary of the complete equation's behavior. Every one of our 5 patterns is captured, plus the equation now handles all the in-between angles too. The cosine is the bridge between the qualitative direction patterns and the quantitative equation.
+                </aside>
+            </section>
+
+            <!-- SLIDE 26: Final equation reveal -->
+            <section data-transition="zoom" data-background-gradient="radial-gradient(ellipse at 50% 50%, #1a1058, #0f0720)">
+                <h2 style="font-size: 1.6em; color: var(--text-muted); margin-bottom: 0.6em;">Our Complete Mathematical Statement</h2>
+                <div class="result-glow">
+                    <p class="eq-huge" style="margin: 0;">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</p>
+                </div>
+                <div class="fragment fade-up" style="margin-top: 1em;">
+                    <p style="font-size: 1.05em; color: var(--text-muted); line-height: 1.8; max-width: 850px; margin: 0 auto;">
+                        <span style="color: var(--accent); font-weight: 600;">&#916;ability</span> &mdash; how much the ability of the system changes<br>
+                        <span style="color: var(--danger); font-weight: 600;">F</span> &mdash; strength of the force exerted by the external system<br>
+                        <span style="color: var(--warning); font-weight: 600;">&#916;x</span> &mdash; how far the external system displaces things in the system<br>
+                        <span style="color: var(--highlight); font-weight: 600;">cos(&#952;)</span> &mdash; the angle between the force and the displacement
+                    </p>
+                </div>
+                <aside class="notes">
+                    The final equation with all its pieces labeled. This is the culmination of everything. Five patterns of observation led to three quantities — force, displacement, and the angle between them — combined into one equation that predicts how much ability any external system transfers to any system. This is physics at its best.
+                </aside>
+            </section>
+
+            <!-- SLIDE 27: Closing -->
+            <section data-background-gradient="radial-gradient(ellipse at 40% 60%, #1a0a3e, #0f0720)">
+                <h2 style="font-size: 2.2em;">What We Discovered</h2>
+                <div class="fragment fade-up result-glow" style="margin: 0.8em auto; display: block; max-width: 800px;">
+                    <p style="font-size: 1.5em; margin: 0; text-align: center;">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</p>
+                </div>
+                <p class="fragment fade-up" style="font-size: 1em; color: var(--text-muted); max-width: 800px; margin: 0.8em auto; line-height: 1.6;">
+                    We turned <span style="color: var(--accent);">five qualitative patterns</span> from our observations into <span style="color: var(--highlight);">one quantitative equation</span> that captures everything we learned about how external systems change the ability stored in a system &mdash; at <em>any</em> angle.
+                </p>
+                <p class="fragment fade-up" style="font-size: 1em; color: var(--text-muted); margin-top: 0.8em;">
+                    <em>That's</em> what it means to turn a crazy idea<br>into a quantity we can <strong style="color: var(--highlight);">measure</strong>.
+                </p>
+                <aside class="notes">
+                    Close the loop back to the title. We started with 5 crazy ideas, built F times delta-x, then realized we needed cosine to handle all angles. The complete equation is elegant — three measurements (F, delta-x, theta) tell you exactly how much ability gets transferred. Next class we'll use this to solve real problems and make predictions we can test.
+                </aside>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/contrib/auto-render.min.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            history: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            transitionSpeed: 'default',
+            center: true,
+            controls: true,
+            controlsTutorial: true,
+            progress: true,
+            slideNumber: 'c/t',
+            keyboard: true,
+            overview: true,
+            width: 1920,
+            height: 1080,
+            margin: 0.04,
+            plugins: []
+        }).then(function() {
+            renderMathInElement(document.body, {
+                delimiters: [
+                    { left: '$$', right: '$$', display: true },
+                    { left: '$', right: '$', display: false }
+                ],
+                throwOnError: false
+            });
+        });
+    </script>
+</body>
+</html>

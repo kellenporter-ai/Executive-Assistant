@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Multi-Radius Pulley &mdash; Torque &amp; Rotational Dynamics</title>
+    <style>
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.88);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg); color: var(--text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            overflow: hidden; user-select: none;
+        }
+        #renderCanvas {
+            position: absolute; inset: 0;
+            width: 100vw; height: 100vh;
+            z-index: 1; display: block; touch-action: none;
+        }
+        #ui-layer {
+            position: absolute; inset: 0; z-index: 10;
+            pointer-events: none;
+            display: flex; flex-direction: column;
+            justify-content: space-between; padding: 12px;
+        }
+        @media (min-width: 768px) {
+            #ui-layer { flex-direction: row; align-items: flex-start; }
+        }
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(14px) saturate(1.4);
+            -webkit-backdrop-filter: blur(14px) saturate(1.4);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 16px 18px;
+            pointer-events: auto;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+            max-width: 360px;
+        }
+        .controls-panel {
+            align-self: flex-end; display: flex;
+            flex-direction: column; gap: 8px;
+            max-width: 380px; width: calc(100% - 24px);
+        }
+        @media (min-width: 768px) {
+            .controls-panel { align-self: flex-end; margin-top: auto; margin-bottom: 12px; }
+        }
+        h1 { font-size: 1.05rem; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .subtitle { font-size: 0.78rem; color: var(--muted); line-height: 1.4; margin-bottom: 10px; }
+        .tab-strip { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab {
+            flex: 1; background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--muted); padding: 7px 6px; border-radius: 8px;
+            cursor: pointer; font-size: 0.75rem; font-weight: 600;
+            transition: all 0.18s; text-align: center;
+        }
+        .tab:hover { background: rgba(255,255,255,0.11); color: var(--text); }
+        .tab.active {
+            background: rgba(91,156,246,0.18);
+            border-color: rgba(91,156,246,0.4); color: var(--blue);
+        }
+        .stats {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 8px; padding: 8px 10px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.8rem; line-height: 1.6;
+        }
+        .stats span { color: #fff; font-weight: 600; }
+        .stats .dim { color: var(--muted); }
+        .legend { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+        .legend-row { display: flex; align-items: center; gap: 7px; font-size: 0.75rem; color: var(--muted); }
+        .dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+        .slider-row { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; }
+        .slider-row label { min-width: 64px; color: var(--muted); }
+        .slider-row input[type=range] { flex: 1; accent-color: var(--purple); }
+        .slider-row .val { min-width: 45px; text-align: right; color: #fff; font-weight: 600; font-family: monospace; }
+        .btn-row { display: flex; gap: 6px; }
+        button {
+            width: 100%; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.14);
+            color: var(--text); padding: 9px 12px; border-radius: 8px;
+            cursor: pointer; font-size: 0.85rem; font-weight: 600;
+            transition: all 0.15s;
+        }
+        button:hover { background: rgba(255,255,255,0.14); }
+        .btn-start { background: rgba(34,212,122,0.18); border-color: rgba(34,212,122,0.35); color: var(--green); }
+        .btn-start:hover { background: rgba(34,212,122,0.28); }
+        #scenario-desc { font-size: 0.76rem; color: var(--muted); line-height: 1.4; margin-bottom: 8px; min-height: 32px; }
+        #sim-status { font-size: 0.82rem; font-weight: 600; margin-top: 6px; min-height: 20px; text-align: center; }
+        .status-cw  { color: var(--blue); }
+        .status-ccw { color: var(--purple); }
+        .status-coast { color: var(--green); }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+</head>
+<body>
+
+<script>
+const PortalBridge = (() => {
+    const send = (type, data) => {
+        if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+    };
+    return {
+        init:     ()              => send('PROCTOR_READY'),
+        save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+        answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+        complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+    };
+})();
+window.addEventListener('load', () => PortalBridge.init());
+</script>
+
+<canvas id="renderCanvas"></canvas>
+
+<div id="ui-layer">
+    <div class="panel header-panel">
+        <h1>Multi-Radius Pulley: Torque</h1>
+        <p class="subtitle">Solid disc pulley (I = &frac12;M(2r)&sup2; = 2Mr&sup2;)<br>
+        Inner radius r, outer radius 2r.</p>
+
+        <div class="tab-strip">
+            <button class="tab active" id="tab-a">A: Tension T</button>
+            <button class="tab" id="tab-b">B: Two Forces</button>
+            <button class="tab" id="tab-c">C: Hanging Pail</button>
+        </div>
+        <div id="scenario-desc">Tension T pulls down on a string at the inner radius r (right side). The pulley rotates clockwise.</div>
+
+        <div class="legend">
+            <div class="legend-row"><div class="dot" style="background:#f5a623;"></div> Tension Force</div>
+            <div class="legend-row"><div class="dot" style="background:#e8504a;"></div> Weight (mg)</div>
+        </div>
+
+        <div class="stats">
+            I = 2Mr&sup2; = <span id="val-I">0.18</span> kg&middot;m&sup2;<br>
+            &tau;<sub>net</sub> = <span id="val-torque">0.00</span> N&middot;m
+            <span class="dim" id="dir-label">(CW)</span><br>
+            &alpha; = <span id="val-alpha">0.00</span> rad/s&sup2;<br>
+            &omega; = <span id="val-omega">0.00</span> rad/s<br>
+            Revolutions: <span id="val-revs">0.00</span>
+        </div>
+        <div id="sim-status"></div>
+    </div>
+
+    <div class="panel controls-panel">
+        <div class="slider-row"><label>T (N):</label><input type="range" id="sl-T" min="1" max="20" value="5" step="0.5"><div class="val" id="val-T">5.0</div></div>
+        <div class="slider-row" id="row-m"><label>m pail (kg):</label><input type="range" id="sl-m" min="0.2" max="5" value="1" step="0.1"><div class="val" id="val-m">1.0</div></div>
+        <div class="slider-row"><label>M disc (kg):</label><input type="range" id="sl-M" min="0.5" max="10" value="2" step="0.5"><div class="val" id="val-Md">2.0</div></div>
+        <div class="slider-row"><label>r (m):</label><input type="range" id="sl-r" min="0.15" max="0.55" value="0.3" step="0.05"><div class="val" id="val-r">0.30</div></div>
+        <div class="btn-row">
+            <button class="btn-start" id="btn-start">Start</button>
+            <button id="btn-reset">Reset</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+//  ENGINE & SCENE
+// ═══════════════════════════════════════════════════════════════
+const canvas = document.getElementById('renderCanvas');
+const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio, 1.5));
+
+const scene = new BABYLON.Scene(engine);
+scene.clearColor = new BABYLON.Color4(0.059, 0.027, 0.125, 1);
+scene.fogMode = BABYLON.Scene.FOGMODE_EXP2;
+scene.fogColor = new BABYLON.Color3(0.059, 0.027, 0.125);
+scene.fogDensity = 0.012;
+
+// ═══════════════════════════════════════════════════════════════
+//  CAMERA — on -Z looking toward +Z
+// ═══════════════════════════════════════════════════════════════
+const camera = new BABYLON.ArcRotateCamera(
+    "cam", -Math.PI / 2, 1.0, 7,
+    new BABYLON.Vector3(0.3, 1.8, 0.3), scene
+);
+camera.attachControl(canvas, true);
+camera.lowerRadiusLimit = 3;
+camera.upperRadiusLimit = 16;
+camera.upperBetaLimit = Math.PI / 2 - 0.05;
+camera.inertia = 0.72;
+camera.wheelPrecision = 8;
+camera.panningInertia = 0.8;
+camera.minZ = 0.3;
+
+// ═══════════════════════════════════════════════════════════════
+//  LIGHTING
+// ═══════════════════════════════════════════════════════════════
+const hemi = new BABYLON.HemisphericLight("hemi", BABYLON.Vector3.Up(), scene);
+hemi.intensity = 0.38;
+hemi.diffuse = new BABYLON.Color3(0.82, 0.84, 1.0);
+hemi.groundColor = new BABYLON.Color3(0.1, 0.06, 0.2);
+
+const sun = new BABYLON.DirectionalLight("sun", new BABYLON.Vector3(-0.4, -1.5, -0.6), scene);
+sun.position = new BABYLON.Vector3(4, 10, -5);
+sun.intensity = 0.9;
+
+const accent = new BABYLON.PointLight("accent", new BABYLON.Vector3(0.5, 3.0, -1), scene);
+accent.diffuse = new BABYLON.Color3(0.5, 0.4, 1.0);
+accent.specular = BABYLON.Color3.Black();
+accent.intensity = 1.8;
+accent.range = 7;
+
+// ═══════════════════════════════════════════════════════════════
+//  SHADOWS
+// ═══════════════════════════════════════════════════════════════
+const shadowGen = new BABYLON.ShadowGenerator(1024, sun);
+shadowGen.useBlurExponentialShadowMap = true;
+shadowGen.blurKernel = 16;
+shadowGen.darkness = 0.4;
+
+// ═══════════════════════════════════════════════════════════════
+//  POST-PROCESSING
+// ═══════════════════════════════════════════════════════════════
+const pipeline = new BABYLON.DefaultRenderingPipeline("pipe", true, scene, [camera]);
+pipeline.fxaaEnabled = true;
+pipeline.samples = 2;
+pipeline.imageProcessingEnabled = true;
+pipeline.imageProcessing.contrast = 1.1;
+pipeline.imageProcessing.exposure = 1.05;
+pipeline.imageProcessing.toneMappingEnabled = true;
+
+// ═══════════════════════════════════════════════════════════════
+//  MATERIALS
+// ═══════════════════════════════════════════════════════════════
+function pbr(name, hex, rough, metal) {
+    const m = new BABYLON.PBRMaterial(name, scene);
+    m.albedoColor = BABYLON.Color3.FromHexString(hex);
+    m.roughness = rough;
+    m.metallic = metal;
+    return m;
+}
+
+const matFloor    = pbr("floor",    "#2a2a30", 0.75, 0.0);
+const matWall     = pbr("wall",     "#22202d", 0.9,  0.0);
+const matTable    = pbr("table",    "#1a1a22", 0.3,  0.05);
+const matTableLeg = pbr("tleg",     "#555555", 0.3,  0.8);
+const matStand    = pbr("stand",    "#606068", 0.35, 0.7);
+const matAxle     = pbr("axle",     "#999999", 0.2,  0.85);
+const matOuterRim = pbr("outerRim", "#5a7a9a", 0.3,  0.6);
+const matInnerRim = pbr("innerRim", "#8a6a4a", 0.35, 0.4);
+const matDisc     = pbr("disc",     "#444450", 0.5,  0.3);
+const matSpoke    = pbr("spoke",    "#555560", 0.4,  0.5);
+const matString   = pbr("string",   "#ddddbb", 0.9,  0.0);
+const matPail     = pbr("pail",     "#8a7a6a", 0.55, 0.3);
+const matPailIn   = pbr("pailIn",   "#3a3530", 0.7,  0.1);
+
+// ═══════════════════════════════════════════════════════════════
+//  GEOMETRY CONSTANTS
+//  Pulley positioned near right edge of table.
+//  Pail hangs past the table edge in free air.
+// ═══════════════════════════════════════════════════════════════
+const TABLE_Y   = 0.93;       // table surface y
+const TABLE_CX  = -0.3;       // table center x (shifted left)
+const TABLE_W   = 2.8;        // table width
+const TABLE_EDGE_R = TABLE_CX + TABLE_W / 2;  // right edge x = 1.1
+
+const PULLEY_X  = 0.6;
+const PULLEY_Y  = 2.6;
+const PULLEY_Z  = 0.05;
+const STRING_Z  = PULLEY_Z - 0.12;  // strings well in front of pulley face
+const ARROW_Z   = STRING_Z - 0.12;  // arrows in front of strings
+
+const BASE_R    = 0.3;   // base inner radius for visual scaling
+const BASE_IR_VIS = 0.30;
+const BASE_OR_VIS = 0.60;
+
+const FLOOR_Y   = 0.0;
+const PAIL_H    = 0.30;
+const PAIL_FLOOR_Y = FLOOR_Y + PAIL_H / 2 + 0.02;  // pail rests on floor
+
+// ═══════════════════════════════════════════════════════════════
+//  ENVIRONMENT
+// ═══════════════════════════════════════════════════════════════
+const floor = BABYLON.MeshBuilder.CreateGround("floor", { width: 20, height: 20 }, scene);
+floor.material = matFloor;
+floor.receiveShadows = true;
+
+const wallBack = BABYLON.MeshBuilder.CreatePlane("wallB", { width: 20, height: 6 }, scene);
+wallBack.position.set(0, 3, 5);
+wallBack.rotation.y = Math.PI;
+wallBack.material = matWall;
+
+const wallRight = BABYLON.MeshBuilder.CreatePlane("wallR", { width: 20, height: 6 }, scene);
+wallRight.position.set(6, 3, 0);
+wallRight.rotation.y = -Math.PI / 2;
+wallRight.material = matWall;
+
+// Lab table — offset left so pail path is clear on the right
+const tableGroup = new BABYLON.TransformNode("tableG", scene);
+const tableTop = BABYLON.MeshBuilder.CreateBox("tTop", {
+    width: TABLE_W, height: 0.07, depth: 1.6
+}, scene);
+tableTop.material = matTable;
+tableTop.parent = tableGroup;
+tableTop.position.set(TABLE_CX, TABLE_Y, 0);
+shadowGen.addShadowCaster(tableTop);
+tableTop.receiveShadows = true;
+
+for (const [lx, lz] of [[-1.2, -0.6], [1.2, -0.6], [-1.2, 0.6], [1.2, 0.6]]) {
+    const leg = BABYLON.MeshBuilder.CreateCylinder("tl", {
+        diameter: 0.05, height: TABLE_Y, tessellation: 12
+    }, scene);
+    leg.material = matTableLeg;
+    leg.parent = tableGroup;
+    leg.position.set(TABLE_CX + lx, TABLE_Y / 2, lz);
+    shadowGen.addShadowCaster(leg);
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  PULLEY STAND — near right edge of table
+// ═══════════════════════════════════════════════════════════════
+const standBase = BABYLON.MeshBuilder.CreateBox("sBase", {
+    width: 0.5, height: 0.06, depth: 0.5
+}, scene);
+standBase.material = matStand;
+standBase.position.set(PULLEY_X, TABLE_Y + 0.03, 0.5);
+shadowGen.addShadowCaster(standBase);
+
+const poleH = PULLEY_Y - TABLE_Y - 0.03;
+const standPole = BABYLON.MeshBuilder.CreateCylinder("sPole", {
+    diameter: 0.06, height: poleH, tessellation: 16
+}, scene);
+standPole.material = matStand;
+standPole.position.set(PULLEY_X, TABLE_Y + 0.03 + poleH / 2, 0.5);
+shadowGen.addShadowCaster(standPole);
+
+// Arm extends toward camera
+const standArm = BABYLON.MeshBuilder.CreateCylinder("sArm", {
+    diameter: 0.05, height: 0.5, tessellation: 12
+}, scene);
+standArm.material = matStand;
+standArm.position.set(PULLEY_X, PULLEY_Y, 0.28);
+standArm.rotation.x = Math.PI / 2;
+shadowGen.addShadowCaster(standArm);
+
+// ═══════════════════════════════════════════════════════════════
+//  PULLEY ASSEMBLY
+//  Built at base radius r=0.3. Scaled dynamically when r changes.
+//  pulleySpin.rotation.z drives wheel rotation.
+//  Left-handed coords: negative rotation.z = CW from camera view.
+// ═══════════════════════════════════════════════════════════════
+const pulleySpin = new BABYLON.TransformNode("pulleySpin", scene);
+pulleySpin.position.set(PULLEY_X, PULLEY_Y, PULLEY_Z);
+
+// ── Z-LAYER PLAN (camera at -Z looking +Z, positive z = behind) ──
+// Layer 0 (back):  Disc at z = +0.10   (behind torus back face at +0.06)
+// Layer 1 (mid):   Tori at z = 0       (tube extends ±0.06)
+// Layer 2 (front): Spokes at z = -0.09 (in front of torus front face at -0.06)
+// Layer 3 (front): Hub at z = -0.10
+// No geometric overlap between layers → zero z-fighting.
+
+const OUTER_THICK = 0.12;  // torus tube diameter (tube radius = 0.06)
+const INNER_THICK = 0.10;  // inner torus tube diameter (tube radius = 0.05)
+
+// ── DISC (backing plate) — fully behind the tori ──
+const disc = BABYLON.MeshBuilder.CreateCylinder("disc", {
+    diameter: BASE_OR_VIS * 2 + 0.04, height: 0.04, tessellation: 32
+}, scene);
+disc.material = matDisc;
+disc.parent = pulleySpin;
+disc.rotation.x = Math.PI / 2;
+disc.position.z = 0.10;  // center at z=0.10, front face at z=0.08 — behind torus back face at z=0.06
+shadowGen.addShadowCaster(disc);
+
+// ── OUTER RIM (torus groove) — at z=0 ──
+const outerRim = BABYLON.MeshBuilder.CreateTorus("oRim", {
+    diameter: BASE_OR_VIS * 2, thickness: OUTER_THICK, tessellation: 32
+}, scene);
+outerRim.material = matOuterRim;
+outerRim.parent = pulleySpin;
+outerRim.rotation.x = Math.PI / 2;
+shadowGen.addShadowCaster(outerRim);
+
+// ── INNER RIM (torus groove) — at z=0 ──
+const innerRim = BABYLON.MeshBuilder.CreateTorus("iRim", {
+    diameter: BASE_IR_VIS * 2, thickness: INNER_THICK, tessellation: 28
+}, scene);
+innerRim.material = matInnerRim;
+innerRim.parent = pulleySpin;
+innerRim.rotation.x = Math.PI / 2;
+shadowGen.addShadowCaster(innerRim);
+
+// ── SPOKES — in front of torus front face ──
+const SPOKE_Z = -0.09;
+for (let i = 0; i < 6; i++) {
+    const spoke = BABYLON.MeshBuilder.CreateBox("spoke" + i, {
+        width: BASE_OR_VIS * 2 - 0.08, height: 0.022, depth: 0.022
+    }, scene);
+    spoke.material = matSpoke;
+    spoke.parent = pulleySpin;
+    spoke.rotation.z = i * Math.PI / 3;
+    spoke.position.z = SPOKE_Z;
+}
+
+// ── AXLE — extends through full depth ──
+const axle = BABYLON.MeshBuilder.CreateCylinder("axle", {
+    diameter: 0.08, height: 0.4, tessellation: 16
+}, scene);
+axle.material = matAxle;
+axle.parent = pulleySpin;
+axle.rotation.x = Math.PI / 2;
+
+// ── HUB — front face, in front of everything ──
+const hub = BABYLON.MeshBuilder.CreateCylinder("hubCyl", {
+    diameter: 0.14, height: 0.05, tessellation: 20
+}, scene);
+hub.material = matAxle;
+hub.parent = pulleySpin;
+hub.rotation.x = Math.PI / 2;
+hub.position.z = -0.10;
+
+// ═══════════════════════════════════════════════════════════════
+//  STRINGS
+// ═══════════════════════════════════════════════════════════════
+function makeString(name) {
+    const s = BABYLON.MeshBuilder.CreateCylinder(name, {
+        diameter: 0.018, height: 1.0, tessellation: 8
+    }, scene);
+    s.material = matString;
+    return s;
+}
+
+const stringA      = makeString("strA");
+const stringBOuter = makeString("strBO");
+const stringBInner = makeString("strBI");
+const stringC      = makeString("strC");
+
+// ═══════════════════════════════════════════════════════════════
+//  PAIL
+// ═══════════════════════════════════════════════════════════════
+const pailGroup = new BABYLON.TransformNode("pailG", scene);
+const pailBody = BABYLON.MeshBuilder.CreateCylinder("pailBody", {
+    diameterTop: 0.32, diameterBottom: 0.24, height: PAIL_H, tessellation: 20
+}, scene);
+pailBody.material = matPail;
+pailBody.parent = pailGroup;
+shadowGen.addShadowCaster(pailBody);
+
+const pailInner = BABYLON.MeshBuilder.CreateCylinder("pailIn", {
+    diameterTop: 0.28, diameterBottom: 0.20, height: PAIL_H - 0.04, tessellation: 20
+}, scene);
+pailInner.material = matPailIn;
+pailInner.parent = pailGroup;
+pailInner.position.y = 0.025;
+
+const pailHandle = BABYLON.MeshBuilder.CreateTorus("pailH", {
+    diameter: 0.30, thickness: 0.015, tessellation: 20, arc: 0.5
+}, scene);
+pailHandle.material = matStand;
+pailHandle.parent = pailGroup;
+pailHandle.position.y = PAIL_H / 2 + 0.03;
+pailHandle.rotation.z = Math.PI;
+
+// ═══════════════════════════════════════════════════════════════
+//  FORCE ARROWS — Solid opaque, no glow
+// ═══════════════════════════════════════════════════════════════
+function makeArrow(name, hexColor) {
+    const color = BABYLON.Color3.FromHexString(hexColor);
+    const mat = new BABYLON.StandardMaterial(name + "_m", scene);
+    mat.emissiveColor = color;
+    mat.diffuseColor = color;
+    mat.disableLighting = true;
+    mat.backFaceCulling = false;
+
+    const root = new BABYLON.TransformNode(name, scene);
+    const shaft = BABYLON.MeshBuilder.CreateCylinder(name + "_s", {
+        diameter: 0.05, height: 1.0, tessellation: 12
+    }, scene);
+    shaft.material = mat;
+    shaft.parent = root;
+    shaft.position.y = 0.5;
+
+    const head = BABYLON.MeshBuilder.CreateCylinder(name + "_h", {
+        diameterTop: 0, diameterBottom: 0.14, height: 0.18, tessellation: 12
+    }, scene);
+    head.material = mat;
+    head.parent = root;
+    head.position.y = 1.09;
+
+    return {
+        root,
+        /**
+         * Arrow from tail at (x,y,z), length len, pointing down if pointDown=true.
+         * For pointDown: tail is at (x,y,z), tip is at (x, y-len, z).
+         * For pointUp: tail is at (x,y,z), tip is at (x, y+len, z).
+         */
+        set(len, x, y, z, pointDown) {
+            if (len < 0.04) { root.setEnabled(false); return; }
+            root.setEnabled(true);
+            root.scaling.set(1, len, 1);
+            if (pointDown) {
+                root.position.set(x, y - len, z);
+                root.rotation.set(0, 0, Math.PI);
+            } else {
+                root.position.set(x, y, z);
+                root.rotation.set(0, 0, 0);
+            }
+        },
+        hide() { root.setEnabled(false); }
+    };
+}
+
+const arrowTA      = makeArrow("arwTA",  "#f5a623");
+const arrowTBInner = makeArrow("arwTBi", "#f5a623");
+const arrowTBOuter = makeArrow("arwTBo", "#f5a623");
+const arrowTC      = makeArrow("arwTC",  "#f5a623");
+const arrowW       = makeArrow("arwW",   "#e8504a");
+
+// ═══════════════════════════════════════════════════════════════
+//  SIMULATION STATE
+// ═══════════════════════════════════════════════════════════════
+let currentExp = 'A';
+let simState = 'IDLE';   // IDLE | RUNNING | COASTING | ENDED
+let omega = 0;           // angular velocity (rad/s), always positive magnitude
+let theta = 0;           // total angle (rad), always positive magnitude
+let pailLanded = false;
+
+// Parameters — I is computed, not independent
+let paramT = 5;          // tension (N)
+let paramM_pail = 1;     // pail mass (kg)
+let paramM_disc = 2;     // disc mass (kg)
+let paramR = 0.3;        // inner radius (m)
+
+const G = 9.8;
+
+// Computed I = 2 * M_disc * r²
+function getI() { return 2 * paramM_disc * paramR * paramR; }
+
+// Visual scale factor
+function getScale() { return paramR / BASE_R; }
+
+// Current visual radii
+function curIR() { return BASE_IR_VIS * getScale(); }
+function curOR() { return BASE_OR_VIS * getScale(); }
+
+// ═══════════════════════════════════════════════════════════════
+//  UI REFERENCES
+// ═══════════════════════════════════════════════════════════════
+const elI      = document.getElementById('val-I');
+const elTorque = document.getElementById('val-torque');
+const elDir    = document.getElementById('dir-label');
+const elAlpha  = document.getElementById('val-alpha');
+const elOmega  = document.getElementById('val-omega');
+const elRevs   = document.getElementById('val-revs');
+const elDesc   = document.getElementById('scenario-desc');
+const elStatus = document.getElementById('sim-status');
+const btnStart = document.getElementById('btn-start');
+const rowM     = document.getElementById('row-m');
+
+const slT  = document.getElementById('sl-T'),  vT  = document.getElementById('val-T');
+const slMp = document.getElementById('sl-m'),  vMp = document.getElementById('val-m');
+const slMd = document.getElementById('sl-M'),  vMd = document.getElementById('val-Md');
+const slR  = document.getElementById('sl-r'),  vR  = document.getElementById('val-r');
+
+slT.oninput  = () => { paramT = +slT.value;       vT.textContent  = paramT.toFixed(1);       if (simState === 'IDLE') updateAll(); };
+slMp.oninput = () => { paramM_pail = +slMp.value;  vMp.textContent = paramM_pail.toFixed(1);  if (simState === 'IDLE') updateAll(); };
+slMd.oninput = () => { paramM_disc = +slMd.value;  vMd.textContent = paramM_disc.toFixed(1);  if (simState === 'IDLE') updateAll(); };
+slR.oninput  = () => { paramR = +slR.value;        vR.textContent  = paramR.toFixed(2);        if (simState === 'IDLE') { updatePulleyScale(); updateAll(); } };
+
+const DESCS = {
+    A: "Tension T pulls down on a string at the inner radius r (right side). \u03C4 = Tr, \u03B1 = T/(2Mr). Rotates CW.",
+    B: "3T pulls down at outer radius 2r (left) and T pulls down at inner radius r (right). Net \u03C4 = 5Tr (CCW, 3T dominates). \u03B1 = 5T/(2Mr).",
+    C: "A pail of mass m hangs from the inner radius r. \u03B1 = mg/[r(m + 2M)]. Pail accelerates down, pulley CW."
+};
+
+// ═══════════════════════════════════════════════════════════════
+//  PHYSICS
+//  I = 2Mr² (solid disc, outer radius R=2r)
+//
+//  Scenario A: τ = Tr (CW)
+//    α = Tr/I = T/(2Mr)
+//
+//  Scenario B: τ = 3T(2r) - Tr = 5Tr (net CCW)
+//    α = 5Tr/I = 5T/(2Mr)
+//
+//  Scenario C: coupled pail + pulley
+//    a = mg/(m + I/r²) = mg/(m + 2M)
+//    α = a/r = mg/[r(m+2M)]
+//    T_string = 2Mmg/(m+2M)
+// ═══════════════════════════════════════════════════════════════
+function calcPhysics() {
+    const r = paramR, M = paramM_disc, T = paramT, m = paramM_pail;
+    const I = getI();
+    let netTorque = 0, alpha = 0;
+    let isCW = true; // true = clockwise from camera view
+
+    if (currentExp === 'A') {
+        netTorque = T * r;
+        alpha = netTorque / I;
+        isCW = true;
+    } else if (currentExp === 'B') {
+        // 3T at outer left → CCW torque, T at inner right → CW torque
+        // Net: 3T*2r - T*r = 5Tr → CCW
+        netTorque = 5 * T * r;
+        alpha = netTorque / I;
+        isCW = false; // CCW
+    } else {
+        // Pail scenario
+        const denom = m + 2 * M;
+        const a_lin = m * G / denom;
+        alpha = a_lin / r;
+        const tension = 2 * M * m * G / denom;
+        netTorque = tension * r;
+        isCW = true;
+    }
+
+    return { netTorque, alpha, isCW };
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  VISUAL UPDATES
+// ═══════════════════════════════════════════════════════════════
+function updatePulleyScale() {
+    const s = getScale();
+    pulleySpin.scaling.set(s, s, s);
+}
+
+function setVisibility(exp) {
+    stringA.setEnabled(exp === 'A');
+    stringBOuter.setEnabled(exp === 'B');
+    stringBInner.setEnabled(exp === 'B');
+    stringC.setEnabled(exp === 'C');
+    pailGroup.setEnabled(exp === 'C');
+    rowM.style.display = exp === 'C' ? 'flex' : 'none';
+    arrowTA.hide(); arrowTBInner.hide(); arrowTBOuter.hide();
+    arrowTC.hide(); arrowW.hide();
+}
+
+function positionStrings() {
+    const ir = curIR(), or_ = curOR();
+    const strTop_right = PULLEY_Y - ir;  // bottom of inner rim, right side
+    const strTop_outer = PULLEY_Y - or_;  // bottom of outer rim, left side
+    const strX_right = PULLEY_X + ir;
+    const strX_left  = PULLEY_X - or_;
+
+    if (currentExp === 'A') {
+        const btm = TABLE_Y - 0.3;
+        const h = strTop_right - btm;
+        stringA.scaling.y = h;
+        stringA.position.set(strX_right, strTop_right - h / 2, STRING_Z);
+    } else if (currentExp === 'B') {
+        // Left string (outer rim)
+        const btmL = TABLE_Y - 0.2;
+        const hL = strTop_outer - btmL;
+        stringBOuter.scaling.y = hL;
+        stringBOuter.position.set(strX_left, strTop_outer - hL / 2, STRING_Z);
+        // Right string (inner rim)
+        const btmR = TABLE_Y - 0.2;
+        const hR = strTop_right - btmR;
+        stringBInner.scaling.y = hR;
+        stringBInner.position.set(strX_right, strTop_right - hR / 2, STRING_Z);
+    } else {
+        // String from inner rim to pail top
+        const pailTop = pailGroup.position.y + PAIL_H / 2 + 0.02;
+        const h = strTop_right - pailTop;
+        if (h > 0.01) {
+            stringC.setEnabled(true);
+            stringC.scaling.y = h;
+            stringC.position.set(strX_right, strTop_right - h / 2, STRING_Z);
+        } else {
+            stringC.setEnabled(false);
+        }
+    }
+}
+
+function positionArrows() {
+    const ir = curIR(), or_ = curOR();
+    const scale = 0.06;
+    const strX_right = PULLEY_X + ir;
+    const strX_left  = PULLEY_X - or_;
+
+    if (currentExp === 'A') {
+        // T arrow: pulling down on right side, tail at bottom of inner rim
+        const tailY = PULLEY_Y - ir;
+        arrowTA.set(paramT * scale, strX_right + 0.08, tailY, ARROW_Z, true);
+    } else if (currentExp === 'B') {
+        // 3T arrow on left (outer), pulling down
+        const tailYL = PULLEY_Y - or_;
+        arrowTBOuter.set(3 * paramT * scale, strX_left - 0.08, tailYL, ARROW_Z, true);
+        // T arrow on right (inner), pulling down
+        const tailYR = PULLEY_Y - ir;
+        arrowTBInner.set(paramT * scale, strX_right + 0.08, tailYR, ARROW_Z, true);
+    } else if (!pailLanded) {
+        const m = paramM_pail, M = paramM_disc;
+        const denom = m + 2 * M;
+        const tension = 2 * M * m * G / denom;
+        const pY = pailGroup.position.y;
+
+        // Tension arrow: pointing UP on pail, shown to the right of pail
+        arrowTC.set(tension * scale, strX_right + 0.18, pY - 0.05, ARROW_Z, false);
+        // Weight arrow: pointing DOWN on pail, shown to the left of pail
+        arrowW.set(m * G * scale, strX_right - 0.18, pY + 0.05, ARROW_Z, true);
+    }
+}
+
+function updateStats() {
+    const I = getI();
+    const { netTorque, alpha, isCW } = calcPhysics();
+
+    elI.textContent = I.toFixed(3);
+    elTorque.textContent = netTorque.toFixed(2);
+    elDir.textContent = isCW ? "(CW)" : "(CCW)";
+    elAlpha.textContent = (simState === 'COASTING' ? 0 : alpha).toFixed(2);
+    elOmega.textContent = omega.toFixed(2);
+    elRevs.textContent = (theta / (2 * Math.PI)).toFixed(2);
+}
+
+function updateAll() {
+    updatePulleyScale();
+    positionStrings();
+    positionArrows();
+    updateStats();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  RESET & SWITCH
+// ═══════════════════════════════════════════════════════════════
+function resetSim() {
+    simState = 'IDLE';
+    omega = 0;
+    theta = 0;
+    pailLanded = false;
+    pulleySpin.rotation.z = 0;
+
+    // Pail starts just below the pulley inner rim, to the right
+    const ir = curIR();
+    const pailStartY = PULLEY_Y - ir - 0.4;
+    pailGroup.position.set(PULLEY_X + ir, pailStartY, STRING_Z);
+
+    setVisibility(currentExp);
+    updateAll();
+    btnStart.textContent = "Start";
+    elStatus.textContent = "";
+    elStatus.className = "";
+
+    PortalBridge.save({ exp: currentExp, omega, theta }, 0);
+}
+
+function switchExp(exp) {
+    currentExp = exp;
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + exp.toLowerCase()).classList.add('active');
+    elDesc.textContent = DESCS[exp];
+    resetSim();
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  EVENTS
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('tab-a').addEventListener('click', () => switchExp('A'));
+document.getElementById('tab-b').addEventListener('click', () => switchExp('B'));
+document.getElementById('tab-c').addEventListener('click', () => switchExp('C'));
+
+btnStart.addEventListener('click', () => {
+    if (simState === 'IDLE') {
+        simState = 'RUNNING';
+        btnStart.textContent = "Running...";
+        elStatus.textContent = "";
+    } else if (simState === 'ENDED' || simState === 'COASTING') {
+        resetSim();
+    }
+});
+
+document.getElementById('btn-reset').addEventListener('click', resetSim);
+
+// ═══════════════════════════════════════════════════════════════
+//  RENDER LOOP
+//
+//  Rotation direction:
+//    CW  from camera = negative rotation.z (scenarios A, C)
+//    CCW from camera = positive rotation.z (scenario B)
+//
+//  After pail lands (scenario C):
+//    String slack, no torque, ω preserved (frictionless axle).
+//    Pulley coasts at constant ω.
+// ═══════════════════════════════════════════════════════════════
+scene.onBeforeRenderObservable.add(() => {
+    const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+
+    if (simState === 'COASTING') {
+        // Pulley spins at constant omega, no acceleration
+        theta += omega * dt;
+        const { isCW } = calcPhysics();
+        pulleySpin.rotation.z = isCW ? -theta : theta;
+        updateStats();
+
+        // Auto-stop after 5 more revolutions of coasting
+        if (theta > coastStartTheta + 5 * 2 * Math.PI) {
+            simState = 'ENDED';
+            btnStart.textContent = "Reset";
+            elStatus.textContent = "Simulation ended.";
+            elStatus.className = "";
+        }
+        return;
+    }
+
+    if (simState !== 'RUNNING') return;
+
+    const { netTorque, alpha, isCW } = calcPhysics();
+    omega += alpha * dt;
+    if (omega > 30) omega = 30;
+    theta += omega * dt;
+
+    // Apply rotation
+    pulleySpin.rotation.z = isCW ? -theta : theta;
+
+    // Scenario C: pail descends
+    if (currentExp === 'C' && !pailLanded) {
+        const v_lin = omega * paramR;
+        let newY = pailGroup.position.y - v_lin * dt;
+
+        if (newY <= PAIL_FLOOR_Y) {
+            // COLLISION: pail hits the floor
+            newY = PAIL_FLOOR_Y;
+            pailLanded = true;
+
+            // Pulley coasts at current omega — no torque, frictionless axle
+            coastStartTheta = theta;
+            simState = 'COASTING';
+            btnStart.textContent = "Reset";
+            elStatus.textContent = "Pail landed. Pulley coasting at \u03C9 = " + omega.toFixed(2) + " rad/s";
+            elStatus.className = "status-coast";
+
+            // Hide force arrows (string is slack)
+            arrowTC.hide();
+            arrowW.hide();
+        }
+        pailGroup.position.y = newY;
+    }
+
+    // Auto-stop A & B after 10 revolutions
+    if (currentExp !== 'C' && theta > 10 * 2 * Math.PI) {
+        simState = 'ENDED';
+        btnStart.textContent = "Reset";
+        elStatus.textContent = "10 revolutions reached.";
+    }
+
+    positionStrings();
+    positionArrows();
+    updateStats();
+
+    if (Math.random() < 0.02) {
+        PortalBridge.save({ exp: currentExp, omega, theta }, 0);
+    }
+});
+
+let coastStartTheta = 0;
+
+// ═══════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════
+engine.runRenderLoop(() => scene.render());
+window.addEventListener('resize', () => engine.resize());
+
+updatePulleyScale();
+resetSim();
+
+// Intro camera
+camera.radius = 12;
+BABYLON.Animation.CreateAndStartAnimation(
+    "intro", camera, "radius", 30, 50,
+    12, 7, BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+);
+</script>
+</body>
+</html>

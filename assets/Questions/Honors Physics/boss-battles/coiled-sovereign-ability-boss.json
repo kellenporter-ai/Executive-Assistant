@@ -1,0 +1,2728 @@
+{
+  "id": "boss-quiz-ability-coiled-sovereign-honors-2026-03-06",
+  "bossName": "The Coiled Sovereign",
+  "description": "Ancient and patient, the Coiled Sovereign is a construct of pure stored potential \u2014 a massive spring-lattice entity that absorbs every force applied to it and releases it back with devastating precision. It does not simply resist displacement; it remembers every meter it was pushed and returns that ability tenfold. Operatives must understand how force and displacement interact within a system, or they will fuel the very beast they are trying to destroy.",
+  "maxHp": 2000,
+  "currentHp": 2000,
+  "classType": "Honors Physics",
+  "isActive": false,
+  "deadline": "2026-03-06T23:59:59Z",
+  "questions": [
+    {
+      "id": "q001",
+      "stem": "A student pushes a box across the floor in the direction the box moves. What happens to the ability stored in the box-floor system?",
+      "options": [
+        "The ability increases",
+        "The ability decreases",
+        "The ability stays the same",
+        "The ability first increases then decreases"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q002",
+      "stem": "A crane lifts a steel beam straight upward. The crane exerts an upward force as the beam moves upward. What happens to the gravitational potential ability of the beam-Earth system?",
+      "options": [
+        "It stays the same because the force is constant",
+        "It decreases because the beam is moving",
+        "It increases because the force is in the same direction as the displacement",
+        "It increases only if the beam accelerates"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q003",
+      "stem": "A child pulls a wagon forward while walking forward. Which of the following best describes what is happening to the ability stored in the wagon system?",
+      "options": [
+        "The ability is decreasing because pulling uses up ability",
+        "The ability is increasing because the force and displacement are in the same direction",
+        "The ability is unchanged because the wagon moves at constant speed",
+        "The ability is increasing only if the wagon speeds up"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q004",
+      "stem": "A person stretches a rubber band by pulling both ends outward. The ends of the rubber band move outward, and the pulling forces are also directed outward. What happens to the ability stored in the rubber band?",
+      "options": [
+        "It decreases because the rubber band is being deformed",
+        "It stays the same because both ends are being pulled equally",
+        "It increases because the forces are in the same direction as the displacements",
+        "It increases only if the rubber band returns to its original shape"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q005",
+      "stem": "A rocket engine fires downward as a rocket moves upward. An external system (the engine) exerts a downward force on exhaust gases, but the rocket itself moves upward. Focusing only on the rocket: the engine thrust pushes the rocket upward and the rocket moves upward. What happens to the rocket's ability?",
+      "options": [
+        "It increases because the thrust force and displacement are in the same direction",
+        "It decreases because the engine burns fuel",
+        "It stays the same because the rocket moves at a constant speed",
+        "It decreases because gravity opposes the motion"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q006",
+      "stem": "A weightlifter presses a barbell from shoulder height to fully overhead. The force the lifter exerts on the barbell is upward, and the barbell moves upward. What happens to the gravitational potential ability stored in the barbell-Earth system?",
+      "options": [
+        "It decreases because the lifter is expending ability",
+        "It increases because the applied force and the displacement are in the same direction",
+        "It stays the same because the barbell starts and ends at rest",
+        "It increases only during acceleration, not during the entire lift"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q007",
+      "stem": "A football player runs forward while being pushed forward by a teammate. The push force is forward, and the player's displacement is forward. What happens to the ability stored in the player's motion?",
+      "options": [
+        "It stays the same because the player was already moving",
+        "It decreases because running requires effort",
+        "It increases because the force is in the same direction as the displacement",
+        "It increases only if the player is on flat ground"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q008",
+      "stem": "A spring is compressed by pushing both ends toward each other. The ends of the spring move inward, and the pushing forces are also directed inward. What happens to the ability stored in the spring?",
+      "options": [
+        "It increases because the force and displacement are in the same direction",
+        "It decreases because the spring is being compressed",
+        "It stays the same because compression is temporary",
+        "It decreases because the spring pushes back against the hands"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q009",
+      "stem": "An archer draws a bowstring backward. The string moves backward, and the archer's pulling force is directed backward. What happens to the potential ability stored in the bow system?",
+      "options": [
+        "It decreases because the bow is being bent",
+        "It stays the same because the arrow has not moved yet",
+        "It increases because the force and displacement are in the same direction",
+        "It increases only after the archer releases the string"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q010",
+      "stem": "A tugboat pulls a barge forward through the water. The tow rope exerts a forward force on the barge, and the barge moves forward. Which pattern best explains what is happening to the ability of the barge system?",
+      "options": [
+        "Pattern 3 \u2014 the force is perpendicular to the displacement",
+        "Pattern 2 \u2014 the force is opposite to the displacement",
+        "Pattern 1 \u2014 the force is in the same direction as the displacement, increasing ability",
+        "Pattern 4 \u2014 a stronger force means more ability gained"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q011",
+      "stem": "A forklift raises a pallet of boxes upward. The forklift's forks push up on the pallet, and the pallet moves upward. What is the effect on the gravitational potential ability of the pallet-Earth system?",
+      "options": [
+        "The potential ability decreases because the pallet gains speed",
+        "The potential ability increases because force and displacement are in the same direction",
+        "The potential ability stays the same because the pallet's weight is constant",
+        "The potential ability increases only when the pallet is accelerating"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q012",
+      "stem": "A person pushes a shopping cart down a store aisle. The person exerts a forward force on the cart, and the cart moves forward. Which statement correctly describes the change in the system's ability?",
+      "options": [
+        "The ability decreases because friction is present",
+        "The ability is unchanged because the cart moves at constant speed",
+        "The ability increases because the external force is in the same direction as the displacement",
+        "The ability decreases because the person is behind the cart"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q013",
+      "stem": "Two movers push a couch up a ramp. Both apply a force directed up the ramp, and the couch moves up the ramp. What happens to the gravitational potential ability of the couch-Earth system?",
+      "options": [
+        "It stays the same because the ramp makes lifting easier",
+        "It decreases because the movers are losing ability",
+        "It increases because force and displacement are in the same direction",
+        "It increases only if the couch reaches the top of the ramp"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q014",
+      "stem": "A swimmer pushes off the wall of a pool. The wall exerts a forward force on the swimmer, and the swimmer moves forward. What happens to the swimmer's ability?",
+      "options": [
+        "It stays the same because the swimmer's legs do the pushing",
+        "It increases because the force and displacement are in the same direction",
+        "It decreases because the swimmer will slow down due to water resistance",
+        "It stays the same because the swimmer starts at rest"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q015",
+      "stem": "A wrecking ball swings toward a building wall. Just before impact, a crane exerts a forward horizontal force on the ball in the same direction as the ball's forward displacement. What happens to the ball's ability during this phase?",
+      "options": [
+        "It decreases because the ball is about to hit the wall",
+        "It stays the same because gravity is pulling the ball down",
+        "It increases because the applied force is in the same direction as the displacement",
+        "It increases only if no other forces act on the ball"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q016",
+      "stem": "A person catches a baseball. The catcher's glove exerts a backward force on the ball as the ball moves forward. What happens to the ability stored in the ball's motion?",
+      "options": [
+        "It increases because the catcher is adding force to the system",
+        "It stays the same because the ball eventually stops",
+        "It decreases because the force is opposite to the displacement",
+        "It stays the same because the ball's mass does not change"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q017",
+      "stem": "A car brakes to a stop. The brakes exert a backward friction force on the wheels as the car moves forward. What happens to the ability of the car's motion?",
+      "options": [
+        "It increases because the brakes are engaging",
+        "It decreases because the braking force is opposite to the displacement",
+        "It stays the same because the car's mass is constant",
+        "It increases because the car is decelerating"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q018",
+      "stem": "A sky diver opens a parachute. Air resistance now exerts an upward force on the sky diver as the sky diver continues to fall downward. What happens to the sky diver's ability?",
+      "options": [
+        "It increases because the sky diver is still moving",
+        "It stays the same because the parachute balances gravity",
+        "It decreases because the air resistance force is opposite to the displacement",
+        "It decreases only after the sky diver reaches terminal velocity"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q019",
+      "stem": "A child slides down a snowy hill. Friction exerts a force up the hill on the child as the child slides down the hill. What does friction do to the ability of the child's motion?",
+      "options": [
+        "Friction increases the ability because it slows the child safely",
+        "Friction decreases the ability because the frictional force is opposite to the displacement",
+        "Friction keeps the ability constant because the slope is steady",
+        "Friction increases the ability because the child is gaining speed"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q020",
+      "stem": "A baseball pitcher throws a ball forward, but then air resistance acts backward on the ball as it travels forward toward the plate. What does air resistance do to the ball's ability?",
+      "options": [
+        "It increases the ability because it guides the ball",
+        "It has no effect because the ball is already in motion",
+        "It decreases the ability because the drag force is opposite to the displacement",
+        "It decreases the ability only after the ball passes the halfway point"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q021",
+      "stem": "A sled moves forward across the snow. A child applies a backward-directed brake force on the sled while it moves forward. Which pattern best explains what happens to the ability of the sled?",
+      "options": [
+        "Pattern 1 \u2014 force and displacement are in the same direction",
+        "Pattern 3 \u2014 the force is perpendicular to the displacement",
+        "Pattern 2 \u2014 the force is opposite to the displacement, decreasing ability",
+        "Pattern 4 \u2014 a stronger braking force increases ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q022",
+      "stem": "A basketball player jumps upward, and after reaching peak height begins to fall. Gravity pulls the player downward while the player moves downward. What happens to the player's gravitational potential ability during the fall?",
+      "options": [
+        "It increases because the player is falling faster",
+        "It stays the same because gravity is constant",
+        "It decreases because gravity is in the same direction as the displacement",
+        "It decreases because the player is losing height"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q023",
+      "stem": "A person pushes a swing backward while the swing moves backward \u2014 but then the swing starts moving forward and the person still pushes backward. Now the force is backward and the displacement is forward. What happens to the ability of the swing?",
+      "options": [
+        "It increases because the person is still pushing",
+        "It stays the same because the push hasn't changed direction",
+        "It decreases because the force is now opposite to the displacement",
+        "It increases because the swing is moving faster"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q024",
+      "stem": "A hockey puck slides forward on ice. A goalkeeper's stick pushes backward on the puck as the puck moves forward. What happens to the puck's ability?",
+      "options": [
+        "It increases because the stick is in contact with the puck",
+        "It decreases because the stick force is in the opposite direction to the displacement",
+        "It stays the same because the ice is frictionless",
+        "It increases only if the stick accelerates the puck"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q025",
+      "stem": "A roller coaster car descends a hill. A magnetic braking system exerts an upward force along the track (opposing motion) as the car moves downward along the track. What happens to the car's ability?",
+      "options": [
+        "It increases because the car is going downhill",
+        "It decreases because the braking force is opposite to the displacement",
+        "It stays the same because the track guides the motion",
+        "It increases because gravity still acts on the car"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q026",
+      "stem": "A person lowers a heavy box slowly to the floor. The person exerts an upward force on the box as the box moves downward. What happens to the box's gravitational potential ability?",
+      "options": [
+        "It increases because the person is exerting a force on the box",
+        "It stays the same because the box moves slowly",
+        "It decreases because the applied force is opposite to the displacement",
+        "It increases because the person is holding the box up"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q027",
+      "stem": "A ball is thrown upward. Gravity exerts a downward force on the ball as the ball moves upward. What happens to the ball's ability during the upward phase?",
+      "options": [
+        "It increases because the ball is gaining height",
+        "It increases because the ball is still moving upward",
+        "It decreases because the gravitational force is opposite to the displacement",
+        "It stays the same because gravity is constant"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q028",
+      "stem": "A bicycle rider coasts down a hill and applies the hand brakes. The braking force acts opposite to the direction of motion. What does this tell you about the ability of the bicycle system?",
+      "options": [
+        "The ability increases because the rider is descending",
+        "The ability stays the same because the brakes are balanced by gravity",
+        "The ability decreases because the braking force is opposite to the displacement",
+        "The ability decreases only if the bike comes to a complete stop"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q029",
+      "stem": "An elevator descends from the 10th floor to the ground floor. The cable exerts an upward tension force on the elevator as the elevator moves downward. What does the cable do to the gravitational potential ability of the elevator-Earth system?",
+      "options": [
+        "It increases the potential ability because the cable is pulling up",
+        "It decreases the potential ability because the cable force is opposite to the displacement",
+        "It has no effect because the cable is just maintaining tension",
+        "It increases the potential ability only if the elevator slows down"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q030",
+      "stem": "A spring-loaded toy car is rolling forward. A rubber bumper at the end of a track pushes backward on the car as the car moves forward. What happens to the car's ability?",
+      "options": [
+        "It increases because the bumper stores the ability",
+        "It stays the same because the bumper just redirects the car",
+        "It decreases because the bumper force is in the opposite direction to the car's displacement",
+        "It decreases only when the car is fully stopped"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q031",
+      "stem": "A person presses their hand against a solid brick wall with full force, but the wall does not move. What happens to the ability of the wall system?",
+      "options": [
+        "It increases because the person is exerting a large force",
+        "It decreases because the person is pushing very hard",
+        "It stays the same because there is no displacement",
+        "It increases because the person is tired after pushing"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q032",
+      "stem": "A student carries a stack of books horizontally across a flat floor at constant height. The student exerts an upward force on the books, but the books move horizontally. What happens to the gravitational potential ability of the books?",
+      "options": [
+        "It increases because the student is holding the books up",
+        "It increases because the student is walking",
+        "It stays the same because the upward force is perpendicular to the horizontal displacement",
+        "It decreases because the student is expending effort"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q033",
+      "stem": "A satellite orbits Earth in a perfectly circular orbit. Earth's gravity always points toward the center of the orbit, which is perpendicular to the satellite's velocity and displacement. What happens to the satellite's ability?",
+      "options": [
+        "It increases because gravity is always acting on the satellite",
+        "It decreases because the satellite is losing altitude over time",
+        "It stays the same because the gravitational force is perpendicular to the displacement",
+        "It increases because the satellite moves very fast"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q034",
+      "stem": "A person attempts to push a car that is stuck in mud. They push as hard as they can, but the car does not budge. Which pattern explains what happens to the car's ability?",
+      "options": [
+        "Pattern 1 \u2014 force and displacement are the same, increasing ability",
+        "Pattern 2 \u2014 the force is opposite to the displacement",
+        "Pattern 3 \u2014 there is no displacement, so the ability does not change",
+        "Pattern 4 \u2014 a stronger force increases ability more"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q035",
+      "stem": "A nail is hammered into a wall and is now fully seated. A person continues pressing the hammer against the nail head, but the nail no longer moves. What happens to the system's ability?",
+      "options": [
+        "It increases because the hammer is still pressing",
+        "It decreases because the person is pushing backward",
+        "It stays the same because there is no displacement",
+        "It increases because the nail is now under pressure"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q036",
+      "stem": "A horse pulls a plow sideways along a field, but the plow is also sinking vertically into the soil. The horse's pulling force is entirely horizontal. What does the horse's pulling force do to the gravitational potential ability of the plow-Earth system?",
+      "options": [
+        "It increases the potential ability because the horse is doing a lot of pulling",
+        "It decreases the potential ability because the force is large",
+        "It has no effect on the gravitational potential ability because the horizontal force is perpendicular to the vertical displacement",
+        "It increases the potential ability because the plow is moving through the soil"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q037",
+      "stem": "A figure skater glides in a circle on ice. The ice exerts a normal force upward on the skater while the skater moves horizontally. What does the normal force from the ice do to the skater's ability?",
+      "options": [
+        "It increases the ability because the ice supports the skater",
+        "It decreases the ability because the skater is on a circular path",
+        "It has no effect because the normal force is perpendicular to the displacement",
+        "It increases the ability because the skater is moving fast"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q038",
+      "stem": "A book rests on a table. The table exerts an upward normal force on the book, but the book does not move. What happens to the book's ability?",
+      "options": [
+        "It increases because the table is pushing up on the book",
+        "It stays the same because there is no displacement",
+        "It decreases because gravity is also acting on the book",
+        "It stays the same because the two forces cancel out"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q039",
+      "stem": "A bucket of water is swung in a horizontal circle at the end of a rope at constant speed. The rope tension points inward (toward the center), while the bucket moves along the circle (perpendicular to the rope). What happens to the bucket's ability?",
+      "options": [
+        "It increases because the rope is pulling on the bucket",
+        "It decreases because the bucket is being restrained",
+        "It stays the same because the tension is perpendicular to the displacement",
+        "It increases because the bucket is moving in a circle"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q040",
+      "stem": "A construction worker pushes on a structural beam to test if it will move. The beam is bolted to the floor and does not shift at all. What correctly describes the situation?",
+      "options": [
+        "The ability of the beam increases because the worker exerts a large force",
+        "The ability of the beam decreases because the worker pushes hard",
+        "The ability of the beam is unchanged because there is no displacement",
+        "The ability of the beam increases because the worker applies force for a long time"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q041",
+      "stem": "A rock climber pulls down on a rope that is anchored above, and the rope pulls the climber upward as the climber ascends. The force on the climber is upward and the displacement is upward. What happens to the climber's gravitational potential ability?",
+      "options": [
+        "It decreases because climbing is tiring",
+        "It stays the same because the rope is just redirecting force",
+        "It increases because the force on the climber is in the same direction as the displacement",
+        "It increases only after the climber reaches the top"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q042",
+      "stem": "A soccer ball rolls forward across a field. A goalkeeper dives and pushes the ball backward while the ball is still moving forward. Which pattern describes what happens to the ball's ability?",
+      "options": [
+        "Pattern 1 \u2014 force and displacement are in the same direction",
+        "Pattern 3 \u2014 force is perpendicular to displacement",
+        "Pattern 2 \u2014 force is opposite to displacement, decreasing the ball's ability",
+        "Pattern 5 \u2014 more displacement means more ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q043",
+      "stem": "A student tries to lift a very heavy crate off the floor but cannot move it. Which pattern best explains what happens to the crate's gravitational potential ability?",
+      "options": [
+        "Pattern 1 \u2014 the upward force increases the potential ability",
+        "Pattern 3 \u2014 no displacement means no change in ability",
+        "Pattern 2 \u2014 the force is opposite to what gravity wants, so ability decreases",
+        "Pattern 4 \u2014 a stronger force causes more change in ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q044",
+      "stem": "A bobsled is pushed by teammates at the start of a run. The pushers exert a forward force on the sled as it moves forward. Then the sled enters the icy track and the pushers let go. During the push phase, what happens to the sled's ability?",
+      "options": [
+        "It decreases because the pushers are behind the sled",
+        "It stays the same because the sled is just starting to move",
+        "It increases because the push force is in the same direction as the displacement",
+        "It increases only after the pushers release the sled"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q045",
+      "stem": "A treadmill belt moves backward beneath a person's feet. The person's feet push backward against the belt, but the person does not move forward \u2014 they stay in place. The treadmill belt pushes forward on the person's feet. What happens to the person's ability (they remain stationary)?",
+      "options": [
+        "It increases because the belt pushes the person forward",
+        "It stays the same because the person has zero displacement",
+        "It decreases because the person is working against the belt",
+        "It increases because the person is exerting a large force"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q046",
+      "stem": "A person lowers a barbell slowly from overhead back down to shoulder height. The person exerts an upward force on the barbell while the barbell moves downward. Which pattern best describes what happens to the gravitational potential ability of the barbell-Earth system?",
+      "options": [
+        "Pattern 1 \u2014 force and displacement are the same, ability increases",
+        "Pattern 3 \u2014 no displacement, so no change",
+        "Pattern 2 \u2014 force is opposite to displacement, potential ability decreases",
+        "Pattern 5 \u2014 more displacement means more change in ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q047",
+      "stem": "A swimmer underwater pushes off the wall horizontally and glides forward. Then a swim coach reaches in and pushes the swimmer's feet upward while the swimmer moves horizontally forward. What does the coach's upward force do to the swimmer's horizontal ability of motion?",
+      "options": [
+        "It increases the swimmer's forward ability because any force helps",
+        "It has no effect on the swimmer's forward ability because the upward force is perpendicular to the forward displacement",
+        "It decreases the swimmer's forward ability because the force is not aligned with the motion",
+        "It increases the swimmer's ability only if the swimmer also moves upward"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q048",
+      "stem": "In a tug of war, Team A pulls the rope to the right with great force, but Team B pulls with equal force to the left and the rope does not move. What happens to the ability of the rope system?",
+      "options": [
+        "It increases because both teams are pulling hard",
+        "It stays the same because there is no displacement",
+        "It increases on the right side and decreases on the left side",
+        "It decreases because the forces cancel out"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q049",
+      "stem": "A crane operator first raises a load upward (force up, displacement up), then swings the load horizontally to a new location at the same height (force up from cable, displacement horizontal). What happens to the gravitational potential ability during the horizontal swing phase?",
+      "options": [
+        "It continues to increase because the crane is still holding the load",
+        "It stays the same because the upward cable force is perpendicular to the horizontal displacement",
+        "It decreases because the load is moving sideways instead of up",
+        "It increases because the crane is expending effort to swing the load"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q050",
+      "stem": "A log is dragged up a ramp by a rope (force up the ramp, displacement up the ramp \u2014 ability increases). Then the same log is placed on a frictionless floor and slid sideways by a horizontal push (force horizontal, displacement horizontal \u2014 ability increases). In which scenario did the system's ability increase for the same reason?",
+      "options": [
+        "Only the ramp scenario \u2014 gravity makes ramps special",
+        "Only the sliding scenario \u2014 horizontal surfaces are frictionless",
+        "Both scenarios \u2014 in each case the applied force is in the same direction as the displacement",
+        "Neither scenario \u2014 ability can only increase when an object moves upward"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q051",
+      "stem": "A student pushes a cart 5 meters across a floor. In Scenario A, she pushes with 10 N of force. In Scenario B, she pushes with 20 N of force. Both forces are in the direction of motion. Which scenario gives the cart's system more ability?",
+      "options": [
+        "Scenario A, because the cart is lighter",
+        "Scenario B, because the force is stronger",
+        "They gain the same ability because the displacement is the same",
+        "Scenario A, because slower pushes store more ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q052",
+      "stem": "Two identical springs are compressed the same distance. Spring A is compressed by a 15 N force and Spring B is compressed by a 30 N force. Which spring stores more potential ability?",
+      "options": [
+        "Spring A, because it was compressed first",
+        "They store the same potential ability since the compression distance is equal",
+        "Spring B, because the force acting on it is stronger",
+        "Spring A, because lighter forces are more efficient"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q053",
+      "stem": "A weightlifter raises a barbell 1 meter off the ground. In Lift 1, she exerts 400 N upward. In Lift 2, she exerts 600 N upward. Both lifts move the barbell the same 1 meter. Which lift gives the barbell's system more potential ability?",
+      "options": [
+        "Lift 1, because a lighter lift is more controlled",
+        "Lift 2, because the upward force is stronger",
+        "Both lifts give the same potential ability",
+        "Lift 1, because the barbell weighs the same in both cases"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q054",
+      "stem": "Two archers each draw their bowstring back the same distance. Archer A pulls with 50 N of force and Archer B pulls with 80 N of force. Whose bow stores more potential ability?",
+      "options": [
+        "Archer A's bow, because less force means the string is under less stress",
+        "They store equal potential ability because the draw distance is the same",
+        "Archer B's bow, because the pulling force is stronger",
+        "It depends on the weight of the arrow"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q055",
+      "stem": "A sled is pulled 4 meters along a snowy path. In Trial 1, the pulling force is 25 N in the direction of motion. In Trial 2, the pulling force is 40 N in the direction of motion. Which trial gives the sled's system more ability?",
+      "options": [
+        "Trial 1, because the sled is moving slower",
+        "Trial 2, because the force is greater",
+        "Both trials give equal ability since displacement is the same",
+        "Trial 1, because a smaller force is applied over the same distance"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q056",
+      "stem": "A catapult arm is pushed down 0.5 meters by two different crews. Crew A pushes with 200 N and Crew B pushes with 350 N. Which catapult stores more potential ability in its mechanism?",
+      "options": [
+        "Crew A's catapult, because less force was used",
+        "They store the same potential ability since displacement is identical",
+        "Crew B's catapult, because the applied force is stronger",
+        "It cannot be determined without knowing the catapult's mass"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q057",
+      "stem": "In a lab, two rubber bands are stretched the same 10 cm. Band A is stretched with 5 N and Band B is stretched with 12 N. Which rubber band has more potential ability stored in it?",
+      "options": [
+        "Band A, because it was stretched with less force and may be less damaged",
+        "Band B, because the stretching force was stronger",
+        "They have equal potential ability since the stretch distance is the same",
+        "Band A, because thinner rubber bands store more ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q058",
+      "stem": "A furniture mover pushes a heavy dresser 3 meters across a room. On Monday she pushes with 100 N. On Tuesday she pushes the same dresser the same 3 meters but with 150 N. On which day does the dresser's system gain more ability?",
+      "options": [
+        "Monday, because the dresser is the same and the distance is the same",
+        "Tuesday, because the applied force is greater",
+        "Both days give the same ability gain",
+        "Monday, because a slower push stores more ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q059",
+      "stem": "A rocket engine fires for exactly 2 seconds, pushing a rocket forward. In Test 1 the thrust is 5000 N. In Test 2 the thrust is 8000 N. If both rockets travel the same distance during those 2 seconds, which rocket's system gains more ability?",
+      "options": [
+        "Test 1, because a lower thrust is safer",
+        "Test 2, because the thrust force is larger",
+        "Both rockets gain equal ability if they travel the same distance",
+        "Test 1, because less fuel is burned"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q060",
+      "stem": "Two identical boxes are slid along the floor the same 6 meters. Box A is pushed with 30 N in the direction of motion. Box B is pushed with 30 N at an angle perpendicular to the motion, plus an additional 20 N in the direction of motion. Which box's system gains more ability from the forces acting in the direction of motion?",
+      "options": [
+        "Box A, because only one force acts on it",
+        "Box B, because the total force on it is larger and part of it is in the direction of motion",
+        "They gain the same ability because the displacement is the same",
+        "Box A, because perpendicular forces cancel out ability gains"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q061",
+      "stem": "A student kicks a soccer ball. Kick A delivers 60 N of force over the 0.2 m the foot is in contact with the ball. Kick B delivers 90 N over the same 0.2 m contact distance. Which kick gives the ball more ability?",
+      "options": [
+        "Kick A, because less force reduces wear on the ball",
+        "Both kicks give equal ability since the contact distance is the same",
+        "Kick B, because the force applied is stronger",
+        "Kick A, because a lighter kick maintains more control"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q062",
+      "stem": "A crane lifts a steel beam 8 meters. Crane A uses 2000 N of upward force. Crane B uses 3500 N of upward force. The beam travels the same 8 meters in both cases. Which crane gives the beam's system more potential ability?",
+      "options": [
+        "Crane A, because it uses less force",
+        "Crane B, because the lifting force is greater",
+        "Both cranes give the beam equal potential ability",
+        "It depends on the speed of the lift"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q063",
+      "stem": "Two students push shopping carts 10 meters down an aisle. Student A pushes with 20 N. Student B pushes with 45 N. Both push in the direction of motion. Which statement is correct?",
+      "options": [
+        "Student A's cart gains more ability because lighter force is more efficient over distance",
+        "Student B's cart gains more ability because a stronger force was applied over the same displacement",
+        "Both carts gain the same ability since they travel the same 10 meters",
+        "Neither cart gains ability because the floor is flat"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q064",
+      "stem": "A hydraulic press compresses a metal cube the same 2 cm in two tests. Test X applies 500 N and Test Y applies 1200 N, both directed into the cube. In which test does the cube's system gain more ability?",
+      "options": [
+        "Test X, because lower force causes less damage to the cube",
+        "Test Y, because the compressing force is stronger",
+        "Both tests give the cube equal ability since the compression distance is the same",
+        "Test X, because the cube resists more at lower forces"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q065",
+      "stem": "A child pulls a toy wagon 5 meters forward. On the first pull she uses 8 N. On the second pull she uses 8 N but adds a 4 N bungee cord also pulling forward. Both pulls cover the same 5 meters. In which pull does the wagon's system gain more ability?",
+      "options": [
+        "First pull, because only one force acts on the wagon",
+        "Second pull, because the total forward force is greater",
+        "Both pulls give the wagon equal ability since the distance is the same",
+        "Second pull only if the bungee cord is attached at the front"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q066",
+      "stem": "A student pushes a box with a constant 15 N force in the direction of motion. In Case 1, the box moves 2 meters. In Case 2, the box moves 5 meters. Which case gives the box's system more ability?",
+      "options": [
+        "Case 1, because the box stops sooner and stores ability",
+        "Case 2, because the displacement is greater",
+        "Both cases give the same ability since the force is identical",
+        "Case 1, because shorter distances preserve more ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q067",
+      "stem": "A weightlifter uses a constant upward force of 500 N to raise a barbell. In Lift A she raises it 0.5 m. In Lift B she raises it 1.5 m. Which lift gives the barbell's system more potential ability?",
+      "options": [
+        "Lift A, because less displacement means more controlled storage",
+        "Both lifts give the same potential ability since the force is constant",
+        "Lift B, because the displacement is greater",
+        "Lift A, because the barbell is heavier closer to the ground"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q068",
+      "stem": "An archer pulls a bowstring with a constant 60 N force. In Draw 1, she pulls the string back 15 cm. In Draw 2, she pulls it back 30 cm. Which draw stores more potential ability in the bow?",
+      "options": [
+        "Draw 1, because a shorter draw is more accurate",
+        "Draw 2, because the string displacement is greater",
+        "Both draws store the same potential ability since the force is equal",
+        "Draw 1, because the string is under less strain"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q069",
+      "stem": "A sled is pulled with a constant 40 N force along flat snow. Trial 1 covers 3 meters. Trial 2 covers 7 meters. In which trial does the sled's system gain more ability?",
+      "options": [
+        "Trial 1, because less distance means more concentrated ability",
+        "Both trials give equal ability since the force is the same",
+        "Trial 2, because the sled travels a greater distance",
+        "Trial 1, because friction removes ability over longer distances"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q070",
+      "stem": "A rubber band is stretched with a constant 10 N force. In Stretch A it is pulled 5 cm. In Stretch B it is pulled 12 cm. Which rubber band has more potential ability stored in it?",
+      "options": [
+        "Stretch A, because the band is less likely to break",
+        "Both stretches store equal potential ability since the force is constant",
+        "Stretch B, because the displacement is greater",
+        "Stretch A, because shorter stretches are more efficient"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q071",
+      "stem": "A rocket engine produces a constant 10,000 N of thrust. In Flight 1 the rocket travels 100 m before the engine cuts out. In Flight 2 the rocket travels 400 m before the engine cuts out. Which flight gives the rocket's system more ability?",
+      "options": [
+        "Flight 1, because a shorter burn is more efficient",
+        "Flight 2, because the rocket is displaced a greater distance while the force acts",
+        "Both flights give the same ability since the thrust force is equal",
+        "Flight 1, because the rocket moves faster at shorter distances"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q072",
+      "stem": "A furniture mover pushes a couch with a steady 80 N force. On Monday she moves it 4 meters. On Friday she moves the same couch with the same 80 N but covers 9 meters. On which day does the couch's system gain more ability?",
+      "options": [
+        "Monday, because shorter distances are less tiring",
+        "Friday, because the couch is displaced a greater distance",
+        "Both days give the couch equal ability since the applied force is the same",
+        "Monday, because the couch weighs the same on both days"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q073",
+      "stem": "A catapult arm is pushed down with a constant 300 N force. In Setup 1, the arm is pushed down 0.3 m. In Setup 2, the arm is pushed down 0.9 m. Which setup stores more potential ability?",
+      "options": [
+        "Setup 1, because less compression means faster release",
+        "Setup 2, because the arm is displaced a greater distance",
+        "Both setups store equal potential ability since the force is the same",
+        "Setup 1, because potential ability decreases with greater compression"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q074",
+      "stem": "A crane lifts a steel beam with a constant 4000 N upward force. In Job 1 the beam is raised 3 meters. In Job 2 the beam is raised 10 meters. Which job gives the beam's system more potential ability?",
+      "options": [
+        "Job 1, because a lower height stores ability more safely",
+        "Both jobs give the same potential ability since the crane force is equal",
+        "Job 2, because the displacement of the beam is greater",
+        "Job 1, because gravity removes potential ability at greater heights"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q075",
+      "stem": "A student compresses a spring with a constant 25 N force. In Trial 1 she compresses it 2 cm. In Trial 2 she compresses it 8 cm. Which trial stores more potential ability in the spring?",
+      "options": [
+        "Trial 1, because less compression preserves the spring's structure",
+        "Trial 2, because the spring is compressed a greater distance",
+        "Both trials store equal potential ability since the force is the same",
+        "Trial 1, because springs lose ability when over-compressed"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q076",
+      "stem": "Two identical balls are each kicked with the same 70 N force. Ball A is in contact with the foot for 0.1 m. Ball B is in contact with the foot for 0.3 m. Which ball receives more ability from the kick?",
+      "options": [
+        "Ball A, because shorter contact time means a sharper kick",
+        "Both balls receive equal ability since the kicking force is the same",
+        "Ball B, because the foot displaces the ball over a greater distance",
+        "Ball A, because the force is applied more quickly"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q077",
+      "stem": "A student drags a heavy box with a constant 50 N horizontal force. She drags it 2 meters in the morning and 6 meters in the afternoon. In which session does the box's system gain more ability?",
+      "options": [
+        "Morning session, because the box is dragged when it is freshest",
+        "Afternoon session, because the displacement is greater",
+        "Both sessions give equal ability since the pulling force is the same",
+        "Morning session, because shorter drags are more efficient"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q078",
+      "stem": "A bow-and-arrow system is drawn with a constant 55 N force. Archer 1 draws the string back 20 cm. Archer 2 draws the string back 35 cm. Rank the potential ability stored from least to greatest.",
+      "options": [
+        "Archer 2, then Archer 1 \u2014 greater displacement means more ability is stored",
+        "Archer 1, then Archer 2 \u2014 longer draw distances reduce stored potential ability",
+        "They are equal \u2014 the force is the same for both archers",
+        "Archer 1, then Archer 2 \u2014 shorter draws concentrate ability more effectively"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q079",
+      "stem": "A constant 120 N force pushes a cart forward. The cart moves 1 m in Scenario X and 5 m in Scenario Y. Which statement correctly compares the ability gained?",
+      "options": [
+        "Scenario X gives more ability because the force is applied over a shorter path",
+        "Scenario Y gives more ability because the greater displacement means more ability is added to the system",
+        "Both scenarios give equal ability since the force is constant",
+        "Scenario X gives more ability if the cart is heavier"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q080",
+      "stem": "A student stretches two identical springs with the same 18 N force. Spring P is stretched 4 cm and Spring Q is stretched 11 cm. Which spring has more potential ability, and why?",
+      "options": [
+        "Spring P, because less stretching preserves more potential ability in a compressed state",
+        "Spring Q, because the same force is applied over a greater displacement, adding more potential ability",
+        "Both springs have equal potential ability since the force applied is identical",
+        "Spring P, because greater stretch distance releases potential ability rather than storing it"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q081",
+      "stem": "Scenario A: A 20 N force pushes a box 4 meters. Scenario B: A 40 N force pushes a box 2 meters. Both forces are in the direction of motion. Which scenario gives the box's system more ability?",
+      "options": [
+        "Scenario A, because the displacement is greater",
+        "Scenario B, because the force is stronger",
+        "They give equal ability because 20\u00d74 and 40\u00d72 both equal 80",
+        "Scenario A, because larger displacement always matters more than larger force"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q082",
+      "stem": "A weightlifter performs two lifts. Lift 1: 300 N upward over 2 meters. Lift 2: 200 N upward over 4 meters. Which lift gives the barbell's system more potential ability?",
+      "options": [
+        "Lift 1, because the force is stronger",
+        "Lift 2, because the displacement is greater",
+        "They give equal potential ability \u2014 300\u00d72 = 200\u00d74 = 600 N\u00b7m worth of ability transferred",
+        "Lift 1, because heavier lifts always store more potential ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q083",
+      "stem": "Sled A is pulled with 50 N over 6 meters. Sled B is pulled with 75 N over 3 meters. Both forces are in the direction of motion. Which sled's system gains more ability?",
+      "options": [
+        "Sled A, because it travels farther",
+        "Sled B, because the pulling force is stronger",
+        "Sled A, because 50\u00d76 = 300, which is greater than 75\u00d73 = 225",
+        "Sled B, because stronger forces always give more ability regardless of distance"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q084",
+      "stem": "A spring is compressed in two trials. Trial 1: 100 N over 5 cm. Trial 2: 250 N over 2 cm. Which trial stores more potential ability in the spring?",
+      "options": [
+        "Trial 2, because the force is much stronger",
+        "Trial 1, because 100\u00d75 = 500, which is greater than 250\u00d72 = 500 \u2014 they are equal",
+        "Trial 1, because greater displacement always stores more potential ability",
+        "Trial 2, because stronger forces always compress springs more efficiently"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q085",
+      "stem": "A rocket produces 6000 N of thrust over 50 meters in Test 1. In Test 2, it produces 3000 N over 80 meters. Which test gives the rocket's system more ability?",
+      "options": [
+        "Test 1, because 6000 N is twice the force of Test 2",
+        "Test 2, because 3000\u00d780 = 240,000 \u2014 more ability than 6000\u00d750 = 300,000",
+        "Test 1, because 6000\u00d750 = 300,000 which is greater than 3000\u00d780 = 240,000",
+        "Test 2, because traveling farther always stores more ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q086",
+      "stem": "An archer compares two bows. Bow X requires 80 N to draw and is pulled back 25 cm. Bow Y requires 40 N to draw and is pulled back 60 cm. Which bow stores more potential ability?",
+      "options": [
+        "Bow X, because it requires more force to draw",
+        "Bow Y, because 40\u00d760 = 2400, while 80\u00d725 = 2000, so Bow Y stores more potential ability",
+        "Bow X, because 80\u00d725 = 2000, while 40\u00d760 = 2400 \u2014 wait, Bow Y wins",
+        "They store equal potential ability because one has more force and the other more displacement"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q087",
+      "stem": "A catapult is set up two ways. Setup P: arm pushed down with 400 N over 0.4 m. Setup Q: arm pushed down with 200 N over 1.0 m. Which setup stores more potential ability?",
+      "options": [
+        "Setup P, because the force is twice as strong",
+        "Setup Q, because 200\u00d71.0 = 200, while 400\u00d70.4 = 160, so Setup Q stores more",
+        "Setup P, because 400\u00d70.4 = 160, which is less than 200\u00d71.0 = 200 \u2014 so Setup Q wins",
+        "They store equal potential ability because both have one advantage"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q088",
+      "stem": "A student pushes furniture in two scenarios. Scenario 1: 60 N over 5 m. Scenario 2: 90 N over 3 m. Which scenario gives the furniture's system more ability?",
+      "options": [
+        "Scenario 2, because the force is stronger",
+        "Scenario 1, because 60\u00d75 = 300, which is greater than 90\u00d73 = 270",
+        "Scenario 2, because 90\u00d73 = 270, which is greater than 60\u00d75 = 300 \u2014 wait, Scenario 1 wins",
+        "They give equal ability because one has more force and the other more displacement"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q089",
+      "stem": "Two cranes lift beams in a construction yard. Crane 1 lifts with 5000 N over 4 m. Crane 2 lifts with 2500 N over 10 m. Which crane gives its beam more potential ability?",
+      "options": [
+        "Crane 1, because its lifting force is twice as strong",
+        "Crane 2, because 2500\u00d710 = 25,000, which is greater than 5000\u00d74 = 20,000",
+        "Crane 1, because 5000\u00d74 = 20,000, which is greater than 2500\u00d710 = 25,000 \u2014 so Crane 2 wins",
+        "They give equal potential ability because force and displacement trade off perfectly"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q090",
+      "stem": "A student drags two boxes. Box A: pulled with 35 N over 8 m. Box B: pulled with 70 N over 3 m. Both forces are in the direction of motion. Which box's system gains more ability?",
+      "options": [
+        "Box B, because the force is doubled",
+        "Box A, because 35\u00d78 = 280, which is greater than 70\u00d73 = 210",
+        "Box B, because 70\u00d73 = 210, which is greater than 35\u00d78 = 280 \u2014 so Box A wins",
+        "They gain equal ability since the force and displacement trade off"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q091",
+      "stem": "A student holds a heavy book perfectly still at arm's length for 5 minutes. How does the book's system's potential ability change during those 5 minutes?",
+      "options": [
+        "It increases, because the student is exerting a large upward force",
+        "It stays the same, because the book does not move and there is no displacement",
+        "It increases slowly, because the force is applied for a long time",
+        "It decreases, because the student is using effort to hold it up"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q092",
+      "stem": "A child pushes a stalled car sideways while the car rolls forward. The child's force is perpendicular to the car's motion. Which statement best describes what happens to the car's ability?",
+      "options": [
+        "The car's ability increases because the child is exerting a large force",
+        "The car's ability is unchanged by the child's push, because the force is perpendicular to the displacement",
+        "The car's ability decreases because a sideways force slows the system",
+        "The car's ability increases slightly because any force adds some ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q093",
+      "stem": "Rank these three scenarios from LEAST to MOST ability given to the cart's system. All forces are in the direction of motion. A: 10 N over 3 m. B: 30 N over 1 m. C: 5 N over 5 m.",
+      "options": [
+        "C (25), then B (30), then A (30) \u2014 B and A tie",
+        "B (30), then C (25), then A (30) \u2014 A and B tie",
+        "C (25), then A (30) and B (30) tied \u2014 A and B both greater than C",
+        "A (30), then B (30), then C (25) \u2014 C gives the least ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q094",
+      "stem": "A sled is pushed forward with 50 N. Halfway through the trip, the pusher doubles the force to 100 N but the sled hits a wall and stops moving. Which statement is correct about the second half of the trip?",
+      "options": [
+        "The sled gains more ability in the second half because the force is doubled",
+        "The sled gains no additional ability in the second half because displacement is zero after hitting the wall",
+        "The sled gains less ability in the second half because the wall resists the force",
+        "The sled gains equal ability in both halves because force and displacement balance out"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q095",
+      "stem": "Two students each push a different cart. Student 1 pushes a light cart with 20 N over 5 m. Student 2 pushes a heavy cart with 20 N over 5 m. Both forces are in the direction of motion. Which cart's system gains more ability?",
+      "options": [
+        "Student 2's cart, because it is heavier and stores more ability",
+        "Student 1's cart, because a lighter cart gains ability more efficiently",
+        "Both carts gain the same ability, because the force and displacement are identical",
+        "Student 2's cart, because more mass always means more ability gained"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q096",
+      "stem": "A rubber band is stretched 10 cm with 8 N of force. A spring is compressed 10 cm with 8 N of force. Which system stores more potential ability?",
+      "options": [
+        "The rubber band, because stretching stores more potential ability than compressing",
+        "The spring, because compressed objects always store more potential ability",
+        "Both store the same potential ability, because the force and displacement are equal",
+        "The rubber band, because it is lighter and more flexible"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q097",
+      "stem": "A force of 100 N is applied to a box, but the box does not move. A second force of 5 N is applied to a feather and the feather moves 2 meters in the direction of the force. Which system gains more ability from these interactions?",
+      "options": [
+        "The box, because 100 N is a much stronger force",
+        "The feather, because any displacement allows ability to be added to the system",
+        "The box, because a larger force always transfers more ability",
+        "Neither system gains any ability because both objects are too light or too heavy"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q098",
+      "stem": "A student brakes a bicycle by squeezing the brakes. The braking force acts OPPOSITE to the direction of motion. What happens to the bicycle's ability as it slows to a stop?",
+      "options": [
+        "The bicycle's ability increases because the brake force is strong",
+        "The bicycle's ability stays the same because the force is perpendicular to the wheel spin",
+        "The bicycle's ability decreases because the force is opposite to the displacement",
+        "The bicycle's ability first increases then decreases as the bike slows"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q099",
+      "stem": "An operative needs to rank four scenarios by ability given to the system. All forces are in the direction of motion. P: 10 N, 10 m. Q: 20 N, 4 m. R: 5 N, 20 m. S: 50 N, 2 m. Which order is correct from LEAST to MOST?",
+      "options": [
+        "Q (80), S (100), P (100), R (100) \u2014 Q is least, the rest tie",
+        "S (100), then Q (80), then P and R tied (100) \u2014 Q is least",
+        "Q (80), then S, P, and R all tied at 100 N\u00b7m of ability transferred",
+        "R (100), P (100), S (100), Q (80) \u2014 Q is least, the rest are equal"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q100",
+      "stem": "A planet exerts a gravitational force on a satellite moving in a perfectly circular orbit. The gravitational force always points toward the center of the orbit, which is perpendicular to the satellite's motion. What happens to the satellite's ability as it orbits?",
+      "options": [
+        "The satellite's ability increases continuously because gravity is a strong force",
+        "The satellite's ability stays constant because the gravitational force is always perpendicular to the displacement",
+        "The satellite's ability decreases because gravity pulls it inward and drains its ability",
+        "The satellite's ability fluctuates \u2014 increasing when moving toward the planet and decreasing when moving away"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q101",
+      "stem": "A soccer player kicks a ball, and the ball rolls forward. The player's foot exerted a force in the same direction as the ball's displacement. What happened to the ability stored in the ball's motion?",
+      "options": [
+        "The ball's ability increased",
+        "The ball's ability decreased",
+        "The ball's ability stayed the same",
+        "Cannot be determined without knowing the distance"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q102",
+      "stem": "A goalkeeper catches a soccer ball, bringing it to a stop. The goalkeeper's hands push backward (opposite to the ball's motion) as the ball moves forward. What happens to the ball's ability?",
+      "options": [
+        "The ball's ability increases",
+        "The ball's ability decreases",
+        "The ball's ability stays the same",
+        "The ball gains potential ability from the goalkeeper"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q103",
+      "stem": "A waiter carries a heavy tray of food horizontally across a restaurant dining room at a constant height. The waiter pushes UP on the tray the entire time. What happens to the tray's stored ability?",
+      "options": [
+        "The tray's ability increases because the waiter exerts a large force",
+        "The tray's ability decreases because the waiter is doing something difficult",
+        "The tray's ability stays the same because the force is perpendicular to the displacement",
+        "The tray gains potential ability equal to its weight times the distance walked"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q104",
+      "stem": "An archer pulls back a bowstring, stretching it away from the bow. The archer's hands pull in the same direction as the string's displacement (backward). What happens to the ability stored in the bow-string system?",
+      "options": [
+        "The stored potential ability increases",
+        "The stored potential ability decreases",
+        "The stored potential ability stays the same",
+        "The stored potential ability is transferred to the archer"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q105",
+      "stem": "Wind blows against a tree, pushing its trunk slightly to the east. The wind's force points east, and the trunk displaces east. What happens to the ability of the tree-trunk system?",
+      "options": [
+        "The ability stored in the system stays the same",
+        "The ability stored in the system decreases",
+        "The ability stored in the system increases",
+        "The tree loses potential ability to the wind"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q106",
+      "stem": "A river pushes a rock downstream. The water's force is directed downstream, and the rock moves downstream. What happens to the ability of the rock?",
+      "options": [
+        "The rock's ability increases",
+        "The rock's ability decreases",
+        "The rock's ability stays the same because water is a fluid",
+        "None of the above"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q107",
+      "stem": "A person tries to push a car that is stuck in mud. Despite pushing with full force, the car does not move at all. What happens to the car's stored ability?",
+      "options": [
+        "The car's ability increases because a strong force was applied",
+        "The car's ability decreases because the person is exerting effort",
+        "The car's ability stays the same because there is no displacement",
+        "The car's potential ability increases"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q108",
+      "stem": "A javelin thrower releases a javelin, and air resistance pushes backward on the javelin as it flies forward. What happens to the javelin's ability due to the air resistance force?",
+      "options": [
+        "The javelin's ability increases",
+        "The javelin's ability decreases",
+        "The javelin's ability stays the same",
+        "The javelin gains potential ability from the air"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q109",
+      "stem": "A dog pulls a sled forward with a horizontal leash. The leash force points forward, and the sled moves forward. Which statement is correct?",
+      "options": [
+        "The sled's ability decreases because the dog is in front",
+        "The sled's ability stays the same because the dog is an animal, not a machine",
+        "The sled's ability increases because force and displacement point in the same direction",
+        "Cannot be determined without knowing the sled's mass"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q110",
+      "stem": "A person opens a door by pulling the handle directly toward themselves. The handle moves toward the person (same direction as the force). What happens to the door's stored ability?",
+      "options": [
+        "The door's ability increases",
+        "The door's ability decreases",
+        "The door's ability stays the same because doors rotate, not translate",
+        "The door gains potential ability from the person"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q111",
+      "stem": "A magnet attracts a steel ball toward it. The magnetic force pulls the ball in the same direction the ball moves. What happens to the ball's ability?",
+      "options": [
+        "The ball's ability stays the same because magnets are not living things",
+        "The ball's ability decreases",
+        "The ball's ability increases",
+        "The ball loses potential ability to the magnet"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q112",
+      "stem": "A shopping cart rolls to the right, and a store employee pushes it to the LEFT (opposite direction) to slow it down. What happens to the cart's ability?",
+      "options": [
+        "The cart's ability increases because someone is pushing it",
+        "The cart's ability decreases because the force opposes the displacement",
+        "The cart's ability stays the same",
+        "All of the above could be correct depending on the cart's mass"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q113",
+      "stem": "A satellite orbits Earth in a perfect circle. Earth's gravitational force pulls the satellite directly toward Earth's center \u2014 which is PERPENDICULAR to the satellite's circular path at every moment. What happens to the satellite's stored ability?",
+      "options": [
+        "The satellite continuously gains ability from Earth's gravity",
+        "The satellite continuously loses ability to Earth's gravity",
+        "The satellite's ability stays the same because the force is always perpendicular to the displacement",
+        "The satellite gains potential ability as it orbits"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q114",
+      "stem": "A child pushes a toy car to the right, but a wall stops the car \u2014 no displacement occurs. The child keeps pushing hard. Which statement is TRUE?",
+      "options": [
+        "The toy car's ability increases because the child is exerting a force",
+        "The toy car's ability stays the same because there is no displacement",
+        "The toy car's potential ability increases the longer the child pushes",
+        "The toy car's ability decreases because the wall pushes back"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q115",
+      "stem": "A horse walks forward while pulling a plow. The plow's soil resistance pushes BACKWARD on the horse (opposite to the horse's forward displacement). What happens to the horse's ability?",
+      "options": [
+        "The horse's ability increases because it is moving forward",
+        "The horse's ability decreases because the resistance force opposes its displacement",
+        "The horse's ability stays the same because animals regulate their own ability",
+        "None of the above"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q116",
+      "stem": "Athlete A kicks a soccer ball with 40 N of force and the ball moves 3 m in the same direction as the force. Athlete B kicks a different ball with 20 N of force and the ball also moves 3 m in the same direction. Which ball gains MORE ability?",
+      "options": [
+        "Athlete A's ball gains more ability because the force is stronger",
+        "Athlete B's ball gains more ability because lighter kicks are more efficient",
+        "Both balls gain the same ability because the displacement is equal",
+        "Cannot be determined without knowing the ball's mass"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q117",
+      "stem": "A river pushes a boulder with 500 N of force over a distance of 2 m. A second river pushes an identical boulder with the same 500 N of force over 8 m. Which boulder gains more ability?",
+      "options": [
+        "The first boulder gains more ability because it encountered more resistance",
+        "Both boulders gain the same ability because the force is the same",
+        "The second boulder gains more ability because the displacement is greater",
+        "Cannot be determined without knowing the rivers' speeds"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q118",
+      "stem": "Archer A pulls a bowstring back 0.3 m with 60 N of force. Archer B pulls a different bowstring back 0.3 m with 90 N of force. Which bow-string system stores more potential ability?",
+      "options": [
+        "Archer A's system stores more potential ability",
+        "Archer B's system stores more potential ability because the force is stronger and the displacement is the same",
+        "Both systems store the same potential ability because the displacement is equal",
+        "The system with the lighter arrow stores more potential ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q119",
+      "stem": "A person carries groceries up a flight of stairs, exerting 80 N upward over a vertical rise of 4 m. A second person carries different groceries up the same stairs exerting 80 N upward over only 2 m of vertical rise. Who increases the grocery system's potential ability more?",
+      "options": [
+        "The first person, because the displacement is greater and the force is the same",
+        "The second person, because shorter stairs require more effort",
+        "Both increase the potential ability equally because the force is the same",
+        "Neither \u2014 carrying groceries sideways provides no potential ability"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q120",
+      "stem": "Two students push identical crates across a frictionless floor. Student A pushes with 30 N over 6 m. Student B pushes with 30 N over 10 m. Both forces are in the same direction as the displacement. Which statement is TRUE?",
+      "options": [
+        "Student A's crate gains more ability because it stops sooner",
+        "Student B's crate gains more ability because greater displacement with the same force means more ability gained",
+        "Both crates gain the same ability because the force is equal",
+        "Cannot be determined without knowing the crates' masses"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q121",
+      "stem": "A weightlifter raises a barbell 1.5 m with 400 N of force. A second weightlifter raises a different barbell 1.5 m with 700 N of force. Both forces point upward (same direction as displacement). Comparing the two barbell systems, which is TRUE?",
+      "options": [
+        "The first barbell system gains more potential ability because 400 N is easier to sustain",
+        "Both barbell systems gain equal potential ability since the height is the same",
+        "The second barbell system gains more potential ability because the force is stronger",
+        "The barbell with the greater mass always gains less potential ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q122",
+      "stem": "A hawk dives and strikes a pigeon with 25 N of force while the pigeon moves 1 m in the direction of the strike. A second hawk strikes a different pigeon with 25 N of force over 4 m of displacement. Which pigeon's ability changes more?",
+      "options": [
+        "The first pigeon's ability changes more because the impact is more sudden",
+        "The second pigeon's ability changes more because the displacement is greater with the same force",
+        "Both pigeons' ability changes equally because the force is the same",
+        "Neither pigeon's ability changes because birds are living systems"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q123",
+      "stem": "Two wind gusts both blow east for 5 m of displacement on separate trees. Gust A pushes with 200 N. Gust B pushes with 350 N. Which tree's system gains more ability from the wind?",
+      "options": [
+        "Gust A's tree gains more ability because lower force means less resistance",
+        "Both trees gain the same ability because the displacement is identical",
+        "Gust B's tree gains more ability because the force is stronger and displacement is equal",
+        "Cannot be determined without knowing the trees' heights"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q124",
+      "stem": "A dog pulls a sled with 150 N of force for 12 m. A second dog pulls a different sled with 150 N of force for 20 m. Both forces are in the same direction as the displacement. Which statement about stored ability is CORRECT?",
+      "options": [
+        "The first sled gains more ability because it has less ground to cover",
+        "Both sleds gain equal ability because the force is the same",
+        "The second sled gains more ability because greater displacement with the same force leads to more ability gained",
+        "The sled pulled by the stronger dog always gains more ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q125",
+      "stem": "Two javelin throwers release javelins. Thrower A applies 80 N of force over 1.8 m of arm displacement. Thrower B applies 120 N of force over the same 1.8 m of arm displacement. Both forces are in the same direction as the javelin's displacement. Which javelin gains more ability at release?",
+      "options": [
+        "Thrower A's javelin, because it is lighter",
+        "Both javelins gain equal ability because the displacement is the same",
+        "Thrower B's javelin, because the force is stronger with equal displacement",
+        "Cannot be determined without knowing the javelins' aerodynamic properties"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q126",
+      "stem": "A child pushes a toy car with 5 N of force for 2 m. Her sibling pushes a different toy car with 5 N of force for 7 m. Both forces match the direction of displacement. Comparing the two cars, which is TRUE?",
+      "options": [
+        "The first car gains more ability because less displacement means higher speed",
+        "Both cars gain equal ability because the force is identical",
+        "The second car gains more ability because it traveled farther under the same force",
+        "None of the above"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q127",
+      "stem": "Player A shoots a hockey puck with 90 N of force over 0.5 m of stick contact. Player B shoots a different puck with 90 N of force over 1.2 m of stick contact. Both forces are in the direction of the puck's displacement. Which puck gains more ability?",
+      "options": [
+        "Player A's puck, because quicker contact is more explosive",
+        "Player B's puck, because the same force applied over a greater displacement increases ability more",
+        "Both pucks gain the same ability since the force is equal",
+        "The heavier puck always gains more ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q128",
+      "stem": "A farmer pulls a rope attached to a gate with 200 N of force. In Scenario X, the gate opens 1 m. In Scenario Y, the same farmer pulls with 200 N but the gate is stuck and moves 0 m. Which gate system gains more potential ability?",
+      "options": [
+        "Scenario X's gate, because displacement occurred with the force in the same direction",
+        "Scenario Y's gate, because more force was applied per meter",
+        "Both gates gain equal potential ability because the force is the same",
+        "Scenario Y's gate, because the farmer worked harder against resistance"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q129",
+      "stem": "A sprinter's shoes push backward on the track with 300 N of force as the sprinter moves forward 10 m. A second sprinter's shoes push backward with 300 N of force as they move forward 15 m. Which sprinter's system has MORE ability transferred into it by the ground?",
+      "options": [
+        "The first sprinter's system, because shorter distances are more intense",
+        "Both systems gain equal ability because the force from the ground is the same",
+        "The second sprinter's system, because greater displacement with the same force leads to greater ability gained",
+        "The ground cannot increase a sprinter's ability \u2014 it only provides support"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q130",
+      "stem": "Two students compress identical springs. Student A compresses a spring with 40 N of force over 0.1 m. Student B compresses a different spring with 55 N of force over 0.1 m. Both forces point in the same direction as the spring's displacement. Which spring stores more potential ability?",
+      "options": [
+        "Student A's spring stores more potential ability",
+        "Both springs store equal potential ability because the displacement is the same",
+        "Student B's spring stores more potential ability because the force is stronger with equal displacement",
+        "Springs store potential ability based on stiffness alone, not on the applied force"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q131",
+      "stem": "Person A pushes a crate with 20 N in the same direction as the crate's displacement over 5 m. Person B pushes a different crate with 10 N PERPENDICULAR to the crate's displacement over 10 m. Which crate system gains more ability?",
+      "options": [
+        "Person A's crate, because only a force in the same direction as displacement increases ability \u2014 Person B's perpendicular force adds nothing",
+        "Person B's crate, because the displacement is twice as large",
+        "Both crates gain equal ability because the product of force and distance is the same",
+        "Person B's crate, because a larger displacement always wins"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q132",
+      "stem": "Scenario X: A wind gust pushes a kite with 30 N in the OPPOSITE direction of the kite's displacement over 4 m. Scenario Y: A second wind gust pushes a kite with 30 N PERPENDICULAR to its displacement over 4 m. Which statement is TRUE?",
+      "options": [
+        "Scenario X decreases the kite's ability; Scenario Y leaves the kite's ability unchanged",
+        "Both scenarios decrease the kite's ability by the same amount",
+        "Both scenarios leave the kite's ability unchanged",
+        "Scenario Y decreases the kite's ability more because the displacement is the same"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q133",
+      "stem": "A soccer player exerts a 50 N force on a ball in the SAME direction as its motion for 0.3 m. Air resistance then exerts a 10 N force OPPOSITE to the ball's motion for 8 m. What is the NET effect on the ball's ability?",
+      "options": [
+        "The ball's ability increases overall because the initial kick force is stronger",
+        "The ball's ability first increases then decreases, and the decrease from air resistance is larger",
+        "The ball's ability stays the same throughout because forces cancel",
+        "The ball's ability only changes during the kick \u2014 air resistance is perpendicular"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q134",
+      "stem": "Athlete A lifts a barbell upward with 500 N over 2 m (force and displacement both upward). Athlete B carries a barbell horizontally with 500 N upward force over 2 m of horizontal displacement. Which statement is TRUE?",
+      "options": [
+        "Both athletes increase the barbell's potential ability by the same amount",
+        "Athlete A increases the barbell's potential ability more; Athlete B does not change it at all since the upward force is perpendicular to horizontal displacement",
+        "Athlete B increases the barbell's potential ability more because horizontal movement requires more effort",
+        "Neither athlete changes the barbell's potential ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q135",
+      "stem": "Three scenarios involve pushing a shopping cart. Scenario A: 40 N forward force, cart moves 5 m forward. Scenario B: 40 N upward force, cart moves 5 m forward. Scenario C: 80 N forward force, cart is stuck and moves 0 m. Which scenario increases the cart's stored ability the most?",
+      "options": [
+        "Scenario A, because force and displacement are in the same direction and the cart actually moves",
+        "Scenario B, because an upward force on a heavy cart requires more effort",
+        "Scenario C, because the force is the strongest",
+        "All three scenarios increase the cart's ability equally"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q136",
+      "stem": "A river pushes a rock downstream with 100 N over 3 m. Then a dam wall pushes the same rock UPSTREAM (opposite to motion) with 60 N over 1 m. Overall, what happened to the rock's ability?",
+      "options": [
+        "The rock's ability increased overall, because the downstream force was larger over more distance",
+        "The rock's ability decreased overall, because the dam's force was stronger per meter",
+        "The rock's ability stayed the same, because the two forces are in opposite directions",
+        "Cannot be determined without knowing the rock's mass"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q137",
+      "stem": "Operative Nyx applies a 25 N force PERPENDICULAR to a vault door's displacement. Operative Rex applies a 10 N force in the SAME direction as the vault door's displacement over the same distance. Which operative increases the vault's stored ability more?",
+      "options": [
+        "Operative Nyx, because 25 N is a stronger force than 10 N",
+        "Operative Rex, because only a force in the same direction as displacement increases stored ability \u2014 Operative Nyx's perpendicular force contributes nothing",
+        "Both operatives increase the vault's ability equally",
+        "Neither operative changes the vault's ability"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q138",
+      "stem": "A spring is compressed 0.2 m by a 60 N force directed the same way as the compression displacement. Later, a person pushes on the compressed spring SIDEWAYS (perpendicular to the compression axis) and the spring does not compress further. What happens to the spring's stored potential ability during the sideways push?",
+      "options": [
+        "The potential ability stored in the spring increases because additional force is applied",
+        "The potential ability stored in the spring decreases because pushing sideways relieves tension",
+        "The potential ability stored in the spring stays the same because the sideways force is perpendicular to any further compression",
+        "The potential ability doubles because two forces are now acting on the spring"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q139",
+      "stem": "Person A pulls a sled with 50 N in the SAME direction as the sled's 6 m displacement. Person B also pulls a sled, but with 100 N in the OPPOSITE direction of the sled's 2 m displacement (the sled is slowing down). Which person causes a GREATER change in their sled's stored ability?",
+      "options": [
+        "Person A, because same-direction force over greater displacement adds more ability than opposite force over less displacement removes",
+        "Person B, because 100 N is a stronger force than 50 N",
+        "Both sleds experience the same magnitude of ability change",
+        "Person B's sled, because deceleration forces are always more effective"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q140",
+      "stem": "Which of the following statements about increasing a system's potential ability is TRUE?",
+      "options": [
+        "A very strong force always increases a system's potential ability more than a weaker force",
+        "A force perpendicular to displacement can still increase stored ability if it is strong enough",
+        "A force must be in the same direction as the system's displacement to increase the system's stored ability",
+        "Only living things can increase a system's stored potential ability"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q141",
+      "stem": "Two operatives try to increase the ability stored in a door-spring system by pushing the door open. Operative A pushes with 45 N in the same direction as the door's 0.5 m displacement. Operative B pushes with 90 N in the same direction as the door's 0.5 m displacement. Which operative increases the system's stored potential ability more?",
+      "options": [
+        "Operative A, because the door feels the same regardless of who pushes",
+        "Both operatives increase the system's potential ability by the same amount since the displacement is equal",
+        "Operative B, because greater force over the same displacement increases stored ability more",
+        "Neither \u2014 door springs store ability independently of applied force"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q142",
+      "stem": "A hawk dives on a pigeon, exerting 40 N downward over 2 m of downward displacement. Meanwhile, air pushes upward on the hawk with 15 N over the same 2 m of downward displacement. What is the NET effect on the hawk's stored ability?",
+      "options": [
+        "The hawk's ability stays the same because the forces balance each other out",
+        "The hawk's ability increases overall, because the downward gravity-assisted force (40 N) outweighs the upward air resistance (15 N) over the same distance",
+        "The hawk's ability decreases overall, because air always removes ability from flying animals",
+        "Cannot be determined without knowing the hawk's mass"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q143",
+      "stem": "A child pushes a wagon with 30 N forward over 4 m. Then friction pulls back on the wagon with 30 N over the same 4 m. What is the net change in the wagon's stored ability?",
+      "options": [
+        "The wagon's ability increases because the child is doing the pushing",
+        "The wagon's ability decreases because friction is always dominant",
+        "The wagon's ability does not change, because the forward force and the opposing friction force are equal over the same displacement",
+        "The wagon's ability doubles because two forces act on it"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q144",
+      "stem": "Three animals push a boulder: Animal X pushes with 200 N in the same direction as displacement for 3 m. Animal Y pushes with 200 N perpendicular to displacement for 3 m. Animal Z pushes with 200 N opposite to displacement for 3 m. Rank the changes to the boulder's ability from greatest INCREASE to greatest DECREASE.",
+      "options": [
+        "X increases most, Y is neutral, Z decreases most",
+        "Z increases most, Y is neutral, X decreases most",
+        "X, Y, and Z all increase the boulder's ability equally",
+        "Y increases most because sideways forces are efficient"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q145",
+      "stem": "Which of the following is the BEST explanation for why a very strong person holding a heavy box still does NOT increase the box's stored potential ability if they stand completely still?",
+      "options": [
+        "The person is not strong enough to change the box's potential ability",
+        "No displacement occurs, so no external system can change the stored ability regardless of force magnitude",
+        "The force the person exerts is perpendicular to gravity",
+        "The box's stored potential ability can only be changed by machines"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q146",
+      "stem": "Scenario A: A gust of wind pushes a kite with 50 N in the same direction as the kite's 6 m displacement. Scenario B: A child tugs the kite string with 100 N in the OPPOSITE direction of the kite's 2 m displacement. Which scenario produces a GREATER magnitude of ability change in the kite system?",
+      "options": [
+        "Scenario A, because same-direction force over 6 m causes a larger change in ability than an opposite force over 2 m",
+        "Scenario B, because 100 N is a stronger force than 50 N",
+        "Both scenarios produce the same magnitude of ability change",
+        "Scenario B, because decreasing ability always happens faster than increasing it"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q147",
+      "stem": "Operative Kade pushes a vault door with 60 N in the same direction as the 3 m displacement, then a counterweight pulls the door back with 20 N opposite to the door's next 1 m of displacement. Operative Silva pushes a different vault with 60 N perpendicular to its 3 m displacement. Which vault system ends up with MORE total stored ability added to it?",
+      "options": [
+        "Operative Kade's vault, because same-direction force over 3 m adds ability, while the counter-force over 1 m removes less; Operative Silva's vault gains nothing from the perpendicular push",
+        "Operative Silva's vault, because no ability is ever removed from it",
+        "Both vaults gain the same stored ability",
+        "Operative Kade's vault gains nothing because the counterweight cancels everything"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q148",
+      "stem": "A student claims: 'If two forces act on a system and one increases its stored ability while the other decreases it, the net change is always zero.' Is this claim correct?",
+      "options": [
+        "Yes \u2014 opposing forces always cancel completely",
+        "No \u2014 the net change depends on the magnitude of each force AND the displacement over which each acts; they only cancel if both products are equal",
+        "Yes \u2014 but only if the forces are equal in magnitude",
+        "No \u2014 perpendicular forces always dominate"
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q149",
+      "stem": "Runner A is pushed forward by wind with 20 N over 100 m, but friction acts backward with 5 N over the same 100 m. Runner B experiences the same wind (20 N forward) over 50 m and the same friction (5 N backward) over 50 m. Which runner experiences a greater NET increase in stored ability?",
+      "options": [
+        "Runner A, because the net force acts over a greater displacement",
+        "Runner B, because shorter distances mean less friction loss",
+        "Both runners experience the same net increase because the ratio of forces is equal",
+        "Runner B, because friction has more time to act on Runner A"
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q150",
+      "stem": "Which of the following combinations would produce the GREATEST increase in a system's stored ability?",
+      "options": [
+        "A 10 N force perpendicular to displacement over 100 m",
+        "A 500 N force opposite to displacement over 0.01 m",
+        "A 50 N force in the same direction as displacement over 10 m",
+        "A 1000 N force with zero displacement"
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q151",
+      "stem": "A crane lifts a steel beam 8 m upward using a force of 600 N. A second crane lifts an identical beam 8 m upward using a force of 900 N. Which statement best compares the potential ability gained by each beam system?",
+      "options": [
+        "Both systems gain the same potential ability because the displacement is the same.",
+        "The second system gains more potential ability because the force is stronger over the same displacement.",
+        "The first system gains more potential ability because it is more efficient.",
+        "Neither system gains potential ability because cranes are machines, not living things."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q152",
+      "stem": "An astronaut in deep space pushes a satellite with 200 N in the same direction it is drifting for 3 m. Then the astronaut pushes a second identical satellite with 200 N perpendicular to its motion for 3 m. How does the ability gained by each satellite system compare?",
+      "options": [
+        "Both satellite systems gain the same ability because the force and displacement magnitudes are equal.",
+        "The first satellite system gains more ability because force in the same direction as displacement increases stored ability.",
+        "The second satellite system gains more ability because perpendicular forces are more effective.",
+        "The first satellite gains less ability because opposing its natural motion wastes force."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q153",
+      "stem": "A diver underwater pushes a large crate along the seafloor with 150 N for 5 m. Another diver pushes an identical crate with 150 N for 10 m. Which of the following correctly describes the difference in ability gained?",
+      "options": [
+        "Both crate systems gain the same ability because the force is the same.",
+        "The first crate system gains more ability because shorter distance means less resistance.",
+        "The second crate system gains more ability because greater displacement with the same force increases stored ability.",
+        "Neither crate system gains ability because water friction cancels the effect."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q154",
+      "stem": "A spring-loaded toy launcher compresses a spring 0.04 m using a force of 80 N. A second launcher compresses a spring the same 0.04 m using a force of 120 N. A student says both springs store the same potential ability because the compression distance is equal. Is the student correct?",
+      "options": [
+        "Yes \u2014 displacement alone determines how much potential ability is stored.",
+        "No \u2014 the second spring stores more potential ability because a stronger force over the same displacement increases stored potential ability.",
+        "Yes \u2014 the spring material determines stored potential ability, not the force applied.",
+        "No \u2014 the first spring stores more potential ability because less force is more efficient."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q155",
+      "stem": "A bulldozer pushes a pile of rubble 12 m with a force of 4000 N in the direction of motion. At the same time, wind blows sideways against the rubble with a force of 500 N. How do the bulldozer and wind each affect the stored ability of the rubble system?",
+      "options": [
+        "Both increase stored ability equally because both exert force while the rubble moves.",
+        "The bulldozer increases stored ability; the wind has no effect because its force is perpendicular to the displacement.",
+        "The wind increases stored ability more because sideways forces act over a longer path.",
+        "Both fail to change stored ability because the rubble is not part of either system."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q156",
+      "stem": "A guitarist pulls a string 0.01 m from rest with a force of 5 N, storing potential ability in the string. If the guitarist instead pulls the same string 0.02 m with the same 5 N force, and a piano key is pressed down 0.008 m with a force of 5 N, which system stores the most potential ability?",
+      "options": [
+        "The piano key system, because pressing keys is more direct than pulling strings.",
+        "The first guitar string system, because the original technique is more familiar.",
+        "The second guitar string system, because the same force over greater displacement stores more potential ability.",
+        "All three systems store the same potential ability because the force is equal."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q157",
+      "stem": "Two construction workers push identical boxes across a floor. Worker A pushes with 300 N in the direction of motion for 6 m. Worker B pushes with 300 N at a 90\u00b0 angle to the direction of motion for 6 m. A third worker pushes with 300 N opposite to the direction of motion for 6 m. How does the stored ability change for each box system?",
+      "options": [
+        "Worker A's box gains ability; Worker B's box is unchanged; Worker C's box loses ability.",
+        "All three boxes gain the same ability because the force magnitudes and distances are all equal.",
+        "Worker A's box gains ability; Workers B and C both cause a loss of ability.",
+        "Worker B's box gains the most ability because perpendicular forces are the most powerful."
+      ],
+      "correctAnswer": 0,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q158",
+      "stem": "An astronaut applies a force of 50 N to a space probe for 2 m in the same direction it is moving, then immediately applies a force of 50 N opposite to the probe's motion for 2 m. What is the net change in the probe system's stored ability after both pushes?",
+      "options": [
+        "The system has a net gain in stored ability because the astronaut applied force twice.",
+        "The system returns to its original stored ability because the increase from the first push is canceled by the decrease from the second push.",
+        "The system loses stored ability overall because opposing forces are always dominant.",
+        "The system gains stored ability equal to twice the original push because motion compounds effects."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q159",
+      "stem": "A rubber band car is launched by stretching a rubber band 0.06 m with a force of 10 N. The same rubber band is then stretched 0.06 m with a force of 25 N. Finally, a different rubber band is stretched 0.12 m with a force of 10 N. Rank the stored potential ability from greatest to least.",
+      "options": [
+        "Second setup > Third setup > First setup",
+        "Third setup > Second setup > First setup",
+        "First setup = Second setup = Third setup, because rubber bands all store the same amount",
+        "Second setup > First setup, and Third setup > First setup \u2014 but Second and Third cannot be compared without more information"
+      ],
+      "correctAnswer": 3,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q160",
+      "stem": "A crane lifts a beam 5 m upward with 800 N of force. A second crane tries to lift an identical beam but it doesn't move \u2014 the cable is stuck \u2014 and the crane exerts 800 N for 30 seconds. Compare the potential ability gained by each beam system.",
+      "options": [
+        "Both beams gain the same potential ability because the same force was applied.",
+        "The second beam gains more potential ability because more time means more accumulation.",
+        "Only the first beam system gains potential ability; the second beam system gains none because there is no displacement.",
+        "The second beam gains less but still some potential ability because of the sustained force."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q161",
+      "stem": "A diver pushes a sealed barrel horizontally along the seafloor with 200 N for 4 m. The ocean current simultaneously pushes the barrel horizontally with 80 N in the same direction for the same 4 m. How does the total stored ability change in the barrel system?",
+      "options": [
+        "Only the diver increases the stored ability; currents cannot affect sealed objects.",
+        "Both the diver and the current increase the stored ability of the barrel system, and the combined effect is greater than either alone.",
+        "The current cancels the diver's effect because they are both horizontal.",
+        "The barrel system's stored ability does not change because underwater forces are balanced."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q162",
+      "stem": "A piano key is pressed down 0.005 m with 30 N of force. A guitar string is pulled 0.005 m with 30 N of force perpendicular to the string's length. A drumstick strikes a drumhead moving it 0.005 m downward with 30 N directly downward. Which instrument system stores the most potential ability from the musician's action?",
+      "options": [
+        "The guitar string stores the most because strings are designed to store potential ability.",
+        "All three store equal potential ability because the force and displacement magnitudes are the same.",
+        "The piano and drum systems store equal potential ability; the guitar system stores none because the force is perpendicular to string motion.",
+        "The drum system stores the least because it is struck, not pushed steadily."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q163",
+      "stem": "Two satellites drift past an astronaut. Satellite A is moving left at 2 m/s, and the astronaut pushes it to the right with 100 N for 3 m. Satellite B is moving right at 2 m/s, and the astronaut pushes it to the right with 100 N for 3 m. How does the stored ability change for each satellite system?",
+      "options": [
+        "Both satellite systems gain the same stored ability because the force and displacement are equal.",
+        "Satellite A's system loses stored ability; Satellite B's system gains stored ability.",
+        "Satellite B's system gains more stored ability than Satellite A's system because they move in the same direction.",
+        "Neither system changes stored ability because the satellites were already moving."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q164",
+      "stem": "A construction crew uses two cranes to lift a single steel plate. Crane 1 exerts 1200 N upward and Crane 2 exerts 800 N upward. Together they lift the plate 10 m. How much potential ability is added to the plate system, compared to if only Crane 1 had lifted it the same 10 m?",
+      "options": [
+        "The same \u2014 only the strongest force matters when two forces act together.",
+        "More \u2014 a stronger combined force over the same displacement increases stored potential ability more than a weaker force alone.",
+        "Less \u2014 sharing the lift between two cranes reduces each crane's effectiveness.",
+        "The same \u2014 displacement determines stored potential ability, not the force applied."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q165",
+      "stem": "A rubber band is pulled back 0.03 m with 15 N of force, then released. As it snaps forward 0.03 m back to its natural length, what happens to the stored potential ability of the rubber band system?",
+      "options": [
+        "It increases because the rubber band is moving.",
+        "It stays the same because the rubber band returns to where it started.",
+        "It decreases because the rubber band's restoring force acts opposite to the direction of its displacement as it returns.",
+        "It increases then decreases symmetrically, so there is no net change."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q166",
+      "stem": "Underwater, a diver pushes a buoy downward with 500 N while the buoy moves downward 2 m. Then the buoy's own buoyancy pushes it upward with 400 N as it rises 2 m back to the surface. How do these two interactions affect the stored potential ability of the buoy system?",
+      "options": [
+        "The diver increases stored potential ability; the buoyancy also increases it on the way up.",
+        "The diver increases stored potential ability; the buoyancy decreases it on the way back up.",
+        "Both interactions leave stored potential ability unchanged because the net displacement is zero.",
+        "Buoyancy never changes stored potential ability because it is a natural force, not an external system."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q167",
+      "stem": "A spring-loaded launcher fires a ball upward. As the spring expands from compressed to natural length (a displacement of 0.05 m), it pushes the ball upward with an average force of 200 N. Gravity simultaneously pulls the ball downward with 2 N over the same 0.05 m. Which force increases the ball system's stored ability more, and why?",
+      "options": [
+        "Gravity increases stored ability more because it always acts on the ball.",
+        "The spring increases stored ability more because it exerts a greater force in the same direction as displacement.",
+        "Both forces increase stored ability equally because both act over the same displacement.",
+        "The spring increases stored ability; gravity decreases it. The net change depends on which is stronger."
+      ],
+      "correctAnswer": 3,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q168",
+      "stem": "A bulldozer pushes a boulder with 5000 N for 8 m across a flat surface. The ground exerts a friction force of 1000 N opposite to the boulder's motion for the same 8 m. What is the combined effect of the bulldozer and friction on the boulder system's stored ability?",
+      "options": [
+        "Stored ability increases by the full effect of the bulldozer's force alone, since friction is irrelevant.",
+        "The bulldozer increases stored ability; friction decreases it. The net change depends on the difference between these effects.",
+        "Friction cancels the bulldozer, so stored ability stays the same.",
+        "Both the bulldozer and friction increase stored ability because both exert force while the boulder moves."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q169",
+      "stem": "An astronaut pushes two identical space containers. Container A is pushed 6 m with 100 N. Container B is pushed 3 m with 200 N. A student claims Container B gains more stored ability because the force is stronger. Is the student correct?",
+      "options": [
+        "Yes \u2014 stronger force always means more stored ability.",
+        "No \u2014 Container A gains more stored ability because longer displacement always wins.",
+        "It cannot be determined \u2014 you need to compare force multiplied by displacement for each container.",
+        "No \u2014 both containers gain the same stored ability because the factors balance out perfectly."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q170",
+      "stem": "A crane lifts a beam 4 m upward with 700 N. A second crane lowers an identical beam 4 m downward by letting it descend while exerting 700 N upward to control its fall. How do the changes in stored potential ability compare for each beam system?",
+      "options": [
+        "Both beam systems gain potential ability because both cranes apply upward force.",
+        "The first beam system gains potential ability; the second beam system loses potential ability, because in the second case the force is opposite to the displacement.",
+        "Both beam systems lose potential ability because gravity acts on both beams.",
+        "Neither system changes potential ability because the crane forces balance gravity."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q171",
+      "stem": "A student pushes against a brick wall with all their strength for 10 seconds. The wall does not move. The student claims they increased the wall system's stored ability because they applied a lot of force. What is wrong with this reasoning?",
+      "options": [
+        "Nothing is wrong \u2014 strong sustained force always increases a system's stored ability.",
+        "The reasoning is wrong because time, not displacement, determines stored ability.",
+        "The reasoning is wrong because there is no displacement, so the external system cannot change the stored ability of the wall system.",
+        "The reasoning is wrong because the student is not strong enough to qualify as an external system."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q172",
+      "stem": "A soccer ball rolls across a frictionless floor while gravity pulls it downward. A student claims the ball's stored ability is increasing because it is moving. What is wrong with this reasoning?",
+      "options": [
+        "Nothing \u2014 a moving object always has increasing stored ability.",
+        "The reasoning is wrong because gravity is perpendicular to the ball's horizontal motion, so gravity cannot change the ball system's stored ability in this case.",
+        "The reasoning is wrong because stored ability only applies to objects that are falling.",
+        "The reasoning is wrong because frictionless floors cancel all ability changes."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q173",
+      "stem": "A heavier box and a lighter box are each pushed 3 m with 50 N of force in the direction of motion. A student claims the heavier box gains more stored ability because it weighs more. Is the student correct?",
+      "options": [
+        "Yes \u2014 heavier objects always store more ability.",
+        "No \u2014 stored ability gained depends on the force applied and displacement, not on how heavy the object is.",
+        "Yes \u2014 more mass means more resistance, which means more ability is stored.",
+        "No \u2014 the lighter box gains more stored ability because it is easier to move."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q174",
+      "stem": "An astronaut pushes a satellite with 500 N perpendicular to its motion for 10 m. A classmate says: 'That's a huge force over a big distance \u2014 the satellite must have gained a lot of stored ability.' What is wrong with this conclusion?",
+      "options": [
+        "Nothing \u2014 large force over large distance always means large stored ability gain.",
+        "The force is too large; oversized forces decrease stored ability.",
+        "When force is perpendicular to displacement, the external system cannot change the stored ability of the satellite system, regardless of how strong the force is or how far the satellite moves.",
+        "The satellite was already moving, so no additional stored ability can be added."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q175",
+      "stem": "Two students each push a box across the same floor. Student A pushes with 400 N and the box moves 2 m. Student B pushes with 50 N and the box moves 2 m. A third student says 'Student A definitely increased the box system's stored ability way more because 400 N is a much bigger force.' Is this reasoning fully correct?",
+      "options": [
+        "Yes \u2014 more force always means more stored ability, no matter what.",
+        "Only if both forces are in the same direction as the displacement \u2014 assuming they are, then yes, the stronger force increases stored ability more over the same displacement.",
+        "No \u2014 displacement is the only factor that matters, so both students produced the same stored ability change.",
+        "No \u2014 Student B's box gains more stored ability because smaller forces are more efficient."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q176",
+      "stem": "A crane holds a steel beam perfectly still in the air, exerting 2000 N upward for 5 minutes. A student says the beam system gained a huge amount of potential ability because of the enormous sustained force. What is the flaw in this reasoning?",
+      "options": [
+        "The reasoning is correct \u2014 sustained strong forces always build up potential ability over time.",
+        "The flaw is that the beam would need to be moving upward for potential ability to increase; holding still means no displacement, so potential ability does not change.",
+        "The flaw is that cranes are machines and cannot act as external systems.",
+        "The flaw is that 5 minutes is too short a time to accumulate potential ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q177",
+      "stem": "A toy car is launched by a rubber band and rolls across the floor while a magnet pulls it sideways with 3 N. The car moves forward 2 m. A student claims the magnet increased the car system's stored ability because it exerted a constant force the entire time. Is the student correct?",
+      "options": [
+        "Yes \u2014 any sustained force increases stored ability as long as the object moves.",
+        "No \u2014 the magnet's force is perpendicular to the car's motion, so it cannot change the car system's stored ability.",
+        "Yes \u2014 magnetic forces are especially effective at increasing stored ability.",
+        "No \u2014 only forces in the direction opposite to motion can change stored ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q178",
+      "stem": "A diver pushes a heavy box downward with 300 N, but the box doesn't move because it is wedged between two rocks. The diver pushes for 20 seconds. How does the stored ability of the box system change?",
+      "options": [
+        "It increases steadily over the 20 seconds because the diver applies force the whole time.",
+        "It increases once, at the moment the diver first touches the box.",
+        "It does not change because there is no displacement, regardless of how long or how hard the diver pushes.",
+        "It decreases because the diver is underwater, where forces dissipate."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q179",
+      "stem": "A guitar string is plucked and vibrates back and forth. During one half of its vibration, the restoring force and displacement are in the same direction. During the other half, the restoring force and displacement are in opposite directions. A student says: 'The string is always moving so its stored potential ability is always increasing.' What is wrong?",
+      "options": [
+        "Nothing \u2014 a vibrating object always increases stored potential ability.",
+        "The reasoning is wrong: when force and displacement are in the same direction, stored potential ability increases; when they are opposite, stored potential ability decreases. The student is ignoring the direction relationship.",
+        "The reasoning is wrong because only external systems can change stored potential ability, and the string's own restoring force is internal.",
+        "The reasoning is correct because vibrations are a special case where stored potential ability only increases."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q180",
+      "stem": "A student pushes a shopping cart with 60 N for 5 m, then pushes it with 120 N for 0 m (the cart hits a wall). The student says: 'I doubled my force, so I must have doubled the stored ability in the second push.' What is wrong with this reasoning?",
+      "options": [
+        "Nothing is wrong \u2014 doubling force always doubles stored ability.",
+        "The second push produced no displacement, so the stored ability of the cart system did not change during the second push, regardless of the force.",
+        "The cart hit a wall, so all stored ability was transferred to the wall instead.",
+        "Stored ability can only double if the displacement also doubles."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q181",
+      "stem": "An astronaut in a spacesuit exerts 80 N on a floating space crate perpendicular to its path of motion. The crate moves 6 m. A second astronaut exerts 0 N on an identical crate, which also moves 6 m (drifting freely). A student says the first astronaut's push gave the first crate more stored ability. Is this correct?",
+      "options": [
+        "Yes \u2014 any force greater than zero increases stored ability.",
+        "No \u2014 both crates experience the same stored ability change because their displacements are equal.",
+        "No \u2014 the first astronaut's perpendicular push cannot change the first crate's stored ability; both crates experience no change in stored ability from these interactions.",
+        "Yes \u2014 force always matters more than direction when comparing stored ability changes."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q182",
+      "stem": "A 5 kg box and a 50 kg box are each lifted 3 m upward by a crane. Each crane exerts exactly the right force to lift its box (no more, no less). A student claims both boxes gain the same potential ability because they move the same distance. Is this correct?",
+      "options": [
+        "Yes \u2014 displacement alone determines potential ability gained.",
+        "No \u2014 the heavier box requires a stronger force to lift the same distance, and a stronger force over the same displacement stores more potential ability.",
+        "Yes \u2014 weight doesn't affect potential ability because it is an internal property.",
+        "No \u2014 the lighter box gains more potential ability because less force is needed."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q183",
+      "stem": "A student tries to compress a stiff spring but the spring doesn't budge \u2014 the spring is too stiff. The student exerts 500 N for 10 seconds. What happens to the stored potential ability of the spring system?",
+      "options": [
+        "It increases significantly because 500 N is a large force.",
+        "It increases slowly over time as the sustained force gradually compresses the spring.",
+        "It does not change because the spring does not move, so there is no displacement.",
+        "It decreases because the student's force opposes the spring's natural state."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "EASY",
+      "damageBonus": 0
+    },
+    {
+      "id": "q184",
+      "stem": "A piano key is pressed straight down with 20 N for 0.01 m. A guitar string directly next to it is simultaneously vibrated by sound waves that push it sideways with 20 N over 0.01 m of sideways motion. A student says both instruments gain the same stored potential ability. Is this correct?",
+      "options": [
+        "Yes \u2014 both involve 20 N over 0.01 m, so the stored ability is identical.",
+        "No \u2014 the piano key stores more potential ability because downward forces are always stronger.",
+        "It depends on which instrument is made of more expensive materials.",
+        "Only if the sideways vibration of the string is in the direction of the string's restoring force; if the sound wave pushes perpendicular to the restoring force, the string gains no stored potential ability from that interaction."
+      ],
+      "correctAnswer": 3,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q185",
+      "stem": "A bulldozer pushes a rock pile with 8000 N in the direction of motion for 15 m. A student argues: 'The rock pile is very heavy, so it gained more stored ability than a lighter pile would have.' Is this argument valid?",
+      "options": [
+        "Yes \u2014 heavier objects always gain more stored ability from the same push.",
+        "No \u2014 if the same external force acts over the same displacement in the same direction, the stored ability gained is the same regardless of how heavy the object is.",
+        "Yes \u2014 more mass means more ability is naturally available to be stored.",
+        "No \u2014 lighter objects gain more stored ability because they accelerate more."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "MEDIUM",
+      "damageBonus": 5
+    },
+    {
+      "id": "q186",
+      "stem": "A satellite orbits Earth in a perfect circle. Earth's gravity pulls the satellite directly toward Earth's center, while the satellite moves along its curved path \u2014 always perpendicular to the gravitational pull. Which pattern best explains why Earth's gravity does not change the satellite system's stored ability?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 3 \u2014 a force perpendicular to displacement cannot change stored ability.",
+        "Pattern 4 \u2014 stronger forces over equal displacements store more ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q187",
+      "stem": "A diver exerts a force on a buoy in the same direction the buoy is sinking, causing the buoy to sink faster and deeper. The buoy's stored potential ability increases. Which pattern best explains this outcome?",
+      "options": [
+        "Pattern 3 \u2014 an external system fails to change stored ability if force is perpendicular.",
+        "Pattern 5 \u2014 greater displacement with the same force increases stored ability.",
+        "Pattern 1 \u2014 an external system increases stored ability by exerting force in the same direction as displacement.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q188",
+      "stem": "A student presses a rubber band car's rubber band with equal force but stretches it further than usual. The car launches with noticeably more ability than before. Which pattern best explains why?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability.",
+        "Pattern 5 \u2014 the same force over greater displacement stores more ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q189",
+      "stem": "A construction crane holds a steel beam at a fixed height for 3 minutes without raising or lowering it. Despite the large upward force being applied, the beam's stored potential ability does not change. Which pattern best explains this?",
+      "options": [
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability.",
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability.",
+        "Pattern 3 \u2014 an external system cannot change stored ability if it cannot displace the object in the system.",
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q190",
+      "stem": "An astronaut slows down a drifting satellite by pushing it opposite to its motion for 5 m. The satellite's stored ability decreases. Which pattern best explains this?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability.",
+        "Pattern 5 \u2014 greater displacement stores more ability.",
+        "Pattern 2 \u2014 force in the opposite direction of displacement decreases the system's stored ability."
+      ],
+      "correctAnswer": 3,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q191",
+      "stem": "A spring launcher shoots two identical balls. Ball A is launched with the spring compressed 2 cm (a short push) and Ball B is launched with the spring compressed 4 cm (a longer push) using the same average spring force each time. Ball B reaches a higher height. Which pattern best explains why Ball B has more stored ability after launch?",
+      "options": [
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability.",
+        "Pattern 5 \u2014 the same force over greater displacement stores more ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q192",
+      "stem": "Two cranes lift identical beams. Crane A lifts with 600 N and Crane B lifts with 900 N \u2014 both lifting the same 10 m height. Crane B's beam reaches the same height but with more stored potential ability. Which pattern explains why Crane B's beam system stores more potential ability?",
+      "options": [
+        "Pattern 5 \u2014 the same force over greater displacement stores more ability.",
+        "Pattern 3 \u2014 perpendicular force fails to change stored ability.",
+        "Pattern 4 \u2014 when displacement is the same, a stronger force stores more ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q193",
+      "stem": "A bulldozer pushes a boulder while the wind blows sideways against the boulder. The bulldozer increases the boulder system's stored ability, but the wind does not. Which pattern best explains the wind's ineffectiveness?",
+      "options": [
+        "Pattern 2 \u2014 the wind's force is opposite to the boulder's displacement, decreasing stored ability.",
+        "Pattern 1 \u2014 the bulldozer's force in the same direction as displacement increases stored ability.",
+        "Pattern 3 \u2014 the wind's force is perpendicular to the boulder's displacement, so it cannot change stored ability.",
+        "Pattern 5 \u2014 greater displacement stores more ability, so the wind needs to push further."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q194",
+      "stem": "A diver pushes a crate upward toward the surface. The crate moves upward and its stored potential ability increases. Which pattern best explains this?",
+      "options": [
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability.",
+        "Pattern 1 \u2014 the external system exerts force in the same direction as displacement, increasing stored potential ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability.",
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q195",
+      "stem": "A guitar player stretches a string by pulling it farther than usual before releasing it. The string snaps back with more force than a lightly pulled string would. Which pattern explains why pulling farther stores more potential ability in the string?",
+      "options": [
+        "Pattern 4 \u2014 a stronger force over the same displacement stores more ability.",
+        "Pattern 3 \u2014 perpendicular force fails to change stored ability.",
+        "Pattern 5 \u2014 the same force applied over a greater displacement stores more potential ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q196",
+      "stem": "A space probe is slowed by a retro-rocket firing opposite to its direction of travel for 200 m. The stored ability of the probe system decreases. Which pattern best explains this?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 5 \u2014 the same force over greater displacement stores more ability.",
+        "Pattern 2 \u2014 an external system exerting force opposite to displacement decreases the system's stored ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q197",
+      "stem": "An astronaut pushes two crates. Crate A is pushed with 200 N for 5 m. Crate B is pushed with 400 N for 5 m. Both forces are in the direction of motion. Crate B stores more ability. Which pattern explains this?",
+      "options": [
+        "Pattern 5 \u2014 the same force over greater displacement stores more ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability.",
+        "Pattern 4 \u2014 when displacement is the same, a stronger force stores more ability in the system.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q198",
+      "stem": "A student tries to push open a heavy bank vault door. The door doesn't move. Despite pushing hard for 2 minutes, the vault system's stored ability is unchanged. Which pattern best explains this outcome?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability.",
+        "Pattern 3 \u2014 an external system cannot change stored ability if the system cannot be displaced."
+      ],
+      "correctAnswer": 3,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q199",
+      "stem": "A piano hammer strikes a string, pushing it downward in the same direction the string initially moves. The string's stored potential ability increases immediately after the strike. Which pattern explains this?",
+      "options": [
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability.",
+        "Pattern 2 \u2014 force opposite to displacement decreases stored ability.",
+        "Pattern 1 \u2014 the external system exerts force in the same direction as displacement, increasing the system's stored potential ability.",
+        "Pattern 5 \u2014 greater displacement stores more ability."
+      ],
+      "correctAnswer": 2,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    },
+    {
+      "id": "q200",
+      "stem": "A crane lowers a beam by letting it descend while pushing upward on it (the beam moves down, the crane pushes up). The beam's stored potential ability decreases as it descends. Which pattern best explains this?",
+      "options": [
+        "Pattern 1 \u2014 force in the same direction as displacement increases stored ability.",
+        "Pattern 2 \u2014 the external system exerts force opposite to the direction of displacement, decreasing the system's stored potential ability.",
+        "Pattern 4 \u2014 stronger force over the same displacement stores more ability.",
+        "Pattern 3 \u2014 perpendicular force cannot change stored ability."
+      ],
+      "correctAnswer": 1,
+      "difficulty": "HARD",
+      "damageBonus": 15
+    }
+  ],
+  "damagePerCorrect": 10,
+  "rewards": {
+    "xp": 300,
+    "flux": 75,
+    "itemRarity": "RARE"
+  },
+  "bossAppearance": {
+    "bossType": "SERPENT",
+    "hue": 165
+  },
+  "difficultyTier": "NORMAL",
+  "modifiers": [
+    {
+      "type": "STREAK_BONUS",
+      "value": 10,
+      "label": "Resonant Strike \u2014 consecutive correct answers amplify your output"
+    },
+    {
+      "type": "HEALING_WAVE",
+      "value": 5,
+      "label": "Stored Reserves \u2014 correct answers restore a fragment of your HP"
+    }
+  ],
+  "phases": [
+    {
+      "name": "Coiled Patience",
+      "hpThreshold": 100,
+      "modifiers": [],
+      "dialogue": "The Sovereign absorbs your assault without flinching. It is waiting. It is storing."
+    },
+    {
+      "name": "Sovereign Release",
+      "hpThreshold": 50,
+      "modifiers": [
+        {
+          "type": "BOSS_DAMAGE_BOOST",
+          "value": 15
+        },
+        {
+          "type": "LAST_STAND"
+        }
+      ],
+      "dialogue": "YOU HAVE COMPRESSED ME ENOUGH. NOW I RELEASE WHAT YOU GAVE ME \u2014 EVERY NEWTON, EVERY METER, ALL OF IT.",
+      "damagePerCorrect": 12
+    }
+  ],
+  "bossAbilities": [
+    {
+      "id": "ability-coil-slam",
+      "name": "Elastic Discharge",
+      "description": "The Sovereign releases stored ability in a violent burst \u2014 all active operatives take shockwave damage as the system equalizes.",
+      "trigger": "EVERY_N_QUESTIONS",
+      "triggerValue": 8,
+      "effect": "AOE_DAMAGE",
+      "value": 18,
+      "duration": 0
+    },
+    {
+      "id": "ability-phase-enrage",
+      "name": "Maximum Compression",
+      "description": "Pushed past its equilibrium point, the Sovereign enters a state of maximum stored potential. Its retaliatory force surges for the next 4 questions.",
+      "trigger": "HP_THRESHOLD",
+      "triggerValue": 50,
+      "effect": "ENRAGE",
+      "value": 40,
+      "duration": 4
+    },
+    {
+      "id": "ability-coil-focus",
+      "name": "Displacement Lock",
+      "description": "The Sovereign identifies the operative dealing the most damage and redirects its release force directly at them.",
+      "trigger": "HP_THRESHOLD",
+      "triggerValue": 25,
+      "effect": "FOCUS_FIRE",
+      "value": 2,
+      "duration": 3
+    }
+  ],
+  "lootTable": [
+    {
+      "id": "loot-sovereign-compression-belt",
+      "itemName": "Sovereign's Compression Belt",
+      "slot": "BELT",
+      "rarity": "RARE",
+      "stats": {
+        "analysis": 28,
+        "focus": 16
+      },
+      "dropChance": 15,
+      "isExclusive": true,
+      "maxDrops": 8
+    },
+    {
+      "id": "loot-coiled-tension-amulet",
+      "itemName": "Coiled Tension Amulet",
+      "slot": "AMULET",
+      "rarity": "UNCOMMON",
+      "stats": {
+        "tech": 14,
+        "analysis": 12
+      },
+      "dropChance": 35,
+      "isExclusive": false
+    },
+    {
+      "id": "loot-displacement-grips",
+      "itemName": "Displacement Grips",
+      "slot": "HANDS",
+      "rarity": "COMMON",
+      "stats": {
+        "focus": 9
+      },
+      "dropChance": 60,
+      "isExclusive": false
+    }
+  ]
+}

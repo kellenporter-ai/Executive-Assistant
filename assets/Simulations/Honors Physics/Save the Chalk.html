@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>System & External Force Simulation</title>
+    <style>
+        :root {
+            --bg-color: #0f0720;
+            --panel-bg: rgba(25, 18, 48, 0.85);
+            --text-main: #f0f0f5;
+            --text-muted: #a09cb0;
+            --accent-blue: #4a90e2;
+            --accent-green: #2ecc71;
+            --accent-orange: #f39c12;
+            --accent-red: #e74c3c;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 1;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 10;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px;
+            pointer-events: auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            max-width: 350px;
+        }
+
+        .header-panel {
+            align-self: flex-start;
+        }
+
+        .controls-panel {
+            align-self: flex-end;
+            margin-bottom: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 400px;
+            width: calc(100% - 40px);
+        }
+
+        @media (min-width: 768px) {
+            .controls-panel {
+                align-self: center;
+                margin-bottom: 20px;
+            }
+            #ui-layer {
+                flex-direction: row;
+            }
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            color: #fff;
+        }
+
+        p {
+            margin: 0 0 15px 0;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            width: 100%;
+        }
+
+        button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        button.active-tab {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .action-btn {
+            background: #27ae60;
+            border-color: #2ecc71;
+        }
+        
+        .action-btn:hover {
+            background: #2ecc71;
+        }
+
+        .force-btn {
+            background: var(--accent-orange);
+            border-color: #f1c40f;
+            color: #000;
+            padding: 15px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.4);
+        }
+
+        .force-btn:active, .force-btn.is-pressed {
+            transform: scale(0.98);
+            background: #e67e22;
+            box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4);
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 15px;
+            font-size: 0.85rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        #status-display {
+            margin-top: 15px;
+            padding: 12px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+
+        .status-win { color: var(--accent-green); font-weight: bold; }
+        .status-lose { color: var(--accent-red); font-weight: bold; }
+
+        .chalk-indicator {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-top: 10px;
+            min-height: 28px;
+        }
+
+    </style>
+    <!-- Include Three.js and OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <!-- Proctor Bridge Integration -->
+    <script>
+        const PortalBridge = (() => {
+            const send = (type, data) => {
+                if(window.parent) {
+                    window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+                }
+            };
+            return {
+                init: () => send('PROCTOR_READY'),
+                save: (state, currentQuestion) => send('SAVE_STATE', { state, currentQuestion }),
+                answer: (questionId, correct, attempts) => send('ANSWER', { questionId, correct, attempts }),
+                complete: (score, total, correct) => send('COMPLETE', { score, total, correct })
+            };
+        })();
+        window.addEventListener('load', () => PortalBridge.init());
+    </script>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <div class="panel header-panel">
+            <h1>External Force & Work</h1>
+            <p>Observe how an external force opposite to displacement reduces the system's kinetic energy, preventing the chalk from crushing.</p>
+            
+            <div class="btn-group" style="margin-bottom: 15px;">
+                <button id="tab-a" class="active-tab">A: Falling Brick</button>
+                <button id="tab-b">B: Dynamics Cart</button>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="color-box" style="background: #2ecc71;"></div>
+                    <span>Velocity Vector (Displacement direction)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="color-box" style="background: #f39c12;"></div>
+                    <span>Hand Force Vector (Intervention)</span>
+                </div>
+            </div>
+
+            <div id="status-display">
+                Speed: <span id="val-speed">0.00</span> m/s<br>
+                Net Force: <span id="val-force">0.00</span> N
+            </div>
+            
+            <div id="chalk-status" class="chalk-indicator">Chalk is safe.</div>
+        </div>
+
+        <div class="panel controls-panel">
+            <div class="btn-group">
+                <button id="btn-start" class="action-btn">Release Object</button>
+                <button id="btn-reset">Reset Setup</button>
+            </div>
+            <button id="btn-force" class="force-btn">Hold to Apply Hand Force</button>
+        </div>
+    </div>
+
+    <script>
+        // --- 3D Scene Setup ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x0f0720, 0.02);
+
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 4, 12);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.05; // Don't go below ground
+        controls.minDistance = 3;
+        controls.maxDistance = 20;
+
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 10, 7);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.top = 10;
+        dirLight.shadow.camera.bottom = -10;
+        dirLight.shadow.camera.left = -10;
+        dirLight.shadow.camera.right = 10;
+        scene.add(dirLight);
+
+        // --- Materials ---
+        const matGround = new THREE.MeshStandardMaterial({ color: 0x222233, roughness: 0.8 });
+        const matBrick = new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: 0.6 });
+        const matCart = new THREE.MeshStandardMaterial({ color: 0x2980b9, roughness: 0.4, metalness: 0.2 });
+        const matTrack = new THREE.MeshStandardMaterial({ color: 0x7f8c8d, roughness: 0.5 });
+        const matChalk = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 });
+        const matWheel = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.9 });
+
+        // --- Shared Environment ---
+        const ground = new THREE.Mesh(new THREE.PlaneGeometry(50, 50), matGround);
+        ground.rotation.x = -Math.PI / 2;
+        ground.receiveShadow = true;
+        scene.add(ground);
+
+        // --- Experiment A: Brick ---
+        const groupA = new THREE.Group();
+        scene.add(groupA);
+
+        const chalkA = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4, 16), matChalk);
+        chalkA.position.set(0, 0.2, 0);
+        chalkA.castShadow = true;
+        groupA.add(chalkA);
+
+        const brick = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.8, 0.8), matBrick);
+        brick.castShadow = true;
+        groupA.add(brick);
+
+        // Vectors for A
+        const velArrowA = new THREE.ArrowHelper(new THREE.Vector3(0, -1, 0), brick.position, 0, 0x2ecc71, 0.4, 0.3);
+        const forceArrowA = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), brick.position, 0, 0xf39c12, 0.4, 0.3);
+        groupA.add(velArrowA);
+        groupA.add(forceArrowA);
+
+        // --- Experiment B: Cart ---
+        const groupB = new THREE.Group();
+        groupB.visible = false;
+        scene.add(groupB);
+
+        const track = new THREE.Mesh(new THREE.BoxGeometry(12, 0.2, 2), matTrack);
+        track.position.set(0, 0.1, 0);
+        track.receiveShadow = true;
+        track.castShadow = true;
+        groupB.add(track);
+
+        const chalkB = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.4, 16), matChalk);
+        chalkB.position.set(5.5, 0.4, 0);
+        chalkB.castShadow = true;
+        groupB.add(chalkB);
+
+        const cartGroup = new THREE.Group();
+        const cartBody = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.6, 1), matCart);
+        cartBody.position.y = 0.5;
+        cartBody.castShadow = true;
+        cartGroup.add(cartBody);
+        
+        // Wheels
+        const wheelGeo = new THREE.CylinderGeometry(0.2, 0.2, 1.1, 16);
+        wheelGeo.rotateZ(Math.PI / 2);
+        wheelGeo.rotateY(Math.PI / 2);
+        const wheel1 = new THREE.Mesh(wheelGeo, matWheel);
+        wheel1.position.set(-0.5, 0.2, 0);
+        const wheel2 = new THREE.Mesh(wheelGeo, matWheel);
+        wheel2.position.set(0.5, 0.2, 0);
+        cartGroup.add(wheel1);
+        cartGroup.add(wheel2);
+        groupB.add(cartGroup);
+
+        // Vectors for B
+        const velArrowB = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), cartGroup.position, 0, 0x2ecc71, 0.4, 0.3);
+        const forceArrowB = new THREE.ArrowHelper(new THREE.Vector3(-1, 0, 0), cartGroup.position, 0, 0xf39c12, 0.4, 0.3);
+        groupB.add(velArrowB);
+        groupB.add(forceArrowB);
+
+        // --- Physics State & Logic ---
+        let currentExp = 'A'; // 'A' or 'B'
+        let state = 'IDLE'; // IDLE, RUNNING, ENDED
+        let progress = { savedA: false, savedB: false, completed: false };
+
+        // Constants
+        const MASS = 1.0; // kg
+        const GRAVITY = -9.8; // m/s^2
+        const CHALK_BREAK_SPEED = 1.5; // m/s threshold
+
+        // Variables
+        let posY = 4.0; 
+        let posX = -4.5;
+        let velocity = 0;
+        let isPushing = false;
+
+        // UI Elements
+        const elSpeed = document.getElementById('val-speed');
+        const elForce = document.getElementById('val-force');
+        const elStatus = document.getElementById('chalk-status');
+        const btnStart = document.getElementById('btn-start');
+
+        function updateUI() {
+            elSpeed.innerText = Math.abs(velocity).toFixed(2);
+            let netF = 0;
+            if (currentExp === 'A') {
+                netF = state === 'RUNNING' ? (MASS * GRAVITY) + (isPushing ? 25 : 0) : 0;
+            } else {
+                netF = state === 'RUNNING' ? (isPushing ? -8 : 0) : 0;
+            }
+            elForce.innerText = Math.abs(netF).toFixed(1);
+        }
+
+        function resetSim() {
+            state = 'IDLE';
+            velocity = 0;
+            isPushing = false;
+            
+            if (currentExp === 'A') {
+                posY = 4.0;
+                brick.position.set(0, posY, 0);
+                chalkA.scale.y = 1;
+                chalkA.position.y = 0.2;
+                velArrowA.setLength(0.01);
+                forceArrowA.setLength(0.01);
+                btnStart.innerText = "Release Brick";
+                camera.position.set(0, 4, 12);
+            } else {
+                posX = -4.5;
+                cartGroup.position.set(posX, 0, 0);
+                chalkB.scale.y = 1;
+                chalkB.position.y = 0.4;
+                velArrowB.setLength(0.01);
+                forceArrowB.setLength(0.01);
+                btnStart.innerText = "Push Cart";
+                camera.position.set(0, 4, 12);
+            }
+            
+            elStatus.innerHTML = "Chalk is safe.";
+            elStatus.className = "chalk-indicator";
+            controls.target.set(0, 2, 0);
+            updateUI();
+        }
+
+        function checkWinCondition() {
+            if (progress.savedA && progress.savedB && !progress.completed) {
+                progress.completed = true;
+                PortalBridge.complete(100, 100, 1);
+            }
+            PortalBridge.save(progress, currentExp === 'A' ? 0 : 1);
+        }
+
+        function breakChalk() {
+            if (currentExp === 'A') {
+                chalkA.scale.y = 0.1;
+                chalkA.position.y = 0.02;
+            } else {
+                chalkB.scale.y = 0.1;
+                chalkB.position.y = 0.25;
+            }
+            elStatus.innerHTML = "BOOM! Chalk Crushed!";
+            elStatus.className = "chalk-indicator status-lose";
+        }
+
+        function saveChalk() {
+            elStatus.innerHTML = "SUCCESS! Chalk Saved!";
+            elStatus.className = "chalk-indicator status-win";
+            if (currentExp === 'A') progress.savedA = true;
+            if (currentExp === 'B') progress.savedB = true;
+            checkWinCondition();
+        }
+
+        // --- Interaction Listeners ---
+        document.getElementById('tab-a').addEventListener('click', (e) => {
+            currentExp = 'A';
+            e.target.classList.add('active-tab');
+            document.getElementById('tab-b').classList.remove('active-tab');
+            groupA.visible = true;
+            groupB.visible = false;
+            resetSim();
+        });
+
+        document.getElementById('tab-b').addEventListener('click', (e) => {
+            currentExp = 'B';
+            e.target.classList.add('active-tab');
+            document.getElementById('tab-a').classList.remove('active-tab');
+            groupA.visible = false;
+            groupB.visible = true;
+            resetSim();
+        });
+
+        btnStart.addEventListener('click', () => {
+            if (state === 'IDLE') {
+                state = 'RUNNING';
+                if (currentExp === 'A') velocity = 0;
+                if (currentExp === 'B') velocity = 5.0; // Initial push speed
+                elStatus.innerHTML = "Moving...";
+                elStatus.className = "chalk-indicator";
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', resetSim);
+
+        const btnForce = document.getElementById('btn-force');
+        const applyForce = (e) => { e.preventDefault(); if(state === 'RUNNING') { isPushing = true; btnForce.classList.add('is-pressed'); } };
+        const releaseForce = (e) => { e.preventDefault(); isPushing = false; btnForce.classList.remove('is-pressed'); };
+        
+        btnForce.addEventListener('mousedown', applyForce);
+        btnForce.addEventListener('touchstart', applyForce, {passive: false});
+        window.addEventListener('mouseup', releaseForce);
+        window.addEventListener('touchend', releaseForce);
+        btnForce.addEventListener('contextmenu', e => e.preventDefault()); // Prevent right click sticking
+
+        // --- Main Animation Loop ---
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const dt = Math.min(clock.getDelta(), 0.1);
+
+            if (state === 'RUNNING') {
+                if (currentExp === 'A') {
+                    // Brick Physics
+                    let forceUp = isPushing ? 25.0 : 0; // N
+                    let netForce = (MASS * GRAVITY) + forceUp;
+                    let acceleration = netForce / MASS;
+                    
+                    velocity += acceleration * dt;
+                    posY += velocity * dt;
+
+                    // Update visual
+                    brick.position.y = posY;
+
+                    // Vectors
+                    let vLen = Math.abs(velocity) * 0.2;
+                    velArrowA.position.copy(brick.position);
+                    velArrowA.setDirection(new THREE.Vector3(0, velocity > 0 ? 1 : -1, 0));
+                    velArrowA.setLength(vLen > 0.1 ? vLen : 0.01, vLen > 0.1 ? 0.3 : 0.01, 0.2);
+
+                    let fLen = forceUp * 0.08;
+                    forceArrowA.position.copy(brick.position);
+                    forceArrowA.position.y -= 0.4; // bottom of brick
+                    forceArrowA.setLength(fLen > 0.1 ? fLen : 0.01, fLen > 0.1 ? 0.3 : 0.01, 0.2);
+
+                    // Collision
+                    if (posY <= 0.8) {
+                        posY = 0.8;
+                        brick.position.y = posY;
+                        state = 'ENDED';
+                        if (Math.abs(velocity) > CHALK_BREAK_SPEED) breakChalk();
+                        else saveChalk();
+                        velocity = 0;
+                    }
+
+                } else if (currentExp === 'B') {
+                    // Cart Physics
+                    let forceLeft = isPushing ? -8.0 : 0; // N
+                    let netForce = forceLeft; // No friction/gravity in x
+                    let acceleration = netForce / MASS;
+                    
+                    velocity += acceleration * dt;
+                    // Don't let it go backwards past start
+                    if (velocity < 0 && posX <= -4.5 && !isPushing) velocity = 0; 
+                    
+                    posX += velocity * dt;
+
+                    // Update visual
+                    cartGroup.position.x = posX;
+                    // Rotate wheels
+                    wheel1.rotation.x -= velocity * dt * 5;
+                    wheel2.rotation.x -= velocity * dt * 5;
+
+                    // Vectors
+                    let vLen = Math.abs(velocity) * 0.4;
+                    velArrowB.position.copy(cartGroup.position);
+                    velArrowB.position.y += 1.0;
+                    velArrowB.setDirection(new THREE.Vector3(velocity >= 0 ? 1 : -1, 0, 0));
+                    velArrowB.setLength(vLen > 0.1 ? vLen : 0.01, vLen > 0.1 ? 0.3 : 0.01, 0.2);
+
+                    let fLen = Math.abs(forceLeft) * 0.2;
+                    forceArrowB.position.copy(cartGroup.position);
+                    forceArrowB.position.x += 0.8;
+                    forceArrowB.position.y += 0.5;
+                    forceArrowB.setLength(fLen > 0.1 ? fLen : 0.01, fLen > 0.1 ? 0.3 : 0.01, 0.2);
+
+                    // Collision
+                    if (posX >= 4.5) {
+                        posX = 4.5;
+                        cartGroup.position.x = posX;
+                        state = 'ENDED';
+                        if (Math.abs(velocity) > CHALK_BREAK_SPEED) breakChalk();
+                        else saveChalk();
+                        velocity = 0;
+                    } else if (velocity <= 0 && posX < 4.5 && posX > -4.5) {
+                         state = 'ENDED';
+                         saveChalk();
+                         velocity = 0;
+                    }
+                }
+                updateUI();
+            } else if (state === 'ENDED') {
+                // Ensure vectors disappear when stopped
+                if(currentExp === 'A') {
+                    velArrowA.setLength(0.01, 0.01, 0.01);
+                    forceArrowA.setLength(0.01, 0.01, 0.01);
+                } else {
+                    velArrowB.setLength(0.01, 0.01, 0.01);
+                    forceArrowB.setLength(0.01, 0.01, 0.01);
+                }
+                updateUI();
+            }
+
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Handle Resizing
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize
+        resetSim();
+        animate();
+    </script>
+</body>
+</html>
