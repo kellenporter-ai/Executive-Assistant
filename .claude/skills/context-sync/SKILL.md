@@ -9,6 +9,8 @@ description: >
   (check the most recent decision log entry tagged CONTEXT-SYNC), nudge the user with
   "It's been over a week since your last context sync — want me to run one?"
 model: claude-sonnet-4-6
+effort: medium
+tools: [Read, Write, Edit, Glob, Grep, Bash]
 ---
 
 # Context Sync

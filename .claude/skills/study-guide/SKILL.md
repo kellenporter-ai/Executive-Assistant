@@ -2,6 +2,8 @@
 name: study-guide
 description: Generate condensed student-facing study guides from existing lesson content and question banks. Use this skill whenever the user mentions study guide, review sheet, exam prep, cheat sheet, study material, review notes, unit summary, concept review, test prep, or wants to create student-facing review content from existing lessons or question banks. Also trigger when the user says things like "students need something to study from", "make a review for the test", "summarize this unit for students", or "create practice problems with solutions".
 model: claude-haiku-4-5-20251001
+effort: medium
+tools: [Read, Write, Glob]
 ---
 
 # Study Guide Generator

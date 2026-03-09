@@ -6,6 +6,8 @@ description: >
   of beginning a work session. Detects machine type, syncs repos, checks services,
   and shows a status dashboard.
 model: claude-sonnet-4-6
+effort: low
+tools: [Read, Bash, Glob]
 ---
 
 # Sign On

@@ -2,6 +2,8 @@
 name: lesson-plan
 description: Use when someone asks to plan a lesson, create a lesson plan, build lesson blocks, convert a resource into a lesson, or generate an ISLE physics lesson.
 model: claude-sonnet-4-6
+effort: medium
+tools: [Read, Write, Glob]
 ---
 
 ## What This Skill Does
@@ -81,6 +83,7 @@ Typical blocks:
 - SECTION_HEADER (e.g., "3. Develop a Model")
 - TEXT framing the modeling task
 - SHORT_ANSWER asking students to propose explanations
+- DRAWING for force diagrams, motion maps, energy diagrams, or system sketches
 - SORTING to categorize variables or relationships
 - ACTIVITY for whiteboard/discussion tasks (adapted digitally)
 - INFO_BOX (tip) with representational guidance
@@ -94,6 +97,7 @@ Typical blocks:
 - SHORT_ANSWER asking for predictions: "If your model is correct, what would you expect to observe if...?"
 - ACTIVITY describing the testing experiment
 - DATA_TABLE for recording test results
+- MATH_RESPONSE for quantitative predictions and calculations
 - MC asking which model is supported by evidence
 - SHORT_ANSWER for reflection on results
 
@@ -105,6 +109,9 @@ Typical blocks:
 - TEXT introducing novel scenarios
 - MC for conceptual application questions
 - SHORT_ANSWER for problem-solving
+- MATH_RESPONSE for quantitative problem-solving with shown work
+- DRAWING for applying diagrams to novel scenarios (free-body diagrams, energy diagrams)
+- BAR_CHART for energy/momentum conservation problems
 - RANKING for ordering steps or reasoning
 - SORTING for categorization tasks
 - LINKED for follow-up questions
@@ -124,6 +131,9 @@ For each phase, generate lesson blocks following the JSON schema defined in [blo
 - For SORTING `sortItems`, set `correct` to `"left"` or `"right"` appropriately.
 - For DATA_TABLE, set `editable: false` for label columns and `editable: true` for student-input columns.
 - For RANKING `items`, list them in the CORRECT order (the system scrambles them for the student).
+- For DRAWING blocks, set `drawingMode` to match the task: `"free"` for general diagrams, `"point_model"` for point-mass force diagrams, `"extended_body"` for torque/extended-body diagrams. Use `backgroundImage` when students should draw on top of a scenario image.
+- For MATH_RESPONSE blocks, customize `stepLabels` to match the problem type (e.g., `["Given:", "Find:", "Equation:", "Substitute:", "Solve:"]` for quantitative problems). Set `maxSteps` appropriately for the complexity.
+- For BAR_CHART blocks, only `title` and `height` are needed — students add and label their own bars in each section (Initial/Δ/Final).
 - Keep TEXT blocks concise — students are doing, not reading.
 
 **Resource mode adaptations:**
@@ -133,6 +143,9 @@ For each phase, generate lesson blocks following the JSON schema defined in [blo
 - Multiple-choice or conceptual questions -> MC blocks
 - "Discuss with your group" prompts -> SHORT_ANSWER asking students to write their reasoning
 - Physical equipment descriptions -> INFO_BOX (note) explaining the setup, paired with an IMAGE placeholder
+- "Draw a diagram" / "Sketch the forces" / whiteboard tasks -> DRAWING block with appropriate mode and instructions
+- "Show your work" / calculation problems -> MATH_RESPONSE block with step labels matching the problem structure
+- Energy bar chart / momentum bar chart tasks -> BAR_CHART block (students build their own bars)
 
 ---
 

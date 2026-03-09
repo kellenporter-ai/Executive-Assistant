@@ -2,6 +2,8 @@
 name: dev-pipeline
 description: Use when someone asks to fix a bug, implement a feature, add functionality, resolve an issue, or build something new. Works across any project with a `.agents/` directory. Also triggers on "dev pipeline", "fix and ship", or "build and deploy".
 model: claude-sonnet-4-6
+effort: max
+tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 ---
 
 ## What This Skill Does

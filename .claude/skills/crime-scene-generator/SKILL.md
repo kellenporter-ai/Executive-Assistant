@@ -10,6 +10,8 @@ description: >
   This skill is the foundation that other content-generating skills build on when the subject
   is Forensic Science.
 model: claude-sonnet-4-6
+effort: medium
+tools: [Read, Write]
 ---
 
 ## What This Skill Does

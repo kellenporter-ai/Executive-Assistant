@@ -11,6 +11,8 @@ description: >
   camera orbiting), use the 3d-activity skill instead — but if 2D can do the job, prefer this skill
   because it's faster to load and runs better on Chromebooks.
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob, Bash]
 ---
 
 ## What This Skill Does

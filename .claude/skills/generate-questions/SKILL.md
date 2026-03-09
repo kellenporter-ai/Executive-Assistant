@@ -2,6 +2,8 @@
 name: generate-questions
 description: "Use when someone asks to generate questions, create a question bank, make boss battle questions, create dungeon room questions, or build quiz questions from content."
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob, Bash]
 ---
 
 ## What This Skill Does

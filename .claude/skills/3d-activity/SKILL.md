@@ -2,6 +2,8 @@
 name: 3d-activity
 description: Use when someone asks to create a 3D simulation, build a Babylon.js activity, make a 3D interactive scene, generate a physics sim, or create a forensic science simulation.
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob, Bash]
 ---
 
 ## What This Skill Does

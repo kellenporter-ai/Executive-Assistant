@@ -2,6 +2,8 @@
 name: create-assessment
 description: Use when someone asks to create an assessment, build a quiz, make a test, generate an exam, or create assessment questions for a class.
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob]
 ---
 
 ## What This Skill Does
@@ -60,11 +62,13 @@ Plan the assessment before generating anything:
 Design a mix of question types appropriate to the content:
 
 - **Free response / short answer** — Students explain, defend, predict, or analyze. These are the primary question type. Require students to show reasoning, not just answers.
+- **Drawing** — Students draw force diagrams, free-body diagrams, motion maps, vector diagrams, or annotated sketches. Use DRAWING blocks with appropriate `drawingMode` (`"free"`, `"point_model"`, `"extended_body"`). Provide a `backgroundImage` when students need to draw on top of a scenario.
+- **Math work** — Students show multi-step problem solving with natural math input that renders as LaTeX. Use MATH_RESPONSE blocks with customized `stepLabels` matching the problem structure (e.g., `["Given:", "Find:", "Equation:", "Substitute:", "Solve:"]`).
 - **Interactive elements** — Choose the best fit for each question:
-  - **2D HTML5 Canvas** — for graphs, drag-and-drop diagrams, sliders, bar charts (lightweight, best for most cases)
-  - **Babylon.js 3D simulations** — for spatial/physics concepts where 3D interaction adds genuine value (projectile motion, force visualization, crime scene reconstruction)
+  - **2D HTML5 Canvas** — for graphs, drag-and-drop diagrams, sliders (lightweight, best for most cases; HTML mode only)
+  - **Babylon.js 3D simulations** — for spatial/physics concepts where 3D interaction adds genuine value (HTML mode only)
   - **Links to existing simulations** — when a relevant simulation already exists in `/home/kp/Desktop/Executive Assistant/assets/Simulations/`
-- **Data tables and bar charts** — for quantitative analysis questions
+- **Data tables and bar charts** — for quantitative analysis questions. BAR_CHART blocks let students build their own energy/momentum bar charts with draggable bars across Initial/Δ/Final sections.
 - **Sorting and ranking** — for classification and ordering tasks
 
 ### ISLE Phase Alignment
@@ -101,8 +105,10 @@ Structure the assessment as:
 4. **Assessment questions** — Mix of block types per question:
    - **SHORT_ANSWER** for free response questions. For open-ended responses, omit `acceptedAnswers` or leave it as an empty array.
    - **MC** for multiple choice (use sparingly — prefer free response)
+   - **DRAWING** for force diagrams, free-body diagrams, vector drawings, motion maps, and annotated sketches. Set `drawingMode` to match the task.
+   - **MATH_RESPONSE** for quantitative problem-solving where students show multi-step work. Customize `stepLabels` for the problem type.
    - **DATA_TABLE** for quantitative analysis
-   - **BAR_CHART** for energy/momentum bar chart tasks
+   - **BAR_CHART** for energy/momentum bar chart tasks (students build their own bars across Initial/Δ/Final sections)
    - **SORTING** for classification tasks
    - **RANKING** for ordering tasks
    - **ACTIVITY** for interactive or simulation-based prompts

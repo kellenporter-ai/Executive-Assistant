@@ -11,6 +11,8 @@ description: >
   and playing together. If the request is single-player and doesn't need real-time sync, use 2d-activity
   or 3d-activity instead.
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob, Bash]
 ---
 
 ## What This Skill Does

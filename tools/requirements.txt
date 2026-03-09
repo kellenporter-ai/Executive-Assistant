@@ -1,0 +1,6 @@
+# Executive Assistant Tools - Python Dependencies
+# Install: pip install -r tools/requirements.txt
+# Or with venv: python3 -m venv tools/.venv && source tools/.venv/bin/activate && pip install -r tools/requirements.txt
+
+requests>=2.31.0
+firebase-admin>=6.4.0

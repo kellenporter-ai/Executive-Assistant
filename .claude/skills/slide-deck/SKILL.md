@@ -12,6 +12,8 @@ description: >
   Prefer this skill over study-guide when the user's intent is presentation/projection, not
   student self-study.
 model: claude-sonnet-4-6
+effort: high
+tools: [Read, Write, Glob]
 ---
 
 ## What This Skill Does

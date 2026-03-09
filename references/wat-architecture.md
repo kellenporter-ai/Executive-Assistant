@@ -79,6 +79,92 @@ All skills, agent definitions, and context files are Git-tracked. Changes are re
 
 ---
 
+## Skill Taxonomy (Workflow Layer)
+
+Skills are organized into functional clusters for routing and mental model clarity.
+
+### Session Lifecycle
+Manage workspace state across session boundaries.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| sign-on | low | Sonnet | Workspace init, repo sync, service checks |
+| sign-off | medium | Sonnet | Clean shutdown, commit, push, priority update |
+| remember | low | Sonnet | Memory consolidation and pruning |
+| daily-briefing | medium | Sonnet | Summarize recent activity and next steps |
+| context-sync | medium | Sonnet | Weekly drift detection across context files |
+
+### Content Creation (Portal)
+Generate pedagogical content aligned with ISLE methodology.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| lesson-plan | medium | Sonnet | ISLE lesson blocks from topic or resource |
+| create-assessment | high | Sonnet | Mixed-type assessments with rubrics |
+| generate-questions | high | Sonnet | Bulk question banks (500-1000+) for game modes |
+| study-guide | medium | Haiku | Student-facing review from existing content |
+| crime-scene-generator | medium | Sonnet | Forensic scenarios for downstream skills |
+
+### Activity Generation
+Produce standalone interactive HTML files.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| 2d-activity | high | Sonnet | Canvas/SVG/vanilla JS interactives |
+| 3d-activity | high | Sonnet | Babylon.js 3D simulations |
+| multiplayer-activity | high | Sonnet | Firebase RTDB real-time multiplayer |
+
+### Presentation
+Visual output for projection or sharing.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| slide-deck | high | Sonnet | Reveal.js HTML slide decks |
+| generate-image | low | Haiku | Structured prompts for Nano Banana Pro 2 |
+
+### Portal Operations
+Development and tuning workflows for Porter's Portal.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| dev-pipeline | max | Sonnet | Full dev lifecycle orchestrator |
+| game-balance | medium | Sonnet | RPG economy analysis and tuning |
+
+### Meta
+Skills that manage other skills and agents.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| agent-creator | high | Sonnet | Create, audit, and improve agent definitions |
+
+---
+
+## Agent Inventory (Sub-Agent Layer)
+
+| Agent | Model | Domain | Boundary |
+|-------|-------|--------|----------|
+| backend-engineer | Sonnet | APIs, DB, auth, security rules | Server-only; never touches frontend |
+| ui-engineer | Sonnet | Components, a11y, responsive design | Frontend-only; reports data contracts |
+| graphics-engineer | Sonnet | Babylon.js, SVG, animations, effects | Visuals-only; no economy or a11y |
+| qa-engineer | Sonnet | Auditing, testing, security, a11y | Auditor-only; reports bugs, never fixes |
+| content-writer | Haiku | UI copy, tooltips, error messages | Copy-only; annotates for ui-engineer |
+| data-analyst | Haiku | Metrics, engagement, risk identification | Reports-only; never implements |
+| deployment-monitor | Haiku | Post-deploy health, log analysis | Monitor-only; never fixes |
+| local-llm-assistant | Qwen3 14B | Drafting, summarizing, boilerplate | No internet; flags tasks beyond capability |
+
+---
+
+## Tool Inventory (Execution Layer)
+
+| Tool | Type | Purpose | Dependencies |
+|------|------|---------|-------------|
+| local-agent.py | Python script | Agentic loop for local LLM with tool access | Ollama, requests |
+| grade-assistant.py | Python script | AI-suggested rubric grades via local LLM | Ollama, firebase-admin, requests |
+| Claude Code built-ins | Platform | Read, Write, Edit, Glob, Grep, Bash, Agent | Claude Code runtime |
+| MCP plugins | Platform | Firebase, GitHub, Playwright, Greptile, Context7 | Per-plugin config |
+
+---
+
 ## What We Intentionally Skip (and why)
 
 | WAT Feature | Why We Skip It |

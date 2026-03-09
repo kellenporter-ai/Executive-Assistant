@@ -9,6 +9,8 @@ description: >
   any doubt about whether something worth remembering happened, run it. The cost of a quick
   audit with no changes is near zero; the cost of losing useful context is high.
 model: claude-sonnet-4-6
+effort: low
+tools: [Read, Write, Edit, Glob]
 ---
 
 # Remember

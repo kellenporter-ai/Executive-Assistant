@@ -6,6 +6,8 @@ description: >
   "good night", or any variation of ending a work session. Commits outstanding work,
   pushes to remote, and summarizes the session.
 model: claude-sonnet-4-6
+effort: medium
+tools: [Read, Bash, Glob, Grep, Edit]
 ---
 
 # Sign Off

@@ -2,6 +2,8 @@
 name: generate-image
 description: Use when someone asks to generate an image, create a picture, make an image prompt, build an image prompt for Nano Banana Pro 2, or needs a detailed JSON image prompt.
 model: claude-haiku-4-5-20251001
+effort: low
+tools: [Write]
 ---
 
 ## What This Skill Does

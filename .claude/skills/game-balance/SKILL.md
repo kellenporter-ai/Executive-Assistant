@@ -8,6 +8,8 @@ description: >
   progression rates, whether rewards feel right, if bosses are too easy/hard, or wants to simulate
   how students progress through the system over a semester.
 model: claude-sonnet-4-6
+effort: medium
+tools: [Read, Glob, Grep, Bash]
 ---
 
 # Game Balance Analyzer
