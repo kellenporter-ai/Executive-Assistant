@@ -231,6 +231,20 @@ Total: [total] questions across [n] modes
 
 Flag any issues (low counts, parse errors, deduplications).
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log). Max 3 loops.
+
+- **Subagent returns invalid JSON:** Attempt auto-fix (trailing commas, truncated arrays — close with `]`). If unfixable, re-spawn that subagent with a shorter batch size.
+- **Question count significantly under 500:** Re-spawn underperforming subagents with explicit count targets. Check if source material was too narrow — suggest broadening the topic.
+- **Shuffle script fails:** Verify `scripts/shuffle_options.py` exists and is executable. Check that question format matches expected schema (index-based `correctAnswer`).
+- **Duplicate questions detected:** Remove duplicates, re-assign sequential IDs, note the dedup count in the summary.
+- **Boss/Dungeon config doesn't match import schema:** Re-read `schemas.md` and regenerate the config subagent with the exact schema pasted in the prompt.
+- **Write intermediate question batches to `temp/`** before merging — avoids context window bloat when handling 500+ questions per mode.
+- **Escalate immediately:** Scientific accuracy concerns, ambiguous topic scope, when source material contradicts known physics.
+
+---
+
 ## Notes
 
 - **Distractors must be plausible and educational** — never use joke answers or obviously wrong options.

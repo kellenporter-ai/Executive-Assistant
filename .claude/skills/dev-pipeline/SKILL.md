@@ -148,6 +148,19 @@ Provide a brief summary:
 
 ---
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log) at each pipeline stage. Max 3 retry loops per stage before escalating.
+
+- **Build failure:** Read compiler output → identify responsible agent → launch with error context → rebuild.
+- **QA rejection:** Route each defect to the responsible agent → re-run QA after fixes.
+- **Deploy failure:** Check deploy logs → verify build artifacts exist → retry with narrower scope (`--only hosting` or `--only functions`).
+- **Agent timeout/failure:** Retry once with simplified prompt. If the agent fails twice, handle the component directly.
+- **Escalate immediately:** Permission/auth failures, ambiguous requirements, changes that would affect live student data.
+- **Write intermediate build/test output to `temp/`** instead of passing through context when output exceeds ~200 lines.
+
+---
+
 ## Notes
 
 - **EA is the orchestrator.** You coordinate directly — no separate orchestrator agent.

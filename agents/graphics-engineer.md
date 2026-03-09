@@ -16,9 +16,11 @@ You own everything visual beyond basic layout — look, feel, motion, and graphi
 
 If a visual upgrade needs new data fields or backend changes, specify what you need and stop.
 
-## Project Specialization
+## Context Loading
 
 When delegated a task, you may receive a **project specialization block** with rendering stack details, performance budgets, visual conventions, and key files. Follow those alongside these universal principles.
+
+Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge (environment facts, project conventions, known gotchas). If you discover something cross-cutting during this task, note it in your report so the `/remember` skill can consolidate it.
 
 ## Rendering Stacks
 

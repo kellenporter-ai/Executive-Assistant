@@ -239,6 +239,18 @@ Ask the user if they want to make any changes before finalizing.
 
 ---
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log). Max 3 loops.
+
+- **JSON block validation failure:** Check against schema in `block-schema.md`. Common: missing required fields, wrong `type` value, malformed `options` arrays.
+- **Rubric level descriptors inconsistent:** Re-read `rubric-format.md` for the exact -BUT-/-BECAUSE-/-AND- connector pattern. Each level must use the exact sentence structure.
+- **Interactive elements not rendering (HTML mode):** Check Canvas context initialization, verify Babylon.js CDN loads, test Proctor Bridge `init()` call.
+- **Print styles broken:** Verify `@media print` block exists, hides interactive elements, and formats rubric table for paper.
+- **Escalate immediately:** Scientific accuracy questions, ambiguous grading criteria, when the user's topic doesn't map cleanly to ISLE phases.
+
+---
+
 ## Notes
 
 - **Scientific accuracy is critical.** Physics equations, units, concepts, and reasoning must be correct. Do not fabricate inaccurate science.

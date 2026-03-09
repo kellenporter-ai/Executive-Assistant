@@ -30,6 +30,20 @@ The `description` field is the primary triggering mechanism — it determines wh
 
 Figure out where the user is in this process and help them progress. If they say "just vibe with me", skip the formal evaluation machinery.
 
+## Reasoning Protocol
+
+This is an analytical skill — use structured reasoning before writing or modifying agents:
+
+1. **Define the Problem** — What capability gap does this agent fill? What failure mode are we fixing? What does success look like?
+2. **Research** — Read existing agents in `agents/` for patterns and conventions. Check for overlap with existing agents. Review `agents/memory/SHARED.md` for cross-cutting knowledge.
+3. **Analyze** — Map the agent's responsibilities against the team. Identify boundary risks (scope creep, overlap with other agents).
+4. **Synthesize** — Draft the agent definition with clear identity, boundaries, protocols, and output format.
+5. **Conclude** — Test with realistic prompts, evaluate results, iterate.
+
+For audits and improvements, the same protocol applies: define what's wrong → research the current behavior → analyze root causes → synthesize fixes → test.
+
+---
+
 ## Creating an Agent
 
 ### Capture Intent

@@ -1,0 +1,71 @@
+[
+  {
+    "type": "SECTION_HEADER",
+    "icon": "🪀",
+    "title": "Yo-Yo Moment of Inertia Assessment",
+    "subtitle": "Rotational Dynamics & Experimental Design"
+  },
+  {
+    "type": "OBJECTIVES",
+    "title": "Skills Being Assessed",
+    "items": [
+      "I am able to identify measurable physical quantities and describe how to measure them using tools available in a physics classroom.",
+      "I am able to draw a force diagram for a rotating and translating system, labeling all forces and their directions.",
+      "I am able to define givens and unknowns using proper physics notation for a rotational dynamics problem.",
+      "I am able to apply Newton's 2nd Law (translational and rotational) to algebraically isolate a target variable in terms of measurable quantities."
+    ]
+  },
+  {
+    "type": "TEXT",
+    "content": "An irregularly shaped yo-yo is held at rest and then released, dropping as the string unwinds from its axle. Your task is to determine the moment of inertia (I) of this yo-yo using only the tools available in a physics classroom.\n\nUse the simulation above to observe the yo-yo's motion. Pay attention to its structure — the yo-yo has an outer radius R and a smaller axle radius r where the string is wound.\n\nIMPORTANT CONSTRAINT: You do not have access to any device that measures time. No stopwatches, no timers, no photogates, no motion detectors — nothing that records time intervals."
+  },
+  {
+    "type": "INFO_BOX",
+    "variant": "note",
+    "content": "Because the yo-yo is irregularly shaped, you cannot use any standard geometric formula for its moment of inertia (like I = ½mR²). You must determine I experimentally."
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "SHORT_ANSWER",
+    "content": "Question 1: Measurement Planning\n\nIdentify ALL physical quantities you would need to measure in order to determine the moment of inertia of this yo-yo. For each quantity:\n\n(a) Name the quantity and its physics symbol.\n(b) Name the specific tool you would use to measure it.\n(c) Describe exactly how you would set up and use that tool to take the measurement.\n\nRemember: you cannot measure time in any way.",
+    "acceptedAnswers": []
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "DRAWING",
+    "title": "Question 2: Force Diagram",
+    "instructions": "Choose a moment while the yo-yo is falling and the string is still unwinding. Draw a force diagram for the yo-yo at that instant.\n\n- Represent the yo-yo as a circle or point.\n- Draw and label ALL forces acting on the yo-yo using standard physics symbols.\n- Indicate the direction of the yo-yo's linear acceleration.\n- Indicate the direction of the yo-yo's angular acceleration.\n- Label the axle radius r where the string contacts the yo-yo.",
+    "drawingMode": "extended_body",
+    "canvasHeight": 450
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "MATH_RESPONSE",
+    "title": "Question 3: Givens and Unknowns",
+    "content": "Based on your measurement plan from Question 1, formally define:\n\n(a) Your GIVENS — every quantity you can measure or already know. Use proper physics symbols and state how each is obtained.\n(b) Your FIND — what you are solving for, with its symbol and units.",
+    "maxSteps": 8,
+    "stepLabels": ["Given:", "Given:", "Given:", "Given:", "Find:"],
+    "showLatexHelp": true
+  },
+  {
+    "type": "DIVIDER",
+    "content": ""
+  },
+  {
+    "type": "MATH_RESPONSE",
+    "title": "Question 4: Mathematical Derivation",
+    "content": "Starting from Newton's 2nd Law (both the translational form and the rotational form), show a complete step-by-step derivation that ends with the moment of inertia (I) isolated on one side of the equation and only known or measurable quantities on the other side.\n\nYour derivation must:\n- Start from fundamental physics laws (not a formula you looked up).\n- Show every algebraic step — do not skip steps.\n- End with I = (expression containing only measurable quantities).\n- Use the no-slip condition to connect translational and rotational motion.",
+    "maxSteps": 12,
+    "stepLabels": ["Translational N2L:", "Rotational N2L:", "No-slip condition:", "Substitute:", "Step:", "Step:", "Step:", "Isolate I:"],
+    "showLatexHelp": true
+  }
+]

@@ -23,8 +23,23 @@ What this skill does in one sentence.
 - What the skill produces
 
 ## Error Handling
-- On [failure type]: [recovery action]
-- Escalation: [when to surface to Kellen vs. retry]
+
+Use the 5-step self-correction loop before escalating to Kellen:
+
+1. **Read** — Parse the error message. Identify the failing component, line, or tool.
+2. **Research** — Check if this is a known pattern (search codebase, read docs, check `agents/memory/SHARED.md`).
+3. **Patch** — Apply a targeted fix. Change one thing at a time.
+4. **Retry** — Re-run the failed step. If it fails again with a *different* error, loop back to step 1 (max 3 loops).
+5. **Log** — Whether fixed or not, note what happened. If escalating, include: error message, what you tried, and why it didn't work.
+
+**When to escalate immediately (skip self-correction):**
+- Authentication or permission failures (can't self-fix credentials)
+- Ambiguous requirements (need Kellen's decision, not a code fix)
+- Data loss risk (destructive operations that can't be undone)
+
+**Skill-specific error handling:**
+- On [failure type]: [specific recovery action for this skill]
+- Escalation: [when to surface to Kellen vs. retry for this skill]
 
 ## API Keys (if applicable)
 This skill requires the following keys in `.env`:

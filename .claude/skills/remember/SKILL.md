@@ -85,6 +85,17 @@ Apply these filters to every candidate memory:
 - Entries that are still accurate and appropriately detailed
 - Recent entries that haven't had time to prove their value yet — give them a session or two
 
+## Step 3b: Cross-Agent Shared Memory
+
+Check if any discoveries from this session are **cross-cutting** — relevant to multiple agents, not just one domain. Examples:
+
+- A Firestore field was renamed (affects backend-engineer, ui-engineer, data-analyst)
+- A Chromebook rendering limitation was found (affects ui-engineer, graphics-engineer)
+- A deployment quirk was discovered (affects deployment-monitor, backend-engineer)
+- A project-wide convention was established or changed
+
+If cross-cutting discoveries exist, read `agents/memory/SHARED.md` and append them under the appropriate section. Follow the same dedup rules as personal memory — check what's already there first.
+
 ## Step 4: Apply Changes
 
 Make your edits using the Edit tool for surgical updates. Follow these rules:

@@ -259,6 +259,18 @@ After writing the file, provide:
 
 ---
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log). Max 3 loops.
+
+- **Canvas rendering bugs:** Open the file in a browser tab, check console for errors. Common: missing `ctx` reference, wrong coordinate system, `NaN` in physics calculations.
+- **Drag-and-drop not working:** Verify `setPointerCapture()` is called on `pointerdown`, listeners are on `document` not the element, and `touch-action: none` is set.
+- **Performance issues:** Reduce particle/object count, check for missing `requestAnimationFrame` (using `setInterval` instead), verify DPI scaling is capped.
+- **Proctor Bridge not firing:** Ensure `PortalBridge.init()` is called on `window.load` and the `postMessage` source is `'portal-activity'`.
+- **Escalate immediately:** Scientific accuracy questions (ask Kellen), ambiguous educational goals.
+
+---
+
 ## Notes
 
 - **Output ONLY the HTML file.** Write it with the Write tool — no conversational filler around the file content.

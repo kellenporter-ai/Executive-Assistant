@@ -160,6 +160,19 @@ After writing the file, provide a brief summary:
 
 ---
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log). Max 3 loops.
+
+- **Babylon.js scene blank/black:** Check engine initialization, verify canvas element exists, confirm at least one light is in the scene, check that camera target is set.
+- **Performance below 30fps:** Reduce shadow map to 512, freeze more static meshes, switch to Thin Instances for repeated geometry, cut particle count.
+- **GlowLayer blooming everything:** Use `addIncludedOnlyMesh()` to whitelist specific meshes, or remove GlowLayer entirely.
+- **Physics behaving wrong:** Verify delta time usage (`engine.getDeltaTime() / 1000`), check unit scaling (PIXELS_PER_METER), ensure gravity sign is correct.
+- **Proctor Bridge not firing:** Ensure `PortalBridge.init()` is called on `window.load` and `postMessage` source is `'portal-activity'`.
+- **Escalate immediately:** Scientific accuracy questions (ask Kellen), ambiguous educational goals.
+
+---
+
 ## Notes
 
 - **Output ONLY the HTML file.** Do not add explanation or commentary before/after the file content — just write it with the Write tool.

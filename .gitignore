@@ -1,3 +1,4 @@
 .env
 firebase-debug.log
 tools/service-account.json
+temp/

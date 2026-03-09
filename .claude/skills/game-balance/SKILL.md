@@ -26,6 +26,20 @@ The system is designed so that **engagement with learning content is the primary
 4. **Tuning Recommendations** — Suggest specific constant/parameter changes with rationale
 5. **Comparative Analysis** — Compare balance across class types or before/after a change
 
+## Reasoning Protocol
+
+This is an analytical skill — use structured reasoning before diving into data. For every analysis:
+
+1. **Define the Problem** — What specific balance question is being asked? What subsystem(s) are involved? What would "balanced" look like?
+2. **Research** — Gather the relevant constants, formulas, and live data. Read `references/economy-reference.md` and any prior balance reports.
+3. **Analyze** — Run the numbers. Simulate progression profiles. Compare against design intent.
+4. **Synthesize** — What patterns emerge? Are there cascading effects across subsystems?
+5. **Conclude** — Specific, numbered recommendations with before/after values and risk assessment.
+
+Don't skip straight to recommendations. The structured reasoning trail makes the report auditable and helps Kellen understand *why* a change is needed, not just *what* to change.
+
+---
+
 ## How to Work
 
 ### Step 1: Understand the Request

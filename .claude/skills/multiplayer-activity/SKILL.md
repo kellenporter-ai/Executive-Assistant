@@ -183,6 +183,18 @@ Provide a brief summary:
 
 ---
 
+## Error Handling
+
+Use the 5-step self-correction loop (Read → Research → Patch → Retry → Log). Max 3 loops.
+
+- **Firebase connection fails:** Verify config object matches the target project, check that RTDB URL is correct, confirm rules allow read/write on `/games/` and `/join_codes/`.
+- **Players not syncing:** Ensure `.on('value')` listeners (not `.once()`), verify all state changes go through the host, check that `onDisconnect()` handlers are registered.
+- **Join code not working:** Verify the code is being written to `/join_codes/{code}` on create and read on join, check for case sensitivity issues.
+- **State listener not driving UI:** Confirm a SINGLE state listener on `/games/{gameId}/state` handles ALL screen transitions — no local state driving screens independently.
+- **Escalate immediately:** Firebase permission errors (need rule changes), ambiguous game mechanics (need Kellen's decision).
+
+---
+
 ## Notes
 
 - **Output ONLY the HTML file.** Write it with the Write tool — no conversational filler around the content.

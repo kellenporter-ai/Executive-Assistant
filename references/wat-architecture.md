@@ -71,8 +71,16 @@ The EA (Manager Agent) doesn't do everything — it routes to specialized sub-ag
 - **Haiku 4.5** — simple, fast tasks
 - **Local Ollama (qwen3:14b)** — drafting, summarization, boilerplate (saves API tokens)
 
-### 5. Error as Context, Not Fatal
-When a tool fails, the error is fed back into the agent's reasoning loop as actionable context. The agent evaluates the error and decides: retry, fall back to an alternative, or escalate to Kellen. Skills define error-handling directives to constrain this behavior.
+### 5. Error as Context, Not Fatal (Self-Correction Loop)
+When a tool fails, the error is fed back into the agent's reasoning loop as actionable context. All skills follow a standardized 5-step self-correction loop:
+
+1. **Read** the error — identify the failing component
+2. **Research** — check if it's a known pattern (codebase, docs, shared memory)
+3. **Patch** — apply a targeted fix, one change at a time
+4. **Retry** — re-run the failed step (max 3 loops)
+5. **Log** — note what happened, whether fixed or escalated
+
+Skills define when to escalate immediately (auth failures, ambiguous requirements, data loss risk) vs. when to self-correct.
 
 ### 6. Version-Controlled Workflows
 All skills, agent definitions, and context files are Git-tracked. Changes are reviewable, reversible, and auditable through the decision log.
@@ -161,7 +169,63 @@ Skills that manage other skills and agents.
 | local-agent.py | Python script | Agentic loop for local LLM with tool access | Ollama, requests |
 | grade-assistant.py | Python script | AI-suggested rubric grades via local LLM | Ollama, firebase-admin, requests |
 | Claude Code built-ins | Platform | Read, Write, Edit, Glob, Grep, Bash, Agent | Claude Code runtime |
-| MCP plugins | Platform | Firebase, GitHub, Playwright, Greptile, Context7 | Per-plugin config |
+| MCP: Firebase | Plugin (official) | Firestore queries, function logs, project management | firebase-tools |
+| MCP: GitHub | Plugin (official) | Repo access, PRs, issues, CI/CD | GitHub PAT |
+| MCP: Code Review | Plugin (official) | PR code review automation | — |
+| MCP: Skill Creator | Plugin (official) | Skill scaffolding, eval, optimization | — |
+| MCP: Claude Code Setup | Plugin (official) | IDE initialization and config | — |
+
+---
+
+## Context Window Management
+
+### The Problem
+Loading all tool definitions, intermediate data, and agent context into the LLM's context window causes token bloat, latency, and "instruction forgetting." This is especially acute for skills like generate-questions (500+ question JSON arrays) and dev-pipeline (long build/test output).
+
+### Filesystem-Based Data Routing
+Instead of passing large intermediate results through the context window:
+
+1. **Write intermediate data to `temp/`** — build output, test results, raw question batches, API responses
+2. **Process locally** — generate scripts to parse/filter/merge the data on disk
+3. **Ingest only the refined output** — the LLM reads the final, concise result
+
+The `temp/` directory is gitignored and cleaned between sessions. Skills that generate large output (generate-questions, dev-pipeline, grade-assistant) should default to this pattern when output exceeds ~200 lines.
+
+### Just-in-Time Tool Loading
+Claude Code's deferred tool system already handles this — tools aren't loaded until discovered via `ToolSearch`. No custom registry needed.
+
+---
+
+## Cross-Agent Knowledge Sharing
+
+### Shared Memory
+All agents read `agents/memory/SHARED.md` at initialization for cross-cutting knowledge: environment facts, project conventions, known gotchas. This prevents agents from rediscovering the same constraints independently.
+
+Individual agents maintain domain-specific memory in `agents/memory/<agent>/MEMORY.md`. The `/remember` skill consolidates cross-agent learnings into SHARED.md during memory sweeps.
+
+### Reasoning Protocols
+Skills use different reasoning structures based on their nature:
+- **Dev skills** (dev-pipeline) use **Backward Design**: Goal → Components → Build
+- **Analytical skills** (game-balance, agent-creator) use **Sequential Analysis**: Problem → Research → Analysis → Synthesis → Conclusion
+
+---
+
+## Security & Governance
+
+### Principle of Least Privilege
+- MCP tool descriptions expose only the endpoints needed for the agent's current task
+- Database operations use read-only modes by default; write operations require explicit skill authorization
+- Firebase service account credentials never enter the LLM's context — they're loaded by tools at runtime
+
+### Tool Description Best Practices (Intent-First)
+When defining new MCP integrations or tool descriptions:
+- Describe the **capability** (what it does), not the **implementation** (how it works)
+- Include **required inputs** and **expected outputs** in plain language
+- Avoid semantic overlap between tools — if two tools sound similar, disambiguate explicitly
+- Treat the tool description as a contract, not a casual summary
+
+### Auditability
+Every tool execution, context injection, and delegation is visible in the Claude Code transcript. The `decisions/` log captures architectural choices. Git history tracks all skill/agent/workflow changes.
 
 ---
 
@@ -174,3 +238,7 @@ Skills that manage other skills and agents.
 | **Always-on webhooks** | Requires external infra (n8n, Make.com). Adds complexity without matching current needs. |
 | **External orchestration platforms** | Claude Code's built-in skill/agent system handles orchestration natively. No need for a separate platform. |
 | **MCP servers (Gmail, Slack, Zapier)** | Deferred until there's a concrete use case. Google Calendar MCP is the most likely first addition. |
+| **Memory Graph DB (Neo4j, Kuzu)** | 8 agents + 1 user. Flat markdown with a shared file (`agents/memory/SHARED.md`) is sufficient at current scale. |
+| **MCPGauge evaluation framework** | Manual observation works for our agent team size. Formal eval suites are premature. |
+| **Custom remote MCP servers** | All integrations use official plugins or local tools. No custom servers to secure with OAuth 2.1. |
+| **Dynamic tool search registry** | Claude Code's deferred tool loading handles this natively. |
