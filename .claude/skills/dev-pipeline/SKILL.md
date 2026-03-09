@@ -89,6 +89,11 @@ Run agents in parallel when their tasks are independent. Stagger when there are 
 
 After all engineering agents complete, launch the **qa-engineer** with all changed files and the Backward Design goal. Include the project's QA specialization if it exists.
 
+**If the task involved UI changes**, also include in the QA delegation:
+- Which pages/routes were affected by the changes
+- Paths to any standalone HTML files that were created or modified
+- The note: "Visual inspection required — screenshot affected pages at 1366x768"
+
 If QA rejects:
 1. Read each bug report.
 2. Route each bug to the responsible agent.

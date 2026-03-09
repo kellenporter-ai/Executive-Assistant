@@ -52,7 +52,8 @@
         .reveal .slides { position: relative; z-index: 2; }
 
         .ambient-overlay .orb-1,
-        .ambient-overlay .orb-2 {
+        .ambient-overlay .orb-2,
+        .ambient-overlay .orb-3 {
             position: absolute;
             border-radius: 50%;
             filter: blur(120px);
@@ -68,6 +69,12 @@
             bottom: -10vh; right: -10vw;
             animation: orbFloat2 25s ease-in-out infinite;
         }
+        .ambient-overlay .orb-3 {
+            background: radial-gradient(circle, #a855f7 0%, transparent 65%);
+            top: 30vh; right: 10vw;
+            width: 40vw; height: 40vh;
+            animation: orbFloat3 35s ease-in-out infinite;
+        }
         @keyframes orbFloat1 {
             0%, 100% { opacity: 0.15; transform: translate(0, 0); }
             33% { opacity: 0.25; transform: translate(15vw, 10vh); }
@@ -77,6 +84,11 @@
             0%, 100% { opacity: 0.15; transform: translate(0, 0); }
             33% { opacity: 0.25; transform: translate(-10vw, -15vh); }
             66% { opacity: 0.15; transform: translate(10vw, -5vh); }
+        }
+        @keyframes orbFloat3 {
+            0%, 100% { opacity: 0.10; transform: translate(0, 0); }
+            33% { opacity: 0.18; transform: translate(-12vw, -8vh); }
+            66% { opacity: 0.10; transform: translate(5vw, 12vh); }
         }
 
         .reveal h1, .reveal h2, .reveal h3 {
@@ -99,8 +111,8 @@
             margin: 0.4em 0;
             backdrop-filter: blur(4px);
             text-align: left;
-            font-size: 0.85em;
-            line-height: 1.5;
+            font-size: 0.88em;
+            line-height: 1.65;
         }
         .pattern-card.increase { border-left: 5px solid var(--increase); }
         .pattern-card.decrease { border-left: 5px solid var(--decrease); }
@@ -204,11 +216,11 @@
         .check-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0.5em 1.5em;
-            max-width: 900px;
+            gap: 0.7em 2em;
+            max-width: 1000px;
             margin: 0.6em auto;
             text-align: left;
-            font-size: 0.82em;
+            font-size: 0.88em;
         }
         .check-item {
             display: flex;
@@ -230,7 +242,7 @@
         }
         .candidate {
             background: rgba(255,255,255,0.04);
-            border: 2px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.18);
             border-radius: 14px;
             padding: 1em;
             text-align: center;
@@ -260,20 +272,20 @@
             border-collapse: separate;
             border-spacing: 0;
             margin: 0.5em auto;
-            font-size: 0.72em;
+            font-size: 0.85em;
             border-radius: 12px;
             overflow: hidden;
         }
         .summary-table th {
             background: rgba(91,156,246,0.2);
-            padding: 0.6em 1em;
+            padding: 0.7em 1.1em;
             font-family: 'Outfit', sans-serif;
             font-weight: 600;
             text-align: center;
         }
         .summary-table td {
             background: rgba(255,255,255,0.03);
-            padding: 0.5em 0.8em;
+            padding: 0.6em 0.9em;
             border-top: 1px solid rgba(255,255,255,0.06);
             text-align: center;
         }
@@ -291,8 +303,14 @@
             font-family: 'Outfit', sans-serif;
             font-weight: 800;
             color: var(--warning);
-            font-size: 0.9em;
+            font-size: 0.95em;
             margin-bottom: 0.3em;
+        }
+
+        /* Pulse animation for pivotal equation reveal */
+        @keyframes eqPulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(91,156,246,0.2); }
+            50% { box-shadow: 0 0 24px 8px rgba(91,156,246,0.25); }
         }
     </style>
 </head>
@@ -301,6 +319,7 @@
         <div class="ambient-overlay">
             <div class="orb-1"></div>
             <div class="orb-2"></div>
+            <div class="orb-3"></div>
         </div>
         <div class="slides">
 
@@ -343,7 +362,7 @@
                     </div>
                     <div class="fragment fade-up">
                         <div class="scenario-visual">
-                            <svg width="400" height="220" viewBox="0 0 400 220">
+                            <svg width="520" height="290" viewBox="0 0 400 220">
                                 <!-- Ground -->
                                 <rect x="0" y="170" width="400" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
                                 <!-- Cart body -->
@@ -353,18 +372,18 @@
                                 <circle cx="125" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                                 <circle cx="195" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                                 <!-- Force arrow -->
-                                <line x1="240" y1="145" x2="350" y2="145" stroke="var(--danger)" stroke-width="4"/>
-                                <polygon points="350,135 370,145 350,155" fill="var(--danger)"/>
-                                <text x="305" y="132" fill="var(--danger)" font-size="18" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
+                                <line x1="240" y1="145" x2="350" y2="145" stroke="var(--danger)" stroke-width="5"/>
+                                <polygon points="350,133 374,145 350,157" fill="var(--danger)"/>
+                                <text x="305" y="130" fill="var(--danger)" font-size="20" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
                                 <!-- Displacement arrow -->
-                                <line x1="100" y1="200" x2="280" y2="200" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
-                                <polygon points="280,193 296,200 280,207" fill="var(--warning)"/>
-                                <text x="190" y="218" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
+                                <line x1="100" y1="200" x2="280" y2="200" stroke="var(--warning)" stroke-width="4" stroke-dasharray="8,4"/>
+                                <polygon points="280,191 300,200 280,209" fill="var(--warning)"/>
+                                <text x="190" y="218" fill="var(--warning)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x</text>
                                 <!-- Same direction indicator -->
                                 <text x="330" y="200" fill="var(--highlight)" font-size="30" text-anchor="middle" font-weight="800">&#10230;</text>
-                                <text x="330" y="218" fill="var(--highlight)" font-size="12" text-anchor="middle" font-family="Inter">same direction</text>
+                                <text x="330" y="218" fill="var(--highlight)" font-size="13" text-anchor="middle" font-family="Inter">same direction</text>
                                 <!-- Result -->
-                                <text x="160" y="108" fill="var(--increase)" font-size="16" text-anchor="middle" font-weight="600" font-family="Outfit">ability INCREASES</text>
+                                <text x="160" y="108" fill="var(--increase)" font-size="17" text-anchor="middle" font-weight="600" font-family="Outfit">ability INCREASES</text>
                                 <text x="160" y="88" fill="var(--increase)" font-size="28" text-anchor="middle">&#9650;</text>
                             </svg>
                         </div>
@@ -387,25 +406,25 @@
                     </div>
                     <div class="fragment fade-up">
                         <div class="scenario-visual">
-                            <svg width="400" height="220" viewBox="0 0 400 220">
+                            <svg width="520" height="290" viewBox="0 0 400 220">
                                 <rect x="0" y="170" width="400" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
                                 <rect x="150" y="120" width="120" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
                                 <text x="210" y="150" fill="var(--text-primary)" font-size="14" text-anchor="middle" font-family="Inter">system</text>
                                 <circle cx="175" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                                 <circle cx="245" cy="170" r="10" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                                 <!-- Force arrow pointing LEFT -->
-                                <line x1="150" y1="145" x2="50" y2="145" stroke="var(--danger)" stroke-width="4"/>
-                                <polygon points="50,135 30,145 50,155" fill="var(--danger)"/>
-                                <text x="100" y="132" fill="var(--danger)" font-size="18" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
+                                <line x1="150" y1="145" x2="50" y2="145" stroke="var(--danger)" stroke-width="5"/>
+                                <polygon points="50,133 26,145 50,157" fill="var(--danger)"/>
+                                <text x="100" y="130" fill="var(--danger)" font-size="20" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
                                 <!-- Displacement arrow pointing RIGHT -->
-                                <line x1="150" y1="200" x2="320" y2="200" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
-                                <polygon points="320,193 336,200 320,207" fill="var(--warning)"/>
-                                <text x="240" y="218" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
+                                <line x1="150" y1="200" x2="320" y2="200" stroke="var(--warning)" stroke-width="4" stroke-dasharray="8,4"/>
+                                <polygon points="320,191 340,200 320,209" fill="var(--warning)"/>
+                                <text x="240" y="218" fill="var(--warning)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x</text>
                                 <!-- Opposite direction indicator -->
-                                <text x="70" y="200" fill="var(--decrease)" font-size="22" text-anchor="middle" font-weight="800">&#8644;</text>
-                                <text x="70" y="218" fill="var(--decrease)" font-size="11" text-anchor="middle" font-family="Inter">opposite</text>
+                                <text x="70" y="200" fill="var(--decrease)" font-size="24" text-anchor="middle" font-weight="800">&#8644;</text>
+                                <text x="70" y="218" fill="var(--decrease)" font-size="13" text-anchor="middle" font-family="Inter">opposite</text>
                                 <!-- Result -->
-                                <text x="210" y="108" fill="var(--decrease)" font-size="16" text-anchor="middle" font-weight="600" font-family="Outfit">ability DECREASES</text>
+                                <text x="210" y="108" fill="var(--decrease)" font-size="17" text-anchor="middle" font-weight="600" font-family="Outfit">ability DECREASES</text>
                                 <text x="210" y="88" fill="var(--decrease)" font-size="28" text-anchor="middle">&#9660;</text>
                             </svg>
                         </div>
@@ -425,35 +444,35 @@
                 </div>
                 <div class="fragment fade-up" style="display: flex; gap: 2em; justify-content: center; margin-top: 0.6em;">
                     <div class="scenario-visual">
-                        <svg width="260" height="200" viewBox="0 0 260 200">
-                            <text x="130" y="20" fill="var(--text-muted)" font-size="13" text-anchor="middle" font-family="Inter">perpendicular</text>
+                        <svg width="320" height="240" viewBox="0 0 260 200">
+                            <text x="130" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle" font-family="Inter">perpendicular</text>
                             <rect x="0" y="150" width="260" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
                             <rect x="70" y="100" width="100" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
                             <circle cx="95" cy="150" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                             <circle cx="145" cy="150" r="8" fill="rgba(255,255,255,0.1)" stroke="rgba(255,255,255,0.3)" stroke-width="2"/>
                             <!-- Force UP -->
-                            <line x1="120" y1="98" x2="120" y2="40" stroke="var(--danger)" stroke-width="4"/>
-                            <polygon points="112,40 120,22 128,40" fill="var(--danger)"/>
-                            <text x="138" y="55" fill="var(--danger)" font-size="16" font-weight="600" font-family="Inter">F</text>
+                            <line x1="120" y1="98" x2="120" y2="40" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="110,40 120,20 130,40" fill="var(--danger)"/>
+                            <text x="140" y="55" fill="var(--danger)" font-size="18" font-weight="600" font-family="Inter">F</text>
                             <!-- Displacement RIGHT -->
-                            <line x1="70" y1="175" x2="200" y2="175" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
-                            <polygon points="200,168 216,175 200,182" fill="var(--warning)"/>
-                            <text x="145" y="195" fill="var(--warning)" font-size="14" text-anchor="middle" font-family="Inter">&#916;x</text>
+                            <line x1="70" y1="175" x2="200" y2="175" stroke="var(--warning)" stroke-width="4" stroke-dasharray="8,4"/>
+                            <polygon points="200,166 218,175 200,184" fill="var(--warning)"/>
+                            <text x="145" y="195" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
                             <!-- 90 degree symbol -->
-                            <rect x="113" y="90" width="14" height="14" fill="none" stroke="var(--nochange)" stroke-width="2"/>
+                            <rect x="111" y="88" width="18" height="18" fill="none" stroke="var(--nochange)" stroke-width="2.5"/>
                         </svg>
                     </div>
                     <div class="scenario-visual">
-                        <svg width="220" height="200" viewBox="0 0 220 200">
-                            <text x="110" y="20" fill="var(--text-muted)" font-size="13" text-anchor="middle" font-family="Inter">no displacement</text>
+                        <svg width="320" height="240" viewBox="0 0 220 200">
+                            <text x="110" y="20" fill="var(--text-muted)" font-size="14" text-anchor="middle" font-family="Inter">no displacement</text>
                             <rect x="0" y="150" width="220" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
                             <rect x="50" y="100" width="100" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="2"/>
                             <!-- Force RIGHT -->
-                            <line x1="160" y1="125" x2="195" y2="125" stroke="var(--danger)" stroke-width="4"/>
-                            <polygon points="195,117 210,125 195,133" fill="var(--danger)"/>
-                            <text x="185" y="112" fill="var(--danger)" font-size="16" font-weight="600" font-family="Inter">F</text>
+                            <line x1="160" y1="125" x2="195" y2="125" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="195,115 212,125 195,135" fill="var(--danger)"/>
+                            <text x="185" y="110" fill="var(--danger)" font-size="18" font-weight="600" font-family="Inter">F</text>
                             <!-- No displacement - X -->
-                            <text x="100" y="185" fill="var(--nochange)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x = 0</text>
+                            <text x="100" y="185" fill="var(--nochange)" font-size="20" text-anchor="middle" font-family="Inter">&#916;x = 0</text>
                         </svg>
                     </div>
                 </div>
@@ -472,32 +491,32 @@
                 </div>
                 <div class="fragment fade-up compare-row" style="max-width: 900px; margin: 0.6em auto;">
                     <div class="compare-box">
-                        <svg width="300" height="130" viewBox="0 0 300 130">
+                        <svg width="350" height="160" viewBox="0 0 300 130">
                             <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
                             <rect x="60" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
                             <!-- Small force -->
-                            <line x1="140" y1="82" x2="195" y2="82" stroke="var(--danger)" stroke-width="3"/>
-                            <polygon points="195,76 207,82 195,88" fill="var(--danger)"/>
-                            <text x="175" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">F<tspan font-size="9" dy="2">small</tspan></text>
+                            <line x1="140" y1="82" x2="195" y2="82" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="195,74 209,82 195,90" fill="var(--danger)"/>
+                            <text x="175" y="70" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">F<tspan font-size="11" dy="2">small</tspan></text>
                             <!-- Displacement -->
-                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
-                            <polygon points="180,113 190,118 180,123" fill="var(--warning)"/>
-                            <text x="120" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">same &#916;x</text>
+                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="180,112 192,118 180,124" fill="var(--warning)"/>
+                            <text x="120" y="130" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">same &#916;x</text>
                         </svg>
                         <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Small force &rarr; <span style="color: var(--increase);">some</span> ability gained</p>
                     </div>
                     <div class="compare-box" style="border-color: var(--accent);">
-                        <svg width="300" height="130" viewBox="0 0 300 130">
+                        <svg width="350" height="160" viewBox="0 0 300 130">
                             <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
                             <rect x="60" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
                             <!-- Big force -->
-                            <line x1="140" y1="82" x2="250" y2="82" stroke="var(--danger)" stroke-width="5"/>
-                            <polygon points="250,73 268,82 250,91" fill="var(--danger)"/>
-                            <text x="200" y="70" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">F<tspan font-size="10" dy="2">BIG</tspan></text>
+                            <line x1="140" y1="82" x2="250" y2="82" stroke="var(--danger)" stroke-width="6"/>
+                            <polygon points="250,71 272,82 250,93" fill="var(--danger)"/>
+                            <text x="200" y="68" fill="var(--danger)" font-size="18" text-anchor="middle" font-weight="700" font-family="Inter">F<tspan font-size="12" dy="2">BIG</tspan></text>
                             <!-- Same displacement -->
-                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
-                            <polygon points="180,113 190,118 180,123" fill="var(--warning)"/>
-                            <text x="120" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">same &#916;x</text>
+                            <line x1="60" y1="118" x2="180" y2="118" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="180,112 192,118 180,124" fill="var(--warning)"/>
+                            <text x="120" y="130" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">same &#916;x</text>
                         </svg>
                         <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Bigger force &rarr; <span style="color: var(--increase); font-weight: 600;">MORE</span> ability gained</p>
                     </div>
@@ -516,32 +535,32 @@
                 </div>
                 <div class="fragment fade-up compare-row" style="max-width: 900px; margin: 0.6em auto;">
                     <div class="compare-box">
-                        <svg width="300" height="130" viewBox="0 0 300 130">
+                        <svg width="350" height="160" viewBox="0 0 300 130">
                             <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
                             <rect x="90" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
                             <!-- Same force -->
-                            <line x1="170" y1="82" x2="235" y2="82" stroke="var(--danger)" stroke-width="4"/>
-                            <polygon points="235,75 250,82 235,89" fill="var(--danger)"/>
-                            <text x="205" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">same F</text>
+                            <line x1="170" y1="82" x2="235" y2="82" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="235,74 252,82 235,90" fill="var(--danger)"/>
+                            <text x="205" y="70" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">same F</text>
                             <!-- Small displacement -->
-                            <line x1="90" y1="118" x2="155" y2="118" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
-                            <polygon points="155,113 165,118 155,123" fill="var(--warning)"/>
-                            <text x="125" y="130" fill="var(--warning)" font-size="12" text-anchor="middle" font-family="Inter">&#916;x<tspan font-size="8" dy="1">small</tspan></text>
+                            <line x1="90" y1="118" x2="155" y2="118" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="155,112 167,118 155,124" fill="var(--warning)"/>
+                            <text x="125" y="130" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">&#916;x<tspan font-size="10" dy="1">small</tspan></text>
                         </svg>
                         <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Short push &rarr; <span style="color: var(--increase);">some</span> ability gained</p>
                     </div>
                     <div class="compare-box" style="border-color: var(--accent);">
-                        <svg width="300" height="130" viewBox="0 0 300 130">
+                        <svg width="350" height="160" viewBox="0 0 300 130">
                             <rect x="0" y="100" width="300" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
                             <rect x="30" y="65" width="70" height="35" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
                             <!-- Same force -->
-                            <line x1="110" y1="82" x2="175" y2="82" stroke="var(--danger)" stroke-width="4"/>
-                            <polygon points="175,75 190,82 175,89" fill="var(--danger)"/>
-                            <text x="145" y="72" fill="var(--danger)" font-size="14" text-anchor="middle" font-family="Inter">same F</text>
+                            <line x1="110" y1="82" x2="175" y2="82" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="175,74 192,82 175,90" fill="var(--danger)"/>
+                            <text x="145" y="70" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">same F</text>
                             <!-- Big displacement -->
-                            <line x1="30" y1="118" x2="260" y2="118" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
-                            <polygon points="260,112 274,118 260,124" fill="var(--warning)"/>
-                            <text x="150" y="130" fill="var(--warning)" font-size="13" text-anchor="middle" font-weight="600" font-family="Inter">&#916;x<tspan font-size="9" dy="1">BIG</tspan></text>
+                            <line x1="30" y1="118" x2="260" y2="118" stroke="var(--warning)" stroke-width="4" stroke-dasharray="6,3"/>
+                            <polygon points="260,110 278,118 260,126" fill="var(--warning)"/>
+                            <text x="150" y="130" fill="var(--warning)" font-size="15" text-anchor="middle" font-weight="700" font-family="Inter">&#916;x<tspan font-size="11" dy="1">BIG</tspan></text>
                         </svg>
                         <p style="font-size: 0.8em; color: var(--text-muted); margin: 0;">Long push &rarr; <span style="color: var(--increase); font-weight: 600;">MORE</span> ability gained</p>
                     </div>
@@ -575,12 +594,12 @@
                     <p style="font-size: 1.1em;">From patterns 4 &amp; 5, the change in ability depends on:</p>
                 </div>
                 <div class="fragment fade-up compare-row" style="max-width: 700px; margin: 0.8em auto;">
-                    <div class="compare-box" style="border-color: var(--danger);">
+                    <div class="compare-box" style="border-color: var(--danger); min-width: 220px;">
                         <p style="font-size: 2em; margin: 0; color: var(--danger); font-family: 'Outfit'; font-weight: 800;">F</p>
                         <p style="font-size: 0.85em; color: var(--text-muted); margin: 0;">Force exerted<br>by external system</p>
                     </div>
                     <div style="display: flex; align-items: center; font-size: 1.6em; color: var(--text-muted);">and</div>
-                    <div class="compare-box" style="border-color: var(--warning);">
+                    <div class="compare-box" style="border-color: var(--warning); min-width: 220px;">
                         <p style="font-size: 2em; margin: 0; color: var(--warning); font-family: 'Outfit'; font-weight: 800;">&#916;x</p>
                         <p style="font-size: 0.85em; color: var(--text-muted); margin: 0;">Displacement<br>of things in the system</p>
                     </div>
@@ -665,7 +684,7 @@
             <!-- SLIDE 12: Multiplication survives -->
             <section data-transition="fade">
                 <h2 style="font-size: 2em;">Only One Candidate Remains</h2>
-                <div class="eq-container" style="margin: 1em auto;">
+                <div class="eq-container" style="margin: 1em auto; animation: eqPulse 2.5s ease-in-out infinite;">
                     <span class="eq-big">$\Delta\text{ability} = F \cdot \Delta x$</span>
                 </div>
                 <p style="color: var(--text-muted); font-size: 1em; margin-top: 1em;">But does it agree with <em>all five</em> patterns?</p>
@@ -747,26 +766,26 @@
                 <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 0.6em;">How does $F \cdot \Delta x$ handle <strong>amounts</strong>?</p>
                 <div class="fragment fade-up" style="margin: 0.6em 0;">
                     <div style="display: flex; gap: 1.5em; justify-content: center; align-items: center;">
-                        <div class="compare-box" style="max-width: 350px;">
+                        <div class="compare-box" style="max-width: 400px;">
                             <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Same &#916;x, stronger F:</p>
                             <p style="font-size: 1.3em; margin: 0;">$\underbrace{F_{\text{big}}}_{\uparrow} \cdot \Delta x = \text{bigger result}$</p>
                         </div>
                         <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
-                        <span style="font-size: 0.9em;">More ability gained</span>
+                        <span style="font-size: 1.05em; font-weight: 600;">More ability gained</span>
                     </div>
                 </div>
                 <div class="fragment fade-up" style="margin: 0.6em 0;">
                     <div style="display: flex; gap: 1.5em; justify-content: center; align-items: center;">
-                        <div class="compare-box" style="max-width: 350px;">
+                        <div class="compare-box" style="max-width: 400px;">
                             <p style="font-size: 0.85em; color: var(--text-muted); margin: 0 0 0.3em;">Same F, further &#916;x:</p>
                             <p style="font-size: 1.3em; margin: 0;">$F \cdot \underbrace{\Delta x_{\text{big}}}_{\uparrow} = \text{bigger result}$</p>
                         </div>
                         <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
-                        <span style="font-size: 0.9em;">More ability gained</span>
+                        <span style="font-size: 1.05em; font-weight: 600;">More ability gained</span>
                     </div>
                 </div>
-                <div class="fragment fade-up" style="margin-top: 1em;">
-                    <p style="font-size: 1.3em; color: var(--highlight); font-weight: 600;">Multiplication captures both amount patterns!</p>
+                <div class="fragment fade-up" style="margin-top: 0.5em;">
+                    <p style="font-size: 1.15em; color: var(--highlight); font-weight: 600;">Multiplication captures both amount patterns!</p>
                 </div>
                 <aside class="notes">
                     Amount check: if you keep delta-x constant and make F bigger, F times delta-x gives a bigger number — more ability. If you keep F constant and make delta-x bigger, same thing — bigger result. Multiplication naturally captures the idea that both quantities contribute proportionally to the change in ability.
@@ -779,9 +798,9 @@
                 <table class="summary-table">
                     <thead>
                         <tr>
-                            <th style="width: 60px;">#</th>
+                            <th style="width: 50px;">#</th>
                             <th>Pattern</th>
-                            <th style="width: 200px;">$F \cdot \Delta x$ says...</th>
+                            <th style="width: 280px; white-space: nowrap;">$F \cdot \Delta x$ says...</th>
                             <th style="width: 80px;">Result</th>
                         </tr>
                     </thead>
@@ -883,8 +902,8 @@
                             <polygon points="420,253 436,260 420,267" fill="var(--warning)"/>
                             <text x="290" y="283" fill="var(--warning)" font-size="18" text-anchor="middle" font-family="Inter">&#916;x</text>
                             <!-- Angle arc -->
-                            <path d="M 340,195 A 45,45 0 0,0 345,160" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-                            <text x="365" y="170" fill="var(--accent)" font-size="22" font-weight="600" font-family="Outfit">&#952;</text>
+                            <path d="M 340,195 A 45,45 0 0,0 345,160" fill="none" stroke="var(--accent)" stroke-width="3.5"/>
+                            <text x="367" y="170" fill="var(--accent)" font-size="26" font-weight="600" font-family="Outfit">&#952;</text>
                             <!-- Dotted horizontal reference from force origin -->
                             <line x1="300" y1="195" x2="410" y2="195" stroke="rgba(255,255,255,0.2)" stroke-width="1.5" stroke-dasharray="4,4"/>
                         </svg>
@@ -905,7 +924,7 @@
                 <p style="color: var(--text-muted); font-size: 0.9em;">We can split the force into two <strong>components</strong>:</p>
                 <div class="fragment fade-up" style="margin: 0.5em auto;">
                     <div class="scenario-visual" style="display: inline-block;">
-                        <svg width="700" height="320" viewBox="0 0 700 320">
+                        <svg width="800" height="360" viewBox="0 0 700 320">
                             <!-- Ground -->
                             <rect x="0" y="250" width="700" height="4" fill="rgba(255,255,255,0.15)" rx="2"/>
                             <!-- Cart -->
@@ -931,11 +950,11 @@
                             <text x="460" y="180" fill="var(--nochange)" font-size="13" font-family="Inter">(perp. to &#916;x)</text>
 
                             <!-- Dashed right-angle marker -->
-                            <rect x="375" y="212" width="13" height="13" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+                            <rect x="373" y="210" width="17" height="17" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2"/>
 
                             <!-- Angle arc at origin -->
-                            <path d="M 260,225 A 55,55 0 0,0 250,182" fill="none" stroke="var(--accent)" stroke-width="2.5"/>
-                            <text x="275" y="197" fill="var(--accent)" font-size="22" font-weight="600" font-family="Outfit">&#952;</text>
+                            <path d="M 260,225 A 55,55 0 0,0 250,182" fill="none" stroke="var(--accent)" stroke-width="3"/>
+                            <text x="275" y="197" fill="var(--accent)" font-size="24" font-weight="600" font-family="Outfit">&#952;</text>
 
                             <!-- Displacement arrow -->
                             <line x1="80" y1="280" x2="350" y2="280" stroke="var(--warning)" stroke-width="3" stroke-dasharray="8,4"/>
@@ -943,13 +962,13 @@
                             <text x="220" y="302" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x</text>
 
                             <!-- Annotations on the right -->
-                            <rect x="490" y="90" width="195" height="55" rx="10" fill="rgba(34,212,122,0.1)" stroke="var(--increase)" stroke-width="1.5"/>
-                            <text x="587" y="113" fill="var(--increase)" font-size="15" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="10" dy="3">&#8741;</tspan><tspan dy="-3"> changes ability</tspan></text>
-                            <text x="587" y="133" fill="var(--increase)" font-size="13" text-anchor="middle" font-family="Inter">(along displacement)</text>
+                            <rect x="485" y="85" width="205" height="62" rx="10" fill="rgba(34,212,122,0.1)" stroke="var(--increase)" stroke-width="1.5"/>
+                            <text x="587" y="111" fill="var(--increase)" font-size="17" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="12" dy="3">&#8741;</tspan><tspan dy="-3"> changes ability</tspan></text>
+                            <text x="587" y="134" fill="var(--increase)" font-size="15" text-anchor="middle" font-family="Inter">(along displacement)</text>
 
-                            <rect x="490" y="165" width="195" height="55" rx="10" fill="rgba(245,166,35,0.1)" stroke="var(--nochange)" stroke-width="1.5"/>
-                            <text x="587" y="188" fill="var(--nochange)" font-size="15" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="10" dy="3">&#8869;</tspan><tspan dy="-3"> does NOT</tspan></text>
-                            <text x="587" y="208" fill="var(--nochange)" font-size="13" text-anchor="middle" font-family="Inter">(perpendicular &rarr; Pattern 3!)</text>
+                            <rect x="485" y="165" width="205" height="62" rx="10" fill="rgba(245,166,35,0.1)" stroke="var(--nochange)" stroke-width="1.5"/>
+                            <text x="587" y="191" fill="var(--nochange)" font-size="17" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="12" dy="3">&#8869;</tspan><tspan dy="-3"> does NOT</tspan></text>
+                            <text x="587" y="214" fill="var(--nochange)" font-size="15" text-anchor="middle" font-family="Inter">(perpendicular &rarr; Pattern 3!)</text>
                         </svg>
                     </div>
                 </div>
@@ -963,9 +982,9 @@
             <section>
                 <h2 style="font-size: 1.8em;">How Big Is F<sub style="font-size: 0.6em;">&#8741;</sub> ?</h2>
                 <p style="color: var(--text-muted); font-size: 0.95em;">If we know the angle &#952; between the force and the displacement...</p>
-                <div class="fragment fade-up" style="margin: 0.6em auto;">
+                <div class="fragment fade-up" style="margin: 0.3em auto;">
                     <div class="scenario-visual" style="display: inline-block;">
-                        <svg width="500" height="280" viewBox="0 0 500 280">
+                        <svg width="440" height="250" viewBox="0 0 500 280">
                             <!-- Right triangle -->
                             <!-- Hypotenuse (F) -->
                             <line x1="80" y1="220" x2="380" y2="30" stroke="var(--danger)" stroke-width="4"/>
@@ -975,7 +994,7 @@
                             <!-- Adjacent (F parallel) -->
                             <line x1="80" y1="220" x2="380" y2="220" stroke="var(--increase)" stroke-width="4"/>
                             <polygon points="380,211 398,220 380,229" fill="var(--increase)"/>
-                            <text x="230" y="248" fill="var(--increase)" font-size="22" text-anchor="middle" font-weight="600" font-family="Outfit">F<tspan font-size="13" dy="4">&#8741;</tspan><tspan dy="-4"> = ?</tspan></text>
+                            <text x="230" y="248" fill="var(--increase)" font-size="24" text-anchor="middle" font-weight="800" font-family="Outfit">F<tspan font-size="14" dy="4">&#8741;</tspan><tspan dy="-4"> = ?</tspan></text>
 
                             <!-- Opposite (F perp) -->
                             <line x1="380" y1="220" x2="380" y2="42" stroke="var(--nochange)" stroke-width="3" opacity="0.5"/>
@@ -996,7 +1015,7 @@
                         <span class="eq-big">$F_{\parallel} = F \cdot \cos(\theta)$</span>
                     </div>
                 </div>
-                <div class="fragment fade-up wb-prompt" style="margin-top: 0.6em;">
+                <div class="fragment fade-up wb-prompt" style="margin-top: 0.3em;">
                     <div class="wb-label">TASK</div>
                     <p style="font-size: 0.9em; margin: 0;">If only $F_{\parallel}$ changes ability, rewrite our equation using $F \cdot \cos(\theta)$.<br>Write your updated equation on your whiteboard.</p>
                 </div>
@@ -1094,7 +1113,7 @@
                 <p style="color: var(--text-muted); font-size: 0.9em;">The cos(&#952;) smoothly handles <em>every</em> angle, not just the special cases:</p>
                 <div class="fragment fade-up" style="margin: 0.6em auto;">
                     <div class="scenario-visual" style="display: inline-block;">
-                        <svg width="750" height="320" viewBox="0 0 750 320">
+                        <svg width="850" height="360" viewBox="0 0 750 320">
                             <!-- Semicircle visualization -->
                             <!-- Base line -->
                             <line x1="75" y1="250" x2="675" y2="250" stroke="rgba(255,255,255,0.12)" stroke-width="2"/>
@@ -1107,37 +1126,37 @@
                             <!-- 0 degrees - right -->
                             <line x1="375" y1="250" x2="575" y2="250" stroke="var(--increase)" stroke-width="3"/>
                             <polygon points="575,243 590,250 575,257" fill="var(--increase)"/>
-                            <text x="590" y="245" fill="var(--increase)" font-size="15" font-family="Outfit" font-weight="600">0°</text>
-                            <text x="590" y="265" fill="var(--increase)" font-size="12" font-family="Inter">cos = +1</text>
+                            <text x="590" y="243" fill="var(--increase)" font-size="17" font-family="Outfit" font-weight="600">0°</text>
+                            <text x="590" y="265" fill="var(--increase)" font-size="15" font-family="Inter">cos = +1</text>
 
                             <!-- 45 degrees -->
                             <line x1="375" y1="250" x2="516" y2="109" stroke="rgba(34,212,122,0.6)" stroke-width="2.5"/>
                             <polygon points="510,101 525,103 518,117" fill="rgba(34,212,122,0.6)"/>
-                            <text x="530" y="105" fill="rgba(34,212,122,0.7)" font-size="14" font-family="Outfit" font-weight="600">45°</text>
-                            <text x="540" y="122" fill="rgba(34,212,122,0.6)" font-size="12" font-family="Inter">cos = +0.71</text>
+                            <text x="530" y="103" fill="rgba(34,212,122,0.7)" font-size="16" font-family="Outfit" font-weight="600">45°</text>
+                            <text x="540" y="122" fill="rgba(34,212,122,0.6)" font-size="15" font-family="Inter">cos = +0.71</text>
 
                             <!-- 90 degrees - up -->
                             <line x1="375" y1="250" x2="375" y2="55" stroke="var(--nochange)" stroke-width="3"/>
                             <polygon points="368,55 375,40 382,55" fill="var(--nochange)"/>
-                            <text x="390" y="48" fill="var(--nochange)" font-size="15" font-family="Outfit" font-weight="600">90°</text>
-                            <text x="390" y="65" fill="var(--nochange)" font-size="12" font-family="Inter">cos = 0</text>
+                            <text x="392" y="48" fill="var(--nochange)" font-size="17" font-family="Outfit" font-weight="600">90°</text>
+                            <text x="392" y="67" fill="var(--nochange)" font-size="15" font-family="Inter">cos = 0</text>
 
                             <!-- 135 degrees -->
                             <line x1="375" y1="250" x2="234" y2="109" stroke="rgba(232,80,74,0.6)" stroke-width="2.5"/>
                             <polygon points="226,117 225,101 241,105" fill="rgba(232,80,74,0.6)"/>
-                            <text x="200" y="102" fill="rgba(232,80,74,0.7)" font-size="14" font-family="Outfit" font-weight="600">135°</text>
-                            <text x="168" y="119" fill="rgba(232,80,74,0.6)" font-size="12" font-family="Inter">cos = -0.71</text>
+                            <text x="198" y="100" fill="rgba(232,80,74,0.7)" font-size="16" font-family="Outfit" font-weight="600">135°</text>
+                            <text x="160" y="119" fill="rgba(232,80,74,0.6)" font-size="15" font-family="Inter">cos = -0.71</text>
 
                             <!-- 180 degrees - left -->
                             <line x1="375" y1="250" x2="175" y2="250" stroke="var(--decrease)" stroke-width="3"/>
                             <polygon points="175,243 160,250 175,257" fill="var(--decrease)"/>
-                            <text x="140" y="245" fill="var(--decrease)" font-size="15" font-family="Outfit" font-weight="600">180°</text>
-                            <text x="128" y="265" fill="var(--decrease)" font-size="12" font-family="Inter">cos = -1</text>
+                            <text x="138" y="243" fill="var(--decrease)" font-size="17" font-family="Outfit" font-weight="600">180°</text>
+                            <text x="124" y="265" fill="var(--decrease)" font-size="15" font-family="Inter">cos = -1</text>
 
                             <!-- Displacement reference -->
                             <line x1="375" y1="290" x2="575" y2="290" stroke="var(--warning)" stroke-width="2" stroke-dasharray="6,3"/>
                             <polygon points="575,284 588,290 575,296" fill="var(--warning)"/>
-                            <text x="480" y="310" fill="var(--warning)" font-size="14" text-anchor="middle" font-family="Inter">&#916;x direction</text>
+                            <text x="480" y="310" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x direction</text>
 
                             <!-- Color gradient bar -->
                             <defs>
@@ -1147,10 +1166,10 @@
                                     <stop offset="100%" style="stop-color:#22d47a"/>
                                 </linearGradient>
                             </defs>
-                            <rect x="175" y="15" width="400" height="12" rx="6" fill="url(#cosGrad)" opacity="0.7"/>
-                            <text x="175" y="10" fill="var(--decrease)" font-size="11" text-anchor="middle" font-family="Inter">decreases</text>
-                            <text x="375" y="10" fill="var(--nochange)" font-size="11" text-anchor="middle" font-family="Inter">no change</text>
-                            <text x="575" y="10" fill="var(--increase)" font-size="11" text-anchor="middle" font-family="Inter">increases</text>
+                            <rect x="175" y="15" width="400" height="16" rx="8" fill="url(#cosGrad)" opacity="0.7"/>
+                            <text x="175" y="8" fill="var(--decrease)" font-size="14" text-anchor="middle" font-family="Inter">decreases</text>
+                            <text x="375" y="8" fill="var(--nochange)" font-size="14" text-anchor="middle" font-family="Inter">no change</text>
+                            <text x="575" y="8" fill="var(--increase)" font-size="14" text-anchor="middle" font-family="Inter">increases</text>
                         </svg>
                     </div>
                 </div>
@@ -1294,10 +1313,10 @@
             <!-- SLIDE 27: Closing -->
             <section data-background-gradient="radial-gradient(ellipse at 40% 60%, #1a0a3e, #0f0720)">
                 <h2 style="font-size: 2.2em;">What We Discovered</h2>
-                <div class="fragment fade-up result-glow" style="margin: 0.8em auto; display: block; max-width: 800px;">
+                <div class="fragment fade-up result-glow" style="margin: 0.8em auto; display: block; max-width: 900px;">
                     <p style="font-size: 1.5em; margin: 0; text-align: center;">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</p>
                 </div>
-                <p class="fragment fade-up" style="font-size: 1em; color: var(--text-muted); max-width: 800px; margin: 0.8em auto; line-height: 1.6;">
+                <p class="fragment fade-up" style="font-size: 1.05em; color: var(--text-muted); max-width: 1000px; margin: 0.8em auto; line-height: 1.6; text-align: center;">
                     We turned <span style="color: var(--accent);">five qualitative patterns</span> from our observations into <span style="color: var(--highlight);">one quantitative equation</span> that captures everything we learned about how external systems change the ability stored in a system &mdash; at <em>any</em> angle.
                 </p>
                 <p class="fragment fade-up" style="font-size: 1em; color: var(--text-muted); margin-top: 0.8em;">

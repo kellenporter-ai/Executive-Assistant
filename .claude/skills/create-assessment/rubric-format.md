@@ -163,6 +163,25 @@ The system is the smallest isolated system.
 
 6. **Skill specificity:** Rubric criteria must be specific to the actual physics content being assessed. Generic criteria like "shows understanding" are insufficient — specify what understanding looks like for this particular skill and concept.
 
+7. **Answer neutrality (CRITICAL):** Rubric descriptors must assess the *quality and structure* of student work without revealing the correct answer. This is especially important for open-ended, derivation, and experimental-design questions where discovery is the point.
+
+   **Do NOT include in rubric descriptors:**
+   - Specific variable names, equations, or final expressions the student should arrive at (e.g., don't write "the student derives I = Tmr²/(mg - T)")
+   - Specific tools, methods, or quantities the student should choose (e.g., don't write "the student identifies mass, axle radius, and tension")
+   - Step-by-step solution paths or intermediate results
+   - Hints about which quantities are unnecessary (e.g., don't write "includes R without recognizing it is not needed")
+   - Model procedures or scripted descriptions of how to perform a measurement
+
+   **DO include in rubric descriptors:**
+   - Structural criteria: "identifies a complete and minimal set of quantities," "the final expression contains only measurable quantities and known constants"
+   - Quality markers: "each step is clearly justified," "the procedure is specific enough for another student to follow"
+   - Consistency checks: "the givens are consistent with the measurement plan from Q1"
+   - Error categories (without revealing the correct answer): "includes a time-dependent quantity without recognizing the constraint," "the algebra has errors that prevent arriving at a correct expression"
+
+   **Rule of thumb:** If a student could read the Developing or Refining tier and reconstruct the correct answer without doing the intellectual work, the rubric is too specific. Rubrics evaluate — they don't teach.
+
+8. **Hypothetical vs. actual language:** When assessments involve experimental planning (not actual lab work), use language like "the student's plan describes," "quantities that would be measured," and "how each measurement would be taken" — not language that implies the student has already performed the experiment.
+
 ---
 
 ## Example: Complete Rubric Table
