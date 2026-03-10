@@ -1,7 +1,7 @@
 # Current Priorities & Goals
 
 ## Primary Initiative: Automate Teaching Overhead
-- **Grading classwork** — largely completion-based, should be automatable
+- **Grading classwork** — AI grading assistant implemented (`tools/grade-assistant.py`): pulls ungraded submissions from Firestore, pre-fills rubric tiers via Ollama qwen3:14b, teacher reviews before finalizing. Self-improving via teacher correction feedback loop. Desktop-only (Ollama required).
 - **Writing lesson plans** — AI-assisted generation aligned to ISLE pedagogy
 - **Parent communication** — automated updates on student progress in the parent's language of choice
 - **Behavior referrals** — streamlined writing of student misbehavior documentation
@@ -18,10 +18,12 @@
 - Recent focus areas (as of March 2026):
   - **Assessment security & analytics** — server-side telemetry validation, session tokens, anti-cheat; now tracking word count and words-per-second as behavioral integrity signals; 3-panel Google Classroom-style grading view
   - **Gamification expansion** — Flux Shop, cosmetics (auras, particles, frames, trails), boss fights, dungeons, PvP arena
-  - **3D avatar system** — replaced SVG OperativeAvatar with Babylon.js 3D character models using Quaternius GLB assets; 8 models (2 free, 3 standard/200 Flux, 3 premium/400 Flux); integrated with Flux Store economy; PBR→StandardMaterial conversion for Chromebook compatibility; **color customization complete** (skin tone, hair color, suit hue via gradient sliders; in-place material tinting; 16-tone palettes); **next: 3D hair styles** (requires Blender-created swappable hair mesh assets)
+  - **3D avatar system** — **ON HOLD** (`ENABLE_3D_AVATAR = false`). Switched from Quaternius to KayKit Adventurers (6 models). PBR→StandardMaterial conversion, mesh-name tinting, idle animations all working. Blocked on visual quality Kellen isn't satisfied with. Students with stale `selectedCharacterModel` (old Quaternius IDs) need migration before re-enabling.
   - **Simulation development** — Babylon.js 3D activities and 2D interactive activities for physics and forensic science; 3D rendering optimizations applied (Thin Instances, GreasedLine, static mesh freezing, LOD)
   - **3D asset pipeline** — Phase 1 complete (external glTF loading via Babylon.js SceneLoader); **Phase 2 complete** (meshoptimizer compression via gltf-transform — 51% file size reduction across all character models; originals backed up to `.originals/`); roadmap in `decisions/asset-pipeline-roadmap.md`
-  - **Grading UX** — side-by-side rubric grading, academic integrity analysis, AI-flagged submission handling
+  - **Grading UX** — side-by-side rubric grading, academic integrity analysis, AI-flagged submission handling; AI-suggested grade badges with per-skill rationale + confidence; teacher correction feedback loop for self-improvement
+  - **Lesson block richness** — DrawingBlock (canvas drawing, vector precision editor, layers, snap guides, multi-vector types), MATH_RESPONSE (natural math input, Given/Find lists), BAR_CHART (full LOL chart); all added to palette, grading view, and progress counter
+  - **Student UI/UX** — collapsible sidebar (icon-only mode), mobile bottom nav bar, keyboard shortcuts (j/k scroll, ? help), accessibility + breadcrumb improvements
 
 ## AI Agent Team
 - 8 general agents in `agents/`: ui-engineer, backend-engineer, qa-engineer, content-writer, data-analyst, graphics-engineer, deployment-monitor, local-llm-assistant
