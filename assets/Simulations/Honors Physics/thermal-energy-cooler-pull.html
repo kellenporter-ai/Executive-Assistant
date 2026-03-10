@@ -1,0 +1,1041 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity 7.1.5: Thermal Energy from Friction</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg: #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.92);
+            --border: rgba(160, 100, 255, 0.18);
+            --text: #e8e4f4;
+            --muted: #8a85a8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+            --red: #e8504a;
+            --purple: #9b6bff;
+        }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); }
+
+        #main-container {
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            width: 100%; height: 100%;
+            padding: 10px;
+            gap: 8px;
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 10px 16px;
+        }
+        .header h1 { font-size: 1rem; font-weight: 600; letter-spacing: -0.02em; }
+        .header .subtitle { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+        .header-stats { display: flex; gap: 20px; align-items: center; }
+        .stat { text-align: center; }
+        .stat-label { font-size: 0.62rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+        .stat-value { font-size: 0.95rem; font-weight: 700; }
+
+        .views-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .view-panel {
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 8px; position: relative;
+            display: flex; flex-direction: column; min-height: 0;
+        }
+        .view-label {
+            font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+            letter-spacing: 0.08em; margin-bottom: 4px; font-weight: 500;
+            display: flex; align-items: center; gap: 6px;
+        }
+        .view-label .dot { width: 6px; height: 6px; border-radius: 50%; }
+        .view-label .dot.green { background: var(--green); }
+        .view-label .dot.red { background: var(--red); }
+        .canvas-wrap { flex: 1; position: relative; border-radius: 8px; overflow: hidden; min-height: 0; }
+        .canvas-wrap canvas { width: 100%; height: 100%; display: block; }
+
+        .bottom-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 8px;
+        }
+
+        .energy-panel {
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 10px 14px;
+            display: flex; flex-direction: column;
+        }
+        .energy-panel .panel-title {
+            font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+            letter-spacing: 0.08em; margin-bottom: 8px; font-weight: 500;
+        }
+        .energy-bars { flex: 1; display: flex; align-items: flex-end; gap: 0; justify-content: space-around; min-height: 80px; }
+        .energy-bar-group { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; max-width: 120px; }
+        .bar-value { font-size: 0.72rem; font-weight: 700; min-height: 18px; }
+        .bar-container { width: 38px; height: 80px; background: rgba(255,255,255,0.04); border-radius: 6px; position: relative; overflow: hidden; }
+        .bar-fill-up { position: absolute; bottom: 0; width: 100%; border-radius: 6px; transition: height 0.15s ease; }
+        .bar-label { font-size: 0.6rem; color: var(--muted); text-align: center; line-height: 1.2; }
+        .bar-sublabel { font-size: 0.52rem; color: var(--muted); opacity: 0.7; }
+
+        .controls-panel {
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg); border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 16px;
+            display: flex; flex-direction: column; gap: 8px; min-width: 200px;
+        }
+        .controls-panel .panel-title {
+            font-size: 0.7rem; color: var(--muted); text-transform: uppercase;
+            letter-spacing: 0.08em; font-weight: 500;
+        }
+
+        .btn {
+            padding: 8px 16px; border-radius: 8px; border: 1px solid transparent;
+            cursor: pointer; font-size: 0.78rem; font-weight: 500;
+            transition: all 0.2s; font-family: inherit; width: 100%;
+        }
+        .btn-pull {
+            background: rgba(34,212,122,0.18); color: var(--green);
+            border-color: rgba(34,212,122,0.35); font-size: 0.9rem; font-weight: 600;
+        }
+        .btn-pull:hover { background: rgba(34,212,122,0.3); }
+        .btn-pull.active { background: rgba(34,212,122,0.4); border-color: var(--green); box-shadow: 0 0 12px rgba(34,212,122,0.3); }
+        .btn-reset {
+            background: rgba(138,133,168,0.1); color: var(--muted);
+            border-color: var(--border);
+        }
+        .btn-reset:hover { color: var(--text); background: rgba(138,133,168,0.2); }
+
+        .instruction {
+            font-size: 0.68rem; color: var(--muted); line-height: 1.4;
+            padding: 6px 8px; background: rgba(255,255,255,0.03); border-radius: 6px;
+        }
+        .instruction strong { color: var(--text); }
+
+        .force-legend {
+            display: flex; flex-direction: column; gap: 3px;
+            font-size: 0.62rem; color: var(--muted);
+        }
+        .force-legend-item { display: flex; align-items: center; gap: 5px; }
+        .force-legend-item .swatch { width: 18px; height: 3px; border-radius: 2px; }
+    </style>
+</head>
+<body>
+<div id="main-container">
+    <div class="header">
+        <div>
+            <h1>Activity 7.1.5: Thermal Energy from Friction</h1>
+            <div class="subtitle">Pulling a heavy cooler across a rough surface at constant velocity</div>
+        </div>
+        <div class="header-stats">
+            <div class="stat">
+                <div class="stat-label">Distance</div>
+                <div class="stat-value" id="stat-dist">0.00 m</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Work Done</div>
+                <div class="stat-value" id="stat-work" style="color:var(--green)">0.0 J</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Velocity</div>
+                <div class="stat-value" id="stat-vel">0.00 m/s</div>
+            </div>
+            <div class="stat">
+                <div class="stat-label">Peak Temp</div>
+                <div class="stat-value" id="stat-temp" style="color:var(--orange)">70.0 °F</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="views-row">
+        <div class="view-panel">
+            <div class="view-label"><span class="dot green"></span> Normal View</div>
+            <div class="canvas-wrap"><canvas id="normalCanvas"></canvas></div>
+        </div>
+        <div class="view-panel">
+            <div class="view-label"><span class="dot red"></span> Thermal Camera — FLIR</div>
+            <div class="canvas-wrap"><canvas id="thermalCanvas"></canvas></div>
+        </div>
+    </div>
+
+    <div class="bottom-row">
+        <div class="energy-panel">
+            <div class="panel-title">Energy Bar Chart (Joules)</div>
+            <div class="energy-bars">
+                <div class="energy-bar-group">
+                    <div class="bar-value" id="bar-val-work" style="color:var(--green)">0.0</div>
+                    <div class="bar-container"><div class="bar-fill-up" id="bar-work" style="background:var(--green);height:0%"></div></div>
+                    <div class="bar-label">W<sub>person</sub></div>
+                    <div class="bar-sublabel">Work by person</div>
+                </div>
+                <div class="energy-bar-group">
+                    <div class="bar-value" id="bar-val-ke" style="color:var(--blue)">0.0</div>
+                    <div class="bar-container"><div class="bar-fill-up" id="bar-ke" style="background:var(--blue);height:0%"></div></div>
+                    <div class="bar-label">ΔKE</div>
+                    <div class="bar-sublabel">Kinetic energy</div>
+                </div>
+                <div class="energy-bar-group">
+                    <div class="bar-value" id="bar-val-cca" style="color:var(--purple)">0.0</div>
+                    <div class="bar-container"><div class="bar-fill-up" id="bar-cca" style="background:var(--purple);height:0%"></div></div>
+                    <div class="bar-label">ΔE<sub>chem</sub></div>
+                    <div class="bar-sublabel">Chemical/internal</div>
+                </div>
+                <div class="energy-bar-group">
+                    <div class="bar-value" id="bar-val-therm" style="color:var(--orange)">0.0</div>
+                    <div class="bar-container"><div class="bar-fill-up" id="bar-therm" style="background:var(--orange);height:0%"></div></div>
+                    <div class="bar-label">E<sub>thermal</sub></div>
+                    <div class="bar-sublabel">Thermal energy</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <div class="panel-title">Controls</div>
+            <button class="btn btn-pull" id="pullBtn">Hold to Pull →</button>
+            <button class="btn btn-reset" id="resetBtn">Reset</button>
+            <div class="instruction">
+                <strong>Click & drag</strong> the cooler rightward, or <strong>hold the button</strong>. Keyboard: <strong>Space</strong> / <strong>→</strong>
+            </div>
+            <div class="force-legend">
+                <div class="force-legend-item"><span class="swatch" style="background:var(--green)"></span> F<sub>applied</sub> = 44.1 N</div>
+                <div class="force-legend-item"><span class="swatch" style="background:var(--red)"></span> F<sub>friction</sub> = 44.1 N</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// =========================================================
+// Physics constants
+// =========================================================
+const MASS = 15;
+const MU_K = 0.3;
+const G = 9.81;
+const F_FRICTION = MU_K * MASS * G;  // ~44.145 N
+const F_APPLIED = F_FRICTION;
+const VELOCITY = 0.5;       // m/s
+const BASE_TEMP_F = 70.0;
+const TEMP_RISE_PER_JOULE = 0.06; // exaggerated for visual drama
+
+// =========================================================
+// State
+// =========================================================
+let pulling = false;
+let coolerX = 0;
+let totalWork = 0;
+let thermalEnergy = 0;
+let contactTemp = BASE_TEMP_F;
+let surfaceTemp = BASE_TEMP_F;
+let coolerSideTemp = BASE_TEMP_F;
+let coolerTopTemp = BASE_TEMP_F;
+let trailSegments = [];
+let elapsedPulling = 0;
+let animTime = 0;
+let dragging = false;
+let dragStartX = 0;
+
+// Canvas references
+const normalCanvas = document.getElementById('normalCanvas');
+const thermalCanvas = document.getElementById('thermalCanvas');
+const normalCtx = normalCanvas.getContext('2d');
+const thermalCtx = thermalCanvas.getContext('2d');
+const pullBtn = document.getElementById('pullBtn');
+const resetBtn = document.getElementById('resetBtn');
+
+// Pre-generated noise overlay (created once, composited each frame)
+let noiseCanvas = null;
+let noiseCtx = null;
+let noiseW = 0, noiseH = 0;
+
+function generateNoise(w, h) {
+    noiseW = w; noiseH = h;
+    noiseCanvas = document.createElement('canvas');
+    noiseCanvas.width = w;
+    noiseCanvas.height = h;
+    noiseCtx = noiseCanvas.getContext('2d');
+    refreshNoise();
+}
+
+// Regenerate noise pattern (call occasionally, not every frame)
+let noiseFrame = 0;
+function refreshNoise() {
+    if (!noiseCtx) return;
+    const id = noiseCtx.createImageData(noiseW, noiseH);
+    const d = id.data;
+    for (let i = 0; i < d.length; i += 4) {
+        const n = (Math.random() - 0.5) * 30 | 0;
+        d[i] = 128 + n;
+        d[i+1] = 128 + n;
+        d[i+2] = 128 + n;
+        d[i+3] = 18; // very subtle alpha
+    }
+    noiseCtx.putImageData(id, 0, 0);
+}
+
+// =========================================================
+// Resize
+// =========================================================
+function resize() {
+    const dpr = window.devicePixelRatio || 1;
+    [normalCanvas, thermalCanvas].forEach(c => {
+        const rect = c.parentElement.getBoundingClientRect();
+        c.width = rect.width * dpr;
+        c.height = rect.height * dpr;
+        c.style.width = rect.width + 'px';
+        c.style.height = rect.height + 'px';
+        c.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
+    // Regenerate noise at thermal canvas size
+    const tw = thermalCanvas.width / (window.devicePixelRatio || 1);
+    const th = thermalCanvas.height / (window.devicePixelRatio || 1);
+    if (tw > 0 && th > 0) generateNoise(Math.ceil(tw), Math.ceil(th));
+}
+window.addEventListener('resize', resize);
+
+// =========================================================
+// Thermal color palette (FLIR ironbow)
+// =========================================================
+function tempToColor(temp) {
+    const minT = 68, maxT = 86;
+    let t = Math.max(0, Math.min(1, (temp - minT) / (maxT - minT)));
+
+    let r, g, b;
+    if (t < 0.12) {
+        const s = t / 0.12;
+        r = 8 + s*15; g = 4 + s*10; b = 50 + s*110;
+    } else if (t < 0.25) {
+        const s = (t - 0.12) / 0.13;
+        r = 23 + s*55; g = 14 + s*12; b = 160 + s*30;
+    } else if (t < 0.38) {
+        const s = (t - 0.25) / 0.13;
+        r = 78 + s*40; g = 26 + s*10; b = 190 - s*40;
+    } else if (t < 0.50) {
+        const s = (t - 0.38) / 0.12;
+        r = 118 - s*60; g = 36 + s*130; b = 150 - s*80;
+    } else if (t < 0.65) {
+        const s = (t - 0.50) / 0.15;
+        r = 58 + s*180; g = 166 + s*64; b = 70 - s*40;
+    } else if (t < 0.80) {
+        const s = (t - 0.65) / 0.15;
+        r = 238 + s*17; g = 230 - s*90; b = 30 - s*10;
+    } else {
+        const s = (t - 0.80) / 0.20;
+        r = 255; g = 140 - s*60; b = 20 + s*70;
+    }
+    return `rgb(${r|0},${g|0},${b|0})`;
+}
+
+// =========================================================
+// Scene geometry
+// =========================================================
+function getSceneMetrics(canvas) {
+    const w = canvas.width / (window.devicePixelRatio || 1);
+    const h = canvas.height / (window.devicePixelRatio || 1);
+    const groundY = h * 0.73;
+    // Scale cooler with viewport
+    const coolerW = Math.max(90, Math.min(130, w * 0.2));
+    const coolerH = coolerW * 0.65;
+    const pixelsPerMeter = Math.max(80, w * 0.18);
+    const coolerScreenX = Math.min(w * 0.25 + coolerX * pixelsPerMeter, w * 0.6);
+    const worldOffset = coolerX * pixelsPerMeter - (coolerScreenX - w * 0.25);
+
+    return { w, h, groundY, coolerW, coolerH, coolerScreenX, worldOffset, pixelsPerMeter };
+}
+
+// =========================================================
+// Drawing utilities
+// =========================================================
+function roundRect(ctx, x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+}
+
+function drawArrow(ctx, x1, y1, x2, y2, color, width) {
+    const angle = Math.atan2(y2 - y1, x2 - x1);
+    const headLen = 10;
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - 0.4), y2 - headLen * Math.sin(angle - 0.4));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + 0.4), y2 - headLen * Math.sin(angle + 0.4));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+}
+
+// =========================================================
+// Draw Normal View
+// =========================================================
+function drawNormal() {
+    const ctx = normalCtx;
+    const m = getSceneMetrics(normalCanvas);
+    const { w, h, groundY, coolerW, coolerH, coolerScreenX, worldOffset, pixelsPerMeter } = m;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Room background
+    const bgGrad = ctx.createLinearGradient(0, 0, 0, h);
+    bgGrad.addColorStop(0, '#2a2040');
+    bgGrad.addColorStop(0.5, '#1a1530');
+    bgGrad.addColorStop(1, '#15112a');
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, w, h);
+
+    // Back wall baseboard
+    ctx.fillStyle = '#2d2838';
+    ctx.fillRect(0, groundY - 8, w, 8);
+
+    // Floor
+    const floorGrad = ctx.createLinearGradient(0, groundY, 0, h);
+    floorGrad.addColorStop(0, '#45404f');
+    floorGrad.addColorStop(1, '#35303f');
+    ctx.fillStyle = floorGrad;
+    ctx.fillRect(0, groundY, w, h - groundY);
+
+    // Floor texture -- concrete-like grid
+    ctx.strokeStyle = 'rgba(255,255,255,0.035)';
+    ctx.lineWidth = 1;
+    for (let i = -200; i < w + 200; i += 40) {
+        const x = i - (worldOffset % 40);
+        ctx.beginPath(); ctx.moveTo(x, groundY); ctx.lineTo(x, h); ctx.stroke();
+    }
+    for (let y = groundY + 20; y < h; y += 20) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+
+    // Floor surface highlight
+    ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+
+    // Scuff trail
+    if (coolerX > 0.02) {
+        const trailEnd = coolerScreenX - coolerW/2 + 5;
+        const trailStart = Math.max(0, trailEnd - coolerX * pixelsPerMeter);
+        const scuffGrad = ctx.createLinearGradient(trailStart, 0, trailEnd, 0);
+        scuffGrad.addColorStop(0, 'rgba(60,50,70,0)');
+        scuffGrad.addColorStop(0.3, 'rgba(60,50,70,0.35)');
+        scuffGrad.addColorStop(1, 'rgba(70,60,80,0.5)');
+        ctx.fillStyle = scuffGrad;
+        ctx.fillRect(trailStart, groundY - 1, trailEnd - trailStart, 3);
+    }
+
+    // Distance markers on floor
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.font = '10px monospace';
+    ctx.textAlign = 'center';
+    for (let d = 0; d <= 12; d += 0.5) {
+        const markerX = w * 0.25 + d * pixelsPerMeter - worldOffset;
+        if (markerX < -20 || markerX > w + 20) continue;
+        const isFull = d % 1 === 0;
+        ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(markerX, groundY + 1);
+        ctx.lineTo(markerX, groundY + (isFull ? 12 : 6));
+        ctx.stroke();
+        if (isFull) ctx.fillText(d + 'm', markerX, groundY + 22);
+    }
+
+    // === COOLER ===
+    const cx = coolerScreenX - coolerW / 2;
+    const wheelR = coolerW * 0.055;
+    const wheelGap = 5 + wheelR * 2;
+    const cy = groundY - coolerH - wheelGap;
+
+    // Shadow under cooler
+    ctx.fillStyle = 'rgba(0,0,0,0.2)';
+    ctx.beginPath();
+    ctx.ellipse(coolerScreenX, groundY + 1, coolerW * 0.55, 4, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Wheels
+    const wheelAngle = coolerX * pixelsPerMeter / wheelR;
+    const wheelY = groundY - wheelR - 1;
+    [cx + coolerW * 0.18, cx + coolerW * 0.82].forEach(wx => {
+        // Tire
+        ctx.fillStyle = '#1a1a1a';
+        ctx.beginPath(); ctx.arc(wx, wheelY, wheelR, 0, Math.PI * 2); ctx.fill();
+        ctx.strokeStyle = '#333';
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.arc(wx, wheelY, wheelR, 0, Math.PI * 2); ctx.stroke();
+        // Hub
+        ctx.fillStyle = '#444';
+        ctx.beginPath(); ctx.arc(wx, wheelY, wheelR * 0.4, 0, Math.PI * 2); ctx.fill();
+        // Spoke
+        ctx.strokeStyle = '#555';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(wx, wheelY);
+        ctx.lineTo(wx + Math.cos(wheelAngle) * wheelR * 0.7, wheelY + Math.sin(wheelAngle) * wheelR * 0.7);
+        ctx.stroke();
+    });
+
+    // Cooler body
+    const bodyGrad = ctx.createLinearGradient(cx, cy, cx, cy + coolerH);
+    bodyGrad.addColorStop(0, '#24bab2');
+    bodyGrad.addColorStop(0.25, '#1fa8a0');
+    bodyGrad.addColorStop(0.5, '#1a9690');
+    bodyGrad.addColorStop(1, '#158580');
+    ctx.fillStyle = bodyGrad;
+    roundRect(ctx, cx, cy, coolerW, coolerH, 6);
+    ctx.fill();
+
+    // Side highlight
+    const hlGrad = ctx.createLinearGradient(cx, 0, cx + coolerW, 0);
+    hlGrad.addColorStop(0, 'rgba(255,255,255,0.08)');
+    hlGrad.addColorStop(0.5, 'rgba(255,255,255,0)');
+    hlGrad.addColorStop(1, 'rgba(0,0,0,0.1)');
+    ctx.fillStyle = hlGrad;
+    roundRect(ctx, cx, cy, coolerW, coolerH, 6);
+    ctx.fill();
+
+    // Lid seam
+    const lidY = cy + coolerH * 0.27;
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(cx + 4, lidY); ctx.lineTo(cx + coolerW - 4, lidY); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(cx + 4, lidY + 1.5); ctx.lineTo(cx + coolerW - 4, lidY + 1.5); ctx.stroke();
+
+    // Handle
+    ctx.strokeStyle = '#bbb';
+    ctx.lineWidth = 3.5;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(cx + coolerW * 0.28, cy + 3);
+    ctx.quadraticCurveTo(cx + coolerW/2, cy - coolerH * 0.18, cx + coolerW * 0.72, cy + 3);
+    ctx.stroke();
+    // Handle inner highlight
+    ctx.strokeStyle = '#ddd';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx + coolerW * 0.32, cy + 2);
+    ctx.quadraticCurveTo(cx + coolerW/2, cy - coolerH * 0.14, cx + coolerW * 0.68, cy + 2);
+    ctx.stroke();
+
+    // Latch
+    ctx.fillStyle = '#ccc';
+    const latchW = coolerW * 0.14;
+    roundRect(ctx, cx + coolerW/2 - latchW/2, lidY - 5, latchW, 10, 2);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.5;
+    roundRect(ctx, cx + coolerW/2 - latchW/2, lidY - 5, latchW, 10, 2);
+    ctx.stroke();
+
+    // Brand text
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = `bold ${Math.max(8, coolerW * 0.08)|0}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText('COOLER', cx + coolerW/2, cy + coolerH * 0.65);
+
+    // Cooler outline
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, cx, cy, coolerW, coolerH, 6);
+    ctx.stroke();
+
+    // === Force arrows ===
+    if (pulling) {
+        const arrowY = cy + coolerH * 0.45;
+        const arrowLen = coolerW * 0.5;
+
+        // Applied force (green →)
+        drawArrow(ctx, cx + coolerW + 6, arrowY, cx + coolerW + 6 + arrowLen, arrowY, 'rgba(34,212,122,0.95)', 3);
+        ctx.fillStyle = 'rgba(34,212,122,0.95)';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('F = 44.1 N', cx + coolerW + arrowLen + 12, arrowY + 4);
+
+        // Friction force (red ←) at contact point
+        const fArrowY = groundY - wheelGap + 2;
+        drawArrow(ctx, cx + coolerW * 0.3, fArrowY, cx + coolerW * 0.3 - arrowLen, fArrowY, 'rgba(232,80,74,0.9)', 3);
+        ctx.fillStyle = 'rgba(232,80,74,0.9)';
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText('f = 44.1 N', cx + coolerW * 0.3 - arrowLen - 6, fArrowY + 4);
+
+        // Velocity arrow (blue, above)
+        drawArrow(ctx, cx + coolerW/2 - 5, cy - coolerH * 0.22, cx + coolerW/2 + 25, cy - coolerH * 0.22, 'rgba(91,156,246,0.85)', 2);
+        ctx.fillStyle = 'rgba(91,156,246,0.85)';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText('v = 0.5 m/s', cx + coolerW/2 + 30, cy - coolerH * 0.18);
+    }
+
+    // Physics params watermark
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('m = 15 kg   μk = 0.3', w - 10, h - 8);
+}
+
+// =========================================================
+// Draw Thermal View
+// =========================================================
+function drawThermal() {
+    const ctx = thermalCtx;
+    const m = getSceneMetrics(thermalCanvas);
+    const { w, h, groundY, coolerW, coolerH, coolerScreenX, worldOffset, pixelsPerMeter } = m;
+
+    // === Background: ambient air ===
+    ctx.fillStyle = tempToColor(BASE_TEMP_F);
+    ctx.fillRect(0, 0, w, h);
+
+    // Ground slightly warmer
+    const groundBaseTemp = BASE_TEMP_F + 1.2;
+    ctx.fillStyle = tempToColor(groundBaseTemp);
+    ctx.fillRect(0, groundY, w, h - groundY);
+
+    // Subtle vertical gradient in ground (warmer near surface)
+    const gGrad = ctx.createLinearGradient(0, groundY, 0, h);
+    gGrad.addColorStop(0, tempToColor(groundBaseTemp + 0.5));
+    gGrad.addColorStop(0.3, tempToColor(groundBaseTemp));
+    gGrad.addColorStop(1, tempToColor(groundBaseTemp - 0.3));
+    ctx.fillStyle = gGrad;
+    ctx.fillRect(0, groundY, w, h - groundY);
+
+    // === Heat trail on surface ===
+    for (const seg of trailSegments) {
+        const sx = w * 0.25 + seg.x * pixelsPerMeter - worldOffset;
+        if (sx < -40 || sx > w + 40) continue;
+        const grad = ctx.createRadialGradient(sx, groundY, 0, sx, groundY + 4, 28);
+        grad.addColorStop(0, tempToColor(seg.temp));
+        grad.addColorStop(0.6, tempToColor((seg.temp + groundBaseTemp) / 2));
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.fillRect(sx - 28, groundY - 12, 56, 40);
+    }
+
+    // === Contact strip ===
+    const cx = coolerScreenX - coolerW / 2;
+    const wheelR = coolerW * 0.055;
+    const wheelGap = 5 + wheelR * 2;
+    const cy = groundY - coolerH - wheelGap;
+
+    // Hot zone at contact
+    const contactW = coolerW + 16;
+    const contactGrad = ctx.createLinearGradient(cx - 8, 0, cx + coolerW + 8, 0);
+    contactGrad.addColorStop(0, tempToColor(contactTemp * 0.8 + BASE_TEMP_F * 0.2));
+    contactGrad.addColorStop(0.2, tempToColor(contactTemp));
+    contactGrad.addColorStop(0.8, tempToColor(contactTemp));
+    contactGrad.addColorStop(1, tempToColor(contactTemp * 0.8 + BASE_TEMP_F * 0.2));
+    ctx.fillStyle = contactGrad;
+    ctx.fillRect(cx - 8, groundY - 8, contactW, 16);
+
+    // Radial heat glow around contact
+    if (contactTemp > BASE_TEMP_F + 1) {
+        const glowGrad = ctx.createRadialGradient(
+            coolerScreenX, groundY, coolerW * 0.3,
+            coolerScreenX, groundY, coolerW * 0.9
+        );
+        glowGrad.addColorStop(0, tempToColor(contactTemp * 0.7 + BASE_TEMP_F * 0.3));
+        glowGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(cx - coolerW * 0.5, groundY - coolerW * 0.5, coolerW * 2, coolerW);
+    }
+
+    // === Cooler thermal silhouette ===
+    // Bottom (hottest)
+    const botH = coolerH * 0.25;
+    const botGrad = ctx.createLinearGradient(0, cy + coolerH - botH, 0, cy + coolerH);
+    botGrad.addColorStop(0, tempToColor(coolerSideTemp));
+    botGrad.addColorStop(1, tempToColor(contactTemp * 0.9 + coolerSideTemp * 0.1));
+    ctx.fillStyle = botGrad;
+    roundRect(ctx, cx, cy + coolerH - botH, coolerW, botH, 3);
+    ctx.fill();
+
+    // Middle (sides)
+    const midGrad = ctx.createLinearGradient(0, cy + coolerH * 0.25, 0, cy + coolerH - botH);
+    midGrad.addColorStop(0, tempToColor(coolerTopTemp * 0.6 + coolerSideTemp * 0.4));
+    midGrad.addColorStop(1, tempToColor(coolerSideTemp));
+    ctx.fillStyle = midGrad;
+    roundRect(ctx, cx, cy + coolerH * 0.25, coolerW, coolerH * 0.5, 3);
+    ctx.fill();
+
+    // Top (coolest)
+    ctx.fillStyle = tempToColor(coolerTopTemp);
+    roundRect(ctx, cx, cy, coolerW, coolerH * 0.3, 6);
+    ctx.fill();
+
+    // Slight horizontal gradient (left edge slightly warmer from friction)
+    if (pulling && contactTemp > BASE_TEMP_F + 2) {
+        const hGrad = ctx.createLinearGradient(cx, 0, cx + coolerW, 0);
+        hGrad.addColorStop(0, 'rgba(0,0,0,0)');
+        hGrad.addColorStop(0.8, 'rgba(0,0,0,0)');
+        hGrad.addColorStop(1, tempToColor(coolerSideTemp * 0.5 + contactTemp * 0.5));
+        ctx.globalAlpha = 0.15;
+        roundRect(ctx, cx, cy + coolerH * 0.5, coolerW, coolerH * 0.5, 3);
+        ctx.fillStyle = hGrad;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+    }
+
+    // Cooler outline
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 1;
+    roundRect(ctx, cx, cy, coolerW, coolerH, 6);
+    ctx.stroke();
+
+    // === Scanlines (FLIR look) ===
+    ctx.strokeStyle = 'rgba(0,0,0,0.04)';
+    ctx.lineWidth = 0.5;
+    for (let y = 0; y < h; y += 3) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+    }
+
+    // === Noise overlay ===
+    if (noiseCanvas) {
+        // Refresh noise every ~6 frames for shimmer
+        noiseFrame++;
+        if (noiseFrame % 6 === 0) refreshNoise();
+        ctx.drawImage(noiseCanvas, 0, 0);
+    }
+
+    // === FLIR readouts ===
+    const readouts = [
+        { x: cx + coolerW/2, y: cy + coolerH * 0.12, temp: coolerTopTemp, label: 'TOP' },
+        { x: cx + coolerW/2, y: cy + coolerH * 0.88, temp: contactTemp, label: 'BASE' },
+        { x: cx + coolerW + 25, y: groundY + 18, temp: surfaceTemp, label: 'FLOOR' },
+        { x: Math.max(30, cx - 30), y: cy + coolerH * 0.55, temp: coolerSideTemp, label: 'SIDE' },
+        { x: w - 60, y: 45, temp: BASE_TEMP_F, label: 'AMB' },
+    ];
+
+    ctx.font = 'bold 10px monospace';
+    readouts.forEach(r => {
+        if (r.x < 5 || r.x > w - 30) return;
+        // Crosshair
+        ctx.strokeStyle = 'rgba(255,255,255,0.55)';
+        ctx.lineWidth = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(r.x - 5, r.y); ctx.lineTo(r.x + 5, r.y);
+        ctx.moveTo(r.x, r.y - 5); ctx.lineTo(r.x, r.y + 5);
+        ctx.stroke();
+        // Small circle
+        ctx.beginPath(); ctx.arc(r.x, r.y, 2, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,0.4)'; ctx.stroke();
+
+        // Label background
+        const txt = r.temp.toFixed(1) + '\u00B0F';
+        ctx.textAlign = 'left';
+        const tw = ctx.measureText(txt).width + 6;
+        ctx.fillStyle = 'rgba(0,0,0,0.55)';
+        roundRect(ctx, r.x + 7, r.y - 8, tw, 16, 3);
+        ctx.fill();
+        ctx.fillStyle = '#fff';
+        ctx.fillText(txt, r.x + 10, r.y + 4);
+    });
+
+    // === Color bar legend ===
+    const barX = w - 20;
+    const barY = 60;
+    const barH = Math.max(60, h - 120);
+    const barW = 12;
+
+    // Draw color bar
+    for (let i = 0; i < barH; i++) {
+        const t = 1 - i / barH;
+        ctx.fillStyle = tempToColor(68 + t * 18);
+        ctx.fillRect(barX, barY + i, barW, 1);
+    }
+    ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    ctx.lineWidth = 0.5;
+    ctx.strokeRect(barX, barY, barW, barH);
+
+    // Legend labels
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'right';
+    ctx.fillText('86\u00B0', barX - 3, barY + 4);
+    ctx.fillText('77\u00B0', barX - 3, barY + barH/2 + 3);
+    ctx.fillText('68\u00B0', barX - 3, barY + barH + 3);
+
+    // FLIR branding
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = 'bold 11px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText('FLIR', 8, 18);
+    ctx.font = '8px monospace';
+    ctx.fillStyle = 'rgba(255,255,255,0.25)';
+    ctx.fillText('THERMAL IMAGING', 8, 30);
+
+    // Timestamp
+    const now = new Date();
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '8px monospace';
+    ctx.textAlign = 'left';
+    ctx.fillText(now.toLocaleTimeString(), 8, h - 8);
+
+    // REC indicator when pulling
+    if (pulling) {
+        const blink = animTime % 1.0 < 0.5;
+        if (blink) {
+            ctx.fillStyle = '#ff2222';
+            ctx.beginPath(); ctx.arc(w - 42, 18, 4, 0, Math.PI * 2); ctx.fill();
+        }
+        ctx.fillStyle = 'rgba(255,255,255,0.5)';
+        ctx.font = '9px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('REC', w - 50, 22);
+    }
+
+    // Vignette
+    const vigGrad = ctx.createRadialGradient(w/2, h/2, Math.min(w,h)*0.35, w/2, h/2, Math.max(w,h)*0.7);
+    vigGrad.addColorStop(0, 'rgba(0,0,0,0)');
+    vigGrad.addColorStop(1, 'rgba(0,0,0,0.25)');
+    ctx.fillStyle = vigGrad;
+    ctx.fillRect(0, 0, w, h);
+}
+
+// =========================================================
+// Physics update
+// =========================================================
+function updatePhysics(dt) {
+    if (pulling) {
+        coolerX += VELOCITY * dt;
+        elapsedPulling += dt;
+
+        const dWork = F_APPLIED * VELOCITY * dt;
+        totalWork += dWork;
+        thermalEnergy = totalWork;
+
+        // Temperature model (exaggerated for visibility)
+        contactTemp = BASE_TEMP_F + thermalEnergy * TEMP_RISE_PER_JOULE;
+        coolerSideTemp = BASE_TEMP_F + thermalEnergy * TEMP_RISE_PER_JOULE * 0.45;
+        coolerTopTemp = BASE_TEMP_F + thermalEnergy * TEMP_RISE_PER_JOULE * 0.12;
+        surfaceTemp = BASE_TEMP_F + thermalEnergy * TEMP_RISE_PER_JOULE * 0.7;
+
+        // Cap temps within visual range
+        contactTemp = Math.min(contactTemp, 85);
+        coolerSideTemp = Math.min(coolerSideTemp, 80);
+        coolerTopTemp = Math.min(coolerTopTemp, 75);
+        surfaceTemp = Math.min(surfaceTemp, 82);
+
+        // Trail segments
+        if (trailSegments.length === 0 || coolerX - trailSegments[trailSegments.length - 1].x > 0.04) {
+            trailSegments.push({ x: coolerX, temp: surfaceTemp, time: 0 });
+        }
+    }
+
+    // Cool trail
+    for (let i = trailSegments.length - 1; i >= 0; i--) {
+        trailSegments[i].time += dt;
+        trailSegments[i].temp = Math.max(
+            BASE_TEMP_F + 0.8,
+            trailSegments[i].temp - dt * 0.25
+        );
+        if (trailSegments[i].temp <= BASE_TEMP_F + 0.9) {
+            trailSegments.splice(i, 1);
+        }
+    }
+}
+
+// =========================================================
+// UI update
+// =========================================================
+function updateUI() {
+    document.getElementById('stat-dist').textContent = coolerX.toFixed(2) + ' m';
+    document.getElementById('stat-work').textContent = totalWork.toFixed(1) + ' J';
+    document.getElementById('stat-vel').textContent = (pulling ? VELOCITY : 0).toFixed(2) + ' m/s';
+    document.getElementById('stat-temp').textContent = contactTemp.toFixed(1) + ' \u00B0F';
+
+    const maxE = Math.max(totalWork, 50);
+    const workPct = Math.min((totalWork / maxE) * 100, 100);
+    const thermPct = Math.min((thermalEnergy / maxE) * 100, 100);
+
+    document.getElementById('bar-work').style.height = workPct + '%';
+    document.getElementById('bar-ke').style.height = '0%';
+    document.getElementById('bar-cca').style.height = '0%';
+    document.getElementById('bar-therm').style.height = thermPct + '%';
+
+    document.getElementById('bar-val-work').textContent = totalWork.toFixed(1);
+    document.getElementById('bar-val-ke').textContent = '0.0';
+    document.getElementById('bar-val-cca').textContent = '0.0';
+    document.getElementById('bar-val-therm').textContent = thermalEnergy.toFixed(1);
+}
+
+// =========================================================
+// Reset
+// =========================================================
+function reset() {
+    pulling = false;
+    coolerX = 0;
+    totalWork = 0;
+    thermalEnergy = 0;
+    contactTemp = BASE_TEMP_F;
+    surfaceTemp = BASE_TEMP_F;
+    coolerSideTemp = BASE_TEMP_F;
+    coolerTopTemp = BASE_TEMP_F;
+    trailSegments = [];
+    elapsedPulling = 0;
+    dragging = false;
+    pullBtn.classList.remove('active');
+    pullBtn.textContent = 'Hold to Pull \u2192';
+}
+
+// =========================================================
+// Input handling
+// =========================================================
+function startPull() {
+    pulling = true;
+    pullBtn.classList.add('active');
+    pullBtn.textContent = 'Pulling... \u2192\u2192';
+}
+function stopPull() {
+    if (!dragging) {
+        pulling = false;
+        pullBtn.classList.remove('active');
+        pullBtn.textContent = 'Hold to Pull \u2192';
+    }
+}
+
+pullBtn.addEventListener('mousedown', (e) => { e.preventDefault(); startPull(); });
+pullBtn.addEventListener('mouseup', stopPull);
+pullBtn.addEventListener('mouseleave', stopPull);
+pullBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPull(); });
+pullBtn.addEventListener('touchend', stopPull);
+
+// Canvas drag on cooler
+normalCanvas.addEventListener('mousedown', (e) => {
+    const rect = normalCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const m = getSceneMetrics(normalCanvas);
+    const cxL = m.coolerScreenX - m.coolerW/2;
+    const wheelR = m.coolerW * 0.055;
+    const wheelGap = 5 + wheelR * 2;
+    const cyT = m.groundY - m.coolerH - wheelGap;
+    if (mx >= cxL - 15 && mx <= cxL + m.coolerW + 15 && my >= cyT - 20 && my <= m.groundY + 5) {
+        dragging = true;
+        dragStartX = mx;
+    }
+});
+normalCanvas.addEventListener('mousemove', (e) => {
+    const rect = normalCanvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+    const m = getSceneMetrics(normalCanvas);
+    const cxL = m.coolerScreenX - m.coolerW/2;
+    const wheelR = m.coolerW * 0.055;
+    const wheelGap = 5 + wheelR * 2;
+    const cyT = m.groundY - m.coolerH - wheelGap;
+
+    if (!dragging) {
+        normalCanvas.style.cursor = (mx >= cxL - 15 && mx <= cxL + m.coolerW + 15 && my >= cyT - 20 && my <= m.groundY + 5) ? 'grab' : 'default';
+        return;
+    }
+    normalCanvas.style.cursor = 'grabbing';
+    if (mx > dragStartX + 3) {
+        pulling = true;
+        pullBtn.classList.add('active');
+        pullBtn.textContent = 'Pulling... \u2192\u2192';
+    }
+    dragStartX = mx;
+});
+window.addEventListener('mouseup', () => {
+    if (dragging) {
+        dragging = false;
+        pulling = false;
+        pullBtn.classList.remove('active');
+        pullBtn.textContent = 'Hold to Pull \u2192';
+        normalCanvas.style.cursor = 'default';
+    }
+});
+
+// Touch
+normalCanvas.addEventListener('touchstart', (e) => {
+    const t = e.touches[0];
+    const rect = normalCanvas.getBoundingClientRect();
+    const mx = t.clientX - rect.left;
+    const my = t.clientY - rect.top;
+    const m = getSceneMetrics(normalCanvas);
+    const cxL = m.coolerScreenX - m.coolerW/2;
+    const wheelR = m.coolerW * 0.055;
+    const wheelGap = 5 + wheelR * 2;
+    const cyT = m.groundY - m.coolerH - wheelGap;
+    if (mx >= cxL - 15 && mx <= cxL + m.coolerW + 15 && my >= cyT - 20 && my <= m.groundY + 5) {
+        e.preventDefault();
+        dragging = true;
+        dragStartX = mx;
+    }
+}, { passive: false });
+normalCanvas.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    e.preventDefault();
+    const mx = e.touches[0].clientX - normalCanvas.getBoundingClientRect().left;
+    if (mx > dragStartX + 3) {
+        pulling = true; pullBtn.classList.add('active'); pullBtn.textContent = 'Pulling... \u2192\u2192';
+    } else {
+        pulling = false; pullBtn.classList.remove('active'); pullBtn.textContent = 'Hold to Pull \u2192';
+    }
+    dragStartX = mx;
+}, { passive: false });
+normalCanvas.addEventListener('touchend', () => {
+    dragging = false; pulling = false;
+    pullBtn.classList.remove('active'); pullBtn.textContent = 'Hold to Pull \u2192';
+});
+
+// Keyboard
+document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowRight') { e.preventDefault(); if (!pulling) startPull(); }
+});
+document.addEventListener('keyup', (e) => {
+    if (e.code === 'Space' || e.code === 'ArrowRight') {
+        pulling = false; pullBtn.classList.remove('active'); pullBtn.textContent = 'Hold to Pull \u2192';
+    }
+});
+
+resetBtn.addEventListener('click', reset);
+
+// =========================================================
+// Main loop
+// =========================================================
+let lastTime = 0;
+function loop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
+    lastTime = timestamp;
+    animTime += dt;
+
+    updatePhysics(dt);
+    drawNormal();
+    drawThermal();
+    updateUI();
+    requestAnimationFrame(loop);
+}
+
+resize();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

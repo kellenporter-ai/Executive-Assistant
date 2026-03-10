@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI in Education — PAHS PD Workshop</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:   #080c1a;
+  --bg2:  #0d1230;
+  --text: #e8eaf6;
+  --muted:#7986cb;
+  --p1:   #00e5ff;
+  --p1g:  rgba(0,229,255,.25);
+  --p2:   #ff4081;
+  --p2g:  rgba(255,64,129,.25);
+  --p2b:  #ff9100;
+  --p3:   #ffd600;
+  --p3g:  rgba(255,214,0,.25);
+  --p3b:  #00e676;
+  --pur:  #7b61ff;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg)!important;font-family:'Inter',sans-serif;height:100%;overflow:hidden}
+
+#network-bg{position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:0;pointer-events:none}
+
+.reveal-viewport{background:transparent!important}
+.reveal{background:transparent!important;font-family:'Inter',sans-serif;color:var(--text)}
+.reveal .slides{z-index:2}
+.reveal .slides section{background:transparent!important}
+.reveal h1,.reveal h2,.reveal h3{font-family:'Outfit',sans-serif;color:var(--text);text-transform:none;letter-spacing:-.02em}
+.reveal p{line-height:1.6}
+.reveal .controls{color:var(--p1)}
+.reveal .progress{background:rgba(0,229,255,.15)}
+.reveal .progress span{background:var(--p1)}
+.reveal .fragment{opacity:.15;transition:opacity .4s}
+.reveal .fragment.visible{opacity:1}
+
+/* ── Utility ── */
+.eyebrow{font-size:.62em;font-weight:600;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.35em}
+.accent-line{width:52px;height:3px;border-radius:2px;margin:.5em 0 1.2em}
+.al-p1{background:linear-gradient(90deg,var(--p1),var(--pur))}
+.al-p2{background:linear-gradient(90deg,var(--p2),var(--p2b))}
+.al-p3{background:linear-gradient(90deg,var(--p3),var(--p3b))}
+.al-all{background:linear-gradient(90deg,var(--p1),var(--pur),var(--p2),var(--p3))}
+.p1-text{color:var(--p1)} .p2-text{color:var(--p2)} .p3-text{color:var(--p3)} .pur-text{color:var(--pur)}
+
+/* glass card */
+.glass{background:rgba(255,255,255,.05);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.09);border-radius:18px;padding:1.5em}
+
+/* ─────────────────────────────────────────────
+   SLIDE 1 · TITLE
+───────────────────────────────────────────── */
+.s-title{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:2em;position:relative}
+.s-title .glow-blob{position:absolute;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.12) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:blobPulse 6s ease infinite}
+@keyframes blobPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.7}50%{transform:translate(-50%,-50%) scale(1.15);opacity:1}}
+
+.title-badge{display:inline-block;padding:.35em 1.1em;border:1px solid rgba(0,229,255,.5);border-radius:100px;color:var(--p1);font-size:.62em;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.9em;animation:badgePulse 3s ease infinite}
+@keyframes badgePulse{0%,100%{box-shadow:0 0 0 var(--p1g)}50%{box-shadow:0 0 22px var(--p1g)}}
+
+.title-main{font-family:'Outfit',sans-serif;font-size:5.5em;font-weight:900;line-height:.95;background:linear-gradient(135deg,#fff 0%,var(--p1) 45%,var(--pur) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:slideUp 1s .1s both}
+.title-sub{font-family:'Outfit',sans-serif;font-size:1.4em;font-weight:300;color:rgba(255,255,255,.65);margin:.5em 0 1.8em;animation:slideUp 1s .35s both}
+@keyframes slideUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+.title-presenters{font-size:.85em;color:rgba(255,255,255,.45);letter-spacing:.04em;animation:slideUp 1s .6s both}
+.title-school{margin-top:.4em;font-size:.7em;color:rgba(255,255,255,.25);animation:slideUp 1s .8s both}
+
+/* ─────────────────────────────────────────────
+   SLIDE 2 · TEAM
+───────────────────────────────────────────── */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.8em;margin-top:1em}
+.p-card{background:rgba(255,255,255,.04);border-radius:22px;padding:2em 1.5em;text-align:center;border:1px solid rgba(255,255,255,.07);position:relative;overflow:hidden;transition:transform .3s}
+.p-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.p-card.kp::before{background:linear-gradient(90deg,var(--p1),var(--pur))}
+.p-card.mr::before{background:linear-gradient(90deg,var(--p2),var(--p2b))}
+.p-card.lm::before{background:linear-gradient(90deg,var(--p3),var(--p3b))}
+.p-card::after{content:'';position:absolute;bottom:-40px;right:-40px;width:140px;height:140px;border-radius:50%;filter:blur(50px);opacity:.18}
+.p-card.kp::after{background:var(--p1)}
+.p-card.mr::after{background:var(--p2)}
+.p-card.lm::after{background:var(--p3)}
+
+.avatar{width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1em;font-family:'Outfit',sans-serif;font-size:1.9em;font-weight:800;color:#fff}
+.av-kp{background:linear-gradient(135deg,#00b4d8,var(--pur))}
+.av-mr{background:linear-gradient(135deg,var(--p2),var(--p2b))}
+.av-lm{background:linear-gradient(135deg,var(--p3),var(--p3b))}
+.p-name{font-family:'Outfit',sans-serif;font-size:1.15em;font-weight:700;color:#fff;margin-bottom:.3em}
+.p-role{font-size:.72em;color:rgba(255,255,255,.45);line-height:1.6}
+.p-tag{display:inline-block;margin-top:.9em;padding:.25em .85em;border-radius:100px;font-size:.63em;font-weight:600;letter-spacing:.04em}
+.tag-kp{background:rgba(0,229,255,.12);color:var(--p1)}
+.tag-mr{background:rgba(255,64,129,.12);color:var(--p2)}
+.tag-lm{background:rgba(255,214,0,.12);color:var(--p3)}
+
+/* ─────────────────────────────────────────────
+   SLIDE 3 · WHY NOW
+───────────────────────────────────────────── */
+.why-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4em;margin-top:1em}
+.stat-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:16px;padding:1.3em;text-align:center;position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;inset:0;border-radius:16px;background:linear-gradient(135deg,rgba(0,229,255,.05),transparent)}
+.stat-num{font-family:'Outfit',sans-serif;font-size:2.8em;font-weight:900;background:linear-gradient(135deg,var(--p1),var(--pur));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
+.stat-lbl{font-size:.7em;color:rgba(255,255,255,.5);margin-top:.3em;line-height:1.5}
+.callout{background:rgba(255,255,255,.04);border-left:3px solid var(--p1);border-radius:0 14px 14px 0;padding:1.1em 1.4em;font-size:.8em;color:rgba(255,255,255,.7);font-style:italic;line-height:1.6}
+
+/* ─────────────────────────────────────────────
+   SLIDE 4 · JOURNEY OVERVIEW
+───────────────────────────────────────────── */
+.journey-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6em;margin-top:1.2em}
+.ph-card{border-radius:22px;padding:1.8em 1.5em;position:relative;overflow:hidden}
+.ph-card::after{content:'';position:absolute;inset:0;border-radius:22px;border:1px solid;pointer-events:none}
+.ph1{background:rgba(0,229,255,.06)}.ph1::after{border-color:rgba(0,229,255,.22)}
+.ph2{background:rgba(255,64,129,.06)}.ph2::after{border-color:rgba(255,64,129,.22)}
+.ph3{background:rgba(255,214,0,.06)}.ph3::after{border-color:rgba(255,214,0,.22)}
+.ph-label{font-size:.58em;font-weight:600;letter-spacing:.18em;text-transform:uppercase;margin-bottom:.4em}
+.ph-title{font-family:'Outfit',sans-serif;font-size:1.35em;font-weight:700;color:#fff;margin-bottom:1em}
+.ph-modules{list-style:none}
+.ph-modules li{font-size:.7em;color:rgba(255,255,255,.58);padding:.28em 0;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;gap:.5em}
+.ph-modules li:last-child{border-bottom:none}
+
+/* ─────────────────────────────────────────────
+   MODULE CARD SLIDES
+───────────────────────────────────────────── */
+.mgrid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:1.6em;margin-top:1em}
+.mgrid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2em;margin-top:.8em}
+
+.mc{border-radius:18px;padding:1.4em;position:relative;overflow:hidden;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.mc::before{content:'';position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;filter:blur(35px);opacity:.35}
+.mc-p1{background:rgba(0,229,255,.07);border:1px solid rgba(0,229,255,.2)}.mc-p1::before{background:var(--p1)}
+.mc-pur{background:rgba(123,97,255,.07);border:1px solid rgba(123,97,255,.2)}.mc-pur::before{background:var(--pur)}
+.mc-p2{background:rgba(255,64,129,.07);border:1px solid rgba(255,64,129,.2)}.mc-p2::before{background:var(--p2)}
+.mc-p2b{background:rgba(255,145,0,.07);border:1px solid rgba(255,145,0,.2)}.mc-p2b::before{background:var(--p2b)}
+.mc-p3{background:rgba(255,214,0,.07);border:1px solid rgba(255,214,0,.2)}.mc-p3::before{background:var(--p3)}
+.mc-p3b{background:rgba(0,230,118,.07);border:1px solid rgba(0,230,118,.2)}.mc-p3b::before{background:var(--p3b)}
+.mc-span{grid-column:1/-1;display:grid;grid-template-columns:auto 1fr;gap:1.2em;align-items:center}
+
+.mc-icon{font-size:2em;margin-bottom:.35em;display:block;line-height:1}
+.mc-num{font-size:.58em;font-weight:600;letter-spacing:.12em;text-transform:uppercase;margin-bottom:.3em}
+.mc-name{font-family:'Outfit',sans-serif;font-size:1em;font-weight:700;color:#fff;margin-bottom:.3em}
+.mc-desc{font-size:.68em;color:rgba(255,255,255,.45);line-height:1.5;margin-bottom:.6em}
+.chips{display:flex;flex-wrap:wrap;gap:.3em}
+.chip{font-size:.58em;padding:.2em .65em;border-radius:100px;background:rgba(255,255,255,.07);color:rgba(255,255,255,.55)}
+
+/* ─────────────────────────────────────────────
+   SLIDE 8 · OUTCOMES
+───────────────────────────────────────────── */
+.outcomes-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2em;margin-top:1.2em}
+.outcome{display:flex;align-items:flex-start;gap:.9em;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:1.2em}
+.oc-icon{font-size:1.8em;flex-shrink:0;line-height:1}
+.oc-title{font-family:'Outfit',sans-serif;font-size:.9em;font-weight:700;color:#fff;margin-bottom:.2em}
+.oc-desc{font-size:.68em;color:rgba(255,255,255,.48);line-height:1.5}
+
+/* ─────────────────────────────────────────────
+   SLIDE 9 · LET'S BEGIN
+───────────────────────────────────────────── */
+.s-begin{height:100%;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:2em;position:relative}
+.s-begin .glow-blob2{position:absolute;width:700px;height:700px;border-radius:50%;background:radial-gradient(circle,rgba(123,97,255,.15) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;animation:blobPulse 5s ease infinite}
+.begin-word{font-family:'Outfit',sans-serif;font-size:5.8em;font-weight:900;line-height:.95;background:linear-gradient(135deg,var(--p1) 0%,var(--pur) 40%,var(--p2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:slideUp .8s both}
+.begin-sub{font-size:.95em;color:rgba(255,255,255,.5);margin:.6em 0 2em;animation:slideUp .8s .2s both;line-height:1.7}
+.begin-pill{display:inline-block;padding:.7em 2.2em;border:1.5px solid var(--p1);border-radius:100px;color:var(--p1);font-size:.8em;font-weight:600;letter-spacing:.06em;animation:badgePulse 2.5s ease infinite}
+.begin-credit{margin-top:2em;font-size:.62em;color:rgba(255,255,255,.2);animation:slideUp .8s .4s both;line-height:1.8}
+</style>
+</head>
+<body>
+
+<canvas id="network-bg"></canvas>
+
+<div class="reveal">
+<div class="slides">
+
+<!-- ═══════════════════════════════════════
+     SLIDE 1 · TITLE
+═══════════════════════════════════════ -->
+<section>
+  <div class="s-title">
+    <div class="glow-blob"></div>
+    <div class="title-badge">Perth Amboy Public Schools &nbsp;·&nbsp; PD 2026</div>
+    <div class="title-main">AI in Education</div>
+    <div class="title-sub">A hands-on journey from curious to capable</div>
+    <div class="title-presenters">Kellen Porter &nbsp;·&nbsp; Moises Ramos &nbsp;·&nbsp; Lucas McCarthy</div>
+    <div class="title-school">Perth Amboy High School</div>
+  </div>
+  <aside class="notes">Welcome. Today is hands-on — not a lecture. You'll leave with real tools you can use Monday morning. I'm [name], joined by my colleagues Kellen/Moises/Lucas. We're all classroom teachers here at PAHS, and everything we share today comes from our actual classrooms with our actual students.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 2 · MEET THE TEAM
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow p1-text">Your guides today</p>
+  <h2>Meet the Team</h2>
+  <div class="accent-line al-p1"></div>
+  <div class="team-grid">
+
+    <div class="p-card kp fragment fade-up">
+      <div class="avatar av-kp">KP</div>
+      <div class="p-name">Kellen Porter</div>
+      <div class="p-role">Honors Physics<br>AP Physics 1 · Forensic Science</div>
+      <span class="p-tag tag-kp">⚛️ Physics</span>
+    </div>
+
+    <div class="p-card mr fragment fade-up">
+      <div class="avatar av-mr">MR</div>
+      <div class="p-name">Moises Ramos</div>
+      <div class="p-role">Mathematics</div>
+      <span class="p-tag tag-mr">📐 Mathematics</span>
+    </div>
+
+    <div class="p-card lm fragment fade-up">
+      <div class="avatar av-lm">LM</div>
+      <div class="p-name">Lucas McCarthy</div>
+      <div class="p-role">Physics<br>Intro to AI</div>
+      <span class="p-tag tag-lm">🤖 AI + Physics</span>
+    </div>
+
+  </div>
+  <aside class="notes">We're not vendors. We're not consultants. We teach the same students you do, in the same halls. Everything here is tested in our actual classrooms. That's why it's going to be useful.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 3 · WHY THIS WORKSHOP
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow p2-text">The reality</p>
+  <h2>Your Students Already Use It</h2>
+  <div class="accent-line al-p2"></div>
+  <div class="why-grid">
+    <div>
+      <div class="stat-card fragment fade-up">
+        <div class="stat-num">87%</div>
+        <div class="stat-lbl">of college students report using AI<br>for academic work (EDUCAUSE 2025)</div>
+      </div>
+      <div style="height:1em"></div>
+      <div class="stat-card fragment fade-up">
+        <div class="stat-num">5.9 hrs</div>
+        <div class="stat-lbl">saved per week by teachers<br>who use AI regularly (Gallup–Walton 2025)</div>
+      </div>
+    </div>
+    <div>
+      <div class="callout fragment fade-up">
+        "The question is no longer <em>whether</em> AI is in our classrooms — it's whether we understand it well enough to guide our students through it."
+      </div>
+      <div style="height:1em"></div>
+      <div class="stat-card fragment fade-up">
+        <div class="stat-num" style="font-size:2.2em">2,600+</div>
+        <div class="stat-lbl">PAHS students who deserve teachers<br>equipped for this moment</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">AI isn't a future problem — it's here. Our students, 91% Hispanic, many with limited outside resources, deserve teachers who understand these tools and can teach WITH and ABOUT them. We can't afford to wait.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 4 · THE JOURNEY
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow pur-text">The plan</p>
+  <h2>8 Modules. 3 Phases. One System.</h2>
+  <div class="accent-line al-all"></div>
+  <div class="journey-phases">
+
+    <div class="ph-card ph1 fragment fade-up">
+      <div class="ph-label p1-text">Phase 1</div>
+      <div class="ph-title">Foundation</div>
+      <ul class="ph-modules">
+        <li><span>🤖</span> Welcome &amp; AI Landscape</li>
+        <li><span>⚡</span> Prompting Fundamentals</li>
+      </ul>
+    </div>
+
+    <div class="ph-card ph2 fragment fade-up">
+      <div class="ph-label p2-text">Phase 2</div>
+      <div class="ph-title">Application</div>
+      <ul class="ph-modules">
+        <li><span>📅</span> Lesson Planning &amp; Differentiation</li>
+        <li><span>📝</span> Assessment Design</li>
+        <li><span>✍️</span> Feedback &amp; Grading</li>
+        <li><span>🎨</span> Content Creation &amp; Tools</li>
+      </ul>
+    </div>
+
+    <div class="ph-card ph3 fragment fade-up">
+      <div class="ph-label p3-text">Phase 3</div>
+      <div class="ph-title">Integration</div>
+      <ul class="ph-modules">
+        <li><span>⚙️</span> AI Detection &amp; Policy</li>
+        <li><span>🌱</span> Building Your System</li>
+      </ul>
+    </div>
+
+  </div>
+  <aside class="notes">Three phases. Phase 1: understand the tool. Phase 2: apply it to your actual job — planning, grading, content creation. Phase 3: zoom out and build a sustainable personal system. Each phase is designed to be immediately practical.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 5 · PHASE 1 · FOUNDATION
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow p1-text">Phase 1 · Foundation</p>
+  <h2 style="color:var(--p1)">Building the Base</h2>
+  <div class="accent-line al-p1"></div>
+  <div class="mgrid-2">
+
+    <div class="mc mc-p1">
+      <span class="mc-icon">🤖</span>
+      <div class="mc-num p1-text">Module 1</div>
+      <div class="mc-name">Welcome &amp; AI Landscape</div>
+      <div class="mc-desc">Understand what AI actually is, establish your baseline comfort level, and identify your personal starting point. No experience required.</div>
+      <div class="chips">
+        <span class="chip">What Is AI?</span>
+        <span class="chip">Your Toolkit</span>
+        <span class="chip">Myth vs. Fact</span>
+        <span class="chip">Self-Assessment</span>
+        <span class="chip">AI Interview</span>
+      </div>
+    </div>
+
+    <div class="mc mc-pur">
+      <span class="mc-icon">⚡</span>
+      <div class="mc-num pur-text">Module 2</div>
+      <div class="mc-name">Prompting Fundamentals</div>
+      <div class="mc-desc">The single most important skill for working with AI. Learn to write prompts that produce outputs you can actually use — every time.</div>
+      <div class="chips">
+        <span class="chip">Prompt Anatomy</span>
+        <span class="chip">7 Techniques</span>
+        <span class="chip">Flipped Interaction</span>
+        <span class="chip">Before &amp; After</span>
+        <span class="chip">Prompt Makeover</span>
+        <span class="chip">Ethics &amp; Privacy</span>
+      </div>
+    </div>
+
+  </div>
+  <aside class="notes">Module 1 meets people where they are — whether you've never touched AI or use it daily. Module 2 is where the real skill-building starts. Prompting is the lever that makes everything else work. If you leave today with only one skill, it's this one.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 6 · PHASE 2 · APPLICATION
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow p2-text">Phase 2 · Application</p>
+  <h2 style="color:var(--p2)">AI for Your Actual Job</h2>
+  <div class="accent-line al-p2"></div>
+  <div class="mgrid-3">
+
+    <div class="mc mc-p1" style="border-color:rgba(0,229,255,.18)">
+      <span class="mc-icon" style="font-size:1.6em">📅</span>
+      <div class="mc-num p1-text">Module 3</div>
+      <div class="mc-name">Lesson Planning &amp; Differentiation</div>
+      <div class="chips" style="margin-top:.5em">
+        <span class="chip">Planning Workflow</span>
+        <span class="chip">UDL Profiles</span>
+        <span class="chip">Verification</span>
+        <span class="chip">Live Lab</span>
+      </div>
+    </div>
+
+    <div class="mc mc-p2">
+      <span class="mc-icon" style="font-size:1.6em">📝</span>
+      <div class="mc-num p2-text">Module 4</div>
+      <div class="mc-name">Assessment Design</div>
+      <div class="chips" style="margin-top:.5em">
+        <span class="chip">Build Faster</span>
+        <span class="chip">AI-Resistant</span>
+        <span class="chip">New Formats</span>
+        <span class="chip">Smart Rubrics</span>
+      </div>
+    </div>
+
+    <div class="mc mc-p2b">
+      <span class="mc-icon" style="font-size:1.6em">✍️</span>
+      <div class="mc-num" style="color:var(--p2b)">Module 5</div>
+      <div class="mc-name">Feedback &amp; Grading</div>
+      <div class="chips" style="margin-top:.5em">
+        <span class="chip">Sort &amp; Pattern</span>
+        <span class="chip">Draft &amp; Refine</span>
+        <span class="chip">Templates</span>
+        <span class="chip">Bias &amp; Ethics</span>
+      </div>
+    </div>
+
+    <div class="mc mc-p2 mc-span" style="background:rgba(255,64,129,.05)">
+      <span style="font-size:2.8em;line-height:1;flex-shrink:0">🎨</span>
+      <div>
+        <div class="mc-num p2-text">Module 6</div>
+        <div class="mc-name">Content Creation &amp; Interactive Tools</div>
+        <div class="mc-desc">The builder module — you'll leave with a working, shareable tool for your students.</div>
+        <div class="chips">
+          <span class="chip">Custom Chatbots</span>
+          <span class="chip">Review Games</span>
+          <span class="chip">Platforms</span>
+          <span class="chip">Simulations</span>
+          <span class="chip">Accessibility</span>
+          <span class="chip">Deploy &amp; Own</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <aside class="notes">Phase 2 is hands-on every session. Bring your work — lessons you're planning, assignments you're building, student work you need to give feedback on. You leave each module with something you can use the next day. Module 6 is a live build session — you design and deploy a real tool.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 7 · PHASE 3 · INTEGRATION
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow p3-text">Phase 3 · Integration</p>
+  <h2 style="color:var(--p3)">Making It Stick</h2>
+  <div class="accent-line al-p3"></div>
+  <div class="mgrid-2">
+
+    <div class="mc mc-p3">
+      <span class="mc-icon">⚙️</span>
+      <div class="mc-num p3-text">Module 7</div>
+      <div class="mc-name">AI Detection &amp; Policy</div>
+      <div class="mc-desc">How detection tools actually work, where they fail, and how to build classroom AI policies that are enforceable, fair, and honest about the technology's real limitations.</div>
+      <div class="chips">
+        <span class="chip">How It Works</span>
+        <span class="chip">Accuracy Data</span>
+        <span class="chip">False Positives</span>
+        <span class="chip">Legal Cases</span>
+        <span class="chip">Policy Design</span>
+        <span class="chip">The Conversation</span>
+      </div>
+    </div>
+
+    <div class="mc mc-p3b">
+      <span class="mc-icon">🌱</span>
+      <div class="mc-num" style="color:var(--p3b)">Module 8 · Capstone</div>
+      <div class="mc-name">Building Your System</div>
+      <div class="mc-desc">Pull everything together. Design your personal AI workflow — which tools, for which tasks, with what safeguards. Leave with a documented, research-backed system you'll actually use.</div>
+      <div class="chips">
+        <span class="chip">Modules 1–7 Review</span>
+        <span class="chip">Assemble</span>
+        <span class="chip">Monday Checklist</span>
+        <span class="chip">Peer Share</span>
+        <span class="chip">Trio Partners</span>
+        <span class="chip">Sustain</span>
+      </div>
+    </div>
+
+  </div>
+  <aside class="notes">Module 7 answers the hard questions — can I detect AI? Should I? What do I do if I suspect it? The capstone is about sustainability. You'll leave with a real plan, not good intentions.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 8 · OUTCOMES
+═══════════════════════════════════════ -->
+<section>
+  <p class="eyebrow pur-text">What you'll gain</p>
+  <h2>You'll Walk Away With...</h2>
+  <div class="accent-line" style="background:linear-gradient(90deg,var(--p1),var(--pur))"></div>
+  <div class="outcomes-grid">
+
+    <div class="outcome fragment fade-up">
+      <span class="oc-icon">🧰</span>
+      <div>
+        <div class="oc-title">A working toolkit</div>
+        <div class="oc-desc">Tools tested on your actual content — real workflows, not demos</div>
+      </div>
+    </div>
+
+    <div class="outcome fragment fade-up">
+      <span class="oc-icon">📋</span>
+      <div>
+        <div class="oc-title">A classroom AI policy</div>
+        <div class="oc-desc">Assignment-specific, legally grounded, and fair to students</div>
+      </div>
+    </div>
+
+    <div class="outcome fragment fade-up">
+      <span class="oc-icon">⏱️</span>
+      <div>
+        <div class="oc-title">Hours back every week</div>
+        <div class="oc-desc">Feedback, planning, and grading workflows that save real time</div>
+      </div>
+    </div>
+
+    <div class="outcome fragment fade-up">
+      <span class="oc-icon">🤝</span>
+      <div>
+        <div class="oc-title">A support network</div>
+        <div class="oc-desc">Trio partners for ongoing collaboration long after today</div>
+      </div>
+    </div>
+
+  </div>
+  <aside class="notes">Everything today produces something concrete. You won't leave with a reading list — you'll leave with tools in hand. The trio partners idea from the capstone is one of the most valuable pieces — sustained support beats a one-time workshop every time.</aside>
+</section>
+
+<!-- ═══════════════════════════════════════
+     SLIDE 9 · LET'S BEGIN
+═══════════════════════════════════════ -->
+<section>
+  <div class="s-begin">
+    <div class="glow-blob2"></div>
+    <div class="begin-word">Let's Begin.</div>
+    <p class="begin-sub">
+      Open your laptop. No experience required.<br>
+      This workshop meets you where you are.
+    </p>
+    <div class="begin-pill">Module 1 &rarr; Welcome &amp; AI Landscape</div>
+    <div class="begin-credit">
+      Perth Amboy High School &nbsp;·&nbsp; AI in Education PD &nbsp;·&nbsp; 2026<br>
+      Porter &nbsp;·&nbsp; Ramos &nbsp;·&nbsp; McCarthy
+    </div>
+  </div>
+  <aside class="notes">That's the overview. Questions before we start? We keep this interactive — you'll be working more than listening today. Let's go.</aside>
+</section>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script>
+/* ═══════════════════════════════════════════
+   PARTICLE NEURAL NETWORK BACKGROUND
+═══════════════════════════════════════════ */
+(function () {
+  const canvas = document.getElementById('network-bg');
+  const ctx    = canvas.getContext('2d');
+  let W, H, particles;
+
+  const COUNT    = 85;
+  const MAX_DIST = 165;
+  const COLORS   = [
+    '0,229,255',
+    '123,97,255',
+    '255,64,129',
+    '0,230,118',
+    '255,214,0'
+  ];
+
+  class Particle {
+    constructor () { this.reset(true); }
+    reset (initial) {
+      this.x  = initial ? Math.random() * W : (Math.random() > .5 ? -10 : W + 10);
+      this.y  = Math.random() * H;
+      this.vx = (Math.random() - .5) * .45;
+      this.vy = (Math.random() - .5) * .45;
+      this.r  = Math.random() * 1.8 + .8;
+      this.c  = COLORS[Math.floor(Math.random() * COLORS.length)];
+      this.ph = Math.random() * Math.PI * 2;
+      this.ps = .012 + Math.random() * .018;
+    }
+    update () {
+      this.x  += this.vx;
+      this.y  += this.vy;
+      this.ph += this.ps;
+      if (this.x < -25 || this.x > W + 25 || this.y < -25 || this.y > H + 25) this.reset(false);
+    }
+    draw () {
+      const pulse = .65 + Math.sin(this.ph) * .35;
+      const op    = .75 * pulse;
+      const grd   = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.r * 5);
+      grd.addColorStop(0, `rgba(${this.c},${op})`);
+      grd.addColorStop(1, `rgba(${this.c},0)`);
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r * 5, 0, Math.PI * 2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(${this.c},${.95 * pulse})`;
+      ctx.fill();
+    }
+  }
+
+  function resize () {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function drawEdges () {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx   = particles[i].x - particles[j].x;
+        const dy   = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < MAX_DIST) {
+          const t  = 1 - dist / MAX_DIST;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.strokeStyle = `rgba(100,180,255,${t * t * .28})`;
+          ctx.lineWidth   = t * 1.2;
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function frame () {
+    /* deep bg gradient */
+    const bg = ctx.createLinearGradient(0, 0, W, H);
+    bg.addColorStop(0,   '#070b18');
+    bg.addColorStop(.5,  '#0c1128');
+    bg.addColorStop(1,   '#070b18');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, W, H);
+
+    drawEdges();
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(frame);
+  }
+
+  window.addEventListener('resize', resize);
+  resize();
+  particles = Array.from({ length: COUNT }, () => new Particle());
+  frame();
+})();
+
+/* ═══════════════════════════════════════════
+   REVEAL.JS
+═══════════════════════════════════════════ */
+Reveal.initialize({
+  hash:                 true,
+  history:              true,
+  transition:           'slide',
+  backgroundTransition: 'fade',
+  transitionSpeed:      'default',
+  center:               true,
+  controls:             true,
+  progress:             true,
+  slideNumber:          'c/t',
+  keyboard:             true,
+  overview:             true,
+  width:                1920,
+  height:               1080,
+  margin:               0.04,
+  fragments:            true,
+});
+</script>
+</body>
+</html>

@@ -1,8 +1,10 @@
 # Current Priorities & Goals
 
 ## Priority 1: Porter's Portal Stability
-- **Student work persistence** — Ensure student work is reliably saved (auto-save, draft recovery) and provide mechanisms to recover work that has been accidentally deleted or lost
+- **Student work persistence (completed 2026-03-10):** Save retry + backoff, 800ms debounce, sessionStorage crash buffer, save status HUD, 2-hour draft guard, denial cache on login, grace period cleanup, submission retry, multi-tab warning
 - Stability audit round 2 (completed 2026-03-10): admin auth via custom claims (4 functions fixed), chat rate limiting + HTML sanitization, unbounded query limits, bare setTimeout cleanup, console.error→reportError sweep, notification error handling, Proctor mousemove throttle, boss HP scan scoping, enrollment validation on assessments, resilientSnapshot map bounds
+- Stability audit round 3 (completed 2026-03-10): paginated 10 unbounded Cloud Function queries, onSnapshot error callback (App.tsx), ArenaPanel subscription cleanup, BossEncounterPanel leaderboard memoization, AdjustXPModal bulk error handling, FortuneWheel timer cleanup, IdleMissionsPanel countdown memoization, ResourceViewer history guard + submission retry, dataService existence check, warning toast type
+- Stability audit round 4 (completed 2026-03-10): ConnectionStatus setTimeout leak, Proctor handleReplayClick mountedRef guard, AdjustXPModal bulk Promise.allSettled mountedRef guard. Full 100-file audit confirmed no remaining timer/async/listener leaks.
 - Chat real-time bug (completed 2026-03-10)
 - Chat security hardening (completed 2026-03-09)
 - Firestore rules audit (completed 2026-03-09)
@@ -13,6 +15,8 @@
 - **Student experience** — responsive design, accessibility, intuitive navigation, performance
 - Recent work: collapsible sidebar, mobile bottom nav, keyboard shortcuts, breadcrumbs, post-submission review mode
 - Gamification polish (Flux Shop, cosmetics, boss fights, dungeons, PvP arena)
+- UI/UX round 1 (completed 2026-03-10): virtualizer measureElement on 4 components, lazy-load DrawingBlock/MathResponseBlock, lesson editor Firestore auto-save (10s debounce), drag-and-drop block reordering (@dnd-kit/sortable)
+- **Uncommitted changes in Portal:** ResourceViewer.tsx (submitFailed escape hatch), functions/src/index.ts (buildDailyDigest refactor), lib/firebase.ts (callTriggerDailyDigest) — from previous session, need review before committing
 
 ## Priority 3: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness

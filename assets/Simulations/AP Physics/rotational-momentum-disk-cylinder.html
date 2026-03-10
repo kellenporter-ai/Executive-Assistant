@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rotational Motion — 9.4.3</title>
+    <style>
+        :root {
+            --panel-bg: rgba(10, 20, 50, 0.82);
+            --border: rgba(100, 160, 255, 0.2);
+            --text: #e0e8f4;
+            --muted: #7a8ca8;
+            --blue: #5b9cf6;
+            --green: #22d47a;
+            --orange: #f5a623;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { width: 100%; height: 100%; overflow: hidden; background: #2a4070; font-family: 'Segoe UI', system-ui, sans-serif; }
+        #renderCanvas { width: 100%; height: 100%; display: block; touch-action: none; outline: none; }
+        #ui-layer {
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none; padding: 14px;
+            display: flex; flex-direction: column; justify-content: space-between;
+        }
+        .panel {
+            pointer-events: auto;
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            color: var(--text);
+        }
+        .header-panel { align-self: flex-start; max-width: 310px; }
+        .header-panel h1 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+        .header-panel .subtitle { font-size: 11px; color: var(--muted); margin-bottom: 10px; }
+
+        .controls-panel {
+            align-self: center; display: flex; flex-wrap: wrap;
+            gap: 10px; align-items: center; justify-content: center;
+        }
+        .btn {
+            background: rgba(91,156,246,0.15); border: 1px solid rgba(91,156,246,0.3);
+            color: var(--blue); border-radius: 8px; padding: 10px 18px;
+            font-size: 13px; font-weight: 600; cursor: pointer;
+            min-width: 100px; text-align: center; transition: all 0.2s;
+        }
+        .btn:hover { background: rgba(91,156,246,0.25); }
+        .btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn.green { background: rgba(34,212,122,0.12); border-color: rgba(34,212,122,0.3); color: var(--green); }
+        .btn.green:hover { background: rgba(34,212,122,0.22); }
+        .btn.green:not(:disabled) { animation: pulse 1.8s ease-in-out infinite; }
+        @keyframes pulse {
+            0%,100% { box-shadow: 0 0 0 0 rgba(34,212,122,0.25); }
+            50% { box-shadow: 0 0 10px 3px rgba(34,212,122,0.25); }
+        }
+        .btn.reset { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: var(--muted); }
+        .btn.reset:hover { background: rgba(255,255,255,0.1); }
+        .slider-group { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .slider-group label { font-size: 10px; color: var(--muted); }
+        .slider-group input[type=range] { width: 110px; accent-color: var(--blue); }
+        .slider-group .val { font-family: monospace; font-size: 11px; color: var(--text); }
+        .ref-dims { font-size: 9px; color: var(--muted); text-align: center; line-height: 1.5; opacity: 0.7; padding-top: 4px; }
+
+        @media (max-width: 600px) {
+            .header-panel { max-width: 100%; }
+            .controls-panel { flex-direction: column; }
+        }
+    </style>
+    <script src="https://cdn.babylonjs.com/babylon.js"></script>
+    <script src="https://cdn.babylonjs.com/materialsLibrary/babylonjs.materials.min.js"></script>
+</head>
+<body>
+<script>
+const PortalBridge = (() => {
+    const send = (type, data) => {
+        if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+    };
+    return {
+        init:     ()              => send('PROCTOR_READY'),
+        save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+        answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+        complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+    };
+})();
+window.addEventListener('load', () => PortalBridge.init());
+</script>
+<canvas id="renderCanvas"></canvas>
+<div id="ui-layer">
+    <div class="panel header-panel">
+        <h1>Rotational Motion — 9.4.3</h1>
+        <p class="subtitle">Observe what happens when the cylinder is dropped onto the spinning disk</p>
+    </div>
+    <div class="panel controls-panel">
+        <div class="slider-group">
+            <label>Initial ω</label>
+            <input type="range" id="sliderOmega" min="2" max="25" value="10" step="0.5">
+            <span class="val" id="sliderVal">10.0 rad/s</span>
+        </div>
+        <button class="btn" id="btnSpin">Spin Disk</button>
+        <button class="btn green" id="btnDrop" disabled>Drop Cylinder</button>
+        <button class="btn reset" id="btnReset">Reset</button>
+        <div class="ref-dims">
+            Disk: r=114mm, h=25mm, m=1418g &nbsp;|&nbsp; Cyl: R₀=64mm, Rᵢ=56mm, h=50mm, m=1428g
+        </div>
+    </div>
+</div>
+<script>
+// ────────────────────────────────────────
+// Constants
+// ────────────────────────────────────────
+const I_DISK = 0.5 * 1.418 * 0.114 * 0.114;          // 0.009213 kg·m²
+const I_CYL  = 0.5 * 1.428 * (0.064*0.064 + 0.056*0.056); // 0.005164 kg·m²
+const FRICTION_TORQUE = 0.0165;  // N·m — tuned for ~2s coupling at ω₀=10
+const S = 5;  // visual scale factor
+
+// Visual dims (real meters × S)
+const DISK_R  = 0.114 * S;
+const DISK_H  = 0.025 * S;
+const CYL_RO  = 0.064 * S;
+const CYL_RI  = 0.056 * S;
+const CYL_H   = 0.050 * S;
+
+// Y positions (table = 0)
+const DISK_Y     = 0.13;
+const CYL_REST_Y = DISK_Y + DISK_H / 2 + CYL_H / 2;
+const CYL_HELD_Y = 0.68;
+const G_DROP     = 3.5;         // visual drop gravity (scene units/s²)
+const SPIN_UP_T  = 0.7;         // spin-up ease duration (s)
+
+// ────────────────────────────────────────
+// Engine & Scene
+// ────────────────────────────────────────
+const canvas = document.getElementById('renderCanvas');
+const engine = new BABYLON.Engine(canvas, true, { preserveDrawingBuffer: true, stencil: true });
+engine.setHardwareScalingLevel(1 / Math.min(window.devicePixelRatio, 1.5));
+
+const scene = new BABYLON.Scene(engine);
+scene.clearColor = new BABYLON.Color4(0.24, 0.36, 0.56, 1.0);
+scene.performancePriority = BABYLON.ScenePerformancePriority.Aggressive;
+
+// ────────────────────────────────────────
+// Camera
+// ────────────────────────────────────────
+const camera = new BABYLON.ArcRotateCamera(
+    'cam', -Math.PI / 2, 1.1, 2.8,
+    new BABYLON.Vector3(0, 0.30, 0), scene
+);
+camera.attachControl(canvas, true);
+camera.lowerRadiusLimit = 1.2;
+camera.upperRadiusLimit = 6;
+camera.upperBetaLimit   = Math.PI / 2 - 0.05;
+camera.wheelPrecision   = 12;
+camera.inertia          = 0.7;
+camera.panningInertia   = 0.8;
+camera.panningSensibility = 100;
+
+// ────────────────────────────────────────
+// Lighting
+// ────────────────────────────────────────
+const hemi = new BABYLON.HemisphericLight('hemi', BABYLON.Vector3.Up(), scene);
+hemi.intensity   = 0.40;
+hemi.diffuse     = new BABYLON.Color3(0.85, 0.88, 1.0);
+hemi.groundColor = new BABYLON.Color3(0.14, 0.16, 0.22);
+
+const sun = new BABYLON.DirectionalLight('sun', new BABYLON.Vector3(-0.4, -1.3, -0.6), scene);
+sun.position  = new BABYLON.Vector3(3, 6, 4);
+sun.intensity = 0.85;
+
+const accent = new BABYLON.PointLight('accent', new BABYLON.Vector3(0.3, 0.9, -0.6), scene);
+accent.diffuse   = new BABYLON.Color3(0.45, 0.55, 0.95);
+accent.specular  = BABYLON.Color3.Black();
+accent.intensity = 1.8;
+accent.range     = 4;
+
+// ────────────────────────────────────────
+// Shadows
+// ────────────────────────────────────────
+const shadowGen = new BABYLON.ShadowGenerator(1024, sun);
+shadowGen.useBlurExponentialShadowMap = true;
+shadowGen.blurKernel = 16;
+shadowGen.darkness   = 0.45;
+
+// ────────────────────────────────────────
+// Post-processing
+// ────────────────────────────────────────
+const pipe = new BABYLON.DefaultRenderingPipeline('pipe', true, scene, [camera]);
+pipe.fxaaEnabled = true;
+pipe.samples     = 2;
+pipe.imageProcessingEnabled = true;
+pipe.imageProcessing.contrast  = 1.1;
+pipe.imageProcessing.exposure  = 1.05;
+pipe.imageProcessing.toneMappingEnabled = true;
+
+// ────────────────────────────────────────
+// Materials
+// ────────────────────────────────────────
+function pbr(name, hex, rough, metal) {
+    const m = new BABYLON.PBRMaterial(name, scene);
+    m.albedoColor = BABYLON.Color3.FromHexString(hex);
+    m.roughness = rough;
+    m.metallic  = metal;
+    return m;
+}
+function pbrTex(name, tw, th, rough, metal, fn) {
+    const tex = new BABYLON.DynamicTexture('dt_' + name, { width: tw, height: th }, scene, false);
+    tex.wrapU = BABYLON.Texture.WRAP_ADDRESSMODE;
+    tex.wrapV = BABYLON.Texture.WRAP_ADDRESSMODE;
+    const ctx = tex.getContext();
+    fn(ctx, tw, th);
+    tex.update();
+    const m = new BABYLON.PBRMaterial(name, scene);
+    m.albedoTexture = tex;
+    m.roughness = rough;
+    m.metallic  = metal;
+    return m;
+}
+
+const matDisk  = pbr('matDisk', '#505058', 0.28, 0.85);
+const matCyl   = pbr('matCyl',  '#3a3a44', 0.25, 0.88);
+matCyl.backFaceCulling = false;  // inner walls of CSG hole visible
+const matBase  = pbr('matBase', '#1a1a1e', 0.48, 0.55);
+const matRod   = pbr('matRod',  '#606068', 0.18, 0.90);
+const matTable = pbrTex('matTable', 256, 256, 0.10, 0.04, (ctx, w, h) => {
+    ctx.fillStyle = '#b8d0c4';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 25; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, (i / 25) * h);
+        ctx.lineTo(w, (i / 25) * h + Math.sin(i * 0.9) * 3);
+        ctx.stroke();
+    }
+});
+
+const matMarker = new BABYLON.StandardMaterial('matMarker', scene);
+matMarker.emissiveColor  = new BABYLON.Color3(0.85, 0.85, 0.85);
+matMarker.disableLighting = true;
+
+const matLED = new BABYLON.StandardMaterial('matLED', scene);
+matLED.emissiveColor  = new BABYLON.Color3(0.15, 0.9, 0.25);
+matLED.disableLighting = true;
+
+// ────────────────────────────────────────
+// Environment — table surface
+// ────────────────────────────────────────
+const tableMesh = BABYLON.MeshBuilder.CreateBox('table', { width: 3.5, height: 0.06, depth: 2.5 }, scene);
+tableMesh.position.y = -0.03;
+tableMesh.material    = matTable;
+tableMesh.receiveShadows = true;
+
+// ────────────────────────────────────────
+// Stand — base hub + 4 arms + feet
+// ────────────────────────────────────────
+const baseHub = BABYLON.MeshBuilder.CreateCylinder('baseHub', { diameter: 0.22, height: 0.055, tessellation: 24 }, scene);
+baseHub.position.y = 0.028;
+baseHub.material   = matBase;
+shadowGen.addShadowCaster(baseHub);
+
+for (let i = 0; i < 4; i++) {
+    const a = i * Math.PI / 2 + Math.PI / 4;
+    const arm = BABYLON.MeshBuilder.CreateBox('arm' + i, { width: 0.065, height: 0.03, depth: 0.36 }, scene);
+    arm.position.set(Math.sin(a) * 0.19, 0.016, Math.cos(a) * 0.19);
+    arm.rotation.y = a;
+    arm.material   = matBase;
+    shadowGen.addShadowCaster(arm);
+
+    const foot = BABYLON.MeshBuilder.CreateCylinder('foot' + i, { diameter: 0.075, height: 0.012, tessellation: 14 }, scene);
+    foot.position.set(Math.sin(a) * 0.37, 0.006, Math.cos(a) * 0.37);
+    foot.material = matBase;
+    shadowGen.addShadowCaster(foot);
+
+    const knob = BABYLON.MeshBuilder.CreateCylinder('knob' + i, { diameter: 0.032, height: 0.022, tessellation: 10 }, scene);
+    knob.position.set(Math.sin(a) * 0.37, 0.024, Math.cos(a) * 0.37);
+    knob.material = matRod;
+}
+
+// Vertical rod
+const rod = BABYLON.MeshBuilder.CreateCylinder('rod', { diameter: 0.038, height: 0.72, tessellation: 14 }, scene);
+rod.position.y = 0.055 + 0.36;
+rod.material   = matRod;
+shadowGen.addShadowCaster(rod);
+
+// Bearing collar
+const collar = BABYLON.MeshBuilder.CreateCylinder('collar', { diameter: 0.09, height: 0.025, tessellation: 18 }, scene);
+collar.position.y = 0.07;
+collar.material   = matRod;
+
+// ────────────────────────────────────────
+// Solid Disk (spins)
+// ────────────────────────────────────────
+const diskPivot = new BABYLON.TransformNode('diskPivot', scene);
+diskPivot.position.y = DISK_Y;
+
+const diskMesh = BABYLON.MeshBuilder.CreateCylinder('disk', {
+    diameter: DISK_R * 2, height: DISK_H, tessellation: 32
+}, scene);
+diskMesh.material = matDisk;
+diskMesh.parent   = diskPivot;
+shadowGen.addShadowCaster(diskMesh);
+
+// Radial stripe marker on disk top
+const stripe = BABYLON.MeshBuilder.CreateBox('stripe', { width: DISK_R * 0.75, height: 0.004, depth: 0.018 }, scene);
+stripe.position.set(DISK_R * 0.42, DISK_H / 2 + 0.003, 0);
+stripe.material = matMarker;
+stripe.parent   = diskPivot;
+
+// Small dot at disk edge
+const diskDot = BABYLON.MeshBuilder.CreateCylinder('diskDot', { diameter: 0.035, height: 0.004, tessellation: 10 }, scene);
+diskDot.position.set(DISK_R * 0.82, DISK_H / 2 + 0.003, 0);
+diskDot.material = matMarker;
+diskDot.parent   = diskPivot;
+
+// ────────────────────────────────────────
+// Hollow Cylinder (drops onto disk)
+// ────────────────────────────────────────
+const cylPivot = new BABYLON.TransformNode('cylPivot', scene);
+cylPivot.position.y = CYL_HELD_Y;
+
+// CSG subtraction for hollow interior
+const tmpOuter = BABYLON.MeshBuilder.CreateCylinder('tmpO', {
+    diameter: CYL_RO * 2, height: CYL_H, tessellation: 32
+}, scene);
+const tmpInner = BABYLON.MeshBuilder.CreateCylinder('tmpI', {
+    diameter: CYL_RI * 2, height: CYL_H + 0.02, tessellation: 32
+}, scene);
+const csgOuter = BABYLON.CSG.FromMesh(tmpOuter);
+const csgInner = BABYLON.CSG.FromMesh(tmpInner);
+const hollowCyl = csgOuter.subtract(csgInner).toMesh('hollowCyl', matCyl, scene);
+hollowCyl.parent = cylPivot;
+shadowGen.addShadowCaster(hollowCyl);
+tmpOuter.dispose();
+tmpInner.dispose();
+
+// Top rim lip (subtle torus)
+const rimLip = BABYLON.MeshBuilder.CreateTorus('rimLip', {
+    diameter: CYL_RO + CYL_RI,
+    thickness: (CYL_RO - CYL_RI) * 0.45,
+    tessellation: 26
+}, scene);
+rimLip.position.y = CYL_H / 2;
+rimLip.material   = matCyl;
+rimLip.parent     = cylPivot;
+
+// Green LED indicator
+const ledMesh = BABYLON.MeshBuilder.CreateSphere('led', { diameter: 0.022, segments: 10 }, scene);
+ledMesh.position.set(CYL_RO - 0.008, CYL_H / 2 - 0.035, 0);
+ledMesh.material = matLED;
+ledMesh.parent   = cylPivot;
+
+// Glow only on LED
+const glow = new BABYLON.GlowLayer('glow', scene);
+glow.intensity = 1.2;
+glow.addIncludedOnlyMesh(ledMesh);
+
+// Cylinder radial marker (thin stripe)
+const cylStripe = BABYLON.MeshBuilder.CreateBox('cylStripe', { width: 0.006, height: CYL_H * 0.6, depth: 0.004 }, scene);
+cylStripe.position.set(CYL_RO + 0.004, 0, 0);
+cylStripe.material = matMarker;
+cylStripe.parent   = cylPivot;
+
+// ────────────────────────────────────────
+// Freeze static meshes
+// ────────────────────────────────────────
+function freezeStatic(m) {
+    if (!m) return;
+    m.freezeWorldMatrix();
+    m.doNotSyncBoundingInfo = true;
+    if (m.material && !m.material._frozen) m.material.freeze();
+}
+[tableMesh, baseHub, rod, collar].forEach(freezeStatic);
+scene.meshes.filter(m =>
+    m.name.startsWith('arm') || m.name.startsWith('foot') || m.name.startsWith('knob')
+).forEach(freezeStatic);
+
+// ────────────────────────────────────────
+// Physics state
+// ────────────────────────────────────────
+// States: IDLE → SPIN_UP → SPINNING → DROPPING → COUPLING → COUPLED
+let simState      = 'IDLE';
+let omega_disk    = 0;
+let omega_cyl     = 0;
+let omega_initial = 10;
+let dropVelocity  = 0;
+let spinUpElapsed = 0;
+
+// ────────────────────────────────────────
+// UI references
+// ────────────────────────────────────────
+const btnS = document.getElementById('btnSpin');
+const btnD = document.getElementById('btnDrop');
+const btnR = document.getElementById('btnReset');
+const sld  = document.getElementById('sliderOmega');
+const sldV = document.getElementById('sliderVal');
+
+function updateUI() {} // no-op — students calculate values themselves
+
+// ────────────────────────────────────────
+// Controls
+// ────────────────────────────────────────
+sld.addEventListener('input', () => {
+    omega_initial = parseFloat(sld.value);
+    sldV.textContent = omega_initial.toFixed(1) + ' rad/s';
+});
+
+btnS.addEventListener('click', () => {
+    if (simState !== 'IDLE') return;
+    simState      = 'SPIN_UP';
+    spinUpElapsed = 0;
+    omega_disk    = 0;
+    omega_cyl     = 0;
+    btnS.disabled = true;
+    sld.disabled  = true;
+
+});
+
+btnD.addEventListener('click', () => {
+    if (simState !== 'SPINNING') return;
+    simState     = 'DROPPING';
+    dropVelocity = 0;
+    btnD.disabled = true;
+
+});
+
+btnR.addEventListener('click', () => {
+    simState     = 'IDLE';
+    omega_disk   = 0;
+    omega_cyl    = 0;
+    dropVelocity = 0;
+    spinUpElapsed = 0;
+    cylPivot.position.y = CYL_HELD_Y;
+    cylPivot.rotation.y = 0;
+    diskPivot.rotation.y = 0;
+    btnS.disabled = false;
+    btnD.disabled = true;
+    sld.disabled  = false;
+
+    updateUI();
+});
+
+// ────────────────────────────────────────
+// Render loop — physics + animation
+// ────────────────────────────────────────
+scene.onBeforeRenderObservable.add(() => {
+    const dt = Math.min(engine.getDeltaTime() / 1000, 0.05);
+
+    // ── SPIN UP ──
+    if (simState === 'SPIN_UP') {
+        spinUpElapsed += dt;
+        const t = Math.min(spinUpElapsed / SPIN_UP_T, 1);
+        omega_disk = omega_initial * t * (2 - t); // ease-out quad
+        if (t >= 1) {
+            omega_disk = omega_initial;
+            simState   = 'SPINNING';
+            btnD.disabled = false;
+
+        }
+        updateUI();
+    }
+
+    // ── DROPPING ──
+    if (simState === 'DROPPING') {
+        dropVelocity += G_DROP * dt;
+        cylPivot.position.y -= dropVelocity * dt;
+        if (cylPivot.position.y <= CYL_REST_Y) {
+            cylPivot.position.y = CYL_REST_Y;
+            dropVelocity = 0;
+            simState = 'COUPLING';
+
+        }
+    }
+
+    // ── COUPLING ──
+    if (simState === 'COUPLING') {
+        const alpha_disk = -FRICTION_TORQUE / I_DISK;
+        const alpha_cyl  =  FRICTION_TORQUE / I_CYL;
+        omega_disk += alpha_disk * dt;
+        omega_cyl  += alpha_cyl  * dt;
+        if (omega_cyl >= omega_disk) {
+            const omega_final = I_DISK * omega_initial / (I_DISK + I_CYL);
+            omega_disk = omega_final;
+            omega_cyl  = omega_final;
+            simState   = 'COUPLED';
+
+            PortalBridge.save({ omega_initial, omega_final, simState }, 0);
+        }
+        updateUI();
+    }
+
+    // ── Continuous readout for spinning ──
+    if (simState === 'SPINNING') updateUI();
+
+    // ── Rotate meshes ──
+    if (omega_disk !== 0) diskPivot.rotation.y += omega_disk * dt;
+    if (omega_cyl  !== 0) cylPivot.rotation.y  += omega_cyl  * dt;
+
+    // ── LED pulse ──
+    const t = performance.now() / 1000;
+    matLED.emissiveColor.g = 0.65 + 0.30 * Math.sin(t * 3.5);
+});
+
+// ────────────────────────────────────────
+// Init
+// ────────────────────────────────────────
+updateUI();
+
+
+// Gentle intro camera animation
+BABYLON.Animation.CreateAndStartAnimation(
+    'introAlpha', camera, 'alpha', 30, 60,
+    -Math.PI / 2, -Math.PI / 2 + 0.3,
+    BABYLON.Animation.ANIMATIONLOOPMODE_CONSTANT
+);
+
+engine.runRenderLoop(() => scene.render());
+window.addEventListener('resize', () => engine.resize());
+</script>
+</body>
+</html>
