@@ -1,11 +1,13 @@
 # Current Priorities & Goals
 
 ## Priority 1: Porter's Portal Stability
+- **Chat real-time bug** — Admin messages not appearing in AP Physics chat; likely dead `onSnapshot` listener with no auto-retry. Fix: add retry logic to `subscribeToChannelMessages`, add visible send error feedback. Plan: `/home/kp/.claude/plans/moonlit-wondering-plum.md`
 - Bug fixes, error handling, data integrity
 - Chat security hardening (completed 2026-03-09: Cloud Function message creation, server-side mute/moderation/enrollment validation)
-- Firestore rules auditing
-- Edge case handling (network failures, stale state, race conditions)
-- `FeatureErrorBoundary` coverage on all dashboard tabs
+- Firestore rules audit (completed 2026-03-09: 3 missing collections added, tutoring sessions scoped, submissions field-validated, class_messages whitelist)
+- Edge case handling (completed 2026-03-09: cancelled flags on getDoc, quest double-click guard, class switch race condition)
+- `FeatureErrorBoundary` coverage on all dashboard tabs (completed 2026-03-09: all 15 tabs wrapped)
+- Async error handling (completed 2026-03-09: mute handlers, context subscriptions, silent error handlers)
 
 ## Priority 2: Porter's Portal UI/UX & Quality of Life
 - **Admin experience** — grading workflows, lesson authoring efficiency, analytics clarity
