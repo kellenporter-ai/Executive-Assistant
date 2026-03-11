@@ -104,15 +104,13 @@ def fetch_students(db, class_filter=None, section_filter=None):
     return students
 
 
-def fetch_submissions(db, student_ids, class_filter=None):
+def fetch_submissions(db, student_ids):
     """Fetch all submissions for the given students."""
     submissions = defaultdict(list)
     id_list = list(student_ids)
     for i in range(0, len(id_list), 30):
         batch = id_list[i:i+30]
         query = db.collection("submissions").where("userId", "in", batch)
-        if class_filter:
-            query = query.where("classType", "==", class_filter)
         for doc in query.stream():
             data = doc.to_dict()
             data["id"] = doc.id
@@ -124,11 +122,9 @@ def fetch_submissions(db, student_ids, class_filter=None):
     return submissions
 
 
-def fetch_assignments(db, class_filter=None):
-    """Fetch all assignments (for completion rate calculation)."""
+def fetch_assignments(db):
+    """Fetch all active assignments (needed for classType lookup + completion rate)."""
     query = db.collection("assignments").where("status", "==", "ACTIVE")
-    if class_filter:
-        query = query.where("classType", "==", class_filter)
     assignments = {}
     for doc in query.stream():
         data = doc.to_dict()
@@ -193,6 +189,13 @@ def aggregate_student_data(student, subs, assignments, buckets_map, alert_list):
     class_sections = student.get("classSections", {})
     section = student.get("section", "")
     gamification = student.get("gamification", {})
+
+    # Tag each submission with classType from its assignment
+    for sub in subs:
+        if "classType" not in sub:
+            aid = sub.get("assignmentId", "")
+            assignment = assignments.get(aid)
+            sub["classType"] = assignment.get("classType", "") if assignment else ""
 
     class_reports = {}
     for class_type in enrolled:
@@ -362,12 +365,12 @@ def main():
     student_ids = set(students.keys())
 
     print("Fetching submissions...")
-    submissions = fetch_submissions(db, student_ids, class_filter=args.class_filter)
+    submissions = fetch_submissions(db, student_ids)
     total_subs = sum(len(v) for v in submissions.values())
     print(f"  Found {total_subs} submissions")
 
     print("Fetching assignments...")
-    assignments = fetch_assignments(db, class_filter=args.class_filter)
+    assignments = fetch_assignments(db)
     print(f"  Found {len(assignments)} active assignments")
 
     print("Fetching engagement buckets...")
