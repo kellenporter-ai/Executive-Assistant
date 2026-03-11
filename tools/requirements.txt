@@ -4,6 +4,5 @@
 
 requests>=2.31.0
 firebase-admin>=6.4.0
-anthropic>=0.40.0
 crawl4ai>=0.6.0
 markitdown[pdf]>=0.1.0
