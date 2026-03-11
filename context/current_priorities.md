@@ -16,7 +16,8 @@
 - Recent work: collapsible sidebar, mobile bottom nav, keyboard shortcuts, breadcrumbs, post-submission review mode
 - Gamification polish (Flux Shop, cosmetics, boss fights, dungeons, PvP arena)
 - UI/UX round 1 (completed 2026-03-10): virtualizer measureElement on 4 components, lazy-load DrawingBlock/MathResponseBlock, lesson editor Firestore auto-save (10s debounce), drag-and-drop block reordering (@dnd-kit/sortable)
-- **Uncommitted changes in Portal:** ResourceViewer.tsx (submitFailed escape hatch), functions/src/index.ts (buildDailyDigest refactor), lib/firebase.ts (callTriggerDailyDigest) — from previous session, need review before committing
+- UI/UX round 2 (completed 2026-03-10): lazy-load 9 gamification panels in StudentDashboard (SkillTree, FortuneWheel, BossEncounter, BossQuiz, Tutoring, Dungeon, Arena, IdleMissions, FluxShop), WCAG 2.2 AA accessibility on SortingBlock/RankingBlock/DataTableBlock/BarChartBlock
+- UI/UX round 3 (completed 2026-03-10): keyboard rubric grading (1-5 keys), Accept All AI Suggestions button, auto-save feedback pill with relative time, Ctrl+K block search in lesson editor, gamification loading skeletons, prefers-reduced-motion support, improved empty states (missions/boss encounters), idle chunk preloading
 
 ## Priority 3: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness
