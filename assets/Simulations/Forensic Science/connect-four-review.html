@@ -222,34 +222,44 @@
         }
         .question-card {
             background: var(--surface); border: 1px solid var(--border);
-            border-radius: 18px; padding: 32px 36px; max-width: 680px; width: 92%;
+            border-radius: 18px; padding: 36px 42px; max-width: 860px; width: 94%;
             max-height: 90vh; overflow-y: auto;
+        }
+        .q-turn-banner {
+            display: flex; align-items: center; gap: 12px;
+            padding: 10px 18px; border-radius: 10px; margin-bottom: 18px;
+            background: rgba(155, 107, 255, 0.1); border: 1px solid rgba(155, 107, 255, 0.25);
+            font-size: 1.15rem; font-weight: 700;
+        }
+        .q-turn-dot {
+            width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+            animation: pulse-dot 1.5s ease-in-out infinite;
         }
         .question-meta {
             display: flex; align-items: center; gap: 8px; margin-bottom: 14px;
         }
         .tier-badge {
-            padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
+            padding: 4px 12px; border-radius: 20px; font-size: 0.82rem;
             font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
         }
         .tier-1 { background: rgba(34, 212, 122, 0.15); color: #22d47a; }
         .tier-2 { background: rgba(245, 166, 35, 0.15); color: #f5a623; }
         .tier-3 { background: rgba(232, 80, 74, 0.15); color: #e8504a; }
         .type-badge {
-            padding: 3px 10px; border-radius: 20px; font-size: 0.72rem;
+            padding: 4px 12px; border-radius: 20px; font-size: 0.82rem;
             color: var(--muted); border: 1px solid var(--border);
         }
 
         .question-stem {
-            font-size: 1.12rem; line-height: 1.6; margin-bottom: 22px;
+            font-size: 1.4rem; line-height: 1.6; margin-bottom: 24px;
             font-weight: 500;
         }
-        .question-options { display: flex; flex-direction: column; gap: 10px; }
+        .question-options { display: flex; flex-direction: column; gap: 12px; }
         .q-option {
-            display: flex; align-items: flex-start; gap: 12px;
-            padding: 14px 16px; border-radius: 10px; border: 1px solid var(--border);
+            display: flex; align-items: flex-start; gap: 14px;
+            padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border);
             background: var(--board-bg); cursor: pointer; transition: all 0.15s;
-            font-size: 0.95rem; line-height: 1.5;
+            font-size: 1.15rem; line-height: 1.5;
         }
         .q-option:hover { border-color: var(--purple); }
         .q-option.selected { border-color: var(--purple); background: rgba(155,107,255,0.1); }
@@ -261,19 +271,19 @@
         }
         .q-option.disabled { pointer-events: none; }
         .option-letter {
-            width: 28px; height: 28px; border-radius: 50%; flex-shrink: 0;
+            width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
             display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: 0.82rem;
+            font-weight: 700; font-size: 0.95rem;
             background: rgba(155,107,255,0.15); color: var(--purple);
         }
         .q-option.correct .option-letter { background: rgba(34,212,122,0.25); color: #22d47a; }
         .q-option.incorrect .option-letter { background: rgba(232,80,74,0.25); color: #e8504a; }
 
         .explanation-box {
-            display: none; margin-top: 18px; padding: 14px 16px;
+            display: none; margin-top: 18px; padding: 16px 18px;
             border-radius: 10px; background: rgba(155,107,255,0.08);
             border: 1px solid rgba(155,107,255,0.2);
-            font-size: 0.88rem; line-height: 1.55; color: var(--muted);
+            font-size: 1.05rem; line-height: 1.55; color: var(--muted);
         }
         .explanation-box.visible { display: block; }
 
@@ -282,14 +292,14 @@
             background: rgba(232, 80, 74, 0.08); border: 1px solid rgba(232, 80, 74, 0.25);
         }
         .steal-label {
-            font-size: 0.88rem; font-weight: 600; color: #e8504a; margin-bottom: 10px;
+            font-size: 1.05rem; font-weight: 600; color: #e8504a; margin-bottom: 10px;
         }
         .steal-buttons {
             display: flex; gap: 8px; flex-wrap: wrap;
         }
         .steal-btn {
-            padding: 8px 16px; border-radius: 8px; border: 2px solid;
-            background: transparent; cursor: pointer; font-size: 0.88rem;
+            padding: 10px 20px; border-radius: 8px; border: 2px solid;
+            background: transparent; cursor: pointer; font-size: 1.05rem;
             font-weight: 600; transition: all 0.15s; color: var(--text);
         }
         .steal-btn:hover { transform: scale(1.05); }
@@ -409,6 +419,10 @@
 <!-- ── Question Overlay ── -->
 <div id="question-overlay">
     <div class="question-card">
+        <div class="q-turn-banner" id="q-turn-banner">
+            <div class="q-turn-dot" id="q-turn-dot"></div>
+            <span id="q-turn-name"></span>
+        </div>
         <div class="question-meta">
             <span class="tier-badge" id="q-tier"></span>
             <span class="type-badge" id="q-type"></span>
@@ -631,6 +645,11 @@ function showQuestion() {
     state._phase = 'answering';
     state.dropTeam = null;
 
+    // Fill turn banner
+    const team = state.teams[state.currentTeam];
+    document.getElementById('q-turn-dot').style.background = team.color;
+    document.getElementById('q-turn-name').textContent = `${team.name}'s Turn`;
+
     // Fill overlay
     const tierEl = document.getElementById('q-tier');
     tierEl.textContent = `Tier ${q.tier}`;
@@ -778,6 +797,8 @@ function attemptSteal(teamIdx) {
     document.getElementById('steal-buttons').innerHTML = '';
     document.getElementById('steal-label').innerHTML =
         `<span style="color:${team.color}">${team.name}</span> — pick your answer!`;
+    document.getElementById('q-turn-dot').style.background = team.color;
+    document.getElementById('q-turn-name').textContent = `${team.name}'s Steal Attempt`;
     document.getElementById('no-steal-btn').style.display = 'none';
 
     // Re-enable non-eliminated options

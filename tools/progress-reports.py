@@ -88,6 +88,13 @@ def fetch_students(db, class_filter=None, section_filter=None):
         # Filter by class
         enrolled = data.get("enrolledClasses", [])
         class_type = data.get("classType", "")
+
+        # Skip sandbox/test classes and teacher accounts
+        enrolled = [c for c in enrolled if c != "Sandbox Class"]
+        if not enrolled or (data.get("name", "").lower() == "kellen porter"):
+            continue
+        data["enrolledClasses"] = enrolled
+
         if class_filter:
             if class_filter not in enrolled and class_filter != class_type:
                 continue
@@ -202,19 +209,6 @@ def aggregate_student_data(student, subs, assignments, buckets_map, alert_list):
         class_subs = [s for s in subs if s.get("classType") == class_type]
         class_assignments = {k: v for k, v in assignments.items() if v.get("classType") == class_type}
 
-        # Scores — best per assignment (handles retakes)
-        best_scores = {}
-        for sub in class_subs:
-            aid = sub.get("assignmentId", "")
-            if sub.get("status") == "STARTED":
-                continue
-            score = sub.get("assessmentScore", {}).get("percentage", sub.get("score", 0)) or 0
-            if aid not in best_scores or score > best_scores[aid]:
-                best_scores[aid] = score
-
-        scores = list(best_scores.values())
-        avg_score = round(sum(scores) / len(scores), 1) if scores else 0
-
         # Completion rate
         submitted_ids = set(s.get("assignmentId") for s in class_subs if s.get("status") != "STARTED")
         total_assignments = len(class_assignments)
@@ -233,12 +227,14 @@ def aggregate_student_data(student, subs, assignments, buckets_map, alert_list):
         for sub in class_subs:
             rubric_grade = sub.get("rubricGrade")
             if rubric_grade and isinstance(rubric_grade, dict):
-                for q_grades in rubric_grade.values():
-                    if isinstance(q_grades, dict):
-                        for s_grade in q_grades.values():
-                            if isinstance(s_grade, dict) and "tier" in s_grade:
-                                tier_counts[s_grade["tier"]] += 1
-                                graded_count += 1
+                grades_dict = rubric_grade.get("grades", {})
+                if isinstance(grades_dict, dict):
+                    for q_grades in grades_dict.values():
+                        if isinstance(q_grades, dict):
+                            for s_grade in q_grades.values():
+                                if isinstance(s_grade, dict) and "selectedTier" in s_grade:
+                                    tier_counts[s_grade["selectedTier"]] += 1
+                                    graded_count += 1
 
         # Engagement bucket — keyed by (studentId, classType)
         bucket_data = buckets_map.get((student["id"], class_type))
@@ -260,12 +256,14 @@ def aggregate_student_data(student, subs, assignments, buckets_map, alert_list):
         level = gamification.get("level", 1)
         period = class_sections.get(class_type, section) or "?"
 
+        avg_time_per_sub = round((total_time / 60) / submission_count, 1) if submission_count else 0
+
         class_reports[class_type] = {
             "period": period,
-            "avg_score": avg_score,
             "completion_rate": completion_rate,
             "submission_count": submission_count,
             "total_time_minutes": round(total_time / 60, 1),
+            "avg_time_per_submission": avg_time_per_sub,
             "total_keystrokes": total_keystrokes,
             "total_pastes": total_pastes,
             "bucket": bucket,
@@ -308,7 +306,7 @@ def print_summary(student_reports, class_filter=None):
     for class_type, students in sorted(by_class.items()):
         print(f"\n  {class_type} ({len(students)} students)")
         print(f"  {'─'*76}")
-        print(f"  {'Name':<25} {'Score':>6} {'Comp':>6} {'Engage':<12} {'Risk':<10} {'XP':>6}")
+        print(f"  {'Name':<25} {'Comp':>6} {'Time':>7} {'Engage':<12} {'XP':>6} {'Sub':>4}")
         print(f"  {'─'*76}")
 
         students.sort(key=lambda x: x[1]["period"])
@@ -319,13 +317,13 @@ def print_summary(student_reports, class_filter=None):
                 print(f"  --- {current_period} ---")
 
             bucket = BUCKET_LABELS.get(cr["bucket"], cr["bucket"][:10])
-            risk = cr["risk_level"] or "—"
-            print(f"  {name:<25} {cr['avg_score']:>5.1f}% {cr['completion_rate']:>5.1f}% {bucket:<12} {risk:<10} {cr['xp']:>5}")
+            time_str = f"{cr['total_time_minutes']:.0f}m"
+            print(f"  {name:<25} {cr['completion_rate']:>5.1f}% {time_str:>7} {bucket:<12} {cr['xp']:>5} {cr['submission_count']:>4}")
 
-        avg_score = sum(s[1]["avg_score"] for s in students) / len(students) if students else 0
         avg_comp = sum(s[1]["completion_rate"] for s in students) / len(students) if students else 0
+        avg_time = sum(s[1]["total_time_minutes"] for s in students) / len(students) if students else 0
         print(f"  {'─'*76}")
-        print(f"  {'CLASS AVG':<25} {avg_score:>5.1f}% {avg_comp:>5.1f}%")
+        print(f"  {'CLASS AVG':<25} {avg_comp:>5.1f}% {avg_time:>6.0f}m")
 
 
 # =============================================================================

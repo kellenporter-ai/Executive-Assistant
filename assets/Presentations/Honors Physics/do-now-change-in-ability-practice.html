@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Now — Change in Ability Practice — Honors Physics</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+
+    <style>
+        :root {
+            --bg-primary: #0f0720;
+            --bg-secondary: #1a0a3e;
+            --bg-tertiary: #0d1f4a;
+            --text-primary: #e8e4f4;
+            --text-muted: #8a85a8;
+            --accent: #5b9cf6;
+            --highlight: #22d47a;
+            --warning: #f5a623;
+            --danger: #e8504a;
+            --increase: #22d47a;
+            --decrease: #e8504a;
+            --nochange: #f5a623;
+        }
+
+        .reveal {
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .reveal { position: relative; }
+        .ambient-overlay {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+        .reveal .slides { position: relative; z-index: 2; }
+
+        .ambient-overlay .orb-1,
+        .ambient-overlay .orb-2,
+        .ambient-overlay .orb-3 {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            width: 50vw; height: 50vh;
+        }
+        .ambient-overlay .orb-1 {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
+            top: -10vh; left: -10vw;
+            animation: orbFloat1 30s ease-in-out infinite;
+        }
+        .ambient-overlay .orb-2 {
+            background: radial-gradient(circle, var(--highlight) 0%, transparent 65%);
+            bottom: -10vh; right: -10vw;
+            animation: orbFloat2 25s ease-in-out infinite;
+        }
+        .ambient-overlay .orb-3 {
+            background: radial-gradient(circle, #a855f7 0%, transparent 65%);
+            top: 30vh; right: 10vw;
+            width: 40vw; height: 40vh;
+            animation: orbFloat3 35s ease-in-out infinite;
+        }
+        @keyframes orbFloat1 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(15vw, 10vh); }
+            66% { opacity: 0.15; transform: translate(-5vw, 20vh); }
+        }
+        @keyframes orbFloat2 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(-10vw, -15vh); }
+            66% { opacity: 0.15; transform: translate(10vw, -5vh); }
+        }
+        @keyframes orbFloat3 {
+            0%, 100% { opacity: 0.10; transform: translate(0, 0); }
+            33% { opacity: 0.18; transform: translate(-12vw, -8vh); }
+            66% { opacity: 0.10; transform: translate(5vw, 12vh); }
+        }
+
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            text-transform: none;
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 600; font-size: 2.2em; }
+        .reveal h3 { font-weight: 600; }
+
+        .reveal .slide-number { color: var(--text-muted); font-size: 0.6em; }
+
+        /* Task box */
+        .task-box {
+            background: rgba(91, 156, 246, 0.12);
+            border: 2px solid var(--accent);
+            border-radius: 16px;
+            padding: 1.2em 1.6em;
+            margin: 0.8em auto;
+            max-width: 85%;
+            text-align: center;
+        }
+        .task-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1.1em;
+            color: var(--accent);
+            margin-bottom: 0.4em;
+        }
+
+        /* Whiteboard prompt */
+        .wb-prompt {
+            background: linear-gradient(135deg, rgba(245,166,35,0.12), rgba(245,166,35,0.05));
+            border: 2px dashed var(--warning);
+            border-radius: 16px;
+            padding: 1em 1.6em;
+            margin: 0.6em auto;
+            max-width: 80%;
+        }
+        .wb-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            color: var(--warning);
+            font-size: 0.95em;
+            margin-bottom: 0.3em;
+        }
+
+        /* Equation containers */
+        .eq-container {
+            background: rgba(91, 156, 246, 0.08);
+            border: 2px solid rgba(91, 156, 246, 0.3);
+            border-radius: 16px;
+            padding: 1em 2em;
+            margin: 0.6em auto;
+            display: inline-block;
+        }
+        .eq-big {
+            font-size: 2.4em;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Result glow */
+        .result-glow {
+            background: linear-gradient(135deg, rgba(34,212,122,0.15), rgba(91,156,246,0.15));
+            border: 2px solid var(--highlight);
+            border-radius: 20px;
+            padding: 1.2em 2em;
+            box-shadow: 0 0 40px rgba(34,212,122,0.2);
+            display: inline-block;
+        }
+
+        /* Scenario visual */
+        .scenario-visual {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 1em;
+            display: inline-block;
+        }
+
+        /* Compare boxes */
+        .compare-row {
+            display: flex;
+            gap: 1.5em;
+            justify-content: center;
+            align-items: stretch;
+            margin: 0.6em 0;
+        }
+        .compare-box {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 14px;
+            padding: 1em 1.2em;
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Two-column */
+        .two-col {
+            display: flex;
+            gap: 1.5em;
+            align-items: center;
+            justify-content: center;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .two-col > div { flex: 1; min-width: 0; }
+
+        /* Scenario cards for the sign-check problem */
+        .scenario-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 14px;
+            padding: 0.8em 1em;
+            text-align: center;
+            flex: 1;
+            min-width: 260px;
+        }
+        .scenario-card .scenario-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent);
+            margin-bottom: 0.4em;
+        }
+
+        /* Answer reveal card */
+        .answer-card {
+            border-radius: 12px;
+            padding: 0.5em 1em;
+            display: inline-block;
+            font-size: 1.1em;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+        }
+        .answer-card.positive {
+            background: rgba(34,212,122,0.12);
+            border: 2px solid var(--increase);
+            color: var(--increase);
+        }
+        .answer-card.negative {
+            background: rgba(232,80,74,0.12);
+            border: 2px solid var(--decrease);
+            color: var(--decrease);
+        }
+        .answer-card.zero {
+            background: rgba(245,166,35,0.12);
+            border: 2px solid var(--nochange);
+            color: var(--nochange);
+        }
+
+        /* Do Now badge */
+        .do-now-badge {
+            display: inline-block;
+            background: rgba(91,156,246,0.15);
+            border: 2px solid var(--accent);
+            border-radius: 30px;
+            padding: 0.3em 1.5em;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 1em;
+            color: var(--accent);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 0.6em;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <div class="ambient-overlay">
+            <div class="orb-1"></div>
+            <div class="orb-2"></div>
+            <div class="orb-3"></div>
+        </div>
+        <div class="slides">
+
+            <!-- SLIDE 1: Title -->
+            <section data-background-gradient="radial-gradient(ellipse at 30% 40%, #1a0a3e, #0f0720)">
+                <div class="do-now-badge">Do Now</div>
+                <h1 style="font-size: 2.6em; line-height: 1.15;">Practicing Our<br><span style="color: var(--accent);">Change in Ability</span><br>Equation</h1>
+                <div class="eq-container" style="margin-top: 1em;">
+                    <span style="font-size: 1.8em; font-weight: 600;">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</span>
+                </div>
+                <p style="color: var(--text-muted); font-size: 1em; margin-top: 1.2em;">Honors Physics &mdash; Mr. Porter</p>
+                <aside class="notes">
+                    Do Now opener. Students should have their whiteboards ready. The equation is displayed as a reference — they derived it last class, so this is pure practice. Give them about 30 seconds to get settled and read the slide before advancing.
+                </aside>
+            </section>
+
+            <!-- SLIDE 2: Problem 1 — Qualitative sign determination (3 mini-scenarios) -->
+            <section>
+                <h2 style="font-size: 1.7em;">Problem 1: Which Way Does Ability Change?</h2>
+                <p style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 0.3em;">For each scenario, determine: does ability <strong style="color: var(--increase);">increase</strong>, <strong style="color: var(--decrease);">decrease</strong>, or <strong style="color: var(--nochange);">stay the same</strong>?</p>
+
+                <div style="display: flex; gap: 1em; justify-content: center; margin-top: 0.4em;">
+                    <!-- Scenario A: Push cart same direction -->
+                    <div class="scenario-card">
+                        <div class="scenario-label">Scenario A</div>
+                        <svg width="240" height="145" viewBox="0 0 240 145">
+                            <rect x="0" y="105" width="240" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="50" y="65" width="80" height="40" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <circle cx="70" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <circle cx="110" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <!-- Force RIGHT -->
+                            <line x1="140" y1="85" x2="210" y2="85" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="210,78 225,85 210,92" fill="var(--danger)"/>
+                            <text x="180" y="74" fill="var(--danger)" font-size="15" text-anchor="middle" font-weight="600" font-family="Inter">F</text>
+                            <!-- Displacement RIGHT -->
+                            <line x1="50" y1="128" x2="165" y2="128" stroke="var(--warning)" stroke-width="3" stroke-dasharray="5,3"/>
+                            <polygon points="165,122 178,128 165,134" fill="var(--warning)"/>
+                            <text x="110" y="143" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">&#916;x</text>
+                        </svg>
+                        <p style="font-size: 0.75em; color: var(--text-muted); margin: 0.3em 0 0;">You push a cart forward.<br>It moves forward.</p>
+                    </div>
+
+                    <!-- Scenario B: Friction opposite direction -->
+                    <div class="scenario-card">
+                        <div class="scenario-label">Scenario B</div>
+                        <svg width="240" height="145" viewBox="0 0 240 145">
+                            <rect x="0" y="105" width="240" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="80" y="65" width="80" height="40" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <circle cx="100" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <circle cx="140" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <!-- Force LEFT (friction) -->
+                            <line x1="80" y1="85" x2="20" y2="85" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="20,78 5,85 20,92" fill="var(--danger)"/>
+                            <text x="50" y="74" fill="var(--danger)" font-size="15" text-anchor="middle" font-weight="600" font-family="Inter">F<tspan font-size="10" dy="2">friction</tspan></text>
+                            <!-- Displacement RIGHT -->
+                            <line x1="80" y1="128" x2="195" y2="128" stroke="var(--warning)" stroke-width="3" stroke-dasharray="5,3"/>
+                            <polygon points="195,122 208,128 195,134" fill="var(--warning)"/>
+                            <text x="140" y="143" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">&#916;x</text>
+                        </svg>
+                        <p style="font-size: 0.75em; color: var(--text-muted); margin: 0.3em 0 0;">A sliding box feels friction.<br>The box moves right.</p>
+                    </div>
+
+                    <!-- Scenario C: Normal force perpendicular -->
+                    <div class="scenario-card">
+                        <div class="scenario-label">Scenario C</div>
+                        <svg width="240" height="145" viewBox="0 0 240 145">
+                            <rect x="0" y="105" width="240" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="70" y="65" width="80" height="40" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <circle cx="90" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <circle cx="130" cy="105" r="7" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <!-- Force UP (normal) -->
+                            <line x1="110" y1="63" x2="110" y2="15" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="103,15 110,2 117,15" fill="var(--danger)"/>
+                            <text x="130" y="30" fill="var(--danger)" font-size="15" font-weight="600" font-family="Inter">F<tspan font-size="10" dy="2">table</tspan></text>
+                            <!-- Displacement RIGHT -->
+                            <line x1="70" y1="128" x2="185" y2="128" stroke="var(--warning)" stroke-width="3" stroke-dasharray="5,3"/>
+                            <polygon points="185,122 198,128 185,134" fill="var(--warning)"/>
+                            <text x="130" y="143" fill="var(--warning)" font-size="13" text-anchor="middle" font-family="Inter">&#916;x</text>
+                            <!-- 90 degree marker -->
+                            <rect x="102" y="63" width="12" height="12" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
+                        </svg>
+                        <p style="font-size: 0.75em; color: var(--text-muted); margin: 0.3em 0 0;">The table pushes up on<br>a cart rolling sideways.</p>
+                    </div>
+                </div>
+
+                <div class="fragment fade-up wb-prompt" style="margin-top: 0.5em; padding: 0.6em 1.2em;">
+                    <div class="wb-label">WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0;">For each scenario, write <strong>A:</strong> ___  <strong>B:</strong> ___  <strong>C:</strong> ___ using +, &minus;, or 0.</p>
+                </div>
+
+                <!-- Answer reveal -->
+                <div class="fragment fade-up" style="display: flex; gap: 1.5em; justify-content: center; margin-top: 0.5em;">
+                    <div style="text-align: center;">
+                        <span style="font-size: 0.8em; color: var(--text-muted);">A:</span>
+                        <div class="answer-card positive">+ Increase</div>
+                        <p style="font-size: 0.7em; color: var(--text-muted); margin: 0.2em 0 0;">same direction &rarr; cos(0&deg;) = +1</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="font-size: 0.8em; color: var(--text-muted);">B:</span>
+                        <div class="answer-card negative">&minus; Decrease</div>
+                        <p style="font-size: 0.7em; color: var(--text-muted); margin: 0.2em 0 0;">opposite &rarr; cos(180&deg;) = &minus;1</p>
+                    </div>
+                    <div style="text-align: center;">
+                        <span style="font-size: 0.8em; color: var(--text-muted);">C:</span>
+                        <div class="answer-card zero">0 No Change</div>
+                        <p style="font-size: 0.7em; color: var(--text-muted); margin: 0.2em 0 0;">perpendicular &rarr; cos(90&deg;) = 0</p>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Warm-up problem — purely qualitative. Students should recognize the three direction patterns from last class. Give 1-2 minutes for whiteboards. When revealing answers, connect each to the cosine: A is 0 degrees (cos = +1, positive), B is 180 degrees (cos = -1, negative), C is 90 degrees (cos = 0, zero change). Quick consensus check — most students should get this right.
+                </aside>
+            </section>
+
+            <!-- SLIDE 3: Problem 2 — Quantitative calculation -->
+            <section>
+                <h2 style="font-size: 1.7em;">Problem 2: How Much Ability Changes</h2>
+                <div style="display: flex; gap: 1.5em; align-items: flex-start; justify-content: center; margin-top: 0.4em;">
+                    <div class="scenario-visual" style="flex-shrink: 0;">
+                        <svg width="340" height="190" viewBox="0 0 360 200">
+                            <rect x="0" y="150" width="360" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="130" y="60" width="70" height="55" rx="6" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <text x="165" y="92" fill="var(--text-primary)" font-size="13" text-anchor="middle" font-family="Inter">brick</text>
+                            <rect x="142" y="34" width="46" height="18" rx="4" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+                            <text x="165" y="48" fill="var(--text-muted)" font-size="10" text-anchor="middle" font-family="Inter">hand</text>
+                            <line x1="165" y1="32" x2="165" y2="-15" stroke="var(--danger)" stroke-width="5"/>
+                            <polygon points="156,-15 165,-30 174,-15" fill="var(--danger)"/>
+                            <text x="185" y="-5" fill="var(--danger)" font-size="18" font-weight="600" font-family="Inter">F = 25 N</text>
+                            <line x1="250" y1="145" x2="250" y2="55" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="243,55 250,40 257,55" fill="var(--warning)"/>
+                            <text x="310" y="100" fill="var(--warning)" font-size="16" text-anchor="middle" font-family="Inter">&#916;x = 1.8 m</text>
+                            <text x="90" y="20" fill="var(--highlight)" font-size="14" text-anchor="middle" font-family="Inter">same</text>
+                            <text x="90" y="36" fill="var(--highlight)" font-size="14" text-anchor="middle" font-family="Inter">direction</text>
+                        </svg>
+                    </div>
+                    <div style="text-align: left; max-width: 420px;">
+                        <p style="font-size: 0.85em; color: var(--text-primary); line-height: 1.5;">
+                            You lift a brick straight up with a <strong style="color: var(--danger);">25 N</strong> force.
+                            The brick moves up <strong style="color: var(--warning);">1.8 m</strong>.
+                        </p>
+                        <p style="font-size: 0.85em; color: var(--accent); margin-top: 0.4em; font-weight: 600;">What is &#916;ability?</p>
+                        <div class="fragment fade-up wb-prompt" style="margin: 0.5em 0; padding: 0.5em 0.8em;">
+                            <div class="wb-label">WHITEBOARD</div>
+                            <p style="font-size: 0.75em; margin: 0;">Show your work using the equation. Include the angle and units.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Answer reveal -->
+                <div class="fragment fade-up" style="margin-top: 0.4em;">
+                    <div class="eq-container" style="padding: 0.5em 1.2em;">
+                        <span style="font-size: 1.1em;">$\Delta\text{ability} = (25\text{ N})(1.8\text{ m})\cos(0°) = (25)(1.8)(1) = $ <strong style="color: var(--increase); font-size: 1.15em;">45 N&middot;m</strong></span>
+                    </div>
+                    <p style="font-size: 0.8em; color: var(--increase); margin-top: 0.3em;">Ability <strong>increases</strong> by 45 N&middot;m &mdash; your hand stores ability in the system.</p>
+                </div>
+                <aside class="notes">
+                    First quantitative problem. Force and displacement are in the same direction, so theta = 0 and cos(0) = 1. This is the simplest possible calculation — students just need to plug in and multiply. The key teaching moment is the UNITS: Newtons times meters gives N·m. Don't name this unit "Joules" yet! Just let them see that the unit of change in ability is N·m. Give 2-3 minutes for whiteboards. Common mistake: forgetting to state the angle or the cosine term. Reinforce that even when it equals 1, we should show it.
+                </aside>
+            </section>
+
+            <!-- SLIDE 4: Problem 3 — Quantitative with opposite direction -->
+            <section>
+                <h2 style="font-size: 1.7em;">Problem 3: Friction Removes Ability</h2>
+                <div style="display: flex; gap: 1.5em; align-items: flex-start; justify-content: center; margin-top: 0.4em;">
+                    <div class="scenario-visual" style="flex-shrink: 0;">
+                        <svg width="360" height="180" viewBox="0 0 380 180">
+                            <rect x="0" y="130" width="380" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <line x1="50" y1="133" x2="40" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <line x1="110" y1="133" x2="100" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <line x1="170" y1="133" x2="160" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <line x1="230" y1="133" x2="220" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <line x1="290" y1="133" x2="280" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <line x1="350" y1="133" x2="340" y2="145" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                            <rect x="130" y="80" width="100" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <text x="180" y="110" fill="var(--text-primary)" font-size="14" text-anchor="middle" font-family="Inter">crate</text>
+                            <line x1="130" y1="105" x2="35" y2="105" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="35,98 18,105 35,112" fill="var(--danger)"/>
+                            <text x="75" y="92" fill="var(--danger)" font-size="16" text-anchor="middle" font-weight="600" font-family="Inter">F = 12 N</text>
+                            <line x1="130" y1="160" x2="330" y2="160" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="330,153 345,160 330,167" fill="var(--warning)"/>
+                            <text x="240" y="178" fill="var(--warning)" font-size="15" text-anchor="middle" font-family="Inter">&#916;x = 3.0 m</text>
+                            <text x="180" y="72" fill="var(--decrease)" font-size="14" text-anchor="middle" font-family="Inter">opposite directions</text>
+                            <text x="180" y="58" fill="var(--decrease)" font-size="18" text-anchor="middle">&#8644;</text>
+                        </svg>
+                    </div>
+                    <div style="text-align: left; max-width: 420px;">
+                        <p style="font-size: 0.85em; color: var(--text-primary); line-height: 1.5;">
+                            A crate slides across a rough floor. Friction exerts a <strong style="color: var(--danger);">12 N</strong> force backward.
+                            The crate slides <strong style="color: var(--warning);">3.0 m</strong> forward.
+                        </p>
+                        <p style="font-size: 0.85em; color: var(--accent); margin-top: 0.4em; font-weight: 600;">What is &#916;ability from friction?</p>
+                        <div class="fragment fade-up wb-prompt" style="margin: 0.5em 0; padding: 0.5em 0.8em;">
+                            <div class="wb-label">WHITEBOARD</div>
+                            <p style="font-size: 0.75em; margin: 0;">What angle goes with "opposite"? Show your work.</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Answer reveal -->
+                <div class="fragment fade-up" style="margin-top: 0.4em;">
+                    <div class="eq-container" style="padding: 0.5em 1.2em;">
+                        <span style="font-size: 1.1em;">$\Delta\text{ability} = (12\text{ N})(3.0\text{ m})\cos(180°) = (12)(3.0)(-1) = $ <strong style="color: var(--decrease); font-size: 1.15em;">&minus;36 N&middot;m</strong></span>
+                    </div>
+                    <p style="font-size: 0.8em; color: var(--decrease); margin-top: 0.3em;">Ability <strong>decreases</strong> by 36 N&middot;m &mdash; friction removes ability from the system.</p>
+                </div>
+                <aside class="notes">
+                    This problem introduces the negative sign. Force and displacement are opposite, so theta = 180 degrees and cos(180) = -1. The negative result means friction removes ability from the system. Key misconception to watch for: students who put theta = 0 because they "already accounted for direction" by making F negative. Reinforce: F is always a positive magnitude in this equation — the cosine handles the direction. Give 2-3 minutes.
+                </aside>
+            </section>
+
+            <!-- SLIDE 5: Problem 4 — Angle problem -->
+            <section>
+                <h2 style="font-size: 1.7em;">Problem 4: Force at an Angle</h2>
+                <div style="display: flex; gap: 1.5em; align-items: flex-start; justify-content: center; margin-top: 0.3em;">
+                    <div class="scenario-visual" style="flex-shrink: 0;">
+                        <svg width="370" height="220" viewBox="0 0 400 240">
+                            <rect x="0" y="180" width="400" height="3" fill="rgba(255,255,255,0.12)" rx="1"/>
+                            <rect x="80" y="130" width="110" height="50" rx="8" fill="rgba(91,156,246,0.3)" stroke="var(--accent)" stroke-width="1.5"/>
+                            <text x="135" y="160" fill="var(--text-primary)" font-size="14" text-anchor="middle" font-family="Inter">cart</text>
+                            <circle cx="105" cy="180" r="9" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <circle cx="165" cy="180" r="9" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)" stroke-width="1.5"/>
+                            <line x1="200" y1="155" x2="350" y2="42" stroke="var(--danger)" stroke-width="4"/>
+                            <polygon points="344,33 360,36 350,50" fill="var(--danger)"/>
+                            <text x="310" y="68" fill="var(--danger)" font-size="17" font-weight="600" font-family="Inter">F = 40 N</text>
+                            <path d="M 250,155 A 55,55 0 0,0 243,118" fill="none" stroke="var(--accent)" stroke-width="3"/>
+                            <text x="265" y="128" fill="var(--accent)" font-size="22" font-weight="600" font-family="Outfit">37&deg;</text>
+                            <line x1="200" y1="155" x2="310" y2="155" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                            <line x1="80" y1="210" x2="280" y2="210" stroke="var(--warning)" stroke-width="3" stroke-dasharray="6,3"/>
+                            <polygon points="280,203 295,210 280,217" fill="var(--warning)"/>
+                            <text x="185" y="232" fill="var(--warning)" font-size="15" text-anchor="middle" font-family="Inter">&#916;x = 5.0 m</text>
+                        </svg>
+                    </div>
+                    <div style="text-align: left; max-width: 420px;">
+                        <p style="font-size: 0.85em; color: var(--text-primary); line-height: 1.5;">
+                            You pull a cart with a <strong style="color: var(--danger);">40 N</strong> force at <strong style="color: var(--accent);">37&deg;</strong> above horizontal.
+                            The cart moves <strong style="color: var(--warning);">5.0 m</strong> forward.
+                        </p>
+                        <p style="font-size: 0.8em; color: var(--text-muted); margin-top: 0.3em;">Hint: cos(37&deg;) = 0.80</p>
+                        <p style="font-size: 0.85em; color: var(--accent); margin-top: 0.4em; font-weight: 600;">What is &#916;ability?</p>
+                        <div class="fragment fade-up wb-prompt" style="margin: 0.5em 0; padding: 0.5em 0.8em;">
+                            <div class="wb-label">WHITEBOARD</div>
+                            <p style="font-size: 0.75em; margin: 0;">Show each step. Why isn't it just 40 &times; 5?</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Answer reveal -->
+                <div class="fragment fade-up" style="margin-top: 0.3em;">
+                    <div class="eq-container" style="padding: 0.5em 1.2em;">
+                        <span style="font-size: 1.1em;">$\Delta\text{ability} = (40\text{ N})(5.0\text{ m})\cos(37°) = (40)(5.0)(0.80) = $ <strong style="color: var(--increase); font-size: 1.15em;">160 N&middot;m</strong></span>
+                    </div>
+                    <p style="font-size: 0.75em; color: var(--text-muted); margin-top: 0.3em;">
+                        Only <strong style="color: var(--increase);">80%</strong> of the force acts along the displacement &mdash; the rest pushes up (perpendicular) and doesn't change ability.
+                    </p>
+                </div>
+                <aside class="notes">
+                    This is the hardest problem — it requires the full equation with a non-trivial angle. Give the cosine value so they don't get stuck on calculator mechanics. The key insight to emphasize: 40 N times 5 m would give 200, but only 80% of the force is along the displacement. The other 20% pushes up and doesn't change the cart's ability. Ask: "Why isn't it 200?" and let them articulate that the angle matters. Give 3-4 minutes for this one. If students finish early, ask them: what would happen if you pulled at 60 degrees instead? (Less ability would change because cos(60) = 0.5.)
+                </aside>
+            </section>
+
+            <!-- SLIDE 6: Wrap-up / Key Takeaways -->
+            <section data-background-gradient="radial-gradient(ellipse at 50% 50%, #1a0a3e, #0f0720)">
+                <h2 style="font-size: 2em;">What We Practiced</h2>
+                <div style="display: flex; flex-direction: column; gap: 0.7em; max-width: 850px; margin: 0.8em auto;">
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; align-items: center;">
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <div style="text-align: left;">
+                            <p style="font-size: 1em; margin: 0;"><strong style="color: var(--accent);">Direction</strong> &mdash; the sign of &#916;ability tells us if ability is gained or lost</p>
+                            <p style="font-size: 0.78em; color: var(--text-muted); margin: 0.15em 0 0;">Same direction = positive, opposite = negative, perpendicular = zero</p>
+                        </div>
+                    </div>
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; align-items: center;">
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <div style="text-align: left;">
+                            <p style="font-size: 1em; margin: 0;"><strong style="color: var(--accent);">Amount</strong> &mdash; bigger F or bigger &#916;x means more ability changes</p>
+                            <p style="font-size: 0.78em; color: var(--text-muted); margin: 0.15em 0 0;">The units of &#916;ability are <strong>N&middot;m</strong> (Newtons times meters)</p>
+                        </div>
+                    </div>
+                    <div class="fragment fade-up" style="display: flex; gap: 1em; align-items: center;">
+                        <span style="color: var(--highlight); font-size: 1.5em;">&#10003;</span>
+                        <div style="text-align: left;">
+                            <p style="font-size: 1em; margin: 0;"><strong style="color: var(--accent);">Angles</strong> &mdash; only the part of the force <em>along</em> &#916;x changes ability</p>
+                            <p style="font-size: 0.78em; color: var(--text-muted); margin: 0.15em 0 0;">cos(&theta;) handles this automatically</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="fragment fade-up result-glow" style="margin-top: 0.8em; padding: 0.8em 1.6em;">
+                    <span style="font-size: 1.6em; font-weight: 600; font-family: 'Outfit';">$\Delta\text{ability} = F \cdot \Delta x \cdot \cos(\theta)$</span>
+                </div>
+                <aside class="notes">
+                    Quick wrap-up. Reinforce the three skills they just practiced: reading the sign, computing the amount, and handling angles. The equation shown at the bottom is their reference for today's work. Transition into whatever comes next — this Do Now should take about 8-10 minutes total.
+                </aside>
+            </section>
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/math/math.js"></script>
+    <script>
+        Reveal.initialize({
+            hash: true,
+            history: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            transitionSpeed: 'default',
+            center: true,
+            controls: true,
+            controlsTutorial: true,
+            progress: true,
+            slideNumber: 'c/t',
+            keyboard: true,
+            overview: true,
+            width: 1920,
+            height: 1080,
+            margin: 0.04,
+            showNotes: false,
+            plugins: [ RevealNotes, RevealMath.KaTeX ]
+        });
+    </script>
+</body>
+</html>

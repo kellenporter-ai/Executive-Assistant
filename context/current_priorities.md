@@ -1,11 +1,11 @@
 # Current Priorities & Goals
 
-## Priority 1: Student Progress Reports (Due 2026-03-11)
-- Bulk generate personalized 25-50 word bilingual (English + Spanish) progress comments per student
-- Pull telemetry from Porter's Portal: scores, completion rates, engagement buckets, work habits, risk alerts
-- Output format: CSV or table for copy-paste into Infinite Campus
-- Approach: Python script (firebase-admin → Firestore data pull → Claude API for comment generation)
-- Also need to update current grades in Infinite Campus separately
+## Priority 1: Student Progress Reports (Due 2026-03-11) — COMPLETE
+- **Pipeline:** `tools/progress-reports.py` → JSON → Claude Code comment generation (parallel agents per class) → CSV merge
+- **Bugs fixed (2026-03-11):** `score` field on classwork = XP not grades (root cause: `index.ts:2021`); rubric extraction wrong nesting + field name; sandbox/teacher accounts filtered
+- **Reframed as work ethic reports** — dropped avg_score (only 2/39 assignments are assessments), focused on completion rate, engagement bucket, time, XP
+- **CSV delivered:** `temp/progress-report-2026-03-11.csv` — 106 rows, bilingual EN/ES comments
+- Still need to update current grades in Infinite Campus separately
 
 ## Priority 2: Porter's Portal Stability
 - **Student work persistence (completed 2026-03-10):** Save retry + backoff, 800ms debounce, sessionStorage crash buffer, save status HUD, 2-hour draft guard, denial cache on login, grace period cleanup, submission retry, multi-tab warning
@@ -30,6 +30,7 @@
 - UI/UX round 6 (completed 2026-03-10): teacher feedback comments on graded work (`teacherFeedback` on RubricGrade), grading progress overview cards per assessment, boss ability screen shake + flash + HP threshold markers, arena rating brackets (5 spy-themed tiers), Flux Shop category filter tabs
 - UI/UX round 7 (completed 2026-03-10): a11y (scope attrs on table headers, aria-label on form inputs, aria-live on vocab reveals, alt text fallback), responsive (block palette max-w, endgame modal 95vw, fortune wheel responsive, bottom nav text bump), performance (recharts manual chunk split, idle preload error handling, radarData memoization)
 - UI/UX round 8 (completed 2026-03-10): visual audit — completion counts deduplicated by assignmentId (retakes no longer inflate), rate capped at 100%, avg score uses best-per-assignment, engagement text contrast fixed (green-500→emerald-400), loadout "AMUL" slot label mapped, Intel Dossier "excellent"→"scored well", fortune wheel text enlarged with shadow
+- UI/UX round 9 (completed 2026-03-11): Performance — lazy-load jsPDF (~119KB deferred), Modal keydown listener gated on isOpen, NotificationBell RAF-throttled scroll. Student UX — ArenaPanel empty state, mobile bottom nav padding fix, FluxShop md:grid-cols-3, FortuneWheel responsive scaling, ARIA tablist/tab/tabpanel linkage. Admin UX — RubricViewer keyboard tier flash feedback, Leaderboard prefers-reduced-motion
 
 ## Priority 4: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness

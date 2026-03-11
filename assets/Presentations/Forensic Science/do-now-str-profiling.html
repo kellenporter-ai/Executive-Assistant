@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Now: STR DNA Profiling</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:       #040c06;
+            --green:    #39e07a;
+            --cyan:     #00e5ff;
+            --muted:    #7ab890;
+            --dim:      #3a5c45;
+            --white:    #f0fff4;
+            --red:      #ff5c5c;
+            --yellow:   #ffd166;
+        }
+
+        /* ── Global ── */
+        body {
+            background: var(--bg) !important;
+            font-family: 'Outfit', sans-serif !important;
+        }
+
+        /* ── DNA Canvas background ── */
+        #dna-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.22;
+        }
+
+        /* ── Reveal overrides ── */
+        .reveal {
+            background: transparent !important;
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+        }
+        .reveal .slides {
+            z-index: 2;
+            position: relative;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+            text-transform: none !important;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 40px rgba(57, 224, 122, 0.3);
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 700; font-size: 1.5em; }
+        .reveal h3 { font-weight: 600; color: var(--green) !important; }
+        .reveal p, .reveal li { font-size: 0.85em; line-height: 1.6; }
+        .reveal ul { list-style: none; padding: 0; margin: 0; }
+        .reveal ul li::before {
+            content: '▸';
+            color: var(--green);
+            margin-right: 0.4em;
+            font-size: 0.9em;
+        }
+        .reveal .controls { color: var(--green) !important; }
+        .reveal .progress span { background: var(--green) !important; }
+
+        /* ── Label badge ── */
+        .label-badge {
+            display: inline-block;
+            background: var(--green);
+            color: #040c06;
+            font-weight: 700;
+            font-size: 0.55em;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.25em 0.8em;
+            border-radius: 4px;
+            margin-bottom: 0.5em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Accent text ── */
+        .accent { color: var(--cyan) !important; }
+        .green  { color: var(--green) !important; }
+        .muted  { color: var(--muted) !important; font-size: 0.75em !important; }
+        .warn   { color: var(--yellow) !important; }
+
+        /* ── Divider line ── */
+        .dline {
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--cyan));
+            margin: 0.5em auto 0.8em;
+            border-radius: 2px;
+        }
+
+        /* ── STR Data Table ── */
+        .str-table {
+            width: 88%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72em;
+        }
+        .str-table th {
+            background: rgba(57, 224, 122, 0.15);
+            color: var(--green);
+            font-weight: 600;
+            padding: 0.55em 1.2em;
+            border: 1px solid var(--dim);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.04em;
+            font-size: 1.05em;
+        }
+        .str-table td {
+            padding: 0.5em 1.2em;
+            border: 1px solid var(--dim);
+            text-align: center;
+            color: var(--white);
+            vertical-align: middle;
+        }
+        .str-table tr:nth-child(even) td {
+            background: rgba(255,255,255,0.03);
+        }
+        .str-table .locus-col {
+            text-align: left;
+            color: var(--cyan);
+            font-weight: 600;
+            padding-left: 1.4em;
+        }
+        .str-table .scene-col {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        /* ── Debrief match coloring ── */
+        .match   { color: var(--green) !important; font-weight: 700; }
+        .no-match{ color: var(--red)   !important; font-weight: 700; }
+        .match-bg   td { background: rgba(57, 224, 122, 0.08) !important; }
+        .nomatch-bg td { background: rgba(255, 92, 92, 0.06) !important; }
+
+        /* ── Scenario card ── */
+        .scenario-box {
+            background: rgba(0,229,255,0.07);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            padding: 0.9em 1.4em;
+            margin: 0.6em auto;
+            width: 80%;
+            text-align: left;
+            font-size: 0.82em;
+            line-height: 1.7;
+        }
+
+        /* ── Question cards ── */
+        .q-card {
+            background: rgba(57, 224, 122, 0.06);
+            border: 1px solid rgba(57, 224, 122, 0.2);
+            border-left: 4px solid var(--green);
+            border-radius: 8px;
+            padding: 0.55em 1em;
+            margin: 0.35em 0;
+            text-align: left;
+            font-size: 0.62em;
+            line-height: 1.55;
+        }
+        .q-num {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-right: 0.4em;
+        }
+
+        /* ── Data + Questions split layout ── */
+        .split-layout {
+            display: flex;
+            gap: 1.5em;
+            align-items: flex-start;
+            width: 94%;
+            margin: 0 auto;
+        }
+        .split-left {
+            flex: 1.15;
+        }
+        .split-right {
+            flex: 0.85;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* ── STR refresher pills ── */
+        .refresh-grid {
+            display: flex;
+            gap: 1em;
+            justify-content: center;
+            margin-top: 0.8em;
+            flex-wrap: wrap;
+        }
+        .refresh-pill {
+            background: rgba(57, 224, 122, 0.08);
+            border: 1px solid rgba(57, 224, 122, 0.25);
+            border-radius: 10px;
+            padding: 0.8em 1.2em;
+            width: 26%;
+            text-align: center;
+            font-size: 0.72em;
+            line-height: 1.6;
+        }
+        .refresh-pill .pill-icon {
+            font-size: 1.8em;
+            display: block;
+            margin-bottom: 0.3em;
+        }
+        .refresh-pill strong {
+            color: var(--cyan);
+            display: block;
+            font-size: 1.1em;
+            margin-bottom: 0.2em;
+        }
+
+        /* ── Debrief answer boxes ── */
+        .ans-row {
+            display: flex;
+            gap: 1em;
+            justify-content: center;
+            margin: 0.6em auto;
+            width: 90%;
+        }
+        .ans-box {
+            flex: 1;
+            border-radius: 10px;
+            padding: 0.65em 0.9em;
+            font-size: 0.72em;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .ans-elim {
+            background: rgba(255,92,92,0.1);
+            border: 1px solid rgba(255,92,92,0.3);
+        }
+        .ans-cant {
+            background: rgba(57,224,122,0.1);
+            border: 1px solid rgba(57,224,122,0.3);
+        }
+        .ans-why {
+            background: rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.25);
+        }
+        .ans-label {
+            font-weight: 700;
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 0.3em;
+        }
+
+        /* ── Speaker notes ── */
+        .reveal aside.notes { font-size: 14px; }
+
+        /* ── Slide number ── */
+        .reveal .slide-number {
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7em;
+        }
+
+        /* ── Timer bar on title ── */
+        .timer-hint {
+            display: inline-block;
+            border: 1px solid var(--dim);
+            border-radius: 6px;
+            padding: 0.35em 1em;
+            font-size: 0.5em;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            margin-top: 1em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Animated DNA Canvas Background -->
+<canvas id="dna-canvas" aria-hidden="true"></canvas>
+
+<div class="reveal">
+    <div class="slides">
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 1 — DO NOW TITLE
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Do Now — Forensic Science</div>
+            <h1 style="font-size:2.6em; margin: 0.15em 0 0;">
+                DNA on Trial
+            </h1>
+            <h2 style="font-size:1.05em; color: var(--cyan) !important; font-weight:300; margin:0.2em 0 0.5em;">
+                Analyzing STR Profiles to Identify a Suspect
+            </h2>
+            <div class="dline"></div>
+            <p style="font-size:0.72em; color:var(--muted);">
+                Forensic Science &nbsp;|&nbsp; Mr. Porter
+            </p>
+            <div class="timer-hint">⏱ &nbsp;You have 5 minutes — work independently</div>
+            <aside class="notes">
+                Put this on the projector as students walk in. Give them 5 minutes to read the scenario and answer questions on their paper or in their notebook.
+                After 5 minutes, bring the class together for a quick debrief discussion.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 2 — SCENARIO
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">The Scenario</div>
+            <h2>A Break-In at the School Lab</h2>
+            <div class="dline"></div>
+            <div class="scenario-box">
+                🔬 &nbsp;Last night, someone broke into the school science storage room. A small blood sample was collected from a piece of broken glass near the window.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--yellow); background: rgba(255,209,102,0.06); border-color: rgba(255,209,102,0.2);">
+                🚨 &nbsp;Three suspects were identified. Investigators collected a DNA sample from each one and ran an <strong style="color:var(--yellow)">STR analysis</strong> on all four samples — including the crime scene blood.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--green); background: rgba(57,224,122,0.05); border-color: rgba(57,224,122,0.2); margin-top:0.5em;">
+                🧬 &nbsp;<strong style="color:var(--green)">Your job:</strong> Compare the STR profiles to determine which suspect(s) can be eliminated — and which one matches the crime scene evidence.
+            </div>
+            <aside class="notes">
+                Read the scenario out loud (or let students read it themselves if they're already working).
+                Remind students: we're not proving guilt — we're using DNA evidence to eliminate or match profiles.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 3 — STR REFRESHER
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Quick Refresher</div>
+            <h2>What is an STR?</h2>
+            <div class="dline"></div>
+            <div class="refresh-grid">
+                <div class="refresh-pill">
+                    <span class="pill-icon">🧬</span>
+                    <strong>Short Tandem Repeat</strong>
+                    A short DNA sequence that repeats over and over at a specific location on a chromosome
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">🔢</span>
+                    <strong>Allele Numbers</strong>
+                    The number tells you how many times the sequence repeats — e.g., <span style="color:var(--cyan); font-family:'JetBrains Mono'">14, 17</span> means 14 repeats on one chromosome and 17 on the other
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">📍</span>
+                    <strong>Multiple Loci</strong>
+                    Forensic labs check STRs at several different locations (loci) in the genome — the combination is unique to each person
+                </div>
+            </div>
+            <p class="muted" style="margin-top:1em;">A match at <em>all</em> loci tested = the profiles are consistent. A mismatch at <em>any</em> locus = eliminated.</p>
+            <aside class="notes">
+                This is a quick review — students should have covered STRs already. Spend no more than 30 seconds on this slide.
+                Key takeaway: even one mismatch eliminates a suspect. Multiple matches provide strong evidence of a consistent profile.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 4 — DATA TABLE + QUESTIONS (COMBINED)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Evidence — Analyze &amp; Answer</div>
+            <h2 style="font-size:1.3em; margin-bottom:0.3em;">Analyze the STR Profiles</h2>
+            <div class="dline"></div>
+
+            <div class="split-layout">
+                <!-- LEFT: Data Table -->
+                <div class="split-left">
+                    <table class="str-table" style="width:100%; font-size:0.68em;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:1em;">STR Locus</th>
+                                <th style="color:var(--yellow);">Crime Scene</th>
+                                <th>Suspect A</th>
+                                <th>Suspect B</th>
+                                <th>Suspect C</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="locus-col">D3S1358</td>
+                                <td class="scene-col">15, 17</td>
+                                <td>15, 17</td>
+                                <td>15, 18</td>
+                                <td>14, 16</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">vWA</td>
+                                <td class="scene-col">14, 16</td>
+                                <td>14, 16</td>
+                                <td>14, 16</td>
+                                <td>13, 17</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">FGA</td>
+                                <td class="scene-col">20, 23</td>
+                                <td>20, 23</td>
+                                <td>21, 24</td>
+                                <td>20, 25</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D8S1179</td>
+                                <td class="scene-col">12, 13</td>
+                                <td>12, 13</td>
+                                <td>11, 14</td>
+                                <td>12, 15</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="muted" style="margin-top:0.5em; font-size:0.52em !important; text-align:center;">
+                        Each pair = the two alleles at that locus (one from each parent)
+                    </p>
+                </div>
+
+                <!-- RIGHT: Questions -->
+                <div class="split-right">
+                    <div style="font-size:0.58em; color:var(--muted); margin-bottom:0.4em; font-family:'JetBrains Mono',monospace; letter-spacing:0.08em;">ANSWER IN YOUR NOTEBOOK</div>
+
+                    <div class="q-card fragment fade-up">
+                        <span class="q-num">Q1.</span>
+                        Compare each suspect's profile to the crime scene.
+                        Which suspect(s) can be <strong style="color:var(--red)">eliminated</strong>?
+                        Cite specific loci as evidence.
+                    </div>
+
+                    <div class="q-card fragment fade-up">
+                        <span class="q-num">Q2.</span>
+                        Which suspect <strong style="color:var(--green)">cannot be eliminated</strong>?
+                        How many loci match, and which ones?
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="border-left-color: var(--cyan); background: rgba(0,229,255,0.05); border-color: rgba(0,229,255,0.2);">
+                        <span class="q-num" style="color:var(--cyan);">Q3.</span>
+                        Why do forensic scientists test <em>multiple</em> STR loci instead of just one?
+                    </div>
+                </div>
+            </div>
+
+            <aside class="notes">
+                This is the main working slide — students see both the data and the questions at the same time.
+                Reveal questions one at a time using spacebar/click.
+                Allow 3-4 minutes of independent work. Walk the room — look for students who correctly eliminate suspects by citing specific locus mismatches.
+                ANSWERS (don't reveal yet):
+                — Suspect A matches all 4 loci → CANNOT be eliminated
+                — Suspect B matches only vWA → eliminated (3 mismatches)
+                — Suspect C matches none → clearly eliminated
+                After work time → go to debrief slide for class discussion.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 6 — DEBRIEF (TEACHER)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge" style="background: var(--cyan); color: #040c06;">Debrief — Answers</div>
+            <h2>What Did You Find?</h2>
+            <div class="dline"></div>
+
+            <!-- Color-coded table reveal -->
+            <table class="str-table fragment fade-in" style="font-size:0.65em; margin-bottom:0.8em;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding-left:1.4em;">STR Locus</th>
+                        <th style="color:var(--yellow);">Crime Scene</th>
+                        <th>Suspect A</th>
+                        <th>Suspect B</th>
+                        <th>Suspect C</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="locus-col">D3S1358</td>
+                        <td class="scene-col">15, 17</td>
+                        <td class="match">15, 17 ✓</td>
+                        <td class="no-match">15, 18 ✗</td>
+                        <td class="no-match">14, 16 ✗</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">vWA</td>
+                        <td class="scene-col">14, 16</td>
+                        <td class="match">14, 16 ✓</td>
+                        <td class="match">14, 16 ✓</td>
+                        <td class="no-match">13, 17 ✗</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">FGA</td>
+                        <td class="scene-col">20, 23</td>
+                        <td class="match">20, 23 ✓</td>
+                        <td class="no-match">21, 24 ✗</td>
+                        <td class="no-match">20, 25 ✗</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">D8S1179</td>
+                        <td class="scene-col">12, 13</td>
+                        <td class="match">12, 13 ✓</td>
+                        <td class="no-match">11, 14 ✗</td>
+                        <td class="no-match">12, 15 ✗</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ans-row fragment fade-up">
+                <div class="ans-box ans-elim">
+                    <span class="ans-label" style="color:var(--red);">✗ Eliminated</span>
+                    <strong>Suspect B</strong> — mismatches at D3S1358, FGA, D8S1179<br>
+                    <strong>Suspect C</strong> — mismatches at all 4 loci
+                </div>
+                <div class="ans-box ans-cant">
+                    <span class="ans-label" style="color:var(--green);">✓ Cannot Eliminate</span>
+                    <strong>Suspect A</strong> — consistent at all 4 loci tested
+                </div>
+                <div class="ans-box ans-why">
+                    <span class="ans-label" style="color:var(--cyan);">💡 Why Multiple Loci?</span>
+                    One locus could match by chance — more loci = astronomically lower probability of a random match
+                </div>
+            </div>
+
+            <aside class="notes">
+                Use this slide for class discussion. Reveal the table first, then the answer boxes.
+                Discussion prompts:
+                — "Does matching at all 4 loci PROVE Suspect A committed the crime?" (No — it only means they cannot be ruled out)
+                — "What other evidence would investigators need?"
+                — "Suspect B matched at vWA — does that matter? Why/why not?"
+                Key teaching point: DNA evidence is powerful but probabilistic. It eliminates; it doesn't convict alone.
+            </aside>
+        </section>
+
+    </div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- ══════════════════════════════════════════
+     CANVAS — ANIMATED DNA HELIX BACKGROUND
+══════════════════════════════════════════ -->
+<script>
+(function() {
+    const canvas = document.getElementById('dna-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, offset = 0;
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Draw one scrolling double helix column
+    function drawHelix(xCenter, amplitude, wavelength, color1, color2, phase) {
+        const numRungs = Math.ceil(H / (wavelength / 2)) + 2;
+        const step = wavelength / 2;
+
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+
+        for (let i = 0; i < numRungs * 2; i++) {
+            const y = (i * step + offset) % (H + wavelength) - wavelength / 2;
+
+            // Strand 1 x position
+            const x1 = xCenter + Math.sin((i * Math.PI) + phase) * amplitude;
+            // Strand 2 x position (opposite phase)
+            const x2 = xCenter + Math.sin((i * Math.PI) + phase + Math.PI) * amplitude;
+
+            // Rung connecting strands (horizontal bar)
+            const rungAlpha = 0.5 + 0.5 * Math.abs(Math.sin((i * Math.PI) + phase));
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(57, 224, 122, ${rungAlpha * 0.7})`;
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y);
+            ctx.stroke();
+
+            // Node dots
+            ctx.beginPath();
+            ctx.fillStyle = color1;
+            ctx.arc(x1, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.fillStyle = color2;
+            ctx.arc(x2, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw the backbone strands as smooth curves
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(0, 229, 255, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(57, 224, 122, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase + Math.PI) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Three helix columns spread across the screen
+        drawHelix(W * 0.08,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  0);
+        drawHelix(W * 0.5,   60, 200, 'rgba(57,224,122,0.85)', 'rgba(0,229,255,0.85)',  1.2);
+        drawHelix(W * 0.92,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  2.4);
+
+        offset += 0.4;
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     REVEAL.JS INIT
+══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        history: true,
+        transition: 'fade',
+        transitionSpeed: 'slow',
+        backgroundTransition: 'fade',
+        center: true,
+        controls: true,
+        controlsTutorial: false,
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        overview: true,
+        width: 1920,
+        height: 1080,
+        margin: 0.05,
+        plugins: []
+    });
+</script>
+
+</body>
+</html>

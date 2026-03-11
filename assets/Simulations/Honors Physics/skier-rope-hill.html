@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Skier Pulled Up a Hill</title>
+    <style>
+        :root {
+            --bg:       #0f0720;
+            --panel-bg: rgba(18, 10, 38, 0.88);
+            --border:   rgba(160, 100, 255, 0.18);
+            --text:     #e8e4f4;
+            --muted:    #8a85a8;
+            --blue:     #5b9cf6;
+            --green:    #22d47a;
+            --orange:   #f5a623;
+            --red:      #e8504a;
+            --purple:   #9b6bff;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            overflow: hidden;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+        }
+
+        header.activity-header {
+            text-align: center;
+            padding: 12px 16px 4px;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        header .subtitle {
+            font-size: 0.85rem;
+            color: var(--muted);
+            margin-top: 2px;
+        }
+
+        canvas {
+            display: block;
+            flex: 1;
+            width: 100%;
+            touch-action: none;
+        }
+
+        .controls-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+            backdrop-filter: blur(14px);
+            background: var(--panel-bg);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 10px 20px;
+        }
+
+        button {
+            background: var(--purple);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 100px;
+            min-height: 44px;
+            transition: background 0.2s ease, transform 0.15s ease;
+        }
+
+        button:hover { background: #8554e6; }
+        button:active { transform: scale(0.96); }
+        button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+        button.secondary {
+            background: rgba(155, 107, 255, 0.15);
+            color: var(--purple);
+        }
+        button.secondary:hover { background: rgba(155, 107, 255, 0.28); }
+
+        .status-label {
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--muted);
+            padding: 0 8px;
+            white-space: nowrap;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            button { transition: none; }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        const PortalBridge = (() => {
+            const send = (type, data) => {
+                if (window.parent) window.parent.postMessage({ source: 'portal-activity', type, ...data }, '*');
+            };
+            return {
+                init:     ()              => send('PROCTOR_READY'),
+                save:     (state, q)      => send('SAVE_STATE',  { state, currentQuestion: q }),
+                answer:   (id, ok, tries) => send('ANSWER',      { questionId: id, correct: ok, attempts: tries }),
+                complete: (s, t, c)       => send('COMPLETE',    { score: s, total: t, correct: c })
+            };
+        })();
+        window.addEventListener('load', () => PortalBridge.init());
+    </script>
+
+    <header class="activity-header">
+        <h1>Rope Pulling a Skier Up a Hill</h1>
+        <p class="subtitle">System: skier + rope + Earth &mdash; motor excluded &mdash; no friction</p>
+    </header>
+
+    <canvas id="sim" role="img" aria-label="Animation of a skier being pulled up a snowy hill by a rope. The skier starts at rest at the bottom and accelerates to moderate speed at the top."></canvas>
+
+    <div class="controls-panel">
+        <button id="playBtn" aria-label="Play animation">Play</button>
+        <button id="resetBtn" class="secondary" aria-label="Reset animation">Reset</button>
+        <div class="status-label" id="statusLabel">Ready</div>
+    </div>
+
+    <script>
+    (() => {
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+        const playBtn = document.getElementById('playBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const statusLabel = document.getElementById('statusLabel');
+
+        const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        // State
+        const state = {
+            playing: false,
+            done: false,
+            t: 0,           // normalized progress 0→1
+            duration: 4.5,   // seconds for full trip
+        };
+
+        // Layout constants (recomputed on resize)
+        let W, H, dpr;
+        let hillStart, hillEnd, hillBottom, hillTop;
+        let snowflakes = [];
+
+        function resize() {
+            dpr = Math.min(devicePixelRatio, 2);
+            W = canvas.clientWidth;
+            H = canvas.clientHeight;
+            canvas.width = W * dpr;
+            canvas.height = H * dpr;
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Hill geometry — gentle slope from bottom-left to upper-right
+            const margin = W * 0.08;
+            hillStart = { x: margin, y: H * 0.82 };
+            hillEnd   = { x: W - margin, y: H * 0.28 };
+            hillBottom = hillStart;
+            hillTop = hillEnd;
+
+            // Generate snowflakes
+            if (snowflakes.length === 0) {
+                snowflakes = Array.from({ length: 60 }, () => ({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    r: 1.2 + Math.random() * 2.5,
+                    speed: 8 + Math.random() * 18,
+                    drift: (Math.random() - 0.5) * 12,
+                }));
+            }
+        }
+
+        // Easing: start slow (rest), accelerate, then maintain speed
+        function easeInQuad(t) {
+            // Slow start, then picks up — models acceleration from rest
+            if (t < 0.4) {
+                // Quadratic ease-in for first 40%
+                const norm = t / 0.4;
+                return 0.25 * norm * norm;
+            } else {
+                // Linear from there — moderate constant-ish speed
+                return 0.25 + (t - 0.4) * (0.75 / 0.6);
+            }
+        }
+
+        function lerpPt(a, b, t) {
+            return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+        }
+
+        function getSkierPos(progress) {
+            const eased = easeInQuad(Math.min(1, Math.max(0, progress)));
+            return lerpPt(hillBottom, hillTop, eased);
+        }
+
+        // Drawing helpers
+        function drawSky() {
+            const grad = ctx.createLinearGradient(0, 0, 0, H);
+            grad.addColorStop(0, '#0b1a3a');
+            grad.addColorStop(0.5, '#162550');
+            grad.addColorStop(1, '#1a2d5c');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, W, H);
+        }
+
+        function drawMountains() {
+            ctx.fillStyle = '#1a2848';
+            ctx.beginPath();
+            ctx.moveTo(0, H * 0.45);
+            ctx.lineTo(W * 0.15, H * 0.25);
+            ctx.lineTo(W * 0.3, H * 0.38);
+            ctx.lineTo(W * 0.5, H * 0.15);
+            ctx.lineTo(W * 0.65, H * 0.32);
+            ctx.lineTo(W * 0.85, H * 0.2);
+            ctx.lineTo(W, H * 0.35);
+            ctx.lineTo(W, H);
+            ctx.lineTo(0, H);
+            ctx.closePath();
+            ctx.fill();
+
+            // Snow caps
+            ctx.fillStyle = 'rgba(200, 215, 240, 0.25)';
+            ctx.beginPath();
+            ctx.moveTo(W * 0.47, H * 0.155);
+            ctx.lineTo(W * 0.5, H * 0.15);
+            ctx.lineTo(W * 0.53, H * 0.16);
+            ctx.lineTo(W * 0.5, H * 0.18);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.moveTo(W * 0.82, H * 0.205);
+            ctx.lineTo(W * 0.85, H * 0.2);
+            ctx.lineTo(W * 0.88, H * 0.21);
+            ctx.lineTo(W * 0.85, H * 0.23);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawSnowflakes(dt) {
+            ctx.fillStyle = 'rgba(220, 230, 250, 0.6)';
+            for (const sf of snowflakes) {
+                if (!reducedMotion) {
+                    sf.y += sf.speed * dt;
+                    sf.x += sf.drift * dt;
+                    if (sf.y > H + 10) { sf.y = -10; sf.x = Math.random() * W; }
+                    if (sf.x < -10) sf.x = W + 10;
+                    if (sf.x > W + 10) sf.x = -10;
+                }
+                ctx.beginPath();
+                ctx.arc(sf.x, sf.y, sf.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawHill() {
+            // Snow-covered hill surface
+            const sx = hillStart.x;
+            const sy = hillStart.y;
+            const ex = hillEnd.x;
+            const ey = hillEnd.y;
+
+            // Hill body
+            ctx.fillStyle = '#e8eef8';
+            ctx.beginPath();
+            ctx.moveTo(sx - 30, H + 10);
+            ctx.lineTo(sx - 30, sy + 10);
+            // Smooth curve along the hill
+            ctx.quadraticCurveTo(sx, sy - 5, sx + (ex - sx) * 0.5, sy + (ey - sy) * 0.5 - 8);
+            ctx.quadraticCurveTo(ex, ey - 5, ex + 30, ey - 2);
+            ctx.lineTo(ex + 30, H + 10);
+            ctx.closePath();
+            ctx.fill();
+
+            // Hill surface line
+            ctx.strokeStyle = '#c8d4e4';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(sx - 30, sy + 8);
+            ctx.quadraticCurveTo(sx, sy - 6, sx + (ex - sx) * 0.5, sy + (ey - sy) * 0.5 - 9);
+            ctx.quadraticCurveTo(ex, ey - 6, ex + 30, ey - 3);
+            ctx.stroke();
+
+            // Shadow at base
+            const shadowGrad = ctx.createLinearGradient(0, sy, 0, sy + 40);
+            shadowGrad.addColorStop(0, 'rgba(15, 7, 32, 0.3)');
+            shadowGrad.addColorStop(1, 'rgba(15, 7, 32, 0)');
+            ctx.fillStyle = shadowGrad;
+            ctx.fillRect(sx - 30, sy + 5, ex - sx + 60, 40);
+        }
+
+        function drawTrees() {
+            const treePositions = [
+                { x: W * 0.04, y: hillStart.y + 5, scale: 0.7 },
+                { x: W * 0.92, y: hillEnd.y + 55, scale: 0.55 },
+                { x: W * 0.96, y: hillEnd.y + 80, scale: 0.65 },
+            ];
+
+            for (const tree of treePositions) {
+                const s = tree.scale;
+                const tx = tree.x;
+                const ty = tree.y;
+
+                // Trunk
+                ctx.fillStyle = '#3d2815';
+                ctx.fillRect(tx - 3 * s, ty - 10 * s, 6 * s, 20 * s);
+
+                // Foliage layers
+                ctx.fillStyle = '#1a4a2a';
+                for (let i = 0; i < 3; i++) {
+                    const layerW = (28 - i * 6) * s;
+                    const layerY = ty - (15 + i * 18) * s;
+                    ctx.beginPath();
+                    ctx.moveTo(tx, layerY - 14 * s);
+                    ctx.lineTo(tx - layerW / 2, layerY + 8 * s);
+                    ctx.lineTo(tx + layerW / 2, layerY + 8 * s);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Snow on top
+                ctx.fillStyle = 'rgba(220, 235, 250, 0.7)';
+                ctx.beginPath();
+                ctx.moveTo(tx, ty - (15 + 2 * 18) * s - 14 * s);
+                ctx.lineTo(tx - 6 * s, ty - (15 + 2 * 18) * s - 4 * s);
+                ctx.lineTo(tx + 6 * s, ty - (15 + 2 * 18) * s - 4 * s);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function getHillSurfaceY(x) {
+            // Match the quadratic curve of the hill
+            const sx = hillStart.x;
+            const sy = hillStart.y;
+            const ex = hillEnd.x;
+            const ey = hillEnd.y;
+            const t = Math.max(0, Math.min(1, (x - sx) / (ex - sx)));
+            // Approximate the quadratic bezier
+            const midY = sy + (ey - sy) * 0.5 - 8;
+            const midX = sx + (ex - sx) * 0.5;
+            // Two-segment quadratic
+            if (t < 0.5) {
+                const lt = t / 0.5;
+                const y1 = sy - 6;
+                const yc = midY;
+                return (1 - lt) * (1 - lt) * (sy - 6) + 2 * (1 - lt) * lt * (midY) + lt * lt * midY;
+            } else {
+                const lt = (t - 0.5) / 0.5;
+                return (1 - lt) * (1 - lt) * midY + 2 * (1 - lt) * lt * (ey - 6) + lt * lt * (ey - 3);
+            }
+        }
+
+        function drawRope(skierPos) {
+            // Rope extends from skier to off-screen upper-right (motor is outside system)
+            const ropeEndX = W + 40;
+            const ropeEndY = hillEnd.y - 80;
+
+            ctx.strokeStyle = '#a08060';
+            ctx.lineWidth = 3;
+            ctx.setLineDash([]);
+            ctx.beginPath();
+            ctx.moveTo(skierPos.x + 14, skierPos.y - 22);
+            ctx.lineTo(ropeEndX, ropeEndY);
+            ctx.stroke();
+
+            // Dashed portion near the edge to suggest it continues
+            ctx.strokeStyle = 'rgba(160, 128, 96, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([6, 6]);
+            const fadeStart = 0.7;
+            const fx = skierPos.x + 14 + (ropeEndX - skierPos.x - 14) * fadeStart;
+            const fy = skierPos.y - 22 + (ropeEndY - skierPos.y + 22) * fadeStart;
+            ctx.beginPath();
+            ctx.moveTo(fx, fy);
+            ctx.lineTo(ropeEndX, ropeEndY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawSkier(pos) {
+            const x = pos.x;
+            const y = pos.y;
+
+            // Angle of the hill
+            const dx = hillEnd.x - hillStart.x;
+            const dy = hillEnd.y - hillStart.y;
+            const angle = Math.atan2(dy, dx);
+
+            ctx.save();
+            ctx.translate(x, y - 8);
+            ctx.rotate(angle * 0.3); // Skier leans slightly into hill
+
+            // Skis
+            ctx.strokeStyle = '#4a6fa5';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(-18, 6);
+            ctx.lineTo(18, 6);
+            ctx.stroke();
+
+            // Body
+            ctx.fillStyle = '#e85050';  // Red jacket
+            ctx.beginPath();
+            ctx.ellipse(0, -10, 8, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Head
+            ctx.fillStyle = '#f0d0a0';
+            ctx.beginPath();
+            ctx.arc(0, -28, 7, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Helmet
+            ctx.fillStyle = '#3366aa';
+            ctx.beginPath();
+            ctx.arc(0, -30, 7.5, Math.PI, 0);
+            ctx.fill();
+
+            // Arms (holding rope)
+            ctx.strokeStyle = '#e85050';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-6, -14);
+            ctx.lineTo(14, -18);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(6, -14);
+            ctx.lineTo(14, -14);
+            ctx.stroke();
+
+            // Legs
+            ctx.strokeStyle = '#2a2a4a';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(-3, 2);
+            ctx.lineTo(-6, 6);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(3, 2);
+            ctx.lineTo(6, 6);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawSystemBoundary(skierPos) {
+            // Subtle dashed boundary around the "system"
+            ctx.strokeStyle = 'rgba(155, 107, 255, 0.3)';
+            ctx.lineWidth = 1.5;
+            ctx.setLineDash([8, 5]);
+
+            // Ellipse around skier + rope visible portion
+            ctx.beginPath();
+            ctx.ellipse(skierPos.x + 5, skierPos.y - 14, 45, 35, -0.15, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Label
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = 'rgba(155, 107, 255, 0.5)';
+            ctx.textAlign = 'left';
+            ctx.fillText('system', skierPos.x - 38, skierPos.y + 30);
+        }
+
+        function drawMotorLabel() {
+            // Label near the edge where rope exits
+            ctx.font = '11px -apple-system, BlinkMacSystemFont, sans-serif';
+            ctx.fillStyle = 'rgba(232, 80, 74, 0.5)';
+            ctx.textAlign = 'right';
+            ctx.fillText('motor (outside system)', W - 12, hillEnd.y - 65);
+        }
+
+        // Main draw
+        let lastTime = 0;
+
+        function draw(timestamp) {
+            const dt = lastTime ? Math.min((timestamp - lastTime) / 1000, 0.1) : 0.016;
+            lastTime = timestamp;
+
+            // Update
+            if (state.playing && !state.done) {
+                state.t += dt / state.duration;
+                if (state.t >= 1) {
+                    state.t = 1;
+                    state.done = true;
+                    state.playing = false;
+                    playBtn.textContent = 'Play';
+                    statusLabel.textContent = 'Complete';
+                    PortalBridge.save({ t: state.t, done: true }, 0);
+                }
+            }
+
+            // Clear
+            ctx.clearRect(0, 0, W, H);
+
+            // Draw scene layers
+            drawSky();
+            drawMountains();
+            drawSnowflakes(dt);
+            drawHill();
+            drawTrees();
+
+            const skierPos = getSkierPos(state.t);
+
+            drawRope(skierPos);
+            drawSkier(skierPos);
+            drawSystemBoundary(skierPos);
+            drawMotorLabel();
+
+            // Speed indicator — subtle trail dots
+            if (state.playing && state.t > 0.05) {
+                const numDots = 5;
+                for (let i = 1; i <= numDots; i++) {
+                    const trailT = Math.max(0, state.t - i * 0.012);
+                    const trailPos = getSkierPos(trailT);
+                    const alpha = 0.15 * (1 - i / numDots);
+                    ctx.fillStyle = `rgba(232, 80, 80, ${alpha})`;
+                    ctx.beginPath();
+                    ctx.arc(trailPos.x, trailPos.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Initial state label
+            if (state.t < 0.02 && !state.playing) {
+                ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.fillStyle = 'rgba(232, 228, 244, 0.6)';
+                ctx.textAlign = 'center';
+                ctx.fillText('at rest', hillBottom.x, hillBottom.y + 48);
+            }
+
+            // Final state label
+            if (state.done) {
+                ctx.font = '13px -apple-system, BlinkMacSystemFont, sans-serif';
+                ctx.fillStyle = 'rgba(232, 228, 244, 0.6)';
+                ctx.textAlign = 'center';
+                ctx.fillText('moderate speed', hillTop.x, hillTop.y - 50);
+
+                // Velocity arrow
+                const arrowLen = 40;
+                const ax = hillTop.x + 15;
+                const ay = hillTop.y - 40;
+                const angle = Math.atan2(hillEnd.y - hillStart.y, hillEnd.x - hillStart.x);
+                const aex = ax + Math.cos(angle) * arrowLen;
+                const aey = ay + Math.sin(angle) * arrowLen;
+
+                ctx.strokeStyle = 'rgba(91, 156, 246, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(ax, ay);
+                ctx.lineTo(aex, aey);
+                ctx.stroke();
+
+                // Arrowhead
+                const headLen = 8;
+                ctx.beginPath();
+                ctx.moveTo(aex, aey);
+                ctx.lineTo(aex - headLen * Math.cos(angle - 0.4), aey - headLen * Math.sin(angle - 0.4));
+                ctx.moveTo(aex, aey);
+                ctx.lineTo(aex - headLen * Math.cos(angle + 0.4), aey - headLen * Math.sin(angle + 0.4));
+                ctx.stroke();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        function resetSim() {
+            state.t = 0;
+            state.done = false;
+            state.playing = false;
+            playBtn.textContent = 'Play';
+            statusLabel.textContent = 'Ready';
+        }
+
+        // Controls
+        playBtn.addEventListener('click', () => {
+            if (state.done) resetSim();
+            state.playing = !state.playing;
+            playBtn.textContent = state.playing ? 'Pause' : 'Play';
+            statusLabel.textContent = state.playing ? 'Accelerating...' : 'Paused';
+        });
+
+        resetBtn.addEventListener('click', resetSim);
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') { e.preventDefault(); playBtn.click(); }
+            if (e.code === 'KeyR') resetBtn.click();
+        });
+
+        // Init
+        window.addEventListener('resize', () => { resize(); });
+        resize();
+        requestAnimationFrame(draw);
+    })();
+    </script>
+</body>
+</html>
