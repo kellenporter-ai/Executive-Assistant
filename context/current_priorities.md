@@ -1,6 +1,13 @@
 # Current Priorities & Goals
 
-## Priority 1: Porter's Portal Stability
+## Priority 1: Student Progress Reports (Due 2026-03-11)
+- Bulk generate personalized 25-50 word bilingual (English + Spanish) progress comments per student
+- Pull telemetry from Porter's Portal: scores, completion rates, engagement buckets, work habits, risk alerts
+- Output format: CSV or table for copy-paste into Infinite Campus
+- Approach: Python script (firebase-admin → Firestore data pull → Claude API for comment generation)
+- Also need to update current grades in Infinite Campus separately
+
+## Priority 2: Porter's Portal Stability
 - **Student work persistence (completed 2026-03-10):** Save retry + backoff, 800ms debounce, sessionStorage crash buffer, save status HUD, 2-hour draft guard, denial cache on login, grace period cleanup, submission retry, multi-tab warning
 - Stability audit round 2 (completed 2026-03-10): admin auth via custom claims (4 functions fixed), chat rate limiting + HTML sanitization, unbounded query limits, bare setTimeout cleanup, console.error→reportError sweep, notification error handling, Proctor mousemove throttle, boss HP scan scoping, enrollment validation on assessments, resilientSnapshot map bounds
 - Stability audit round 3 (completed 2026-03-10): paginated 10 unbounded Cloud Function queries, onSnapshot error callback (App.tsx), ArenaPanel subscription cleanup, BossEncounterPanel leaderboard memoization, AdjustXPModal bulk error handling, FortuneWheel timer cleanup, IdleMissionsPanel countdown memoization, ResourceViewer history guard + submission retry, dataService existence check, warning toast type
@@ -10,7 +17,7 @@
 - Firestore rules audit (completed 2026-03-09)
 - Error boundaries, edge cases, async error handling (completed 2026-03-09)
 
-## Priority 2: Porter's Portal UI/UX & Quality of Life
+## Priority 3: Porter's Portal UI/UX & Quality of Life
 - **Admin experience** — grading workflows, lesson authoring efficiency, analytics clarity
 - **Student experience** — responsive design, accessibility, intuitive navigation, performance
 - Recent work: collapsible sidebar, mobile bottom nav, keyboard shortcuts, breadcrumbs, post-submission review mode
@@ -24,7 +31,7 @@
 - UI/UX round 7 (completed 2026-03-10): a11y (scope attrs on table headers, aria-label on form inputs, aria-live on vocab reveals, alt text fallback), responsive (block palette max-w, endgame modal 95vw, fortune wheel responsive, bottom nav text bump), performance (recharts manual chunk split, idle preload error handling, radarData memoization)
 - UI/UX round 8 (completed 2026-03-10): visual audit — completion counts deduplicated by assignmentId (retakes no longer inflate), rate capped at 100%, avg score uses best-per-assignment, engagement text contrast fixed (green-500→emerald-400), loadout "AMUL" slot label mapped, Intel Dossier "excellent"→"scored well", fortune wheel text enlarged with shadow
 
-## Priority 3: Executive Assistant & Agent Team Enhancement
+## Priority 4: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness
 - 8 general agents in `agents/`, project-specific agents in `projects/<name>/.agents/`
 - Skills in `.claude/skills/` — dev-pipeline is project-agnostic with Backward Design
