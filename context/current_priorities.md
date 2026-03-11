@@ -18,6 +18,7 @@
 - UI/UX round 1 (completed 2026-03-10): virtualizer measureElement on 4 components, lazy-load DrawingBlock/MathResponseBlock, lesson editor Firestore auto-save (10s debounce), drag-and-drop block reordering (@dnd-kit/sortable)
 - UI/UX round 2 (completed 2026-03-10): lazy-load 9 gamification panels in StudentDashboard (SkillTree, FortuneWheel, BossEncounter, BossQuiz, Tutoring, Dungeon, Arena, IdleMissions, FluxShop), WCAG 2.2 AA accessibility on SortingBlock/RankingBlock/DataTableBlock/BarChartBlock
 - UI/UX round 3 (completed 2026-03-10): keyboard rubric grading (1-5 keys), Accept All AI Suggestions button, auto-save feedback pill with relative time, Ctrl+K block search in lesson editor, gamification loading skeletons, prefers-reduced-motion support, improved empty states (missions/boss encounters), idle chunk preloading
+- UI/UX round 4 (completed 2026-03-10): lazy-load 7 dashboard tabs, LessonProgressSidebar typography (11px min), ARIA roles on ReviewQuestions + BossQuizPanel, RubricViewer memoization, AppDataContext split into 3 slices, batch "Accept All AI Grades" + "Grade Next" navigation
 
 ## Priority 3: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness
