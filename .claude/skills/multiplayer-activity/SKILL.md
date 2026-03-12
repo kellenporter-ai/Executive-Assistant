@@ -30,17 +30,7 @@ For the complete Firebase implementation patterns (database schema, join flow, s
 The multiplayer system needs a Firebase Realtime Database. Determine which project's config to use based on context:
 
 **Porter's Portal** (default if working in that project or for Kellen's classroom):
-```javascript
-const firebaseConfig = {
-    apiKey: "AIzaSyAGUwSeJVCLLz_UTIFj4H3qvJnlFnvNjSw",
-    authDomain: "porters-portal.firebaseapp.com",
-    databaseURL: "https://porters-portal-default-rtdb.firebaseio.com",
-    projectId: "porters-portal",
-    storageBucket: "porters-portal.firebasestorage.app",
-    messagingSenderId: "822085463019",
-    appId: "1:822085463019:web:d55fa7e5b4516429d4aa52"
-};
-```
+Read the Firebase config from the Portal source: `projects/Porters-Portal/src/firebase.ts` (or `.env`). Use the `apiKey`, `authDomain`, `databaseURL`, `projectId`, `storageBucket`, `messagingSenderId`, and `appId` values found there. Never hardcode API keys in skill files.
 
 **Other projects:** Check the project's `.env.local`, `firebaseConfig.ts`, or CLAUDE.md for credentials. If no Firebase config is found, ask the user to provide one or add it to the project's `.env`.
 

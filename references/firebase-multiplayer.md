@@ -8,8 +8,10 @@ Reference for the `/multiplayer-activity` skill. All patterns are tested and pro
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
+  // Config injected by the /multiplayer-activity skill at generation time.
+  // Real values live in .env (FIREBASE_API_KEY) and context/work.md.
   firebase.initializeApp({
-    apiKey: "AIzaSyBe2MxOE_2pGNikLYjVKjmqFMHgSEMqjUc",
+    apiKey: "YOUR_FIREBASE_API_KEY",
     databaseURL: "https://porters-portal-default-rtdb.firebaseio.com",
     projectId: "porters-portal"
   });
