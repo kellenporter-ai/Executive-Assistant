@@ -25,6 +25,7 @@ import os
 import sys
 from collections import defaultdict
 from datetime import datetime
+from tool_logger import get_tool_logger
 
 # Add venv packages
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +40,8 @@ from firebase_admin import credentials, firestore
 
 # --- Config ---
 PROJECT_ID = "porters-portal"
+
+logger = get_tool_logger("progress-reports")
 
 TIER_LABELS = ["Missing", "Emerging", "Approaching", "Developing", "Refining"]
 BUCKET_LABELS = {
@@ -348,6 +351,10 @@ def main():
         )
 
     # Init Firestore
+    logger.info("Progress report started", extra={"data": {
+        "class_filter": args.class_filter,
+        "section_filter": args.section,
+    }})
     print("Connecting to Firestore...")
     db = init_firestore()
 
@@ -358,6 +365,7 @@ def main():
 
     if not students:
         print("No students found matching filters.")
+        logger.warning("No students found matching filters")
         return
 
     student_ids = set(students.keys())
@@ -418,6 +426,14 @@ def main():
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(output_data, f, indent=2, ensure_ascii=False, default=str)
 
+    logger.info(f"Report complete: {len(student_reports)} students, {total_subs} submissions", extra={"data": {
+        "students": len(student_reports),
+        "submissions": total_subs,
+        "assignments": len(assignments),
+        "alerts": total_alerts,
+        "classes": len(set(ct for r in student_reports for ct in r["classes"])),
+        "output_file": output_path,
+    }})
     print(f"\nData written to: {output_path}")
     print(f"Next step: feed this JSON to Claude Code for bilingual comment generation + CSV export.")
 

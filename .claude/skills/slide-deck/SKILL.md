@@ -28,6 +28,10 @@ For Reveal.js patterns, theme presets, and animation recipes, see [references/re
 
 ---
 
+## Step 0: Verify References
+
+Before starting, read and verify `references/reveal-patterns.md`. This file contains theme presets, CSS patterns, typography scales, and animation recipes. If it is missing, you can still generate a deck using Reveal.js defaults, but flag that the output may not match established style conventions.
+
 ## Step 1: Parse Arguments & Ingest Content
 
 Extract from `<ARGUMENTS>`:
@@ -331,6 +335,17 @@ After writing the file, provide:
 - Any placeholder notes (e.g., "Slide 4 has a placeholder for a diagram — consider using /generate-image to create one")
 
 ---
+
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (truncated HTML, broken Reveal.js init, missing CDN links, viewport overflow, base64 encoding error)
+2. **Research** — re-read `references/reveal-patterns.md` and the generated file to pinpoint the issue
+3. **Fix** — patch the HTML (close unclosed tags, fix CDN URLs, adjust grid layouts, re-encode images)
+4. **Verify** — re-run the Step 6b validation checks (structure, CDN refs, speaker notes, accessibility, file size)
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
 
 ## Notes
 

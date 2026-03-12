@@ -260,20 +260,43 @@ def tool_grep(pattern: str, path: str = None, glob_filter: str = None) -> str:
         return "Error: grep timed out after 15s"
 
 
+# Allowed command prefixes — allowlist approach (safer than blocklist)
+ALLOWED_COMMANDS = {
+    "ls", "cat", "head", "tail", "wc", "sort", "uniq", "diff", "find", "tree",
+    "echo", "printf", "date", "basename", "dirname", "realpath", "stat",
+    "git", "npm", "npx", "node", "python", "python3", "pip",
+    "grep", "rg", "sed", "awk", "cut", "tr", "jq",
+    "curl", "wget",
+    "cd", "pwd", "which", "type", "file", "test",
+    "firebase", "tsc", "eslint",
+    "ollama",
+    "mkdir", "cp", "mv", "touch",
+}
+
+# Patterns ALWAYS blocked even if the command prefix is allowed
 DANGEROUS_PATTERNS = [
-    r'\brm\s+(-rf?|--recursive)\s+[/~]',  # rm -rf /
-    r'\bmkfs\b', r'\bdd\s+if=', r'\b:(){ :\|:& };:',  # fork bomb
+    r'\brm\s+(-\w*[rf]|--recursive|--force)',  # rm with force/recursive
+    r'\bmkfs\b', r'\bdd\s+if=', r':\(\)\s*\{',  # disk format, fork bomb
     r'\bshutdown\b', r'\breboot\b', r'\bpoweroff\b',
-    r'\bsystemctl\s+(stop|disable|mask)\s+(sshd|NetworkManager|systemd)',
+    r'\bsystemctl\s+(stop|disable|mask)',
     r'>\s*/dev/sd', r'\bfdisk\b', r'\bparted\b',
+    r'\bgit\s+push\s+.*--force',
+    r'\bgit\s+reset\s+--hard',
+    r'\bgit\s+clean\s+-[fd]',
 ]
 
 
 def tool_bash(command: str) -> str:
-    # Block obviously dangerous commands
+    # Block dangerous patterns first
     for pat in DANGEROUS_PATTERNS:
         if re.search(pat, command):
             return f"Error: blocked dangerous command matching pattern: {pat}"
+
+    # Allowlist: extract first command word (handles pipes, &&, ;)
+    first_word = re.split(r'[|;&]', command)[0].strip().split()[0] if command.strip() else ""
+    first_cmd = os.path.basename(first_word)  # strip path prefix
+    if first_cmd not in ALLOWED_COMMANDS:
+        return f"Error: command '{first_cmd}' not in allowlist. Allowed: {', '.join(sorted(ALLOWED_COMMANDS))}"
 
     try:
         result = subprocess.run(

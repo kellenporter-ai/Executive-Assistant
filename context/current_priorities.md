@@ -1,13 +1,6 @@
 # Current Priorities & Goals
 
-## Priority 1: Student Progress Reports (Due 2026-03-11) — COMPLETE
-- **Pipeline:** `tools/progress-reports.py` → JSON → Claude Code comment generation (parallel agents per class) → CSV merge
-- **Bugs fixed (2026-03-11):** `score` field on classwork = XP not grades (root cause: `index.ts:2021`); rubric extraction wrong nesting + field name; sandbox/teacher accounts filtered
-- **Reframed as work ethic reports** — dropped avg_score (only 2/39 assignments are assessments), focused on completion rate, engagement bucket, time, XP
-- **CSV delivered:** `temp/progress-report-2026-03-11.csv` — 106 rows, bilingual EN/ES comments
-- Still need to update current grades in Infinite Campus separately
-
-## Priority 2: Porter's Portal Stability
+## Priority 1: Porter's Portal Stability
 - **Student work persistence (completed 2026-03-10):** Save retry + backoff, 800ms debounce, sessionStorage crash buffer, save status HUD, 2-hour draft guard, denial cache on login, grace period cleanup, submission retry, multi-tab warning
 - Stability audit round 2 (completed 2026-03-10): admin auth via custom claims (4 functions fixed), chat rate limiting + HTML sanitization, unbounded query limits, bare setTimeout cleanup, console.error→reportError sweep, notification error handling, Proctor mousemove throttle, boss HP scan scoping, enrollment validation on assessments, resilientSnapshot map bounds
 - Stability audit round 3 (completed 2026-03-10): paginated 10 unbounded Cloud Function queries, onSnapshot error callback (App.tsx), ArenaPanel subscription cleanup, BossEncounterPanel leaderboard memoization, AdjustXPModal bulk error handling, FortuneWheel timer cleanup, IdleMissionsPanel countdown memoization, ResourceViewer history guard + submission retry, dataService existence check, warning toast type
@@ -17,7 +10,7 @@
 - Firestore rules audit (completed 2026-03-09)
 - Error boundaries, edge cases, async error handling (completed 2026-03-09)
 
-## Priority 3: Porter's Portal UI/UX & Quality of Life
+## Priority 2: Porter's Portal UI/UX & Quality of Life
 - **Admin experience** — grading workflows, lesson authoring efficiency, analytics clarity
 - **Student experience** — responsive design, accessibility, intuitive navigation, performance
 - Recent work: collapsible sidebar, mobile bottom nav, keyboard shortcuts, breadcrumbs, post-submission review mode
@@ -33,7 +26,7 @@
 - UI/UX round 9 (completed 2026-03-11): Performance — lazy-load jsPDF (~119KB deferred), Modal keydown listener gated on isOpen, NotificationBell RAF-throttled scroll. Student UX — ArenaPanel empty state, mobile bottom nav padding fix, FluxShop md:grid-cols-3, FortuneWheel responsive scaling, ARIA tablist/tab/tabpanel linkage. Admin UX — RubricViewer keyboard tier flash feedback, Leaderboard prefers-reduced-motion
 - **Remaining (round 10+):** deeper color contrast sweep (remaining `text-gray-300/400/500` on dark), InlineBlockEditor form labels (`htmlFor`/`id` pairing ~30 inputs), touch target sizing (icon buttons `p-1`/`p-1.5` → 44px min), virtualization (DungeonPanel, FluxShop, inventory grids), early warning intervention UI, seasonal rewards wiring, spectate mode, skill synergy viz
 
-## Priority 4: Executive Assistant & Agent Team Enhancement
+## Priority 3: Executive Assistant & Agent Team Enhancement
 - Improve skills, agents, and workflows to increase EA effectiveness
 - 8 general agents in `agents/`, project-specific agents in `projects/<name>/.agents/`
 - Skills in `.claude/skills/` — dev-pipeline is project-agnostic with Backward Design

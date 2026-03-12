@@ -220,6 +220,17 @@ Output the scenario as a JSON object with this structure:
 
 ---
 
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (invalid JSON structure, missing scenario component, scientifically inaccurate evidence, insufficient ambiguity)
+2. **Research** — re-check forensic methodology for the topic and verify all 5 components are present
+3. **Fix** — patch the output (add missing characters/evidence, correct forensic procedures, strengthen debate triggers)
+4. **Verify** — run through the Quality Checklist below to confirm all criteria are met
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
+
 ## Quality Checklist
 
 Before finalizing, verify:

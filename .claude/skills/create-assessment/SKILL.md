@@ -21,9 +21,12 @@ For the JSON block schema, see the lesson-plan skill's [block-schema.md](../less
 
 ## Step 1: Parse Arguments
 
-Before parsing, read the reference files you'll need:
+Before parsing, read and verify the reference files you'll need:
 1. `references/rubric-format.md` — rubric structure, SAAR mapping, tier descriptors
 2. `references/block-types.md` — all 22 block types and their fields
+3. `block-schema.md` (in the lesson-plan skill directory) — JSON schema for block output
+
+If any reference file is missing or unreadable, stop and report the issue before proceeding.
 
 Extract from `<ARGUMENTS>`:
 

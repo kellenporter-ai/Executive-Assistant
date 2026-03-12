@@ -20,6 +20,7 @@ import sys
 import re
 import requests
 from datetime import datetime
+from tool_logger import get_tool_logger
 
 # Add venv packages
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -39,6 +40,8 @@ PROJECT_ID = "porters-portal"
 
 TIER_LABELS = ["Missing", "Emerging", "Approaching", "Developing", "Refining"]
 TIER_PERCENTAGES = [0, 55, 65, 85, 100]
+
+logger = get_tool_logger("grade-assistant")
 
 
 def init_firestore():
@@ -262,12 +265,23 @@ Use these to calibrate your grading — if the teacher consistently grades highe
 {chr(10).join(examples)}
 """
 
+    # Sanitize student answers to prevent prompt injection
+    def sanitize(text, max_len=500):
+        """Escape student text to prevent prompt injection via JSON-like or instruction-like content."""
+        s = text[:max_len]
+        # Escape triple-quotes and markdown fences that could break prompt structure
+        s = s.replace('"""', '\\"\\"\\"')
+        s = s.replace("```", "\\`\\`\\`")
+        # Strip any instruction-like prefixes that could confuse the LLM
+        s = re.sub(r'^\s*(system|assistant|user)\s*:', '', s, flags=re.IGNORECASE)
+        return s
+
     prompt = f"""You are an expert teacher grading a student's assessment submission using a rubric.
 
 ## Assessment: {title}
 
 ## Student Responses
-{chr(10).join(f"Q{i+1} ({qa['type']}): {qa['question'][:200]}{qa['auto_info']}{chr(10)}Answer: {qa['answer'][:500]}" for i, qa in enumerate(qa_pairs))}
+{chr(10).join(f"Q{i+1} ({qa['type']}): {sanitize(qa['question'], 200)}{qa['auto_info']}{chr(10)}Answer: {sanitize(qa['answer'])}" for i, qa in enumerate(qa_pairs))}
 
 ## Rubric
 {''.join(rubric_context)}
@@ -457,12 +471,24 @@ def grade_submissions(db, submissions, dry_run=False, verbose=False):
                 })
                 print(f"  Written to Firestore")
 
+            logger.info(f"Graded {student} — {title}: {overall}%", extra={"data": {
+                "submissionId": sub["id"],
+                "assignmentId": aid,
+                "overall": overall,
+                "model": MODEL,
+                "confidence": avg_confidence,
+            }})
             success += 1
 
         except Exception as e:
             print(f"  ERROR: {e}")
+            logger.error(f"Failed to grade {student} — {title}: {e}", extra={"data": {
+                "submissionId": sub.get("id", "unknown"),
+                "error": str(e),
+            }})
             failed += 1
 
+    logger.info(f"Batch complete: {success}/{total} graded, {failed} failed")
     print(f"\n{'='*50}")
     print(f"Done. {success} graded, {failed} failed, {total} total.")
     if dry_run:

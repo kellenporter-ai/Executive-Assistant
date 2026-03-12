@@ -25,6 +25,14 @@ For the complete Firebase implementation patterns (database schema, join flow, s
 
 ---
 
+## Step 0: Verify References
+
+Before starting, read and verify:
+1. `references/firebase-multiplayer.md` — RTDB schema, join flow, state listeners, presence patterns
+2. `references/portal-bridge.md` — Proctor Bridge protocol (if integrating with Portal)
+
+If `firebase-multiplayer.md` is missing or incomplete, stop and report the issue. The Firebase patterns in that file are critical for correct lobby/sync implementation.
+
 ## Step 1: Determine the Firebase Project
 
 The multiplayer system needs a Firebase Realtime Database. Determine which project's config to use based on context:

@@ -151,6 +151,17 @@ Rules for the JSON:
 - Use plain language, not jargon. If you mention a technical term (like "bokeh"), briefly explain it.
 - The goal is 2-4 exchanges before generating the JSON, not 10 rounds of questions.
 
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (invalid JSON, unknown enum value, missing required fields, file save error)
+2. **Research** — re-read `schema-reference.md` to verify field names and enum values
+3. **Fix** — patch the JSON (remove invalid fields, correct enum values, ensure valid structure)
+4. **Verify** — confirm JSON parses cleanly and all values match the schema reference
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
+
 ## Notes
 
 - The JSON prompt format works by reducing ambiguity for the image model. Each field is a distinct control.

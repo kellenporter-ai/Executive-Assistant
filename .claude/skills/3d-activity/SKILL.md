@@ -18,6 +18,15 @@ For the example simulation to use as a structural reference, see [example-sim.md
 
 ---
 
+## Step 0: Verify References
+
+Before starting, verify that the required reference files exist and are readable:
+1. Read `babylon-reference.md` (in this skill's directory) — must contain sections on engine setup, lighting, materials, and performance budgets
+2. Read `example-sim.md` (in this skill's directory) — structural template for the output HTML
+3. Read `references/portal-bridge.md` — Proctor Bridge protocol
+
+If any file is missing or incomplete, stop and report the issue before generating code.
+
 ## Step 1: Parse Arguments
 
 Extract from `<ARGUMENTS>`:

@@ -209,6 +209,17 @@ Notice the rhythm: context (TEXT) → visual (IMAGE) → data collection (DATA_T
 
 ---
 
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (invalid JSON structure, missing block fields, ISLE phase mismatch, incorrect physics content)
+2. **Research** — re-read `references/block-types.md` and `block-schema.md` to verify schema compliance
+3. **Fix** — patch the output (fix malformed JSON, add missing required fields, correct scientific errors)
+4. **Verify** — validate the JSON parses cleanly and all block types match the schema
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
+
 ## Notes
 
 - **Scope:** Keep lessons appropriately scoped for high school / AP Physics 1. Don't overload a single lesson.

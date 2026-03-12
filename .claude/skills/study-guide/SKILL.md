@@ -24,6 +24,14 @@ A standalone, self-contained HTML file with the portal's dark theme, optimized f
 
 ## Workflow
 
+### Step 0: Verify References
+
+Before starting, read and verify:
+1. `references/block-types.md` — all 22 block types and their fields (for JSON output mode)
+2. `block-schema.md` (in the lesson-plan skill directory) — JSON schema for block output
+
+If generating JSON blocks and these files are missing, fall back to HTML output and note the issue.
+
 ### Step 1: Identify Source Content
 
 The user will specify content in one of these ways:
@@ -181,6 +189,17 @@ These guides are for **high school students**. Write accordingly:
 - **Concrete examples.** Every abstract concept gets a real-world example. "A 2 kg book on a table" not "an object of mass m."
 - **Worked solutions show thinking.** Don't just show math steps — narrate the reasoning. "First, identify what we know and what we're solving for..."
 - **Encourage, don't intimidate.** "This is a tricky concept — here's how to think about it" not "This is a common mistake."
+
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (invalid JSON, missing block fields, source content not found, HTML rendering issue)
+2. **Research** — re-read `references/block-types.md` and source content files to understand the issue
+3. **Fix** — patch the output (fix malformed JSON, correct block schema violations, adjust content scope)
+4. **Verify** — confirm JSON parses cleanly or HTML is well-formed and self-contained
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
 
 ## Reference
 

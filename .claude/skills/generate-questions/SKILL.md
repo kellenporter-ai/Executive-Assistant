@@ -166,13 +166,16 @@ After all subagents complete:
 3. **Count questions** — report the final count per mode. If significantly under 500, note it to the user.
 4. **Deduplicate** — scan for duplicate stems (exact or near-match). Remove duplicates.
 5. **Validate IDs** — ensure no duplicate IDs. Reassign sequential IDs if needed.
-6. **Shuffle answer positions (MANDATORY)** — LLMs heavily bias the correct answer toward option A/B (index 0/1). Run the bundled shuffle script on every output file:
+6. **Shuffle answer positions (MANDATORY)** — LLMs heavily bias the correct answer toward option A/B (index 0/1). After merging all question arrays, shuffle every question's options using Fisher-Yates:
 
-```bash
-python scripts/shuffle_options.py <input.json> <output.json>
-```
+   For each question in the array:
+   1. Store the correct answer **text** (not index): `correctText = options[correctAnswer]`
+   2. Fisher-Yates shuffle the `options` array
+   3. Update `correctAnswer` to the new index of `correctText`
 
-The script handles all question formats (index-based, letter-based, multiple-select, ranking, linkedFollowUp) and verifies ~25% distribution per answer position, re-shuffling if any position exceeds 35%. See [scripts/shuffle_options.py](scripts/shuffle_options.py) for the implementation.
+   After shuffling all questions, **verify distribution**: count how many times the correct answer lands at each position (0, 1, 2, 3). Each position should be ~25%. If any position exceeds 35%, re-shuffle that subset. Log the final distribution in the summary.
+
+   Write a small inline Python snippet or use Bash to perform this — do NOT reference an external script.
 
 ### Step 5b: Merge Questions into Boss/Dungeon Configs
 
@@ -237,7 +240,7 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 
 - **Subagent returns invalid JSON:** Attempt auto-fix (trailing commas, truncated arrays — close with `]`). If unfixable, re-spawn that subagent with a shorter batch size.
 - **Question count significantly under 500:** Re-spawn underperforming subagents with explicit count targets. Check if source material was too narrow — suggest broadening the topic.
-- **Shuffle script fails:** Verify `scripts/shuffle_options.py` exists and is executable. Check that question format matches expected schema (index-based `correctAnswer`).
+- **Shuffle fails:** Verify question format matches expected schema (index-based `correctAnswer` with `options` array). Re-run the inline shuffle on the failing subset.
 - **Duplicate questions detected:** Remove duplicates, re-assign sequential IDs, note the dedup count in the summary.
 - **Boss/Dungeon config doesn't match import schema:** Re-read `schemas.md` and regenerate the config subagent with the exact schema pasted in the prompt.
 - **Write intermediate question batches to `temp/`** before merging — avoids context window bloat when handling 500+ questions per mode.
@@ -254,7 +257,7 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 - **ID format matters** — each mode has its own ID prefix convention (see schemas.md).
 - **Do NOT auto-invoke this skill** — it generates large files and uses significant compute. User must explicitly request it.
 - **Boss/Dungeon config files are separate from question files.** The config file includes a sample of questions embedded in it for convenience, but the full question bank is always the separate questions file.
-- **CRITICAL: Always shuffle answer positions.** LLMs consistently place the correct answer as option A or B (~90%+ of the time). The Fisher-Yates shuffle in Step 5.6 is MANDATORY. Never skip it. Never write question files without first shuffling. Verify the distribution is ~25% per position before writing files.
+- **CRITICAL: Always shuffle answer positions.** LLMs consistently place the correct answer as option A or B (~90%+ of the time). The inline Fisher-Yates shuffle in Step 5.6 is MANDATORY. Never skip it. Never write question files without first shuffling. Verify the distribution is ~25% per position before writing files.
 - **The config files match the portal's import format.** The boss config matches what `QuizBossFormModal` expects; the dungeon config matches what `DungeonFormModal` expects. Teachers import, review, tweak, and deploy.
 - **Dungeon rooms need enough questions to resolve combat.** If a room runs out of questions before the enemy dies or the player dies, the run is permanently soft-locked with no recovery. A base student deals ~10 damage per correct answer (plus damageBonus), so a 200 HP enemy needs ~20 correct answers with no bonus, or ~6 with +25 bonus. Always embed generously — it's better to have unused questions than a soft-locked dungeon.
 - **Always prioritize project agents over general-purpose.** Use content-writer for question generation, qa-engineer for validation, backend-engineer for config structures. General-purpose is a fallback only.

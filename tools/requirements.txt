@@ -1,8 +1,20 @@
 # Executive Assistant Tools - Python Dependencies
 # Install: pip install -r tools/requirements.txt
 # Or with venv: python3 -m venv tools/.venv && source tools/.venv/bin/activate && pip install -r tools/requirements.txt
+#
+# Versions pinned from working venv (2026-03-12). Update with:
+#   source tools/.venv/bin/activate && pip install --upgrade <pkg> && pip freeze | grep <pkg>
 
-requests>=2.31.0
-firebase-admin>=6.4.0
-crawl4ai>=0.6.0
-markitdown[pdf]>=0.1.0
+# HTTP client
+requests==2.32.5
+
+# Firebase / Firestore
+firebase-admin==7.2.0
+
+# Web research pipeline
+crawl4ai==0.8.0
+beautifulsoup4==4.14.3
+lxml==6.0.2
+
+# Document conversion (PDF/DOCX/PPTX → Markdown)
+markitdown[pdf]==0.1.5

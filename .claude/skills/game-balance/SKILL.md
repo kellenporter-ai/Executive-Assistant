@@ -26,6 +26,10 @@ The system is designed so that **engagement with learning content is the primary
 4. **Tuning Recommendations** — Suggest specific constant/parameter changes with rationale
 5. **Comparative Analysis** — Compare balance across class types or before/after a change
 
+## Step 0: Verify References
+
+Before any analysis, read and verify `references/economy-reference.md`. This file contains all system constants (XP rates, Flux sinks, loot tables, boss stats, etc.). If it is missing or appears outdated (check for a date header — if older than 30 days, flag it to Kellen), your analysis will be based on stale data. Stop and ask before proceeding with outdated constants.
+
 ## Reasoning Protocol
 
 This is an analytical skill — use structured reasoning before diving into data. For every analysis:
@@ -165,6 +169,17 @@ Date: [today]
 ## Key Reference
 
 Read `references/economy-reference.md` for the complete system constants, formulas, and data structures. That file contains everything you need to run simulations without querying the database.
+
+## Error Recovery
+
+Use the self-correction loop (max 3 attempts):
+1. **Detect** — identify what failed (outdated constants, calculation error, missing subsystem data, simulation assumptions incorrect)
+2. **Research** — re-read `references/economy-reference.md` and verify the numbers used in analysis
+3. **Fix** — recalculate with correct values, adjust simulation parameters, fill in missing subsystem coverage
+4. **Verify** — confirm all findings are backed by specific numbers and recommendations include before/after values
+5. **Log** — note what went wrong for future improvement
+
+If 3 attempts fail, escalate to Kellen with what you tried.
 
 ## Important Constraints
 

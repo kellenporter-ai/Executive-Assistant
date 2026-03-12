@@ -50,17 +50,17 @@ For each repo with uncommitted changes:
    > Proposed commit for EA repo: "Update skills and sync context files"
    > Proposed commit for Portal: "Add assessment analytics and fix grading UX"
    > Good to commit? (or suggest edits)
-4. Once confirmed, stage and commit:
+4. Once confirmed, stage specific files and commit. **Never use `git add -A`** — always stage files explicitly to avoid committing secrets or large binaries:
 
 ```bash
-# EA repo
+# EA repo — stage the specific changed files from git status
 cd "/home/kp/Desktop/Executive Assistant"
-git add -A
+git add <file1> <file2> ...
 git commit -m "the confirmed message"
 
 # Each project repo with uncommitted changes
 cd "/home/kp/Desktop/Executive Assistant/projects/<project>"
-git add -A
+git add <file1> <file2> ...
 git commit -m "the confirmed message"
 ```
 
