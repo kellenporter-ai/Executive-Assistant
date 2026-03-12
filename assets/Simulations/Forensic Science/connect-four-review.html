@@ -345,6 +345,60 @@
             from { opacity: 0; transform: translateX(-50%) translateY(10px); }
             to { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
+
+        /* ── Timer Bar ── */
+        .timer-bar-wrapper {
+            width: 100%; height: 8px; border-radius: 4px;
+            background: rgba(255,255,255,0.08); margin-bottom: 18px;
+            overflow: hidden; position: relative;
+        }
+        .timer-bar {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, #22d47a, #22d47a);
+            transition: width 0.25s linear, background 0.3s;
+            width: 100%;
+        }
+        .timer-bar.warning { background: linear-gradient(90deg, #f5a623, #f5a623); }
+        .timer-bar.critical { background: linear-gradient(90deg, #e8504a, #e8504a); animation: pulse-bar 0.5s ease-in-out infinite; }
+        @keyframes pulse-bar { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+        .timer-text {
+            font-size: 1.1rem; font-weight: 700; text-align: center;
+            margin-bottom: 6px; font-variant-numeric: tabular-nums;
+        }
+        .timer-text.critical { color: #e8504a; }
+        .timer-text.warning { color: #f5a623; }
+
+        /* ── Timer Settings (setup screen) ── */
+        .timer-settings { display: flex; gap: 16px; flex-wrap: wrap; }
+        .timer-field { flex: 1; min-width: 120px; }
+        .timer-field label {
+            display: block; font-size: 0.75rem; color: var(--muted);
+            margin-bottom: 4px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .timer-field input {
+            width: 100%; background: var(--board-bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 8px 12px; color: var(--text);
+            font-size: 0.95rem; outline: none; text-align: center;
+        }
+        .timer-field input:focus { border-color: var(--purple); }
+
+        /* ── In-game Settings Modal ── */
+        #settings-overlay {
+            display: none; position: fixed; inset: 0;
+            background: rgba(8, 3, 18, 0.85);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            z-index: 150; align-items: center; justify-content: center;
+        }
+        .settings-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 18px; padding: 32px 36px; max-width: 420px; width: 90%;
+        }
+        .settings-card h2 {
+            font-size: 1.2rem; font-weight: 700; margin-bottom: 20px;
+        }
+        .settings-card .form-group { margin-bottom: 16px; }
+        .settings-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -386,6 +440,20 @@
             </div>
         </div>
 
+        <div class="form-group">
+            <label>Answer Timer (seconds)</label>
+            <div class="timer-settings">
+                <div class="timer-field">
+                    <label>Tier 1</label>
+                    <input type="number" id="timer-t1" value="20" min="5" max="120">
+                </div>
+                <div class="timer-field">
+                    <label>Tier 2 &amp; 3</label>
+                    <input type="number" id="timer-t23" value="45" min="5" max="180">
+                </div>
+            </div>
+        </div>
+
         <button class="start-btn" onclick="startGame()">Start Game</button>
         <div style="text-align:center; margin-top:12px;">
             <button class="action-btn" onclick="document.getElementById('load-input').click()" style="font-size:0.82rem; color:var(--muted);">Load Saved Game</button>
@@ -403,6 +471,7 @@
             <span id="turn-name"></span>
         </div>
         <div class="game-actions">
+            <button class="action-btn" onclick="openSettings()" style="font-size:0.78rem;" title="Timer Settings">&#9881;</button>
             <button class="action-btn" onclick="saveGame()" style="font-size:0.78rem;">Save</button>
             <button class="action-btn" onclick="skipTurn()">Skip Turn</button>
             <button class="action-btn primary" id="question-btn" onclick="showQuestion()">Next Question</button>
@@ -422,6 +491,10 @@
         <div class="q-turn-banner" id="q-turn-banner">
             <div class="q-turn-dot" id="q-turn-dot"></div>
             <span id="q-turn-name"></span>
+        </div>
+        <div class="timer-text" id="timer-text" style="display:none"></div>
+        <div class="timer-bar-wrapper" id="timer-bar-wrapper" style="display:none">
+            <div class="timer-bar" id="timer-bar"></div>
         </div>
         <div class="question-meta">
             <span class="tier-badge" id="q-tier"></span>
@@ -448,6 +521,29 @@
         <h2 id="winner-text"></h2>
         <p class="winner-sub" id="winner-sub"></p>
         <button class="play-again-btn" onclick="resetGame()">Play Again</button>
+    </div>
+</div>
+
+<!-- ── Settings Overlay ── -->
+<div id="settings-overlay">
+    <div class="settings-card">
+        <h2>Timer Settings</h2>
+        <div class="form-group">
+            <div class="timer-settings">
+                <div class="timer-field">
+                    <label>Tier 1 (seconds)</label>
+                    <input type="number" id="settings-timer-t1" min="5" max="120">
+                </div>
+                <div class="timer-field">
+                    <label>Tier 2 &amp; 3 (seconds)</label>
+                    <input type="number" id="settings-timer-t23" min="5" max="180">
+                </div>
+            </div>
+        </div>
+        <div class="settings-actions">
+            <button class="action-btn" onclick="closeSettings()">Cancel</button>
+            <button class="action-btn primary" onclick="applySettings()">Save</button>
+        </div>
     </div>
 </div>
 
@@ -478,7 +574,111 @@ let state = {
     winner: null,
     dropActive: false,
     dropTeam: null,
+    timerT1: 20,
+    timerT23: 45,
 };
+
+// ─── Timer Logic ───
+let timerInterval = null;
+let timerRemaining = 0;
+let timerTotal = 0;
+
+function getTimerDuration(tier) {
+    return tier === 1 ? state.timerT1 : state.timerT23;
+}
+
+function startTimer(seconds) {
+    clearTimer();
+    timerRemaining = seconds;
+    timerTotal = seconds;
+    updateTimerDisplay();
+    document.getElementById('timer-text').style.display = '';
+    document.getElementById('timer-bar-wrapper').style.display = '';
+
+    timerInterval = setInterval(() => {
+        timerRemaining = Math.max(0, timerRemaining - 0.25);
+        updateTimerDisplay();
+        if (timerRemaining <= 0) {
+            clearTimer();
+            onTimerExpired();
+        }
+    }, 250);
+}
+
+function clearTimer() {
+    if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+    }
+}
+
+function hideTimer() {
+    clearTimer();
+    document.getElementById('timer-text').style.display = 'none';
+    document.getElementById('timer-bar-wrapper').style.display = 'none';
+}
+
+function updateTimerDisplay() {
+    const secs = Math.ceil(timerRemaining);
+    const pct = (timerRemaining / timerTotal) * 100;
+    const bar = document.getElementById('timer-bar');
+    const text = document.getElementById('timer-text');
+
+    text.textContent = secs + 's';
+    bar.style.width = pct + '%';
+
+    // Color thresholds
+    bar.classList.remove('warning', 'critical');
+    text.classList.remove('warning', 'critical');
+    if (pct <= 20) {
+        bar.classList.add('critical');
+        text.classList.add('critical');
+    } else if (pct <= 40) {
+        bar.classList.add('warning');
+        text.classList.add('warning');
+    }
+}
+
+function onTimerExpired() {
+    if (state._phase === 'answering') {
+        if (state.selectedOption && state._currentQuestion) {
+            // Team selected an answer but teacher didn't click Reveal — auto-reveal
+            revealAnswer();
+            return;
+        }
+        // Time ran out with no selection — go straight to steal without eliminating any option
+        if (!state._eliminatedOptions) state._eliminatedOptions = [];
+        showStealButtons();
+    } else if (state._phase === 'stealing') {
+        // Stealing team ran out of time — treat as failed steal
+        if (!state._stealFailed) state._stealFailed = [];
+        state._stealFailed.push(state._stealTeam);
+        state._stealTeam = null;
+        document.querySelectorAll('.q-option').forEach(o => o.classList.remove('selected'));
+        markEliminated();
+        showStealButtons();
+    }
+}
+
+// ─── Settings Modal ───
+function openSettings() {
+    document.getElementById('settings-timer-t1').value = state.timerT1;
+    document.getElementById('settings-timer-t23').value = state.timerT23;
+    document.getElementById('settings-overlay').style.display = 'flex';
+}
+
+function closeSettings() {
+    document.getElementById('settings-overlay').style.display = 'none';
+}
+
+function applySettings() {
+    const t1 = parseInt(document.getElementById('settings-timer-t1').value) || 20;
+    const t23 = parseInt(document.getElementById('settings-timer-t23').value) || 45;
+    state.timerT1 = Math.max(5, Math.min(120, t1));
+    state.timerT23 = Math.max(5, Math.min(180, t23));
+    closeSettings();
+    showMessage('Timer updated: Tier 1 = ' + state.timerT1 + 's, Tier 2/3 = ' + state.timerT23 + 's');
+}
 
 // ─── Setup Logic ───
 let teamCount = 4;
@@ -524,6 +724,10 @@ function startGame() {
         const name = inp.value.trim() || TEAM_NAMES_DEFAULT[i];
         state.teams.push({ name, color: TEAM_COLORS[i] });
     }
+
+    // Read timer settings
+    state.timerT1 = Math.max(5, Math.min(120, parseInt(document.getElementById('timer-t1').value) || 20));
+    state.timerT23 = Math.max(5, Math.min(180, parseInt(document.getElementById('timer-t23').value) || 45));
 
     // Filter & shuffle questions
     const allQ = JSON.parse(document.getElementById('question-data').textContent);
@@ -680,6 +884,9 @@ function showQuestion() {
     document.getElementById('steal-section').style.display = 'none';
     document.getElementById('no-steal-btn').style.display = 'none';
 
+    // Start countdown timer
+    startTimer(getTimerDuration(q.tier));
+
     const overlay = document.getElementById('question-overlay');
     overlay.style.display = 'flex';
 }
@@ -703,6 +910,7 @@ function selectOption(el, optId, q) {
 
 function revealAnswer() {
     if (!state.selectedOption || !state._currentQuestion) return;
+    clearTimer();
     const q = state._currentQuestion;
     const correct = q.correctAnswer;
     state.answeredCorrectly = (state.selectedOption === correct);
@@ -712,6 +920,7 @@ function revealAnswer() {
     if (state.answeredCorrectly) {
         // Correct: reveal everything immediately
         state._phase = 'revealed';
+        hideTimer();
         showFullReveal(correct);
         document.getElementById('continue-btn').style.display = '';
         document.getElementById('continue-btn').textContent = 'Correct — Pick a Column!';
@@ -743,6 +952,7 @@ function markEliminated() {
 }
 
 function showStealButtons() {
+    hideTimer(); // No timer while picking which team steals
     const excludeTeams = state._stealFailed || [];
     if (!excludeTeams.includes(state.currentTeam)) excludeTeams.push(state.currentTeam);
 
@@ -794,6 +1004,9 @@ function attemptSteal(teamIdx) {
     state._phase = 'stealing';
     const team = state.teams[teamIdx];
 
+    // Start timer for the stealing team
+    startTimer(getTimerDuration(state._currentQuestion.tier));
+
     document.getElementById('steal-buttons').innerHTML = '';
     document.getElementById('steal-label').innerHTML =
         `<span style="color:${team.color}">${team.name}</span> — pick your answer!`;
@@ -813,6 +1026,7 @@ function attemptSteal(teamIdx) {
 }
 
 function handleStealPick(optId) {
+    clearTimer();
     const q = state._currentQuestion;
     const correct = q.correctAnswer;
     const isCorrect = (optId === correct);
@@ -820,6 +1034,7 @@ function handleStealPick(optId) {
     if (isCorrect) {
         // Steal successful — reveal and give them the drop
         state._phase = 'revealed';
+        hideTimer();
         showFullReveal(correct);
 
         document.getElementById('steal-section').style.display = 'none';
@@ -845,6 +1060,7 @@ function handleStealPick(optId) {
 
 function noSteal() {
     // No steal — reveal the correct answer, then move on
+    hideTimer();
     state._phase = 'revealed';
     const q = state._currentQuestion;
     showFullReveal(q.correctAnswer);
@@ -859,6 +1075,7 @@ function noSteal() {
 }
 
 function continueAfterQuestion() {
+    hideTimer();
     document.getElementById('question-overlay').style.display = 'none';
     state._stealFailed = null;
 
@@ -1012,6 +1229,7 @@ function showGameOver() {
 }
 
 function resetGame() {
+    hideTimer();
     document.getElementById('gameover-overlay').style.display = 'none';
     document.getElementById('game-screen').style.display = 'none';
     document.getElementById('setup-screen').style.display = 'flex';
@@ -1047,6 +1265,8 @@ function saveGame() {
         connectLen: state.connectLen,
         maxTier: state.maxTier,
         qIndex: state.qIndex,
+        timerT1: state.timerT1,
+        timerT23: state.timerT23,
         // Save question IDs in order (not full text — reconstruct from bank)
         questionOrder: state.questions.map(q => q.id),
     };
@@ -1085,6 +1305,8 @@ function loadGame(event) {
             state.connectLen = saveData.connectLen;
             state.maxTier = saveData.maxTier;
             state.qIndex = saveData.qIndex;
+            state.timerT1 = saveData.timerT1 || 20;
+            state.timerT23 = saveData.timerT23 || 45;
             state.questions = questions;
             state.phase = 'playing';
             state.winner = null;
