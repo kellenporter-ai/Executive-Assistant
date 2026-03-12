@@ -65,7 +65,10 @@ For each component identified in Step 1, launch the appropriate agent. When buil
 - `graphics-engineer` — 3D scenes, SVG rendering, visual effects, animations
 - `deployment-monitor` — Post-deploy health checks
 
-**Project-only agents** (in `projects/<name>/.agents/`): Some projects may define agents that have no general counterpart (e.g., economy-designer for gamified projects). Check the `.agents/` directory.
+**Project-only agents** (in `projects/<name>/.agents/`):
+- `economy-designer` (Portal) — XP rates, loot tables, currency sinks, boss stats, ability effects, progression curves. **Launch this agent before backend-engineer when the task involves economy mechanics** (loot generation, shop pricing, XP formulas, combat stats). Economy-designer produces the spec; backend-engineer implements the Cloud Functions.
+
+Check the `.agents/` directory for other project-specific agents. See `agents/ROUTING.md` for full routing guidance.
 
 ### Delegation format:
 ```
@@ -160,7 +163,7 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 - **Build failure:** Read compiler output → identify responsible agent → launch with error context → rebuild.
 - **QA rejection:** Route each defect to the responsible agent → re-run QA after fixes.
 - **Deploy failure:** Check deploy logs → verify build artifacts exist → retry with narrower scope (`--only hosting` or `--only functions`).
-- **Agent timeout/failure:** Retry once with simplified prompt. If the agent fails twice, handle the component directly.
+- **Agent timeout/failure:** Retry once with a simplified prompt (reduce scope or split the task). If the agent fails twice: for simple components (copy, config, single-file changes), handle directly in the EA context. For complex components (multi-file features, 3D/SVG work), escalate to the user with what the agent attempted and where it failed — don't attempt complex engineering inline.
 - **Escalate immediately:** Permission/auth failures, ambiguous requirements, changes that would affect live student data.
 - **Write intermediate build/test output to `temp/`** instead of passing through context when output exceeds ~200 lines.
 

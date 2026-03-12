@@ -2,7 +2,7 @@
 name: generate-questions
 description: "Use when someone asks to generate questions, create a question bank, make boss battle questions, create dungeon room questions, or build quiz questions from content."
 model: claude-sonnet-4-6
-effort: high
+effort: max
 tools: [Read, Write, Glob, Bash]
 ---
 
@@ -113,7 +113,7 @@ Each question: 4 MC options, correctAnswer is 0-based index.
 
 ### Step 4b: Generate Boss Config (if Boss Battle selected)
 
-After the question subagents are spawned, spawn ONE additional subagent to generate the boss structure config.
+After the question subagents are spawned, spawn ONE additional subagent to generate the boss structure config. This config is generated **without questions** — Step 5b merges questions into it after both the config and questions are ready.
 
 **Boss Config Subagent prompt:**
 > You are an expert game designer for a gamified high school LMS. Generate a complete boss encounter config for the topic: "[topic]". Class: [class]. Difficulty tier: [selected tier].
@@ -136,7 +136,7 @@ After the question subagents are spawned, spawn ONE additional subagent to gener
 
 ### Step 4c: Generate Dungeon Config (if Dungeon Rooms selected)
 
-After the question subagents are spawned, spawn ONE additional subagent to generate the dungeon structure config.
+After the question subagents are spawned, spawn ONE additional subagent to generate the dungeon structure config. Like the boss config, this is generated **without questions** — Step 5b distributes questions into rooms after both are ready.
 
 **Dungeon Config Subagent prompt:**
 > You are an expert game designer for a gamified high school LMS. Generate a complete dungeon config for the topic: "[topic]". Class: [class]. Number of rooms: [selected count]. Overall difficulty: [selected difficulty].

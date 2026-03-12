@@ -5,7 +5,7 @@ description: >
   "good morning", "start session", "open up shop", "let's get started", or any variation
   of beginning a work session. Detects machine type, syncs repos, checks services,
   and shows a status dashboard.
-model: claude-sonnet-4-6
+model: claude-haiku-4-5-20251001
 effort: low
 tools: [Read, Bash, Glob]
 ---

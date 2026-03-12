@@ -1,5 +1,11 @@
 # QA Agent Memory — Porters-Portal
 
+## See Also
+- `agents/memory/SHARED.md` — cross-cutting gotchas (read first)
+- `agents/memory/backend-engineer/MEMORY.md` — Cloud Function patterns and anti-patterns
+- `agents/memory/ui-engineer/MEMORY.md` — component architecture and a11y patterns
+- `projects/Porters-Portal/.agents/qa-engineer.md` — portal QA criteria
+
 ## Project Structure
 - Main types: `types.ts` (~1,482 lines, single flat file)
 - Services: `services/dataService.ts` (~1,985 lines, all Firestore CRUD)
@@ -67,6 +73,19 @@
 - `stepInProgress` locking: set true at drag step completions, only reset inside explain overlay close handler. Locking is correct for its purpose but creates permanent lockout if explain overlay is blocked/skipped.
 - Drop detection correctness: `BABYLON.Vector3.Distance` between `dragState.node.position` and `dragState.targetNode.position` — both world-space for TransformNodes, works correctly.
 - Dead state field pattern: `dragState.targetDist` declared in state object but never read; actual field used is `dragState.threshold`. Check for dead state fields in drag objects.
+
+## Visual Testing Tools
+
+### Screenshot Tool
+- **Tool:** `tools/screenshot/take.mjs` — headless Chromium screenshots via puppeteer-core
+- **Usage:** `node tools/screenshot/take.mjs --url "http://..." --viewport 1366x768`
+- **For local HTML files:** `node tools/screenshot/take.mjs --file "/path/to/file.html"`
+- **Output:** `temp/screenshots/<timestamp>.png`
+- **Flags:** `--wait <ms>` (default 2000), `--full-page`, `--output <path>`
+
+### Playwright MCP Plugin
+- Expects Chrome at `/opt/google/chrome/chrome` — system Chromium at `/usr/bin/chromium` won't work without a symlink
+- Alternative: screenshot tool uses puppeteer-core with system Chromium and works without this constraint
 
 ## Architecture Notes
 - No tests exist for Cloud Functions (purchaseFluxItem, equipItem, etc.)

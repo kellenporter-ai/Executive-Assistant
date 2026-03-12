@@ -30,26 +30,6 @@ Cross-cutting knowledge that applies to multiple agents. Any agent can read and 
 - Dark theme CSS variables from `references/portal-bridge.md` are the standard
 - 44px minimum touch targets on all interactive elements
 
-## Web Research Pipeline
-
-- **Tool:** `tools/web-research.py` — CLI with `search`, `extract`, `convert`, `research` commands
-- **Skill:** `/web-research` — orchestrates the tool with WebSearch fallback
-- **Extraction tiers:** Crawl4AI (local, unlimited) → Jina Reader (free proxy) → BeautifulSoup (static)
-- **Discovery:** Serper API if `SERPER_API_KEY` is set in `.env`, otherwise WebSearch built-in
-- **Document conversion:** MarkItDown (PDF/DOCX/PPTX → Markdown)
-- **Output:** `temp/web-research/` (gitignored) — script prints file path to stdout
-- **Run:** `tools/.venv/bin/python3 tools/web-research.py extract "URL"`
-
-## Screenshot Tool
-
-- **Tool:** `tools/screenshot/take.mjs` — headless Chromium screenshots via puppeteer-core
-- **Setup:** `cd tools/screenshot && npm install` (one-time, installs puppeteer-core only)
-- **Usage:** `node "/home/kp/Desktop/Executive Assistant/tools/screenshot/take.mjs" --url "http://..." --viewport 1366x768`
-- **For local HTML files:** `node tools/screenshot/take.mjs --file "/path/to/file.html"`
-- **Output:** `temp/screenshots/<timestamp>.png` — path printed to stdout, read with Read tool for visual analysis
-- **Chromium:** Uses system Chromium at `/usr/bin/chromium` (no bundled browser)
-- **Flags:** `--wait <ms>` (default 2000), `--full-page`, `--output <path>`
-
 ## LessonBlock Schema Additions (March 2026)
 
 - `explanation?: string` — added to the `LessonBlock` type in `types.ts`. When present on an MC block, the explanation is shown in an info box after the student answers. The `lesson-plan` and `create-assessment` skills can set this field to provide post-answer context. All blocks without it are unaffected.
@@ -70,11 +50,6 @@ Cross-cutting knowledge that applies to multiple agents. Any agent can read and 
 - **Manual chunks:** `recharts` and `katex` split via `rollupOptions.output.manualChunks` in `vite.config.ts`. Add new heavy deps here when they inflate the main bundle.
 - **BabylonJS is dynamically imported** in `Avatar3D.tsx` — Vite auto-splits it. No need to add to manualChunks.
 - **Idle preloads use `safeImport` wrapper** — `StudentDashboard.tsx` wraps all 16 idle `import()` calls in `.catch(() => {})` to prevent stale chunk errors from crashing preload.
-
-## Playwright MCP Plugin
-
-- Expects Chrome at `/opt/google/chrome/chrome` specifically — system Chromium at `/usr/bin/chromium` won't work without a symlink (requires sudo: `sudo mkdir -p /opt/google/chrome && sudo ln -sf /usr/bin/chromium /opt/google/chrome/chrome`)
-- Alternative: `tools/screenshot/take.mjs` uses puppeteer-core with system Chromium and works without this constraint
 
 ## Known Gotchas
 
@@ -119,4 +94,6 @@ Cross-cutting knowledge that applies to multiple agents. Any agent can read and 
 - **Submissions have NO `classType` field** — The `submissions` collection does not store `classType`. To determine which class a submission belongs to, look up the `assignmentId` in the `assignments` collection and read its `classType`. This affects any aggregation, filtering, or reporting that groups submissions by class. The `tools/progress-reports.py` script derives classType this way.
 - **Submission `score` field = XP on classwork, percentage on assessments** — Cloud Function `submitAssignment` writes `score: xpEarned` for non-assessment submissions (`index.ts:2021`) but `score: percentage` for assessments (`index.ts:2339`). Only assessment submissions have `assessmentScore.percentage` and `isAssessment: true`. Any code using `score` must check `isAssessment` first or use `assessmentScore.percentage`. Only 2 of 39 active assignments are assessments (as of March 2026).
 - **RubricGrade structure** — `submission.rubricGrade` has shape: `{ grades: { [questionId]: { [skillId]: { selectedTier: number, percentage: number } } }, overallPercentage: number, gradedAt: string, gradedBy: string }`. The tier field is `selectedTier` (0-4), NOT `tier`. AI suggestions use `aiSuggestedGrade` with `suggestedTier` instead.
+- **Submission `RETURNED` status (March 2026)** — `Submission.status` now includes `'RETURNED'`. Returned submissions keep their `rubricGrade` intact for teacher comparison. `startAssessmentSession` and `submitAssessment` both filter out RETURNED when counting attempts toward maxAttempts. New fields: `returnedAt?: string`, `returnedBy?: string`, `submittedOnBehalfBy?: string`. Any code that iterates submission statuses must handle RETURNED (don't treat it as a valid graded attempt).
+- **Proctor `metricsSnapshot` on draft docs (March 2026)** — `lesson_block_responses` docs now have an optional `metricsSnapshot` field written by Proctor every 30s + on visibility change + unmount. Contains `{ engagementTime, keystrokes, pasteCount, clickCount, tabSwitchCount, startTime, lastActive, perBlockTiming, typingCadence }`. Used by `submitOnBehalf` to carry real metrics into teacher-submitted assessments. Any code reading draft docs should expect this field. Assessment metrics are critical for effort/cheating judgment — never discard or zero them out.
 - **`user.id` vs `user.name` — always use `user.id` for storage keys** — The `User` type has `id` (Firebase UID) and `name` (display name). Any localStorage keys, Firestore doc IDs, or draft keys that scope data per-user MUST use `user.id`. Using `user.name` causes key mismatches (e.g., draft stored under UID but cleared under display name). This bug was caught in QA for the persistence layer — watch for it in any new per-user storage.

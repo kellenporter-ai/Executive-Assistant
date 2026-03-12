@@ -1,5 +1,10 @@
 # Deployment Monitor — Agent Memory
 
+## See Also
+- `agents/memory/SHARED.md` — cross-cutting gotchas (read first)
+- `agents/memory/backend-engineer/MEMORY.md` — Cloud Function deploy gotchas
+- `projects/Porters-Portal/.agents/deployment-monitor.md` — portal health checks
+
 ## Firebase CLI Notes
 - `firebase functions:log --limit N` is INVALID. Correct flag is `-n <num>` (e.g., `firebase functions:log -n 50`)
 - `firebase functions:log --only <name> -n 30` works for per-function runtime logs

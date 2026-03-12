@@ -191,7 +191,8 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 - **Players not syncing:** Ensure `.on('value')` listeners (not `.once()`), verify all state changes go through the host, check that `onDisconnect()` handlers are registered.
 - **Join code not working:** Verify the code is being written to `/join_codes/{code}` on create and read on join, check for case sensitivity issues.
 - **State listener not driving UI:** Confirm a SINGLE state listener on `/games/{gameId}/state` handles ALL screen transitions — no local state driving screens independently.
-- **Escalate immediately:** Firebase permission errors (need rule changes), ambiguous game mechanics (need Kellen's decision).
+- **Firebase RTDB permission denied:** Check rules at `firebase.google.com/project/<id>/database/rules`. Common fixes: ensure `/games/{gameId}` allows read/write for authenticated users (or all users if the activity is public), verify `/join_codes` path exists in rules, check that `.validate` rules aren't rejecting the data shape. Test rules with the Firebase Rules Playground before deploying. If rules look correct but errors persist, check that the RTDB URL in the config matches the actual database region.
+- **Escalate immediately:** Firebase permission errors that persist after rule fixes (may need project-level config changes), ambiguous game mechanics (need Kellen's decision).
 
 ---
 

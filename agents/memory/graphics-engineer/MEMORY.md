@@ -1,5 +1,66 @@
 # 3D Graphics Engineer Memory
 
+## See Also
+- `agents/memory/SHARED.md` — cross-cutting gotchas
+- `projects/Porters-Portal/.agents/graphics-engineer.md` — portal-specific budgets
+- `references/economy-reference.md` — evolution tiers and cosmetic costs
+
+## SVG Avatar System (OperativeAvatar.tsx, ~700 lines)
+
+### Architecture
+- **Viewbox:** 200x300, center at (100, 150)
+- **Breathing animation:** translateY 0 -> -1.5 -> 0 over 3.5s (body), shadow rx 42 -> 39 -> 42
+- **Deterministic positioning** — no `Math.random()` in render paths (prevents flicker)
+
+### Body Types
+| Type | Variation |
+|------|-----------|
+| A | Standard proportions |
+| B | Slightly wider, headW: 23 |
+| C | Narrower build, headW: 21 |
+
+### Customization
+- `bodyType` (A/B/C), `hue` (0-360, energy color), `suitHue` (0-360, clothing)
+- `skinTone` (0-15, 16 shades #FDDCB5 -> #2C1608)
+- `hairStyle` (0-11, 12 SVG path styles), `hairColor` (0-7 -> 16 colors)
+- Hair is vector-only (bezier paths), no raster textures
+
+### Rarity Colors & Intensity
+| Rarity | Primary | Intensity | Texture Opacity |
+|--------|---------|-----------|-----------------|
+| COMMON | #64748b | 0.3 | 0.12 |
+| UNCOMMON | #22c55e | 0.5 | 0.20 |
+| RARE | #3b82f6 | 0.7 | 0.30 |
+| UNIQUE | #f59e0b | 0.9 | 0.42 |
+
+### Cosmetic System (Multi-Equip)
+- **Slots:** aura, particle, frame, trail (one per slot active)
+- **AURA (8):** ember, frost, void, radiant, toxic, bloodmoon, aurora, solar
+- **PARTICLE (8):** fireflies, stardust, embers, snow, cherry blossoms, binary rain, cinder ash, crystals
+- **FRAME (7):** circuit, thorns, diamond, hex, glitch, rune, neon
+- **TRAIL (7):** lightning, shadow, plasma, venom, inferno, frost wake, spectral
+- Particles use index-based positioning (no randomization)
+- Frame slot exists but rendering not fully wired in MVP
+
+### Evolution Visual Progression
+- 10+: shoulder accents, orbiting particles
+- 50+: circlet/halo
+- 100+: outer halo + dashed ring
+- 150+: wings (purple glow)
+- 300+: crown upgrade (golden, #fbbf24)
+- Unique items: golden aura (6 particles orbiting)
+
+### SVG Textures (Base64 Embedded)
+- `tex-carbon` (24x22), `tex-hexabump` (19x33), `tex-leather` (40x40)
+- Applied via `<pattern>` + `fill="url(...)"`, opacity scales by rarity
+
+### Performance Budgets (Chromebook)
+- Max 2000-line SVG per avatar
+- 25-30 concurrent `<animate>` elements
+- Max 2 chained filters (bloom + soft)
+- ~50KB total base64 textures
+- Soft filter only for intensity > 0.5 (commons skip for perf)
+
 ## Babylon.js GUI Labels (linkWithMesh pattern)
 - `BABYLON.GUI.AdvancedDynamicTexture.CreateFullscreenUI()` creates a 2D overlay projecting 3D-linked controls
 - `Rectangle` + `TextBlock` gives a pill/badge label; `rect.linkWithMesh(mesh)` pins it to world space

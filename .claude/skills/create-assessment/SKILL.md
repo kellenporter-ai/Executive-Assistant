@@ -21,6 +21,10 @@ For the JSON block schema, see the lesson-plan skill's [block-schema.md](../less
 
 ## Step 1: Parse Arguments
 
+Before parsing, read the reference files you'll need:
+1. `references/rubric-format.md` — rubric structure, SAAR mapping, tier descriptors
+2. `references/block-types.md` — all 22 block types and their fields
+
 Extract from `<ARGUMENTS>`:
 
 - **Topic/scenario** — the subject of the assessment (e.g., "energy conservation", "Newton's second law", "blood spatter analysis")

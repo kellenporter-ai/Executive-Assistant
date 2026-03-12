@@ -96,10 +96,10 @@ Manage workspace state across session boundaries.
 
 | Skill | Effort | Model | Purpose |
 |-------|--------|-------|---------|
-| sign-on | low | Sonnet | Workspace init, repo sync, service checks |
+| sign-on | low | Haiku | Workspace init, repo sync, service checks |
 | sign-off | medium | Sonnet | Clean shutdown, commit, push, priority update |
 | remember | low | Sonnet | Memory consolidation and pruning |
-| daily-briefing | medium | Sonnet | Summarize recent activity and next steps |
+| daily-briefing | low | Haiku | Summarize recent activity and next steps |
 | context-sync | medium | Sonnet | Weekly drift detection across context files |
 
 ### Content Creation (Portal)
@@ -109,7 +109,7 @@ Generate pedagogical content aligned with ISLE methodology.
 |-------|--------|-------|---------|
 | lesson-plan | medium | Sonnet | ISLE lesson blocks from topic or resource |
 | create-assessment | high | Sonnet | Mixed-type assessments with rubrics |
-| generate-questions | high | Sonnet | Bulk question banks (500-1000+) for game modes |
+| generate-questions | max | Sonnet | Bulk question banks (500-1000+) for game modes |
 | study-guide | medium | Haiku | Student-facing review from existing content |
 | crime-scene-generator | medium | Sonnet | Forensic scenarios for downstream skills |
 
@@ -137,6 +137,16 @@ Development and tuning workflows for Porter's Portal.
 |-------|--------|-------|---------|
 | dev-pipeline | max | Sonnet | Full dev lifecycle orchestrator |
 | game-balance | medium | Sonnet | RPG economy analysis and tuning |
+| grade-assistant | medium | Sonnet | Batch AI grading via local LLM (Ollama) |
+| progress-report | low | Sonnet | Parent-friendly CSV reports from Firestore |
+
+### Research & Utilities
+Web research, local LLM offloading, and general-purpose tools.
+
+| Skill | Effort | Model | Purpose |
+|-------|--------|-------|---------|
+| web-research | medium | Sonnet | Search, extract URLs, convert documents |
+| local-llm | low | Haiku | Offload simple tasks to Ollama (saves API tokens) |
 
 ### Meta
 Skills that manage other skills and agents.

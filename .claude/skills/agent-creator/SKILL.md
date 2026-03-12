@@ -94,6 +94,11 @@ memory: project
 
 Come up with 2-3 realistic test prompts — tasks a real user would delegate. Share with the user for review, then run them.
 
+**Validation checklist for each test run:**
+1. **Triggering accuracy** — Did the agent activate on prompts it should, and stay silent on prompts it shouldn't? Test at least one near-miss prompt that should NOT trigger it.
+2. **Output format** — Does the output match the defined format (report structure, code style, file locations)? No extra commentary or missing sections?
+3. **Boundary adherence** — Did the agent stay within its defined scope, or did it drift into another agent's territory (e.g., a content-writer attempting code changes)?
+
 ## Auditing an Existing Agent
 
 Perform a systematic review across four dimensions:

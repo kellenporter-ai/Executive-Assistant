@@ -307,6 +307,20 @@ Create the class subdirectory if it doesn't exist.
 
 ---
 
+## Step 6b: Validate Output
+
+Before presenting to the user, verify the generated HTML:
+
+1. **Structure check** — Confirm the file contains `Reveal.initialize(`, at least 3 `<section>` elements, and a closing `</html>` tag (catches truncation).
+2. **CDN references** — Verify `reveal.js` and Google Fonts `<link>` tags are present and use `https://` URLs.
+3. **Speaker notes** — At least half of content slides should have `<aside class="notes">` blocks.
+4. **Accessibility** — Spot-check that text colors against backgrounds meet WCAG AA contrast. Verify no font-size below 1.2em on body text.
+5. **File size** — If >5MB (likely from base64 images), note this in the summary as it may load slowly on school wifi.
+
+If any check fails, fix before saving. Don't deliver broken decks.
+
+---
+
 ## Step 7: Summary
 
 After writing the file, provide:

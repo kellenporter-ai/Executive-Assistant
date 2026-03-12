@@ -1,6 +1,6 @@
 ---
 name: lesson-plan
-description: Use when someone asks to plan a lesson, create a lesson plan, build lesson blocks, convert a resource into a lesson, or generate an ISLE physics lesson.
+description: Use when someone asks to plan a lesson, create a lesson plan, build lesson blocks, convert a resource into a lesson, or generate an ISLE physics lesson. This skill creates ORIGINAL instructional content structured around ISLE phases — use study-guide instead when summarizing existing lessons into review materials.
 model: claude-sonnet-4-6
 effort: medium
 tools: [Read, Write, Glob]

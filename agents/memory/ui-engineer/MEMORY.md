@@ -1,5 +1,11 @@
 # UI/Accessibility Engineer — Agent Memory
 
+## See Also
+- `agents/memory/SHARED.md` — cross-cutting gotchas (read first)
+- `agents/memory/backend-engineer/MEMORY.md` — Firestore schemas and API contracts
+- `projects/Porters-Portal/.agents/ui-engineer.md` — portal-specific constraints
+- `references/block-types.md` — lesson block type schemas
+
 ## Project Stack
 - Framework: Vite 6 + React 19 + TypeScript
 - Styling: Tailwind CSS 3.4 (dark theme, glassmorphism conventions)

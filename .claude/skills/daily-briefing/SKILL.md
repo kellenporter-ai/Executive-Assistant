@@ -5,8 +5,8 @@ description: >
   Use when Kellen says "briefing", "daily briefing", "what happened",
   "catch me up", "what's the status", "what did we do", or any variation
   of wanting a session/day summary.
-model: claude-sonnet-4-6
-effort: medium
+model: claude-haiku-4-5-20251001
+effort: low
 tools: [Read, Bash, Glob, Grep]
 ---
 

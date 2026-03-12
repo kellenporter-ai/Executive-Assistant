@@ -1,5 +1,10 @@
 # Content Strategist / UX Writer — Memory
 
+## See Also
+- `agents/memory/SHARED.md` — cross-cutting gotchas (read first)
+- `references/block-types.md` — complete lesson block schema (22 types)
+- `projects/Porters-Portal/.agents/content-writer.md` — spy/operative terminology
+
 ## Lesson Block JSON Format
 Porter's Portal lesson blocks are plain JSON arrays. Confirmed block types:
 - `header` — section/subheader titles (no `placeholder` field)
