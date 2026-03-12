@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.3.1 Find the Relationships — Work and Energy</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css" id="theme">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0f0720;
+            --bg-secondary: #1a0a3e;
+            --bg-tertiary: #0d1f4a;
+            --text-primary: #e8e4f4;
+            --text-muted: #8a85a8;
+            --accent: #5b9cf6;
+            --highlight: #22d47a;
+            --warning: #f5a623;
+            --danger: #e8504a;
+            --cable-color: #f5a623;
+            --force-cable: #5b9cf6;
+            --force-grav: #e8504a;
+            --ke-color: #ff6b9d;
+            --pe-color: #22d47a;
+            --work-color: #f5a623;
+        }
+
+        .reveal {
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary), var(--bg-tertiary));
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-primary);
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .reveal { position: relative; }
+        .ambient-overlay {
+            position: absolute; top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none; z-index: 1; overflow: hidden;
+        }
+        .reveal .slides { position: relative; z-index: 2; }
+
+        .ambient-overlay .orb-1,
+        .ambient-overlay .orb-2,
+        .ambient-overlay .orb-3 {
+            position: absolute; border-radius: 50%; filter: blur(120px);
+            width: 50vw; height: 50vh;
+        }
+        .ambient-overlay .orb-1 {
+            background: radial-gradient(circle, var(--accent) 0%, transparent 65%);
+            top: -10vh; left: -10vw;
+            animation: orbFloat1 30s ease-in-out infinite;
+        }
+        .ambient-overlay .orb-2 {
+            background: radial-gradient(circle, var(--highlight) 0%, transparent 65%);
+            bottom: -10vh; right: -10vw;
+            animation: orbFloat2 25s ease-in-out infinite;
+        }
+        .ambient-overlay .orb-3 {
+            background: radial-gradient(circle, #a855f7 0%, transparent 65%);
+            top: 30vh; right: 10vw;
+            width: 40vw; height: 40vh;
+            animation: orbFloat3 35s ease-in-out infinite;
+        }
+        @keyframes orbFloat1 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(15vw, 10vh); }
+            66% { opacity: 0.15; transform: translate(-5vw, 20vh); }
+        }
+        @keyframes orbFloat2 {
+            0%, 100% { opacity: 0.15; transform: translate(0, 0); }
+            33% { opacity: 0.25; transform: translate(-10vw, -15vh); }
+            66% { opacity: 0.15; transform: translate(10vw, -5vh); }
+        }
+        @keyframes orbFloat3 {
+            0%, 100% { opacity: 0.10; transform: translate(0, 0); }
+            33% { opacity: 0.18; transform: translate(-12vw, -8vh); }
+            66% { opacity: 0.10; transform: translate(5vw, 12vh); }
+        }
+
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-primary);
+            text-transform: none;
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 600; font-size: 1.8em; margin: 0 0 0.15em 0; }
+        .reveal h3 { font-weight: 600; }
+        .reveal .slide-number { color: var(--text-muted); font-size: 0.6em; }
+
+        /* Pattern card — tight for 16:9 */
+        .pattern-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 0.5em 1em;
+            margin: 0.2em 0;
+            backdrop-filter: blur(4px);
+            text-align: left;
+            font-size: 0.82em;
+            line-height: 1.5;
+        }
+
+        /* Task box (whiteboard prompt) — compact */
+        .task-box {
+            background: linear-gradient(135deg, rgba(245,166,35,0.12), rgba(245,166,35,0.05));
+            border: 2px dashed var(--warning);
+            border-radius: 12px;
+            padding: 0.5em 1.2em;
+            margin: 0.3em auto;
+            max-width: 85%;
+            text-align: center;
+        }
+        .task-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 0.85em;
+            color: var(--warning);
+            margin-bottom: 0.15em;
+            letter-spacing: 0.08em;
+        }
+
+        /* Equation containers — compact */
+        .eq-container {
+            background: rgba(91, 156, 246, 0.08);
+            border: 2px solid rgba(91, 156, 246, 0.3);
+            border-radius: 12px;
+            padding: 0.4em 1.2em;
+            margin: 0.25em auto;
+            display: inline-block;
+        }
+        .eq-container.work { border-color: rgba(245,166,35,0.4); background: rgba(245,166,35,0.08); }
+        .eq-container.ke { border-color: rgba(255,107,157,0.4); background: rgba(255,107,157,0.08); }
+        .eq-container.pe { border-color: rgba(34,212,122,0.4); background: rgba(34,212,122,0.08); }
+
+        /* Result glow — compact */
+        .result-glow {
+            background: linear-gradient(135deg, rgba(34,212,122,0.15), rgba(91,156,246,0.15));
+            border: 2px solid var(--highlight);
+            border-radius: 16px;
+            padding: 0.5em 1.5em;
+            box-shadow: 0 0 30px rgba(34,212,122,0.2);
+            display: inline-block;
+        }
+
+        /* Two-column — 16:9 wide */
+        .two-col {
+            display: flex; gap: 1.5em;
+            align-items: center; justify-content: center;
+            max-width: 92%;
+            margin: 0 auto;
+        }
+        .two-col > div { flex: 1; min-width: 0; }
+
+        /* Part label */
+        .part-label {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 800;
+            font-size: 0.65em;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.1em;
+        }
+
+        /* Scenario box */
+        .scenario-box {
+            background: rgba(0,229,255,0.07);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-left: 4px solid var(--accent);
+            border-radius: 8px;
+            padding: 0.5em 1em;
+            font-size: 0.78em;
+            text-align: left;
+            max-width: 100%;
+        }
+
+        /* Color classes */
+        .c-cable { color: var(--force-cable); }
+        .c-grav { color: var(--force-grav); }
+        .c-work { color: var(--work-color); }
+        .c-ke { color: var(--ke-color); }
+        .c-pe { color: var(--highlight); }
+        .c-accent { color: var(--accent); }
+        .c-muted { color: var(--text-muted); }
+
+        /* SVG styling */
+        .diagram-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0.2em 0;
+        }
+
+        /* Summary cards — horizontal for 16:9 */
+        .summary-cards {
+            display: flex;
+            gap: 1.2em;
+            justify-content: center;
+            align-items: stretch;
+            margin: 0.4em auto;
+            max-width: 92%;
+        }
+        .summary-card {
+            background: rgba(255,255,255,0.04);
+            border: 2px solid rgba(255,255,255,0.15);
+            border-radius: 14px;
+            padding: 0.6em 1em;
+            flex: 1;
+            text-align: center;
+        }
+        .summary-card h3 {
+            font-size: 1em;
+            margin: 0 0 0.2em 0;
+        }
+
+        /* Derivation flow — horizontal for 16:9 */
+        .derivation-flow {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3em;
+            margin: 0.3em auto;
+            max-width: 96%;
+            flex-wrap: nowrap;
+        }
+        .derivation-flow .step-card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 0.4em 0.6em;
+            text-align: center;
+            font-size: 0.65em;
+            line-height: 1.4;
+            flex: 1;
+            min-width: 0;
+        }
+        .derivation-flow .step-arrow {
+            font-size: 1.2em;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="reveal">
+        <!-- Ambient orbs -->
+        <div class="ambient-overlay">
+            <div class="orb-1"></div>
+            <div class="orb-2"></div>
+            <div class="orb-3"></div>
+        </div>
+
+        <div class="slides">
+
+            <!-- ============== TITLE ============== -->
+            <section data-background-gradient="radial-gradient(circle at 30% 50%, #1a0a3e, #0f0720)">
+                <p style="font-size: 0.65em; color: var(--text-muted); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 0.1em;">Chapter 7 — Work and Energy</p>
+                <h1 style="font-size: 3em; margin: 0.1em 0;">Find the Relationships</h1>
+                <h3 style="color: var(--accent); font-weight: 300; font-size: 1.2em;">Section 7.3.1</h3>
+                <div style="margin-top: 1.2em;">
+                    <span style="color: var(--text-muted); font-size: 0.75em;">Mr. Porter &nbsp;·&nbsp; Honors Physics</span>
+                </div>
+                <div style="margin-top: 0.8em; display: flex; gap: 0.8em; justify-content: center;">
+                    <span style="background: rgba(245,166,35,0.15); color: var(--warning); padding: 0.25em 0.7em; border-radius: 8px; font-size: 0.6em; font-weight: 600; letter-spacing: 0.1em;">PIVOTAL CLASS</span>
+                    <span style="background: rgba(91,156,246,0.15); color: var(--accent); padding: 0.25em 0.7em; border-radius: 8px; font-size: 0.6em; font-weight: 600; letter-spacing: 0.1em;">WHITEBOARDS + MARKERS</span>
+                </div>
+                <aside class="notes">
+                    This is a PIVOTAL class — students derive the expressions for gravitational PE and kinetic energy from the work-energy relationship. Make sure every group has a whiteboard and markers. The goal is to build these expressions from Newton's laws and kinematics — not to just hand them the formulas.
+                </aside>
+            </section>
+
+            <!-- ============== THE SCENARIO (ANIMATED) ============== -->
+            <section>
+                <h2>The Scenario</h2>
+                <div class="two-col" style="margin-top: 0.2em;">
+                    <div>
+                        <div class="scenario-box">
+                            <p style="margin: 0.2em 0;">A <strong style="color: var(--cable-color);">cable</strong> lifts a block from a lower position to a higher position.</p>
+                            <p style="margin: 0.2em 0;">The block is <em>already moving upward</em> when we start observing.</p>
+                            <p style="margin: 0.2em 0;">Watch the animation — what do you notice about the block's speed?</p>
+                        </div>
+                        <div class="fragment" style="margin-top: 0.6em;">
+                            <div class="task-box" style="border-color: var(--accent); background: rgba(91,156,246,0.08); max-width: 100%;">
+                                <div class="task-label" style="color: var(--accent);">👀 OBSERVE</div>
+                                <p style="font-size: 0.78em; margin: 0.1em 0;">Is the block speeding up, slowing down, or moving at constant speed?</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="diagram-container">
+                        <!-- Animated SVG: block accelerating upward on a cable -->
+                        <svg width="300" height="400" viewBox="0 0 300 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background structure: ground + ceiling -->
+                            <!-- Ground -->
+                            <line x1="30" y1="380" x2="270" y2="380" stroke="#8a85a8" stroke-width="1.5"/>
+                            <line x1="40" y1="388" x2="30" y2="380" stroke="#8a85a8" stroke-width="1"/>
+                            <line x1="60" y1="388" x2="50" y2="380" stroke="#8a85a8" stroke-width="1"/>
+                            <line x1="80" y1="388" x2="70" y2="380" stroke="#8a85a8" stroke-width="1"/>
+
+                            <!-- Pulley at top -->
+                            <circle cx="150" cy="25" r="10" fill="none" stroke="var(--cable-color)" stroke-width="2.5"/>
+                            <circle cx="150" cy="25" r="3" fill="var(--cable-color)"/>
+                            <!-- Ceiling mount -->
+                            <line x1="120" y1="10" x2="180" y2="10" stroke="#8a85a8" stroke-width="2"/>
+                            <line x1="150" y1="10" x2="150" y2="15" stroke="#8a85a8" stroke-width="2"/>
+
+                            <!-- Cable (shortens as block accelerates upward, fades with block) -->
+                            <line x1="150" y1="35" x2="150" y2="330" stroke="var(--cable-color)" stroke-width="3">
+                                <animate attributeName="y2" values="330;80;80;330" dur="3.5s" repeatCount="indefinite"
+                                    keyTimes="0;0.82;0.83;1" calcMode="spline"
+                                    keySplines="0.4 0 1 1;0 0 1 1;0 0 1 1"/>
+                                <animate attributeName="opacity" values="0;1;1;0;0" dur="3.5s" repeatCount="indefinite"
+                                    keyTimes="0;0.05;0.75;0.83;1" calcMode="linear"/>
+                            </line>
+
+                            <!-- Block (accelerating upward — enters slow, exits fast, never stops) -->
+                            <g>
+                                <animate attributeName="opacity" values="0;1;1;0;0" dur="3.5s" repeatCount="indefinite"
+                                    keyTimes="0;0.05;0.75;0.83;1" calcMode="linear"/>
+                                <animateTransform attributeName="transform" type="translate"
+                                    values="0,30;0,-220;0,-220;0,30" dur="3.5s" repeatCount="indefinite"
+                                    keyTimes="0;0.82;0.83;1" calcMode="spline"
+                                    keySplines="0.4 0 1 1;0 0 1 1;0 0 1 1"/>
+                                <!-- Block body -->
+                                <rect x="122" y="300" width="56" height="44" rx="5" fill="rgba(91,156,246,0.2)" stroke="var(--accent)" stroke-width="2"/>
+                                <text x="150" y="327" fill="var(--text-primary)" font-family="Inter" font-size="15" font-weight="600" text-anchor="middle">m</text>
+                            </g>
+
+                            <!-- Motion trail dots (increasing gaps = acceleration) -->
+                            <circle cx="150" cy="345" r="3" fill="rgba(255,255,255,0.08)"/>
+                            <circle cx="150" cy="315" r="3" fill="rgba(255,255,255,0.06)"/>
+                            <circle cx="150" cy="275" r="3" fill="rgba(255,255,255,0.05)"/>
+                            <circle cx="150" cy="225" r="3" fill="rgba(255,255,255,0.04)"/>
+                            <circle cx="150" cy="165" r="3" fill="rgba(255,255,255,0.03)"/>
+
+                            <!-- "Watch the speed" hint -->
+                            <text x="150" y="395" fill="#8a85a8" font-family="Inter" font-size="11" text-anchor="middle">Cable pulls block upward</text>
+                        </svg>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Let students watch the animation loop 2-3 times. Ask: "What do you notice about the block's speed as it goes up?" They should observe it speeds up — the spacing between positions increases. Don't label anything yet — students need to translate this into their own sketch in Part A. Ask: "What does the fact that it speeds up tell us about the forces?"
+                </aside>
+            </section>
+
+            <!-- ============== PART A: SKETCH THE TWO STATES ============== -->
+            <section>
+                <div class="part-label">Part A</div>
+                <h2>Sketch the Two States</h2>
+                <div class="task-box" style="margin-top: 0.3em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Based on what you observed, sketch the <strong>initial state</strong> and <strong>final state</strong> of the block.</p>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Include a labeled vertical axis, the block's position, the cable, and velocity arrows at each state.</p>
+                </div>
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.72em; color: var(--text-muted); margin-bottom: 0.2em;">Label your sketch with these symbols:</p>
+                    <div style="display: flex; gap: 1em; justify-content: center; flex-wrap: nowrap;">
+                        <div class="fragment pattern-card" style="border-left: 4px solid var(--accent); flex: 0 1 220px; padding: 0.4em 0.8em;">
+                            <p style="margin: 0; font-size: 0.78em;">Positions: $y_i$ and $y_f$</p>
+                        </div>
+                        <div class="fragment pattern-card" style="border-left: 4px solid var(--highlight); flex: 0 1 220px; padding: 0.4em 0.8em;">
+                            <p style="margin: 0; font-size: 0.78em;">Speeds: $v_{yi}$ and $v_{yf}$</p>
+                        </div>
+                        <div class="fragment pattern-card" style="border-left: 4px solid var(--warning); flex: 0 1 320px; padding: 0.4em 0.8em;">
+                            <p style="margin: 0; font-size: 0.78em;">Which velocity arrow should be longer? Why?</p>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Give groups 2-3 minutes. This is the critical translation step — they go from watching a process to representing two snapshot states. Walk around and check: (1) vertical y-axis with + up, (2) block shown at two heights with y_i below y_f, (3) velocity arrows both pointing up but v_yf arrow longer than v_yi, (4) cable attached. If groups are struggling, ask "What was the block doing at the beginning of what you observed? What was it doing at the end?" This is their reference diagram for everything that follows.
+                </aside>
+            </section>
+
+            <!-- ============== PART B: WORK EXPRESSION ============== -->
+            <section>
+                <div class="part-label">Part B</div>
+                <h2>Work Done by the Cable</h2>
+                <div class="task-box" style="margin-top: 0.3em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Write an expression for the <span class="c-work">work the cable does</span> on the block during displacement $y_f - y_i$</p>
+                </div>
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.75em; color: var(--text-muted);">Recall: work = force × displacement (when parallel)</p>
+                </div>
+                <div class="fragment" style="margin-top: 0.4em;">
+                    <div class="eq-container work">
+                        <span style="font-size: 2em;">$\color{#f5a623}{W_{\text{cable}}} = \color{#5b9cf6}{F_{\text{cable}}} \cdot (y_f - y_i)$</span>
+                    </div>
+                </div>
+                <div class="fragment" style="margin-top: 0.4em;">
+                    <p style="font-size: 0.78em;">Cable force is <span class="c-cable">upward</span>, displacement is <span class="c-accent">upward</span> → positive work</p>
+                </div>
+                <aside class="notes">
+                    Key point: the cable force and displacement are in the same direction, so the work is positive. The force is constant (we assume constant acceleration). We'll figure out what F_cable actually equals in the next part.
+                </aside>
+            </section>
+
+            <!-- ============== PART C: FORCE DIAGRAM (PROMPT) ============== -->
+            <section>
+                <div class="part-label">Part C</div>
+                <h2>Force Diagram → Find $F_{\text{cable}}$</h2>
+                <div class="task-box" style="margin-top: 0.4em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Draw a <strong>force diagram</strong> for the block.</p>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Use it to find $F_{\text{cable}}$ in terms of $m$, $a$, and $g$.</p>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Then substitute into the expression from Part B.</p>
+                </div>
+                <div class="fragment" style="margin-top: 0.6em;">
+                    <p style="font-size: 0.75em; color: var(--text-muted);">Hints:</p>
+                    <div style="display: flex; gap: 1.2em; justify-content: center; flex-wrap: nowrap; margin-top: 0.2em;">
+                        <div class="pattern-card" style="border-left: 4px solid var(--accent); flex: 0 1 380px; padding: 0.4em 0.8em;">
+                            <p style="margin: 0; font-size: 0.78em;">How many forces act on the block? What are they?</p>
+                        </div>
+                        <div class="pattern-card" style="border-left: 4px solid var(--highlight); flex: 0 1 380px; padding: 0.4em 0.8em;">
+                            <p style="margin: 0; font-size: 0.78em;">The block accelerates <strong>upward</strong> — what does that tell you about the relative size of the forces?</p>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Give groups 3-4 minutes. They need to: (1) draw a force diagram with the block as a dot, (2) identify two forces — cable up, gravity down, (3) apply Newton's 2nd law, (4) solve for F_cable, (5) substitute into W = F·Δy from Part B. Walk around and check diagrams before advancing. Common error: forgetting that F_cable > mg because the block accelerates upward.
+                </aside>
+            </section>
+
+            <!-- ============== PART C: FORCE DIAGRAM (ANSWER) ============== -->
+            <section>
+                <div class="part-label">Part C — Let's Check</div>
+                <h2 style="font-size: 1.5em;">Force Diagram & Newton's 2nd Law</h2>
+                <div class="two-col" style="margin-top: 0.1em; align-items: center;">
+                    <div class="diagram-container fragment">
+                        <!-- SVG: Force diagram — POINT OBJECT — 16:9 compact -->
+                        <svg width="240" height="320" viewBox="0 0 240 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Point object (dot) -->
+                            <circle cx="120" cy="160" r="9" fill="var(--text-primary)"/>
+
+                            <!-- F_cable arrow (up, long — starts from dot) -->
+                            <line x1="120" y1="151" x2="120" y2="40" stroke="#5b9cf6" stroke-width="5"/>
+                            <polygon points="120,32 109,50 131,50" fill="#5b9cf6"/>
+                            <text x="152" y="68" fill="#5b9cf6" font-family="Inter" font-size="19" font-weight="600">F<tspan dy="4" font-size="13">cable</tspan></text>
+
+                            <!-- F_gravity arrow (down, shorter — starts from dot) -->
+                            <line x1="120" y1="169" x2="120" y2="262" stroke="#e8504a" stroke-width="5"/>
+                            <polygon points="120,270 109,252 131,252" fill="#e8504a"/>
+                            <text x="152" y="248" fill="#e8504a" font-family="Inter" font-size="19" font-weight="600">mg</text>
+
+                            <!-- Acceleration arrow (offset left, dashed) -->
+                            <line x1="40" y1="185" x2="40" y2="130" stroke="#22d47a" stroke-width="2.5" stroke-dasharray="5,4"/>
+                            <polygon points="40,126 34,138 46,138" fill="#22d47a"/>
+                            <text x="24" y="162" fill="#22d47a" font-family="Inter" font-size="15" text-anchor="middle">a</text>
+
+                            <!-- + direction -->
+                            <text x="210" y="90" fill="#8a85a8" font-family="Inter" font-size="13" text-anchor="middle">+y</text>
+                            <line x1="210" y1="130" x2="210" y2="100" stroke="#8a85a8" stroke-width="1.5"/>
+                            <polygon points="210,96 206,106 214,106" fill="#8a85a8"/>
+
+                            <!-- Caption -->
+                            <text x="120" y="305" fill="#8a85a8" font-family="Inter" font-size="12" text-anchor="middle">F<tspan dy="3" font-size="9">cable</tspan><tspan dy="-3"> &gt; mg → accelerates up</tspan></text>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="fragment">
+                            <p style="font-size: 0.72em; color: var(--text-muted); margin: 0 0 0.15em 0;">Newton's 2nd Law (+ up):</p>
+                            <div class="eq-container">
+                                <span style="font-size: 1.5em;">$\color{#5b9cf6}{F_{\text{cable}}} - \color{#e8504a}{mg} = ma$</span>
+                            </div>
+                        </div>
+                        <div class="fragment" style="margin-top: 0.4em;">
+                            <p style="font-size: 0.72em; color: var(--text-muted); margin: 0 0 0.15em 0;">Solve for $F_{\text{cable}}$:</p>
+                            <div class="eq-container">
+                                <span style="font-size: 1.7em;">$\color{#5b9cf6}{F_{\text{cable}}} = ma + mg$</span>
+                            </div>
+                        </div>
+                        <div class="fragment" style="margin-top: 0.4em;">
+                            <p style="font-size: 0.72em; color: var(--text-muted); margin: 0 0 0.15em 0;">Substitute into Part B:</p>
+                            <div class="eq-container work">
+                                <span style="font-size: 1.4em;">$\color{#f5a623}{W} = (ma + mg)(y_f - y_i)$</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <aside class="notes">
+                    Reveal the diagram first — compare to what groups drew. Key check: did they represent the block as a point? Are there exactly two forces? Is F_cable longer than mg? Then walk through the algebra. Make sure they distribute for the final substitution: W = ma(yf - yi) + mg(yf - yi).
+                </aside>
+            </section>
+
+            <!-- ============== PART D: KINEMATICS ============== -->
+            <section>
+                <div class="part-label">Part D</div>
+                <h2>Replace Acceleration with Speeds</h2>
+                <div class="task-box" style="margin-top: 0.3em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Use a kinematics equation to convert $a$ into an expression with $v_i$, $v_f$, and $y_f - y_i$</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.75em; color: var(--text-muted);">Which kinematics equation connects $v_i$, $v_f$, $a$, and $\Delta y$ without time?</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.3em;">
+                    <div class="eq-container">
+                        <span style="font-size: 1.7em;">$v_{yf}^2 = v_{yi}^2 + 2a(y_f - y_i)$</span>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.4em;">
+                    <p style="font-size: 0.75em; color: var(--text-muted);">Solve for $a$:</p>
+                    <div class="eq-container" style="margin-top: 0.15em;">
+                        <span style="font-size: 1.8em;">$a = \dfrac{v_{yf}^2 - v_{yi}^2}{2(y_f - y_i)}$</span>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    Students should recognize that v² = v₀² + 2aΔx is the right kinematics equation because it has no time variable. We need to eliminate a because we want the final result in terms of measurable quantities (positions and speeds), not acceleration. Solving for a is straightforward algebra.
+                </aside>
+            </section>
+
+            <!-- ============== PART E: SUBSTITUTE INTO FORCE ============== -->
+            <section>
+                <div class="part-label">Part E</div>
+                <h2>New Expression for $F_{\text{cable}}$</h2>
+                <div class="task-box" style="margin-top: 0.3em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Substitute the expression for $a$ from Part D into $F_{\text{cable}}$ from Part C</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.4em;">
+                    <p style="font-size: 0.7em; color: var(--text-muted);">We had: &nbsp; $F_{\text{cable}} = ma + mg$</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.25em;">
+                    <p style="font-size: 0.7em; color: var(--text-muted);">Substituting $a = \dfrac{v_{yf}^2 - v_{yi}^2}{2(y_f - y_i)}$:</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.3em;">
+                    <div class="eq-container">
+                        <span style="font-size: 1.6em;">$F_{\text{cable}} = m \cdot \dfrac{v_{yf}^2 - v_{yi}^2}{2(y_f - y_i)} + mg$</span>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.3em; font-size: 0.75em; color: var(--text-muted);">
+                    <p>Force now in terms of $m$, $g$, positions, and speeds — no acceleration!</p>
+                </div>
+
+                <aside class="notes">
+                    This is just direct substitution — the algebra isn't hard, but make sure groups are keeping their work organized on the whiteboard. The key insight is that we've eliminated acceleration entirely. Everything is now in terms of quantities we can measure directly.
+                </aside>
+            </section>
+
+            <!-- ============== PART F: SUBSTITUTE INTO WORK ============== -->
+            <section>
+                <div class="part-label">Part F</div>
+                <h2>Final Work Expression</h2>
+                <div class="task-box" style="margin-top: 0.2em;">
+                    <div class="task-label">⬜ WHITEBOARD</div>
+                    <p style="font-size: 0.85em; margin: 0.15em 0;">Substitute $F_{\text{cable}}$ from Part E into $W_{\text{cable}}$ from Part B</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.35em;">
+                    <p style="font-size: 0.68em; color: var(--text-muted);">$W_{\text{cable}} = F_{\text{cable}} \cdot (y_f - y_i)$</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.2em;">
+                    <div class="eq-container work" style="padding: 0.35em 1em;">
+                        <span style="font-size: 1.25em;">$W_{\text{cable}} = \left[\, m \cdot \dfrac{v_{yf}^2 - v_{yi}^2}{2(y_f - y_i)} + mg \,\right] \cdot (y_f - y_i)$</span>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.3em;">
+                    <p style="font-size: 0.7em; color: var(--text-muted);">Distribute $(y_f - y_i)$ through each term:</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.2em;">
+                    <div class="eq-container work" style="padding: 0.35em 1em;">
+                        <span style="font-size: 1.45em;">$W_{\text{cable}} = \dfrac{m(v_{yf}^2 - v_{yi}^2)}{2} + mg(y_f - y_i)$</span>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.25em;">
+                    <p style="font-size: 0.75em;">Notice: $(y_f - y_i)$ <span class="c-accent">cancels</span> in the first term!</p>
+                </div>
+
+                <aside class="notes">
+                    The key algebra moment: when you multiply the fraction by (yf - yi), the denominator cancels! This is satisfying and important. The displacement cancellation in the kinetic energy term is what makes KE depend only on speed, not position. Give groups time to work through the distribution carefully.
+                </aside>
+            </section>
+
+            <!-- ============== PART G: THE BIG REVEAL ============== -->
+            <section>
+                <div class="part-label">Part G</div>
+                <h2 style="font-size: 1.5em;">Separate the Terms</h2>
+                <p style="font-size: 0.7em; color: var(--text-muted); margin: 0;">Expand and rearrange to see the structure</p>
+
+                <div class="fragment" style="margin-top: 0.35em;">
+                    <div class="eq-container work" style="padding: 0.35em 1.2em;">
+                        <span style="font-size: 1.3em;">$\color{#f5a623}{W_{\text{cable}}} = \color{#22d47a}{mg \, y_f} - \color{#22d47a}{mg \, y_i} + \color{#ff6b9d}{\tfrac{1}{2}mv_{yf}^2} - \color{#ff6b9d}{\tfrac{1}{2}mv_{yi}^2}$</span>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.4em;">
+                    <p style="font-size: 0.78em;">The work splits into a <strong>sum of changes</strong> of two quantities:</p>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.3em;">
+                    <div class="summary-cards">
+                        <div class="summary-card" style="border-color: var(--highlight);">
+                            <h3 style="color: var(--highlight);">Change in Position</h3>
+                            <div class="eq-container pe" style="margin: 0.2em 0; padding: 0.3em 0.8em;">
+                                <span style="font-size: 1.3em;">$\color{#22d47a}{mg \, y_f - mg \, y_i}$</span>
+                            </div>
+                            <p style="font-size: 0.65em; color: var(--text-muted); margin: 0.2em 0 0 0;">Depends on <em>where</em> the block is</p>
+                        </div>
+                        <div class="summary-card" style="border-color: var(--ke-color);">
+                            <h3 style="color: var(--ke-color);">Change in Speed</h3>
+                            <div class="eq-container ke" style="margin: 0.2em 0; padding: 0.3em 0.8em;">
+                                <span style="font-size: 1.3em;">$\color{#ff6b9d}{\tfrac{1}{2}mv_{yf}^2 - \tfrac{1}{2}mv_{yi}^2}$</span>
+                            </div>
+                            <p style="font-size: 0.65em; color: var(--text-muted); margin: 0.2em 0 0 0;">Depends on <em>how fast</em> the block moves</p>
+                        </div>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    This is the big moment. The work done by the cable naturally splits into two kinds of changes. One depends on position (height) and the other depends on speed. Ask students: "Does it make sense that lifting something higher AND making it go faster both require the cable to do work?" Yes — the cable has to fight gravity AND accelerate the block.
+                </aside>
+            </section>
+
+            <!-- ============== NAMING THE QUANTITIES ============== -->
+            <section data-background-gradient="radial-gradient(circle at 60% 40%, #0d1f4a, #0f0720)">
+                <h2>Naming These Quantities</h2>
+                <p style="font-size: 0.72em; color: var(--text-muted); margin: 0 0 0.3em 0;">We give these expressions names because they appear everywhere in physics</p>
+
+                <div style="display: flex; gap: 1.5em; justify-content: center; align-items: stretch; margin: 0.3em auto; max-width: 90%;">
+                    <div class="fragment" style="flex: 1;">
+                        <div class="result-glow" style="padding: 0.6em 1.2em; width: 100%; box-sizing: border-box;">
+                            <p style="font-size: 0.6em; color: var(--highlight); font-family: 'Outfit'; font-weight: 600; letter-spacing: 0.1em; margin: 0 0 0.15em 0;">GRAVITATIONAL POTENTIAL ENERGY</p>
+                            <span style="font-size: 2em; font-weight: 600;">$\color{#22d47a}{U_g = mgy}$</span>
+                        </div>
+                    </div>
+                    <div class="fragment" style="flex: 1;">
+                        <div style="background: linear-gradient(135deg, rgba(255,107,157,0.15), rgba(91,156,246,0.15)); border: 2px solid var(--ke-color); border-radius: 16px; padding: 0.6em 1.2em; box-shadow: 0 0 30px rgba(255,107,157,0.2); width: 100%; box-sizing: border-box;">
+                            <p style="font-size: 0.6em; color: var(--ke-color); font-family: 'Outfit'; font-weight: 600; letter-spacing: 0.1em; margin: 0 0 0.15em 0;">KINETIC ENERGY</p>
+                            <span style="font-size: 2em; font-weight: 600;">$\color{#ff6b9d}{K = \tfrac{1}{2}mv^2}$</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.8em; margin: 0 0 0.15em 0;">So the work equation becomes:</p>
+                    <div class="eq-container work" style="padding: 0.4em 1.2em;">
+                        <span style="font-size: 1.7em;">$\color{#f5a623}{W_{\text{cable}}} = \color{#22d47a}{\Delta U_g} + \color{#ff6b9d}{\Delta K}$</span>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    These names capture what the expressions physically represent. Gravitational PE depends on position relative to Earth — it's energy stored in the block-Earth system due to their separation. Kinetic energy depends on speed — it's the energy of motion. The work-energy equation says the cable's work goes into changing BOTH of these. This is the work-energy theorem in its most useful form for this chapter.
+                </aside>
+            </section>
+
+            <!-- ============== VISUAL SUMMARY — HORIZONTAL FLOW ============== -->
+            <section>
+                <h2 style="font-size: 1.4em;">The Complete Derivation</h2>
+                <p style="font-size: 0.6em; color: var(--text-muted); margin: 0;">Tracing the logic from start to finish</p>
+
+                <div class="derivation-flow" style="margin-top: 0.4em;">
+                    <div class="fragment step-card" style="border-left: 3px solid var(--work-color);">
+                        <div style="color: var(--work-color); font-weight: 600; font-size: 0.9em;">B</div>
+                        <div>$W = F_{\text{cable}} \cdot \Delta y$</div>
+                    </div>
+                    <div class="fragment step-arrow">→</div>
+                    <div class="fragment step-card" style="border-left: 3px solid var(--force-cable);">
+                        <div style="color: var(--force-cable); font-weight: 600; font-size: 0.9em;">C</div>
+                        <div>$F = ma + mg$</div>
+                        <div style="font-size: 0.85em; color: var(--text-muted);">Newton's 2nd</div>
+                    </div>
+                    <div class="fragment step-arrow">→</div>
+                    <div class="fragment step-card" style="border-left: 3px solid var(--accent);">
+                        <div style="color: var(--accent); font-weight: 600; font-size: 0.9em;">D</div>
+                        <div>$a = \frac{v_f^2 - v_i^2}{2\Delta y}$</div>
+                        <div style="font-size: 0.85em; color: var(--text-muted);">Kinematics</div>
+                    </div>
+                    <div class="fragment step-arrow">→</div>
+                    <div class="fragment step-card" style="border-left: 3px solid var(--warning);">
+                        <div style="color: var(--warning); font-weight: 600; font-size: 0.9em;">E–F</div>
+                        <div>Substitute & simplify</div>
+                        <div style="font-size: 0.85em; color: var(--text-muted);">$\Delta y$ cancels</div>
+                    </div>
+                    <div class="fragment step-arrow">→</div>
+                    <div class="fragment step-card" style="border-left: 3px solid var(--highlight); border-color: var(--highlight); background: rgba(34,212,122,0.08);">
+                        <div style="color: var(--highlight); font-weight: 600; font-size: 0.9em;">G</div>
+                        <div>$W = \color{#22d47a}{\Delta(mgy)} + \color{#ff6b9d}{\Delta(\tfrac{1}{2}mv^2)}$</div>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    This slide is the summary of the entire logical chain. Walk through it left to right: we started with a definition of work, used Newton's 2nd law to find the force, used kinematics to eliminate acceleration, substituted everything together, and what fell out naturally were expressions for gravitational PE and kinetic energy. This wasn't handed to us — we DERIVED it from things we already knew.
+                </aside>
+            </section>
+
+            <!-- ============== WHAT THIS MEANS ============== -->
+            <section>
+                <h2 style="font-size: 1.5em;">What This Means Physically</h2>
+
+                <div class="two-col" style="margin-top: 0.2em; align-items: center;">
+                    <div>
+                        <div class="fragment" style="margin-bottom: 0.4em;">
+                            <div class="pattern-card" style="border-left: 4px solid var(--highlight); padding: 0.5em 1em;">
+                                <p style="margin: 0 0 0.1em 0; font-size: 0.65em; color: var(--highlight); font-weight: 600; letter-spacing: 0.08em;">GRAVITATIONAL PE</p>
+                                <p style="margin: 0; font-size: 0.8em;">$U_g = mgy$</p>
+                                <p style="margin: 0.15em 0 0 0; font-size: 0.68em; color: var(--text-muted);">Energy stored in the block–Earth system due to <strong>separation</strong></p>
+                                <p style="margin: 0.1em 0 0 0; font-size: 0.68em; color: var(--text-muted);">Increases when block goes <strong>higher</strong></p>
+                            </div>
+                        </div>
+                        <div class="fragment">
+                            <div class="pattern-card" style="border-left: 4px solid var(--ke-color); padding: 0.5em 1em;">
+                                <p style="margin: 0 0 0.1em 0; font-size: 0.65em; color: var(--ke-color); font-weight: 600; letter-spacing: 0.08em;">KINETIC ENERGY</p>
+                                <p style="margin: 0; font-size: 0.8em;">$K = \tfrac{1}{2}mv^2$</p>
+                                <p style="margin: 0.15em 0 0 0; font-size: 0.68em; color: var(--text-muted);">Energy of <strong>motion</strong> — depends on speed, not direction</p>
+                                <p style="margin: 0.1em 0 0 0; font-size: 0.68em; color: var(--text-muted);">Always <strong>positive</strong> (or zero)</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="diagram-container fragment">
+                        <!-- SVG: Energy bar chart — 16:9 compact -->
+                        <svg width="340" height="310" viewBox="0 0 340 310" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <!-- Title -->
+                            <text x="170" y="20" fill="var(--text-muted)" font-family="Inter" font-size="13" text-anchor="middle">Energy Bar Chart</text>
+
+                            <!-- Axes -->
+                            <line x1="35" y1="268" x2="320" y2="268" stroke="#8a85a8" stroke-width="1.5"/>
+
+                            <!-- At y_i label -->
+                            <text x="110" y="292" fill="#8a85a8" font-family="Inter" font-size="14" text-anchor="middle">At y<tspan dy="3" font-size="10">i</tspan></text>
+                            <!-- At y_f label -->
+                            <text x="248" y="292" fill="#8a85a8" font-family="Inter" font-size="14" text-anchor="middle">At y<tspan dy="3" font-size="10">f</tspan></text>
+
+                            <!-- y_i bars -->
+                            <rect x="72" y="210" width="32" height="58" rx="4" fill="rgba(34,212,122,0.3)" stroke="#22d47a" stroke-width="1.5"/>
+                            <text x="88" y="244" fill="#22d47a" font-family="Inter" font-size="11" text-anchor="middle">U<tspan dy="2" font-size="8">g</tspan></text>
+
+                            <rect x="114" y="225" width="32" height="43" rx="4" fill="rgba(255,107,157,0.3)" stroke="#ff6b9d" stroke-width="1.5"/>
+                            <text x="130" y="252" fill="#ff6b9d" font-family="Inter" font-size="11" text-anchor="middle">K</text>
+
+                            <!-- y_f bars -->
+                            <rect x="210" y="110" width="32" height="158" rx="4" fill="rgba(34,212,122,0.5)" stroke="#22d47a" stroke-width="2"/>
+                            <text x="226" y="195" fill="#22d47a" font-family="Inter" font-size="12" font-weight="600" text-anchor="middle">U<tspan dy="2" font-size="9">g</tspan></text>
+
+                            <rect x="252" y="158" width="32" height="110" rx="4" fill="rgba(255,107,157,0.5)" stroke="#ff6b9d" stroke-width="2"/>
+                            <text x="268" y="220" fill="#ff6b9d" font-family="Inter" font-size="12" font-weight="600" text-anchor="middle">K</text>
+
+                            <!-- Growth arrows -->
+                            <path d="M88,205 C88,175 226,145 226,105" stroke="#22d47a" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+                            <polygon points="226,102 222,112 230,112" fill="#22d47a" opacity="0.7"/>
+
+                            <path d="M130,220 C130,195 268,180 268,153" stroke="#ff6b9d" stroke-width="1.5" stroke-dasharray="4,3" fill="none"/>
+                            <polygon points="268,150 264,160 272,160" fill="#ff6b9d" opacity="0.7"/>
+
+                            <!-- Caption -->
+                            <text x="170" y="42" fill="var(--work-color)" font-family="Outfit" font-size="14" font-weight="600" text-anchor="middle">W<tspan dy="3" font-size="10">cable</tspan><tspan dy="-3"> provides energy for both increases</tspan></text>
+                        </svg>
+                    </div>
+                </div>
+
+                <aside class="notes">
+                    Emphasize the physical meaning. The cable does work that goes into TWO things: (1) lifting the block higher increases gravitational PE, and (2) speeding it up increases kinetic energy. The bar chart makes this visual — both bars grow from y_i to y_f, and the total growth equals the work done by the cable. This is the foundation for conservation of energy discussions.
+                </aside>
+            </section>
+
+            <!-- ============== DISCUSSION PROMPT ============== -->
+            <section>
+                <h2>Discussion</h2>
+
+                <div style="display: flex; gap: 1.5em; justify-content: center; align-items: stretch; max-width: 90%; margin: 0.4em auto;">
+                    <div class="task-box" style="flex: 1; border-color: var(--accent); background: rgba(91,156,246,0.08); margin: 0;">
+                        <div class="task-label" style="color: var(--accent);">💭 GROUP DISCUSSION</div>
+                        <p style="font-size: 0.85em; margin: 0.2em 0;">Why does gravitational PE depend on <strong>position</strong> but kinetic energy depends on <strong>speed</strong>?</p>
+                    </div>
+
+                    <div class="fragment task-box" style="flex: 1; border-color: var(--highlight); background: rgba(34,212,122,0.06); margin: 0;">
+                        <div class="task-label" style="color: var(--highlight);">💭 THINK DEEPER</div>
+                        <p style="font-size: 0.85em; margin: 0.2em 0;">What would change if the cable <em>lowered</em> the block while it was <em>speeding up</em>?</p>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.75em; color: var(--text-muted);">Hint: Think about the <strong>signs</strong> of each term in the work equation</p>
+                </div>
+
+                <aside class="notes">
+                    First question: PE comes from the mg·(yf-yi) term — it's about the force of gravity and how far you move against it. KE comes from the kinematics — it's about how fast you're going, which relates to how much force was applied over what distance. Second question: if the block goes down, delta_y is negative so delta_Ug is negative (PE decreases). If it speeds up, delta_K is positive. The cable could actually do LESS work (or negative work) if gravity is doing the accelerating. This previews energy conservation.
+                </aside>
+            </section>
+
+            <!-- ============== SUMMARY ============== -->
+            <section data-background-gradient="radial-gradient(circle at 40% 60%, #1a0a3e, #0f0720)">
+                <h2>Key Takeaways</h2>
+
+                <div style="display: flex; flex-direction: column; gap: 0.3em; align-items: center; margin-top: 0.3em;">
+                    <div class="fragment pattern-card" style="border-left: 4px solid var(--accent); max-width: 80%; padding: 0.4em 1em;">
+                        <p style="margin: 0; font-size: 0.82em;">We <strong>derived</strong> $U_g$ and $K$ from Newton's Laws + Kinematics — they weren't given to us</p>
+                    </div>
+                    <div class="fragment pattern-card" style="border-left: 4px solid var(--highlight); max-width: 80%; padding: 0.4em 1em;">
+                        <p style="margin: 0; font-size: 0.82em;"><span class="c-pe">Gravitational PE</span> $= mgy$ — energy of position in a gravitational field</p>
+                    </div>
+                    <div class="fragment pattern-card" style="border-left: 4px solid var(--ke-color); max-width: 80%; padding: 0.4em 1em;">
+                        <p style="margin: 0; font-size: 0.82em;"><span class="c-ke">Kinetic energy</span> $= \tfrac{1}{2}mv^2$ — energy of motion</p>
+                    </div>
+                    <div class="fragment pattern-card" style="border-left: 4px solid var(--work-color); max-width: 80%; padding: 0.4em 1em;">
+                        <p style="margin: 0; font-size: 0.82em;">Work by external forces = $\color{#22d47a}{\Delta U_g} + \color{#ff6b9d}{\Delta K}$</p>
+                    </div>
+                </div>
+
+                <div class="fragment" style="margin-top: 0.5em;">
+                    <p style="font-size: 0.72em; color: var(--text-muted);">Next: What happens when there are <em>no</em> external forces doing work?<br><span style="color: var(--accent);">→ Conservation of Energy</span></p>
+                </div>
+
+                <aside class="notes">
+                    Wrap up by emphasizing: we didn't just memorize formulas — we BUILT them from fundamental physics. This derivation is the foundation for everything else in the energy unit. Next class, we'll ask: what if there's no cable? If no external work is done, then the sum of PE and KE must stay constant — that's conservation of energy. Collect whiteboards.
+                </aside>
+            </section>
+
+        </div><!-- .slides -->
+    </div><!-- .reveal -->
+
+    <script>
+        Reveal.initialize({
+            hash: true,
+            history: true,
+            transition: 'slide',
+            backgroundTransition: 'fade',
+            transitionSpeed: 'default',
+            center: true,
+            controls: true,
+            controlsTutorial: true,
+            progress: true,
+            slideNumber: 'c/t',
+            keyboard: true,
+            overview: true,
+            width: 1920,
+            height: 1080,
+            margin: 0.04,
+            plugins: [RevealNotes]
+        });
+    </script>
+</body>
+</html>

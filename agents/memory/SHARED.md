@@ -17,6 +17,11 @@ Cross-cutting knowledge that applies to multiple agents. Any agent can read and 
 
 ---
 
+## Agent Conventions
+
+- **Canonical agent structure (2026-03-12):** All 14 general agents follow: identity line → What I Do → What I Don't Do (delegate back) → Context Loading → Output Format → Cross-cutting Notes (for /remember). New agents must match this structure. The cross-cutting notes footer enables `/remember` to consolidate learnings from agent reports.
+- **Create-assessment QA ordering:** QA audit (Step 6) runs BEFORE user review (Step 7). QA catches rubric neutrality, ISLE coverage, and a11y issues before Kellen sees the output. Rubric/structural issues route to assessment-designer; wording issues route to content-writer.
+
 ## Environment
 
 - **Student hardware:** Chromebook, 1366x768 viewport, trackpad input, integrated GPU
@@ -58,6 +63,7 @@ Cross-cutting knowledge that applies to multiple agents. Any agent can read and 
 - **STARTED submissions were previously hidden** — `TeacherDashboard.tsx` used to filter `status !== 'STARTED'`. As of March 2026, they're included so admin can see in-progress work. Any new code consuming assessment submissions should expect STARTED status in the mix.
 - **New block types must be added to TWO grading lists** — `submitAssessment` in `functions/src/index.ts` has separate lists: auto-graded types (MC, SHORT_ANSWER, SORTING, RANKING, LINKED) and manual-review types (DRAWING, MATH_RESPONSE, BAR_CHART, DATA_TABLE, CHECKLIST). Missing a block type means its response is silently dropped from `perBlock` and invisible to teachers.
 - **Assessment session detection** — `Proctor.tsx` uses `localStorage` + `sessionStorage` token presence to distinguish fresh start (archive then wipe responses) from returning student (restore responses). Both storages must be cleared on submit and retake. `localStorage` survives tab/browser close; `sessionStorage` is same-tab only. Fresh-start wipe archives old responses to `lesson_block_responses_archive` before clearing (soft-delete for recovery).
+- **`existingSubmission` is truthy during retakes** — When a student clicks "Retake", `assessmentResult` is cleared but `existingSubmission` (real-time Firestore listener) still has the old submission. Any UI condition checking `!existingSubmission` to mean "student is actively working" is WRONG during retakes — must also check `isRetakingRef.current`. Fixed in sticky submit banner (2026-03-12). Watch for this in any new assessment-aware UI.
 - **Abort flags on one-shot Firestore reads** — Any `getDoc()` call inside a `useEffect` MUST use a `cancelled` flag cleared in the cleanup function. Without it, navigating away before the promise resolves causes stale state updates and phantom error toasts. Pattern: `let cancelled = false; getDoc(...).then(s => { if (!cancelled) ... }); return () => { cancelled = true; };`
 - **Context hooks must not throw** — `useAppData()`, `useAdminData()`, `useChat()` all return safe empty defaults instead of throwing. This prevents ErrorBoundary crashes during Suspense/lazy route transitions. Never revert these to throwing patterns.
 - **Boss loot items must include `visualId`** — The boss loot generator (`functions/src/index.ts:3845`) previously omitted `visualId`, `baseName`, `description`, and `obtainedAt`. Without `visualId`, `getItemIconPath()` crashes on `visualId.startsWith()`. Fixed March 2026. Any new loot generation code must include all `LootItem` fields — use `BASE_ITEMS[slot][0].vid` as fallback.

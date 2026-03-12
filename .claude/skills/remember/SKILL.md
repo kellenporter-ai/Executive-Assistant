@@ -136,3 +136,10 @@ If the conversation context is being compacted, focus specifically on preserving
 ## When Called via /remember
 
 Kellen is explicitly telling you to store something. Look at the most recent conversation context for what they want remembered. If it's ambiguous, you can ask — but usually the thing they want remembered is obvious from context. Store it, confirm it, move on.
+
+## Error Handling
+
+- **MEMORY.md exceeds 200 lines:** Compact aggressively — move detailed entries to topic files, keep only index pointers in MEMORY.md. This is a hard cap; lines after 200 are truncated.
+- **Edit tool fails on a memory file:** The file may have been deleted or moved. Re-read the memory directory listing and recreate the file if needed.
+- **Duplicate detection fails:** If you accidentally create a duplicate entry, the next /remember invocation should catch and merge it. Don't block on perfect dedup — lean toward storing and cleaning up later.
+- **SHARED.md conflict:** If a cross-cutting note contradicts an existing entry in SHARED.md, update the existing entry rather than appending a conflicting one. Add a date to indicate when the fact changed.

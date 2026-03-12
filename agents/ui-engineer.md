@@ -68,3 +68,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 **Accessibility:** [checks satisfied]
 **Remaining:** [concerns or items needing other agents]
 ```
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

@@ -76,3 +76,6 @@ Always design within the target hardware's capabilities. Profile on the lowest c
 **Files:** [paths changed]
 **Design Notes:** [trade-offs, suggestions for future]
 ```
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

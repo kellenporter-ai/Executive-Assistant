@@ -139,6 +139,10 @@ Development and tuning workflows for Porter's Portal.
 | game-balance | medium | Sonnet | RPG economy analysis and tuning |
 | grade-assistant | medium | Sonnet | Batch AI grading via local LLM (Ollama) |
 | progress-report | low | Sonnet | Parent-friendly CSV reports from Firestore |
+| rubric-audit | medium | Sonnet | Rubric neutrality, tier quality, ISLE alignment checks |
+| perf-audit | high | Sonnet | Bundle, render, query performance audits |
+| changelog | medium | Sonnet | Generate changelogs from git history |
+| dependency-audit | low | Haiku | Security vulnerabilities and outdated package checks |
 
 ### Research & Utilities
 Web research, local LLM offloading, and general-purpose tools.
@@ -168,6 +172,12 @@ Skills that manage other skills and agents.
 | content-writer | Haiku | UI copy, tooltips, error messages | Copy-only; annotates for ui-engineer |
 | data-analyst | Haiku | Metrics, engagement, risk identification | Reports-only; never implements |
 | deployment-monitor | Haiku | Post-deploy health, log analysis | Monitor-only; never fixes |
+| assessment-designer | Sonnet | Rubric design, question strategy, difficulty tiering | Design-only; no JSON generation or code |
+| technical-writer | Sonnet | API docs, references, migration guides, changelogs | Docs-only; no code or student-facing copy |
+| performance-engineer | Sonnet | Bundle analysis, render profiling, query optimization | Perf-only; implements targeted fixes |
+| curriculum-designer | Sonnet | Learning outcomes, standards alignment, unit sequencing | Design-only; no lesson JSON, assessment design, or code |
+| localization-coordinator | Haiku | English↔Spanish translation, bilingual review, terminology | Translation-only; no original content, i18n code, or assessment design |
+| release-engineer | Sonnet | Deploy planning, sequencing, execution, rollback | Deploy-only; no monitoring, feature code, or QA |
 | local-llm-assistant | Qwen3 14B | Drafting, summarizing, boilerplate | No internet; flags tasks beyond capability |
 
 ---
@@ -248,7 +258,7 @@ Every tool execution, context injection, and delegation is visible in the Claude
 | **Always-on webhooks** | Requires external infra (n8n, Make.com). Adds complexity without matching current needs. |
 | **External orchestration platforms** | Claude Code's built-in skill/agent system handles orchestration natively. No need for a separate platform. |
 | **MCP servers (Gmail, Slack, Zapier)** | Deferred until there's a concrete use case. Google Calendar MCP is the most likely first addition. |
-| **Memory Graph DB (Neo4j, Kuzu)** | 8 agents + 1 user. Flat markdown with a shared file (`agents/memory/SHARED.md`) is sufficient at current scale. |
+| **Memory Graph DB (Neo4j, Kuzu)** | 14 agents + 1 user. Flat markdown with a shared file (`agents/memory/SHARED.md`) is sufficient at current scale. |
 | **MCPGauge evaluation framework** | Manual observation works for our agent team size. Formal eval suites are premature. |
 | **Custom remote MCP servers** | All integrations use official plugins or local tools. No custom servers to secure with OAuth 2.1. |
 | **Dynamic tool search registry** | Claude Code's deferred tool loading handles this natively. |

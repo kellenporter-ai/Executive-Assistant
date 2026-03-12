@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibrational Motion — Pendulum &amp; Spring</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #1a1a2e; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: #e0e0e0; }
+  .container { display: flex; width: 100%; height: 100%; padding: 12px; gap: 12px; }
+  .panel {
+    flex: 1; display: flex; flex-direction: column; position: relative;
+    background: #16213e; border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .panel-header {
+    text-align: center; padding: 10px 0 6px; font-size: 15px; font-weight: 500;
+    letter-spacing: 0.5px; color: rgba(224,224,224,0.7); user-select: none;
+  }
+  .canvas-wrap { flex: 1; position: relative; }
+  .canvas-wrap canvas { display: block; width: 100%; height: 100%; }
+  .reset-btn {
+    position: absolute; bottom: 10px; right: 10px; padding: 5px 14px;
+    background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px; color: rgba(224,224,224,0.6); font-size: 12px;
+    cursor: pointer; user-select: none; transition: background 0.2s, color 0.2s;
+  }
+  .reset-btn:hover { background: rgba(255,255,255,0.13); color: #e0e0e0; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="panel">
+    <div class="panel-header">String Pendulum</div>
+    <div class="canvas-wrap">
+      <canvas id="pendCanvas"></canvas>
+      <button class="reset-btn" id="pendReset">Reset</button>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-header">Spring-Mass System</div>
+    <div class="canvas-wrap">
+      <canvas id="springCanvas"></canvas>
+      <button class="reset-btn" id="springReset">Reset</button>
+    </div>
+  </div>
+</div>
+<script>
+(() => {
+  // ── Shared helpers ──
+  const DPR = window.devicePixelRatio || 1;
+  const dt = 1 / 60;
+
+  function resizeCanvas(canvas) {
+    const r = canvas.parentElement.getBoundingClientRect();
+    canvas.width = r.width * DPR;
+    canvas.height = r.height * DPR;
+    canvas.style.width = r.width + 'px';
+    canvas.style.height = r.height + 'px';
+    return { w: r.width, h: r.height };
+  }
+
+  function getPointer(canvas, e) {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX - r.left, y: t.clientY - r.top };
+  }
+
+  function dist(ax, ay, bx, by) {
+    return Math.hypot(bx - ax, by - ay);
+  }
+
+  // Bob gradient (teal/cyan)
+  function drawBob(ctx, x, y, radius) {
+    const s = DPR;
+    // Shadow
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(x * s, (y + 3) * s, radius * s, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fill();
+    ctx.restore();
+    // Gradient bob
+    const grd = ctx.createRadialGradient(
+      (x - radius * 0.3) * s, (y - radius * 0.3) * s, radius * 0.1 * s,
+      x * s, y * s, radius * s
+    );
+    grd.addColorStop(0, '#7efcf0');
+    grd.addColorStop(0.45, '#38bdf8');
+    grd.addColorStop(1, '#0e7490');
+    ctx.beginPath();
+    ctx.arc(x * s, y * s, radius * s, 0, Math.PI * 2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+  }
+
+  // ════════════════════════════════════════
+  //  PENDULUM
+  // ════════════════════════════════════════
+  (() => {
+    const canvas = document.getElementById('pendCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const BOB_R = 22;
+    const DAMP = 0.03;
+    // Effective omega^2 = G_EFF gives period T = 2pi/sqrt(G_EFF) ≈ 1.15s
+    const G_EFF = 30;
+    let L, pivotX, pivotY, eqY;
+    let theta = 0, omega = 0;
+    let dragging = false;
+
+    function layout() {
+      const { w, h } = resizeCanvas(canvas);
+      pivotX = w / 2;
+      pivotY = h * 0.08;
+      L = Math.min(h * 0.62, w * 0.8);
+      eqY = pivotY + L;
+    }
+
+    function bobPos() {
+      return { x: pivotX + L * Math.sin(theta), y: pivotY + L * Math.cos(theta) };
+    }
+
+    function reset() { theta = 0; omega = 0; dragging = false; }
+
+    function step() {
+      if (dragging) return;
+      // theta'' = -(g/L)*sin(theta) with g/L replaced by tuned constant
+      const alpha = -G_EFF * Math.sin(theta) - DAMP * omega;
+      omega += alpha * dt;
+      theta += omega * dt;
+    }
+
+    function draw() {
+      const s = DPR;
+      const { w, h } = { w: canvas.width / s, h: canvas.height / s };
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Equilibrium dashed line
+      ctx.save();
+      ctx.setLineDash([6 * s, 6 * s]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+      ctx.lineWidth = 1 * s;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.15 * s, eqY * s);
+      ctx.lineTo(w * 0.85 * s, eqY * s);
+      ctx.stroke();
+      ctx.restore();
+
+      const { x: bx, y: by } = bobPos();
+
+      // Pivot bracket
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillRect((pivotX - 4) * s, (pivotY - 3) * s, 8 * s, 6 * s);
+
+      // String
+      ctx.strokeStyle = 'rgba(240,240,240,0.75)';
+      ctx.lineWidth = 2 * s;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(pivotX * s, pivotY * s);
+      ctx.lineTo(bx * s, by * s);
+      ctx.stroke();
+
+      drawBob(ctx, bx, by, BOB_R);
+    }
+
+    // ── Interaction ──
+    function onDown(e) {
+      e.preventDefault();
+      const p = getPointer(canvas, e);
+      const b = bobPos();
+      if (dist(p.x, p.y, b.x, b.y) < BOB_R + 16) {
+        dragging = true;
+        canvas.style.cursor = 'grabbing';
+      }
+    }
+    function onMove(e) {
+      if (!dragging) {
+        const p = getPointer(canvas, e);
+        const b = bobPos();
+        canvas.style.cursor = dist(p.x, p.y, b.x, b.y) < BOB_R + 16 ? 'grab' : 'default';
+        return;
+      }
+      e.preventDefault();
+      const p = getPointer(canvas, e);
+      const dx = p.x - pivotX;
+      const dy = p.y - pivotY;
+      theta = Math.atan2(dx, dy);
+      // Clamp to reasonable range
+      theta = Math.max(-Math.PI * 0.45, Math.min(Math.PI * 0.45, theta));
+      omega = 0;
+    }
+    function onUp() {
+      if (dragging) { dragging = false; canvas.style.cursor = 'grab'; }
+    }
+
+    canvas.addEventListener('mousedown', onDown);
+    canvas.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    canvas.addEventListener('touchstart', onDown, { passive: false });
+    canvas.addEventListener('touchmove', onMove, { passive: false });
+    canvas.addEventListener('touchend', onUp);
+    document.getElementById('pendReset').addEventListener('click', reset);
+
+    layout();
+    window.addEventListener('resize', layout);
+
+    function loop() {
+      step(); draw(); requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+
+  // ════════════════════════════════════════
+  //  SPRING-MASS
+  // ════════════════════════════════════════
+  (() => {
+    const canvas = document.getElementById('springCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const BOB_R = 22;
+    const K = 28;       // spring constant (display-tuned)
+    const M = 1.2;
+    const DAMP = 0.15;
+    const COILS = 14;
+
+    let anchorX, anchorY, eqY, restLen;
+    let y = 0, v = 0; // displacement from eqY
+    let dragging = false;
+
+    function layout() {
+      const { w, h } = resizeCanvas(canvas);
+      anchorX = w / 2;
+      anchorY = h * 0.06;
+      eqY = h * 0.52;
+      restLen = eqY - anchorY;
+    }
+
+    function bobY() { return eqY + y; }
+
+    function reset() { y = 0; v = 0; dragging = false; }
+
+    function step() {
+      if (dragging) return;
+      const a = -(K / M) * y - DAMP * v;
+      v += a * dt;
+      y += v * dt;
+    }
+
+    function drawSpring(ctx, x1, y1, x2, y2) {
+      const s = DPR;
+      const dx = x2 - x1, dy = y2 - y1;
+      const len = Math.hypot(dx, dy);
+      const nx = -dy / len, ny = dx / len; // perpendicular
+      const amp = 10; // zigzag half-width
+
+      ctx.strokeStyle = 'rgba(240,240,240,0.72)';
+      ctx.lineWidth = 2 * s;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+
+      // Straight lead-in
+      const leadIn = 0.04;
+      const leadOut = 0.04;
+      ctx.moveTo(x1 * s, y1 * s);
+
+      const startT = leadIn;
+      const endT = 1 - leadOut;
+      const coilLen = endT - startT;
+
+      for (let i = 0; i <= COILS * 2; i++) {
+        const t = startT + (i / (COILS * 2)) * coilLen;
+        const px = x1 + dx * t;
+        const py = y1 + dy * t;
+        const side = (i % 2 === 0) ? 1 : -1;
+        // First and last half-segments have no offset
+        const offset = (i === 0 || i === COILS * 2) ? 0 : side * amp;
+        ctx.lineTo((px + nx * offset) * s, (py + ny * offset) * s);
+      }
+
+      ctx.lineTo(x2 * s, y2 * s);
+      ctx.stroke();
+    }
+
+    function draw() {
+      const s = DPR;
+      const { w, h } = { w: canvas.width / s, h: canvas.height / s };
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Equilibrium dashed line
+      ctx.save();
+      ctx.setLineDash([6 * s, 6 * s]);
+      ctx.strokeStyle = 'rgba(255,255,255,0.09)';
+      ctx.lineWidth = 1 * s;
+      ctx.beginPath();
+      ctx.moveTo(w * 0.15 * s, eqY * s);
+      ctx.lineTo(w * 0.85 * s, eqY * s);
+      ctx.stroke();
+      ctx.restore();
+
+      const by = bobY();
+
+      // Anchor bracket
+      ctx.fillStyle = 'rgba(255,255,255,0.35)';
+      ctx.fillRect((anchorX - 18) * s, (anchorY - 3) * s, 36 * s, 6 * s);
+
+      // Spring
+      drawSpring(ctx, anchorX, anchorY + 3, anchorX, by - BOB_R);
+
+      drawBob(ctx, anchorX, by, BOB_R);
+    }
+
+    // ── Interaction ──
+    function onDown(e) {
+      e.preventDefault();
+      const p = getPointer(canvas, e);
+      const by = bobY();
+      if (dist(p.x, p.y, anchorX, by) < BOB_R + 16) {
+        dragging = true;
+        canvas.style.cursor = 'grabbing';
+      }
+    }
+    function onMove(e) {
+      if (!dragging) {
+        const p = getPointer(canvas, e);
+        const by = bobY();
+        canvas.style.cursor = dist(p.x, p.y, anchorX, by) < BOB_R + 16 ? 'grab' : 'default';
+        return;
+      }
+      e.preventDefault();
+      const p = getPointer(canvas, e);
+      // Vertical only, clamp so spring doesn't invert
+      const minY = anchorY + 40;
+      const { h } = { h: canvas.height / DPR };
+      const maxY = h - BOB_R - 10;
+      const clamped = Math.max(minY, Math.min(maxY, p.y));
+      y = clamped - eqY;
+      v = 0;
+    }
+    function onUp() {
+      if (dragging) { dragging = false; canvas.style.cursor = 'grab'; }
+    }
+
+    canvas.addEventListener('mousedown', onDown);
+    canvas.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    canvas.addEventListener('touchstart', onDown, { passive: false });
+    canvas.addEventListener('touchmove', onMove, { passive: false });
+    canvas.addEventListener('touchend', onUp);
+    document.getElementById('springReset').addEventListener('click', reset);
+
+    layout();
+    window.addEventListener('resize', layout);
+
+    function loop() {
+      step(); draw(); requestAnimationFrame(loop);
+    }
+    requestAnimationFrame(loop);
+  })();
+})();
+</script>
+</body>
+</html>

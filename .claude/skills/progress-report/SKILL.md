@@ -34,19 +34,19 @@ Two-stage pipeline that pulls student metrics from Firestore and generates bilin
    - No teacher/sandbox accounts leaked through
    - Engagement buckets are populated
 
-3. **Stage 2 — Generate CSV:**
-   ```bash
-   cd "/home/kp/Desktop/Executive Assistant" && python3 tools/generate-progress-csv.py
-   ```
+3. **Stage 2 — Generate bilingual comments.** This is done inline by Claude Code (using subscription tokens, NOT an API key). For each class:
+   - Read the JSON data for that class's students
+   - Generate a personalized EN comment per student based on: completion rate, engagement bucket, time spent, XP earned
+   - Generate the matching ES translation
+   - Comments reflect **work ethic, not grades** — NO portal jargon (XP, engagement buckets, gamification terms). Translate engagement to plain language: THRIVING → "consistently engaged", INACTIVE → "not participating"
+   - Launch parallel agents (one per class) for speed when multiple classes are involved
 
-   The script reads today's JSON and writes `temp/progress-report-YYYY-MM-DD.csv`.
+4. **Stage 3 — Merge into CSV:**
+   Combine the JSON metrics + generated comments into `temp/progress-report-YYYY-MM-DD.csv`. Columns: Name, Email, Class, Period, Completion, Submitted/Total, Engagement, Time, XP, Submissions, Comment EN, Comment ES.
 
-   If the JSON has a custom name, pass it as an argument:
-   ```bash
-   python3 tools/generate-progress-csv.py temp/progress-data-YYYY-MM-DD.json temp/progress-report-YYYY-MM-DD.csv
-   ```
+   Names in "Last, First" format for Infinite Campus compatibility.
 
-4. **Report results.** Tell Kellen:
+5. **Report results.** Tell Kellen:
    - How many students across how many classes
    - Any data quality issues (missing engagement buckets, zero-completion students)
    - Where the CSV is saved

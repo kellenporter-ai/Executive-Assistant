@@ -70,3 +70,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 - Exclude known-bad data (flagged records, test accounts).
 - Cross-reference multiple signals — don't make conclusions from a single metric.
 - Note when data is insufficient to draw conclusions.
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

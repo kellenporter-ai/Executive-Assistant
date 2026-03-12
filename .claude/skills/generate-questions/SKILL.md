@@ -258,6 +258,11 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 - **Do NOT auto-invoke this skill** — it generates large files and uses significant compute. User must explicitly request it.
 - **Boss/Dungeon config files are separate from question files.** The config file includes a sample of questions embedded in it for convenience, but the full question bank is always the separate questions file.
 - **CRITICAL: Always shuffle answer positions.** LLMs consistently place the correct answer as option A or B (~90%+ of the time). The inline Fisher-Yates shuffle in Step 5.6 is MANDATORY. Never skip it. Never write question files without first shuffling. Verify the distribution is ~25% per position before writing files.
+- **CRITICAL: Validate output with question-validator.** After merging and shuffling, run the validator on the final JSON:
+  ```bash
+  cd "/home/kp/Desktop/Executive Assistant" && python3 tools/question-validator.py <output-file.json>
+  ```
+  This catches: missing required fields, answer index out of bounds, MC length bias (correct answer longest >50%), duplicate stems (90% word overlap), empty options. If critical/high issues found, fix before writing final file. If MC length bias detected, pad shorter distractors with domain-appropriate qualifiers.
 - **The config files match the portal's import format.** The boss config matches what `QuizBossFormModal` expects; the dungeon config matches what `DungeonFormModal` expects. Teachers import, review, tweak, and deploy.
 - **Dungeon rooms need enough questions to resolve combat.** If a room runs out of questions before the enemy dies or the player dies, the run is permanently soft-locked with no recovery. A base student deals ~10 damage per correct answer (plus damageBonus), so a 200 HP enemy needs ~20 correct answers with no bonus, or ~6 with +25 bonus. Always embed generously — it's better to have unused questions than a soft-locked dungeon.
 - **Always prioritize project agents over general-purpose.** Use content-writer for question generation, qa-engineer for validation, backend-engineer for config structures. General-purpose is a fallback only.

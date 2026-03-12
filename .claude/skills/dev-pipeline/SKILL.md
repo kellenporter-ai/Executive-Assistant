@@ -134,13 +134,17 @@ Stage specific files — never `git add -A` or `git add .`. Imperative mood, und
 
 ## Step 6: Deploy
 
-Run the deploy commands from `context.md`, using the narrowest scope that covers the changes. Skip deploy if changes are purely local tooling, dev config, or documentation.
+Skip deploy if changes are purely local tooling, dev config, or documentation.
+
+For deployable changes, delegate to the **release-engineer** agent with: the list of commits, affected deploy targets (hosting/functions/rules/indexes), confirmation that build passed and QA signed off, and the project's `.agents/release-engineer.md` specialization if it exists.
+
+The release-engineer handles deploy ordering (indexes → rules → functions → hosting), pre-deploy gates, and rollback preparation. Do NOT deploy inline — always delegate.
 
 ---
 
 ## Step 7: Post-Deploy Verification
 
-Launch the **deployment-monitor** agent with the project specialization to verify production health. Include a summary of what was just deployed.
+After release-engineer reports success, launch the **deployment-monitor** agent with the project specialization to verify production health. Include a summary of what was deployed. If deployment-monitor reports critical issues, route back to release-engineer for rollback.
 
 ---
 

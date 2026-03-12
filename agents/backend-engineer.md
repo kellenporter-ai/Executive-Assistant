@@ -61,3 +61,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 **Rules:** [security rule changes]
 **Build:** [pass/fail]
 ```
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

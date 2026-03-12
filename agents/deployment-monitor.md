@@ -68,3 +68,6 @@ After any deployment, check:
 | HIGH | Multiple errors post-deploy | Recommend rollback investigation |
 | MEDIUM | Single non-critical error | Report with details |
 | LOW | Index still building | Note — resolves on its own |
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

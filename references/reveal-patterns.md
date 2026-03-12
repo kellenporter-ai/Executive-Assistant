@@ -218,6 +218,42 @@ Use child `<div>` elements inside `.reveal` with `z-index: 1`.
 
 ---
 
+## 16:9 Widescreen Layout Rules (Critical)
+
+The target ratio is **16:9 (1920×1080)**, NOT 4:3. Content designed for 4:3 clips vertically at 16:9. Follow these rules:
+
+### Vertical Budget
+- **Max usable height:** ~1043px (1080 minus margin). Every element competes for this space.
+- **h2 margin:** `margin: 0 0 0.15em 0` — default Reveal.js heading margins are too large.
+- **Fragment margins:** ≤0.4em between fragments. Never >0.5em.
+- **Padding:** pattern cards 0.5em 1em (not 1em 1.4em), task boxes 0.5em 1.2em (not 1em 1.6em), eq-containers 0.4em 1.2em (not 0.8em 1.8em).
+
+### Use the Width
+- **Prefer horizontal layouts** over vertical stacks. Side-by-side cards, horizontal flowcharts, `flex-wrap: nowrap`.
+- **Two-col layouts:** use `max-width: 92%` and `gap: 1.5em`.
+- **Multi-item lists:** 4 items → single row with `flex-wrap: nowrap` and smaller cards, not 2×2 grid.
+- **Flowcharts/derivation chains:** horizontal arrows (`→`) between compact step cards, never vertical stacks with `⬇` arrows.
+
+### SVG Heights
+- **Max SVG height:** 400px for two-col, 320px for standalone. Never >420px.
+- **Force diagrams:** ~320px height is enough for point-object + two forces.
+- **Bar charts:** ~310px height.
+
+### Compact CSS Defaults (16:9-safe)
+```css
+.pattern-card { padding: 0.5em 1em; margin: 0.2em 0; border-radius: 12px; font-size: 0.82em; line-height: 1.5; }
+.task-box { padding: 0.5em 1.2em; margin: 0.3em auto; border-radius: 12px; }
+.eq-container { padding: 0.4em 1.2em; margin: 0.25em auto; border-radius: 12px; }
+.result-glow { padding: 0.5em 1.5em; border-radius: 16px; }
+.summary-card { padding: 0.6em 1em; border-radius: 14px; }
+```
+
+### Force Diagrams
+- **Always use point-object representation** (filled circle, r=9-10) for translational motion — never rectangles/extended objects.
+- Force arrows originate from the dot. Acceleration arrow offset to the side, dashed.
+
+---
+
 ## Typography Scales
 
 | Context | h1 | h2 | body | small |

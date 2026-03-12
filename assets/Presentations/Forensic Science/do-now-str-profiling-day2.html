@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Now: The Warehouse Fire — Degraded STR Profiles</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:       #040c06;
+            --green:    #39e07a;
+            --cyan:     #00e5ff;
+            --muted:    #7ab890;
+            --dim:      #3a5c45;
+            --white:    #f0fff4;
+            --red:      #ff5c5c;
+            --yellow:   #ffd166;
+        }
+
+        /* ── Global ── */
+        body {
+            background: var(--bg) !important;
+            font-family: 'Outfit', sans-serif !important;
+        }
+
+        /* ── DNA Canvas background ── */
+        #dna-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.22;
+        }
+
+        /* ── Reveal overrides ── */
+        .reveal {
+            background: transparent !important;
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+        }
+        .reveal .slides {
+            z-index: 2;
+            position: relative;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+            text-transform: none !important;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 40px rgba(57, 224, 122, 0.3);
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 700; font-size: 1.4em; }
+        .reveal h3 { font-weight: 600; color: var(--green) !important; }
+        .reveal p, .reveal li { font-size: 0.85em; line-height: 1.6; }
+        .reveal ul { list-style: none; padding: 0; margin: 0; }
+        .reveal ul li::before {
+            content: '▸';
+            color: var(--green);
+            margin-right: 0.4em;
+            font-size: 0.9em;
+        }
+        .reveal .controls { color: var(--green) !important; }
+        .reveal .progress span { background: var(--green) !important; }
+
+        /* ── Label badge ── */
+        .label-badge {
+            display: inline-block;
+            background: var(--green);
+            color: #040c06;
+            font-weight: 700;
+            font-size: 0.55em;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.25em 0.8em;
+            border-radius: 4px;
+            margin-bottom: 0.5em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Accent text ── */
+        .accent { color: var(--cyan) !important; }
+        .green  { color: var(--green) !important; }
+        .muted  { color: var(--muted) !important; font-size: 0.75em !important; }
+        .warn   { color: var(--yellow) !important; }
+
+        /* ── Divider line ── */
+        .dline {
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--cyan));
+            margin: 0.3em auto 0.5em;
+            border-radius: 2px;
+        }
+
+        /* ── STR Data Table ── */
+        .str-table {
+            width: 88%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72em;
+        }
+        .str-table th {
+            background: rgba(57, 224, 122, 0.15);
+            color: var(--green);
+            font-weight: 600;
+            padding: 0.55em 1.2em;
+            border: 1px solid var(--dim);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.04em;
+            font-size: 1.05em;
+        }
+        .str-table td {
+            padding: 0.5em 1.2em;
+            border: 1px solid var(--dim);
+            text-align: center;
+            color: var(--white);
+            vertical-align: middle;
+        }
+        .str-table tr:nth-child(even) td {
+            background: rgba(255,255,255,0.03);
+        }
+        .str-table .locus-col {
+            text-align: left;
+            color: var(--cyan);
+            font-weight: 600;
+            padding-left: 1.4em;
+        }
+        .str-table .scene-col {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        /* ── Debrief match coloring ── */
+        .match   { color: var(--green) !important; font-weight: 700; }
+        .no-match{ color: var(--red)   !important; font-weight: 700; }
+        .match-bg   td { background: rgba(57, 224, 122, 0.08) !important; }
+        .nomatch-bg td { background: rgba(255, 92, 92, 0.06) !important; }
+
+        /* ── Scenario card ── */
+        .scenario-box {
+            background: rgba(0,229,255,0.07);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            padding: 0.7em 1.4em;
+            margin: 0.4em auto;
+            width: 80%;
+            text-align: left;
+            font-size: 0.78em;
+            line-height: 1.6;
+        }
+
+        /* ── Question cards ── */
+        .q-card {
+            background: rgba(57, 224, 122, 0.06);
+            border: 1px solid rgba(57, 224, 122, 0.2);
+            border-left: 4px solid var(--green);
+            border-radius: 8px;
+            padding: 0.4em 0.9em;
+            margin: 0.25em 0;
+            text-align: left;
+            font-size: 0.58em;
+            line-height: 1.45;
+        }
+        .q-num {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-right: 0.4em;
+        }
+
+        /* ── Data + Questions split layout ── */
+        .split-layout {
+            display: flex;
+            gap: 1.5em;
+            align-items: flex-start;
+            width: 94%;
+            margin: 0 auto;
+        }
+        .split-left {
+            flex: 1.15;
+        }
+        .split-right {
+            flex: 0.85;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* ── STR refresher pills ── */
+        .refresh-grid {
+            display: flex;
+            gap: 0.7em;
+            justify-content: center;
+            margin-top: 0.5em;
+            flex-wrap: nowrap;
+        }
+        .refresh-pill {
+            background: rgba(57, 224, 122, 0.08);
+            border: 1px solid rgba(57, 224, 122, 0.25);
+            border-radius: 10px;
+            padding: 0.5em 0.8em;
+            flex: 1;
+            min-width: 0;
+            max-width: 24%;
+            text-align: center;
+            font-size: 0.6em;
+            line-height: 1.5;
+        }
+        .refresh-pill .pill-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 0.15em;
+        }
+        .refresh-pill strong {
+            color: var(--cyan);
+            display: block;
+            font-size: 1em;
+            margin-bottom: 0.1em;
+        }
+
+        /* ── Debrief answer boxes ── */
+        .ans-row {
+            display: flex;
+            gap: 0.8em;
+            justify-content: center;
+            margin: 0.6em auto;
+            width: 96%;
+        }
+        .ans-box {
+            flex: 1;
+            border-radius: 10px;
+            padding: 0.5em 0.7em;
+            font-size: 0.6em;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .ans-elim {
+            background: rgba(255,92,92,0.1);
+            border: 1px solid rgba(255,92,92,0.3);
+        }
+        .ans-cant {
+            background: rgba(57,224,122,0.1);
+            border: 1px solid rgba(57,224,122,0.3);
+        }
+        .ans-why {
+            background: rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.25);
+        }
+        .ans-key {
+            background: rgba(255,209,102,0.1);
+            border: 1px solid rgba(255,209,102,0.35);
+        }
+        .ans-label {
+            font-weight: 700;
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 0.3em;
+        }
+
+        /* ── Speaker notes ── */
+        .reveal aside.notes { font-size: 14px; }
+
+        /* ── Slide number ── */
+        .reveal .slide-number {
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7em;
+        }
+
+        /* ── Timer bar on title ── */
+        .timer-hint {
+            display: inline-block;
+            border: 1px solid var(--dim);
+            border-radius: 6px;
+            padding: 0.35em 1em;
+            font-size: 0.5em;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            margin-top: 1em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── NEW: Degraded cell styling ── */
+        .degraded-cell {
+            color: var(--dim) !important;
+            font-style: italic;
+            letter-spacing: 0.05em;
+        }
+        .degraded-row td {
+            background: rgba(255,209,102,0.03) !important;
+        }
+        .degraded-row .locus-col {
+            color: var(--yellow) !important;
+            opacity: 0.7;
+        }
+        .degraded-row .scene-col {
+            color: var(--dim) !important;
+            font-style: italic;
+        }
+        .degrade-q {
+            color: var(--dim) !important;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Animated DNA Canvas Background -->
+<canvas id="dna-canvas" aria-hidden="true"></canvas>
+
+<div class="reveal">
+    <div class="slides">
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 1 — DO NOW TITLE
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Do Now — Forensic Science</div>
+            <h1 style="font-size:2.6em; margin: 0.15em 0 0;">
+                The Warehouse Fire
+            </h1>
+            <h2 style="font-size:1.05em; color: var(--cyan) !important; font-weight:300; margin:0.2em 0 0.5em;">
+                Degraded DNA &amp; Ambiguous STR Profiles
+            </h2>
+            <div class="dline"></div>
+            <p style="font-size:0.72em; color:var(--muted);">
+                Forensic Science &nbsp;|&nbsp; Mr. Porter
+            </p>
+            <div class="timer-hint">⏱ &nbsp;You have 5 minutes — work independently</div>
+            <aside class="notes">
+                Put this on the projector as students walk in. Give them 5 minutes to read the scenario and answer questions on their paper or in their notebook.
+                Today's scenario is more complex than yesterday — the crime scene DNA was degraded, so only 4 of 6 loci produced results. This creates genuine ambiguity that students will need to grapple with.
+                After 5 minutes, bring the class together for a debrief discussion about what "inconclusiveness" means in forensic science.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 2 — SCENARIO
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">The Scenario</div>
+            <h2>Arson at the Eastside Warehouse</h2>
+            <div class="dline"></div>
+            <div class="scenario-box">
+                🔥 &nbsp;Last week, a fire destroyed an abandoned warehouse on the east side of town. Arson investigators determined the fire was intentionally set — and found a cigarette butt at the <strong style="color:var(--yellow)">origin point</strong> of the blaze.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--yellow); background: rgba(255,209,102,0.06); border-color: rgba(255,209,102,0.2);">
+                🚬 &nbsp;DNA was extracted from saliva on the cigarette. However, <strong style="color:var(--yellow)">heat and smoke contamination</strong> degraded the sample — the lab was only able to recover reliable results at <strong style="color:var(--yellow)">4 of 6 STR loci</strong>. The remaining two loci are <em>inconclusive</em>.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--red); background: rgba(255,92,92,0.05); border-color: rgba(255,92,92,0.2);">
+                🚨 &nbsp;Four suspects were identified. Each provided a DNA sample. <strong style="color:var(--green)">Your job:</strong> Use the partial STR profile to eliminate who you can — and explain why the remaining suspects can't be ruled out yet.
+            </div>
+            <aside class="notes">
+                Read the scenario out loud or let students read independently.
+                Key framing: this is realistic — degraded samples are extremely common in arson cases because heat destroys DNA. The FBI's CODIS system uses 20 CODIS core STR loci specifically because more loci = more discriminating power even when some fail.
+                Remind students: even a partial profile is useful. It can eliminate people. What it can't always do is definitively identify one person.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 3 — STR REFRESHER (4 pills)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Quick Refresher</div>
+            <h2>What is an STR?</h2>
+            <div class="dline"></div>
+            <div class="refresh-grid">
+                <div class="refresh-pill">
+                    <span class="pill-icon">🧬</span>
+                    <strong>Short Tandem Repeat</strong>
+                    A short DNA sequence that repeats over and over at a specific location on a chromosome
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">🔢</span>
+                    <strong>Allele Numbers</strong>
+                    The number tells you how many times the sequence repeats — e.g., <span style="color:var(--cyan); font-family:'JetBrains Mono'">14, 17</span> means 14 repeats on one chromosome and 17 on the other
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">📍</span>
+                    <strong>Multiple Loci</strong>
+                    Forensic labs check STRs at several different locations (loci) in the genome — the combination is unique to each person
+                </div>
+                <div class="refresh-pill" style="border-color: rgba(255,209,102,0.35); background: rgba(255,209,102,0.07);">
+                    <span class="pill-icon">🔥</span>
+                    <strong style="color: var(--yellow);">Degraded Samples</strong>
+                    Heat, UV, or bacteria can break down DNA strands — some loci may fail to produce results, leaving <em>gaps</em> in the profile
+                </div>
+            </div>
+            <p class="muted" style="margin-top:0.5em;">A mismatch at <em>any available</em> locus = eliminated. But gaps mean some suspects may remain unresolved.</p>
+            <aside class="notes">
+                Quick review — spend 30 seconds here max.
+                New concept today: the 4th pill. Students need to understand that "no result" at a locus is NOT a match AND is NOT a mismatch — it's simply missing data.
+                Analogy: Imagine trying to identify someone from a partial fingerprint. You can still eliminate people, but you may not be able to make a positive ID.
+                Key distinction: DEGRADED ≠ inconclusive for everyone. You can still eliminate suspects who mismatch at the loci that DID produce results.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 4 — DATA TABLE + QUESTIONS (COMBINED)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Evidence — Analyze &amp; Answer</div>
+            <h2 style="font-size:1.3em; margin-bottom:0.3em;">Analyze the STR Profiles</h2>
+            <div class="dline"></div>
+
+            <div class="split-layout">
+                <!-- LEFT: Data Table -->
+                <div class="split-left">
+                    <table class="str-table" style="width:100%; font-size:0.61em;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:1em;">STR Locus</th>
+                                <th style="color:var(--yellow);">Crime Scene</th>
+                                <th>Suspect A</th>
+                                <th>Suspect B</th>
+                                <th>Suspect C</th>
+                                <th>Suspect D</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="locus-col">D3S1358</td>
+                                <td class="scene-col">16, 18</td>
+                                <td>15, 15</td>
+                                <td>16, 18</td>
+                                <td>16, 18</td>
+                                <td>16, 18</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">vWA</td>
+                                <td class="scene-col">14, 17</td>
+                                <td>16, 18</td>
+                                <td>14, 17</td>
+                                <td>14, 17</td>
+                                <td>14, 17</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col">FGA</td>
+                                <td class="scene-col degraded-cell">— degraded</td>
+                                <td>22, 25</td>
+                                <td>21, 24</td>
+                                <td>19, 22</td>
+                                <td>20, 23</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D8S1179</td>
+                                <td class="scene-col">13, 14</td>
+                                <td>10, 12</td>
+                                <td>13, 14</td>
+                                <td>13, 14</td>
+                                <td>13, 14</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col">D21S11</td>
+                                <td class="scene-col degraded-cell">— degraded</td>
+                                <td>28, 31</td>
+                                <td>29, 30</td>
+                                <td>31, 32.2</td>
+                                <td>30, 31</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">TH01</td>
+                                <td class="scene-col">8, 9.3</td>
+                                <td>6, 7</td>
+                                <td>8, 9.3</td>
+                                <td>8, 9.3</td>
+                                <td>6, 9.3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="muted" style="margin-top:0.45em; font-size:0.50em !important; text-align:center;">
+                        Each pair = two alleles at that locus &nbsp;|&nbsp; <span style="color:var(--dim); font-style:italic;">— degraded</span> = no reliable result from crime scene sample
+                    </p>
+                </div>
+
+                <!-- RIGHT: Questions -->
+                <div class="split-right">
+                    <div style="font-size:0.58em; color:var(--muted); margin-bottom:0.4em; font-family:'JetBrains Mono',monospace; letter-spacing:0.08em;">ANSWER IN YOUR NOTEBOOK</div>
+
+                    <div class="q-card fragment fade-up">
+                        <span class="q-num">Q1.</span>
+                        Which suspect(s) can be <strong style="color:var(--red)">confidently eliminated</strong>?
+                        Cite the specific locus (or loci) that rules them out.
+                    </div>
+
+                    <div class="q-card fragment fade-up">
+                        <span class="q-num">Q2.</span>
+                        Which suspect(s) <strong style="color:var(--green)">cannot be eliminated</strong> based on the available data?
+                        How many loci matched, and which ones?
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="border-left-color: var(--cyan); background: rgba(0,229,255,0.05); border-color: rgba(0,229,255,0.2);">
+                        <span class="q-num" style="color:var(--cyan);">Q3.</span>
+                        Why <em>can't</em> investigators definitively name one suspect from this data?
+                        What would they need to resolve the ambiguity?
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="border-left-color: var(--yellow); background: rgba(255,209,102,0.05); border-color: rgba(255,209,102,0.2);">
+                        <span class="q-num" style="color:var(--yellow);">Q4.</span>
+                        A defense attorney argues the degraded sample makes <em>all</em> DNA evidence unreliable. How would you respond as the forensic scientist?
+                    </div>
+                </div>
+            </div>
+
+            <aside class="notes">
+                Main working slide — students see data and questions simultaneously. Reveal Q1–Q4 one at a time using spacebar.
+                Allow 3–4 min of independent work. Walk the room.
+                ANSWERS:
+                — Suspect A: eliminated at D3S1358 (15,15 ≠ 16,18), vWA (16,18 ≠ 14,17), D8S1179 (10,12 ≠ 13,14), TH01 (6,7 ≠ 8,9.3) — all 4 available loci mismatch
+                — Suspect D: eliminated at TH01 (6, 9.3 ≠ 8, 9.3) — one allele mismatch is enough
+                — Suspects B and C: BOTH match all 4 available loci. Cannot eliminate either.
+                — Ambiguity: FGA and D21S11 are where B and C differ, but those loci are degraded. Need to re-test (different extraction, mitochondrial DNA, nuclear DNA amplification) or find additional evidence.
+                Q4 key points: (1) degraded ≠ useless — it still eliminated 2 suspects; (2) the evidence is probabilistic, not absolute; (3) DNA is one piece of a larger investigation.
+                Go to debrief slide after work time.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 5 — DEBRIEF (TEACHER)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge" style="background: var(--cyan); color: #040c06;">Debrief — Answers</div>
+            <h2>What Did You Find?</h2>
+            <div class="dline"></div>
+
+            <!-- Color-coded table reveal -->
+            <table class="str-table fragment fade-in" style="font-size:0.58em; margin-bottom:0.7em; width:96%;">
+                <thead>
+                    <tr>
+                        <th style="text-align:left; padding-left:1.4em;">STR Locus</th>
+                        <th style="color:var(--yellow);">Crime Scene</th>
+                        <th>Suspect A</th>
+                        <th>Suspect B</th>
+                        <th>Suspect C</th>
+                        <th>Suspect D</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="locus-col">D3S1358</td>
+                        <td class="scene-col">16, 18</td>
+                        <td class="no-match">15, 15 ✗</td>
+                        <td class="match">16, 18 ✓</td>
+                        <td class="match">16, 18 ✓</td>
+                        <td class="match">16, 18 ✓</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">vWA</td>
+                        <td class="scene-col">14, 17</td>
+                        <td class="no-match">16, 18 ✗</td>
+                        <td class="match">14, 17 ✓</td>
+                        <td class="match">14, 17 ✓</td>
+                        <td class="match">14, 17 ✓</td>
+                    </tr>
+                    <tr class="degraded-row">
+                        <td class="locus-col" style="color:var(--yellow) !important; opacity:0.7;">FGA</td>
+                        <td class="scene-col degraded-cell">— degraded</td>
+                        <td class="degrade-q">22, 25 ?</td>
+                        <td class="degrade-q">21, 24 ?</td>
+                        <td class="degrade-q">19, 22 ?</td>
+                        <td class="degrade-q">20, 23 ?</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">D8S1179</td>
+                        <td class="scene-col">13, 14</td>
+                        <td class="no-match">10, 12 ✗</td>
+                        <td class="match">13, 14 ✓</td>
+                        <td class="match">13, 14 ✓</td>
+                        <td class="match">13, 14 ✓</td>
+                    </tr>
+                    <tr class="degraded-row">
+                        <td class="locus-col" style="color:var(--yellow) !important; opacity:0.7;">D21S11</td>
+                        <td class="scene-col degraded-cell">— degraded</td>
+                        <td class="degrade-q">28, 31 ?</td>
+                        <td class="degrade-q">29, 30 ?</td>
+                        <td class="degrade-q">31, 32.2 ?</td>
+                        <td class="degrade-q">30, 31 ?</td>
+                    </tr>
+                    <tr>
+                        <td class="locus-col">TH01</td>
+                        <td class="scene-col">8, 9.3</td>
+                        <td class="no-match">6, 7 ✗</td>
+                        <td class="match">8, 9.3 ✓</td>
+                        <td class="match">8, 9.3 ✓</td>
+                        <td class="no-match">6, 9.3 ✗</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="ans-row fragment fade-up">
+                <div class="ans-box ans-elim">
+                    <span class="ans-label" style="color:var(--red);">✗ Eliminated</span>
+                    <strong>Suspect A</strong> — mismatches at D3S1358, vWA, D8S1179, TH01 (all 4 available loci)<br>
+                    <strong>Suspect D</strong> — mismatch at TH01 (6 ≠ 8)
+                </div>
+                <div class="ans-box ans-cant">
+                    <span class="ans-label" style="color:var(--green);">? Cannot Eliminate</span>
+                    <strong>Suspects B &amp; C</strong> — both match all 4 available loci<br>
+                    <span style="font-size:0.9em; color:var(--muted);">FGA and D21S11 would distinguish them — but those loci are degraded</span>
+                </div>
+                <div class="ans-box ans-why">
+                    <span class="ans-label" style="color:var(--cyan);">⚖️ Defense Attorney?</span>
+                    Degraded ≠ useless — we still eliminated 2 suspects. The available loci are valid and reliable. DNA is one piece of evidence among many.
+                </div>
+                <div class="ans-box ans-key">
+                    <span class="ans-label" style="color:var(--yellow);">💡 Key Insight</span>
+                    FGA &amp; D21S11 are exactly where B and C differ. Recovering those loci would resolve the case. This is why <strong>sample preservation</strong> and <strong>more loci</strong> matter.
+                </div>
+            </div>
+
+            <aside class="notes">
+                Use this slide for class discussion. Reveal the table first, then the four answer boxes.
+                Discussion prompts:
+                — "Both B and C match at 4 loci. Does that mean they're equally likely to be the source?" (Not necessarily — one might be ruled out by other evidence, alibi, etc.)
+                — "Suspect D had a mismatch at only ONE allele at TH01. Is one allele enough to eliminate?" (YES — both alleles must match. One mismatch = eliminated.)
+                — "What could investigators do if they really needed to resolve B vs C?" (Re-amplify the DNA with different primers targeting FGA/D21S11, mitochondrial DNA, Y-STR if male suspect, other physical evidence)
+                Key teaching point: partial profiles have real value — they narrow the field, they eliminate, and they can exonerate. They just can't always provide certainty.
+                Follow-up: connect to real cases where degraded DNA (arson, flood, decomposition) still contributed to solving the crime.
+            </aside>
+        </section>
+
+    </div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- ══════════════════════════════════════════
+     CANVAS — ANIMATED DNA HELIX BACKGROUND
+══════════════════════════════════════════ -->
+<script>
+(function() {
+    const canvas = document.getElementById('dna-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, offset = 0;
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Draw one scrolling double helix column
+    function drawHelix(xCenter, amplitude, wavelength, color1, color2, phase) {
+        const numRungs = Math.ceil(H / (wavelength / 2)) + 2;
+        const step = wavelength / 2;
+
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+
+        for (let i = 0; i < numRungs * 2; i++) {
+            const y = (i * step + offset) % (H + wavelength) - wavelength / 2;
+
+            // Strand 1 x position
+            const x1 = xCenter + Math.sin((i * Math.PI) + phase) * amplitude;
+            // Strand 2 x position (opposite phase)
+            const x2 = xCenter + Math.sin((i * Math.PI) + phase + Math.PI) * amplitude;
+
+            // Rung connecting strands (horizontal bar)
+            const rungAlpha = 0.5 + 0.5 * Math.abs(Math.sin((i * Math.PI) + phase));
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(57, 224, 122, ${rungAlpha * 0.7})`;
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y);
+            ctx.stroke();
+
+            // Node dots
+            ctx.beginPath();
+            ctx.fillStyle = color1;
+            ctx.arc(x1, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.fillStyle = color2;
+            ctx.arc(x2, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw the backbone strands as smooth curves
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(0, 229, 255, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(57, 224, 122, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase + Math.PI) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Three helix columns spread across the screen
+        drawHelix(W * 0.08,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  0);
+        drawHelix(W * 0.5,   60, 200, 'rgba(57,224,122,0.85)', 'rgba(0,229,255,0.85)',  1.2);
+        drawHelix(W * 0.92,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  2.4);
+
+        offset += 0.4;
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     REVEAL.JS INIT
+══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        history: true,
+        transition: 'fade',
+        transitionSpeed: 'slow',
+        backgroundTransition: 'fade',
+        center: true,
+        controls: true,
+        controlsTutorial: false,
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        overview: true,
+        width: 1920,
+        height: 1080,
+        margin: 0.05,
+        plugins: [RevealNotes]
+    });
+</script>
+
+</body>
+</html>

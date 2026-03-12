@@ -60,3 +60,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 - [ ] Does the tone match the context?
 - [ ] Does it fit the component's spatial constraints?
 - [ ] Is it free of jargon and condescension?
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

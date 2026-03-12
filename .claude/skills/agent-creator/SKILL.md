@@ -16,7 +16,7 @@ Agents are specialized autonomous workers defined as Markdown files in `.claude/
 
 - **YAML frontmatter**: `name`, `description`, `model`, `color`, `memory` fields
 - **Markdown body**: Detailed instructions, protocols, and guidelines
-- **Persistent memory**: A directory at `.claude/agent-memory/<agent-name>/` with a `MEMORY.md` file auto-loaded into the agent's system prompt
+- **Persistent memory**: A directory at `agents/memory/<agent-name>/` with a `MEMORY.md` file auto-loaded into the agent's system prompt
 
 The `description` field is the primary triggering mechanism — it determines when Claude invokes the agent. The body only loads when the agent is actually launched. Agents are invoked via the `Agent` tool with `subagent_type` matching the agent's `name`.
 
@@ -57,7 +57,7 @@ Key questions to answer:
 5. **Team fit**: Does it interact with other agents? Who delegates to/from it?
 6. **Output format**: What does successful completion look like?
 
-Before writing, read existing agents in `.claude/agents/` to match style and conventions. Check `.claude/agent-memory/` to understand the memory system.
+Before writing, read existing agents in `.claude/agents/` to match style and conventions. Check `agents/memory/` to understand the memory system.
 
 ### Agent File Structure
 

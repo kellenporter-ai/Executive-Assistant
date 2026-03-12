@@ -123,3 +123,6 @@ If ANY category fails: `REJECTED — REQUIRES FIXES` with all bug reports listed
 | High (broken features, major a11y failures) | Always |
 | Medium (minor functional, non-critical a11y) | Usually — can be deferred by EA |
 | Low (style, minor improvements) | No — noted only |
+
+## Cross-cutting Notes (for /remember)
+- [Discoveries relevant beyond this agent's domain]

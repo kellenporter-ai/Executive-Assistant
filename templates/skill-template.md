@@ -12,6 +12,9 @@ tools: []             # authorized tools/agents for this skill (optional)
 What this skill does in one sentence.
 
 ## Steps
+
+0. **(If applicable) Verify required references.** If this skill depends on reference files (e.g., `block-schema.md`, `rubric-format.md`), read them first. If any are missing, stop and tell Kellen which file is needed and where it should be created.
+
 1. First step
 2. Second step
 3. ...

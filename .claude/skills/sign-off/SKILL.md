@@ -107,14 +107,14 @@ Scan for signals of incomplete work:
 ```bash
 # Check for TODO/FIXME/HACK comments in recently modified files
 cd "/home/kp/Desktop/Executive Assistant"
-git diff HEAD~1 --name-only 2>/dev/null | head -20
+git diff $(git log --since='12 hours ago' --format='%H' | tail -1)..HEAD --name-only 2>/dev/null | head -20
 
 # All project repos
 for dir in /home/kp/Desktop/Executive\ Assistant/projects/*/; do
   if [ -d "$dir/.git" ] || [ -f "$dir/.git" ]; then
     echo "=== $(basename "$dir") ==="
     cd "$dir"
-    git diff HEAD~1 --name-only 2>/dev/null | head -20
+    git diff $(git log --since='12 hours ago' --format='%H' | tail -1)..HEAD --name-only 2>/dev/null | head -20
   fi
 done
 ```
@@ -164,3 +164,10 @@ See you next time.
 ```
 
 Keep it brief and human. This is the last thing Kellen sees before closing the laptop.
+
+## Error Handling
+
+- **Git push fails (auth, network, conflict):** Report the error clearly. Don't retry push silently — Kellen needs to know if code didn't make it to remote. Stash the error for the session summary.
+- **Merge conflict on pull:** Do NOT force-push or reset. Report the conflicting files and let Kellen decide. The session can still close — just note the unresolved conflict in "Pick Up Next Time."
+- **Memory consolidation fails:** If /remember errors out, the sign-off should still complete. Note the memory failure in the summary and suggest running /remember manually next session.
+- **Priority file unwritable:** Report and skip. Priority updates are important but not worth blocking sign-off.

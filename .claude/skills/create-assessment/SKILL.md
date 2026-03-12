@@ -231,18 +231,29 @@ Here's what one skill row looks like across all 5 levels:
 
 ---
 
-## Step 6: Present to User for Review
+## Step 6: QA Audit
 
-After generating the assessment and rubric, provide a summary:
+Before presenting to Kellen, delegate to **qa-engineer** for a quality audit:
+- Rubric answer neutrality (can a student reverse-engineer answers from tier descriptions?)
+- ISLE phase coverage (does the assessment span observe/hypothesize/test/apply?)
+- Question type balance and difficulty tiering
+- For HTML mode: a11y, Proctor Bridge integration, print styles
+
+If qa-engineer finds issues, route rubric/structural problems back to **assessment-designer** (not content-writer). Route wording issues to **content-writer**. Re-run QA after fixes.
+
+## Step 7: Present to User for Review
+
+After QA signs off, provide Kellen a summary:
 
 - Assessment title and course
 - Number of questions and types used
 - ISLE phases targeted
 - Skills assessed (rubric skill statements)
+- QA status (passed / issues found and resolved)
 - Output format and file path (if HTML)
-- Any notes about content that may need manual review (placeholder images, activities needing further context, etc.)
+- Any notes about content that may need manual review
 
-Ask the user if they want to make any changes before finalizing.
+Ask if Kellen wants changes before finalizing.
 
 ---
 

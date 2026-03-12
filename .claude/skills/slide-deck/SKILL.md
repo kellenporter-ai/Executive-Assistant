@@ -114,6 +114,8 @@ This is a natural fit, not a rigid requirement. Use it when the content is instr
 
 ## Step 5: Generate the HTML File
 
+**CRITICAL: The target aspect ratio is 16:9 (1920×1080).** All layouts, SVG heights, margins, and padding must be designed for widescreen. See the **"16:9 Widescreen Layout Rules"** section in `references/reveal-patterns.md` for compact CSS defaults, SVG height limits, and horizontal layout patterns. Content designed for 4:3 WILL clip vertically at 16:9. When in doubt, use the width (horizontal layouts) instead of stacking vertically.
+
 Write a single self-contained HTML file. All CSS, JS, and Reveal.js are loaded from CDN. No external assets except approved CDNs.
 
 ### File Structure

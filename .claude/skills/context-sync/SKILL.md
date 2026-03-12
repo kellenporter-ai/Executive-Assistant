@@ -125,3 +125,10 @@ Next sync recommended: [date 7 days from now]
 ```
 
 If nothing has drifted, say so clearly — "Everything is current, no changes needed" is a valid and useful outcome. Don't manufacture changes to justify the scan.
+
+## Error Handling
+
+- **Context file unreadable/missing:** If any context file (`me.md`, `work.md`, `team.md`, `current_priorities.md`) is missing or empty, flag it to Kellen — these are foundational files that shouldn't be absent.
+- **Git log fails:** Repo may not be initialized or may have no commits. Skip git-based drift detection and rely on file content comparison only.
+- **Conflicting information:** If context files contradict each other (e.g., priorities says "3D on hold" but work says "3D is active"), flag the conflict rather than picking a side. Present both to Kellen for resolution.
+- **Escalate immediately:** If context files contain what looks like stale student data or PII that shouldn't be there.
