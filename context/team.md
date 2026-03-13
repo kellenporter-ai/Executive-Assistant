@@ -22,6 +22,12 @@ General agents in `agents/` — project-specialized via `projects/<name>/.agents
 | graphics-engineer | Visual rendering | 3D/SVG, effects, animations |
 | deployment-monitor | Post-deploy QA | Health checks, log review |
 | local-llm-assistant | Local LLM delegation | Ollama qwen3:14b for simple tasks |
+| assessment-designer | Assessment + rubric design | ISLE-aligned assessments, rubric neutrality |
+| technical-writer | Docs + changelogs | Release notes, architecture docs |
+| performance-engineer | Perf audits + optimization | Bundle size, Core Web Vitals, Chromebook perf |
+| curriculum-designer | Lesson + unit design | ISLE methodology, Backward Design |
+| localization-coordinator | Bilingual content | English/Spanish, equity-centered |
+| release-engineer | Deploy orchestration | Ordering, pre-deploy gates, rollback |
 
 **Portal-only:** `economy-designer` lives in `projects/Porters-Portal/.agents/` (no general counterpart).
 **Orchestration:** EA handles directly — no separate orchestrator agent.

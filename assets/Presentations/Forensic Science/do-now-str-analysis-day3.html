@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Do Now: The Harborside Heist — 14 Loci, Degraded DNA &amp; Six Suspects</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/theme/black.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg:       #040c06;
+            --green:    #39e07a;
+            --cyan:     #00e5ff;
+            --muted:    #7ab890;
+            --dim:      #3a5c45;
+            --white:    #f0fff4;
+            --red:      #ff5c5c;
+            --yellow:   #ffd166;
+        }
+
+        /* ── Global ── */
+        body {
+            background: var(--bg) !important;
+            font-family: 'Outfit', sans-serif !important;
+        }
+
+        /* ── DNA Canvas background ── */
+        #dna-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0.22;
+        }
+
+        /* ── Reveal overrides ── */
+        .reveal {
+            background: transparent !important;
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+        }
+        .reveal .slides {
+            z-index: 2;
+            position: relative;
+        }
+        .reveal h1, .reveal h2, .reveal h3 {
+            font-family: 'Outfit', sans-serif !important;
+            color: var(--white) !important;
+            text-transform: none !important;
+            letter-spacing: -0.02em;
+            text-shadow: 0 0 40px rgba(57, 224, 122, 0.3);
+        }
+        .reveal h1 { font-weight: 800; }
+        .reveal h2 { font-weight: 700; font-size: 1.4em; }
+        .reveal h3 { font-weight: 600; color: var(--green) !important; }
+        .reveal p, .reveal li { font-size: 0.85em; line-height: 1.6; }
+        .reveal ul { list-style: none; padding: 0; margin: 0; }
+        .reveal ul li::before {
+            content: '▸';
+            color: var(--green);
+            margin-right: 0.4em;
+            font-size: 0.9em;
+        }
+        .reveal .controls { color: var(--green) !important; }
+        .reveal .progress span { background: var(--green) !important; }
+
+        /* ── Label badge ── */
+        .label-badge {
+            display: inline-block;
+            background: var(--green);
+            color: #040c06;
+            font-weight: 700;
+            font-size: 0.55em;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            padding: 0.25em 0.8em;
+            border-radius: 4px;
+            margin-bottom: 0.5em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Accent text ── */
+        .accent { color: var(--cyan) !important; }
+        .green  { color: var(--green) !important; }
+        .muted  { color: var(--muted) !important; font-size: 0.75em !important; }
+        .warn   { color: var(--yellow) !important; }
+
+        /* ── Divider line ── */
+        .dline {
+            width: 60px; height: 3px;
+            background: linear-gradient(90deg, var(--green), var(--cyan));
+            margin: 0.3em auto 0.5em;
+            border-radius: 2px;
+        }
+
+        /* ── STR Data Table ── */
+        .str-table {
+            width: 88%;
+            border-collapse: collapse;
+            margin: 0 auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.72em;
+        }
+        .str-table th {
+            background: rgba(57, 224, 122, 0.15);
+            color: var(--green);
+            font-weight: 600;
+            padding: 0.55em 1.2em;
+            border: 1px solid var(--dim);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.04em;
+            font-size: 1.05em;
+        }
+        .str-table td {
+            padding: 0.5em 1.2em;
+            border: 1px solid var(--dim);
+            text-align: center;
+            color: var(--white);
+            vertical-align: middle;
+        }
+        .str-table tr:nth-child(even) td {
+            background: rgba(255,255,255,0.03);
+        }
+        .str-table .locus-col {
+            text-align: left;
+            color: var(--cyan);
+            font-weight: 600;
+            padding-left: 1.4em;
+        }
+        .str-table .scene-col {
+            color: var(--yellow);
+            font-weight: 600;
+        }
+
+        /* ── Debrief match coloring ── */
+        .match   { color: var(--green) !important; font-weight: 700; }
+        .no-match{ color: var(--red)   !important; font-weight: 700; }
+        .match-bg   td { background: rgba(57, 224, 122, 0.08) !important; }
+        .nomatch-bg td { background: rgba(255, 92, 92, 0.06) !important; }
+
+        /* ── Scenario card ── */
+        .scenario-box {
+            background: rgba(0,229,255,0.07);
+            border: 1px solid rgba(0,229,255,0.25);
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            padding: 0.7em 1.4em;
+            margin: 0.4em auto;
+            width: 80%;
+            text-align: left;
+            font-size: 0.78em;
+            line-height: 1.6;
+        }
+
+        /* ── Question cards ── */
+        .q-card {
+            background: rgba(57, 224, 122, 0.06);
+            border: 1px solid rgba(57, 224, 122, 0.2);
+            border-left: 4px solid var(--green);
+            border-radius: 8px;
+            padding: 0.4em 0.9em;
+            margin: 0.25em 0;
+            text-align: left;
+            font-size: 0.58em;
+            line-height: 1.45;
+        }
+        .q-num {
+            color: var(--green);
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-right: 0.4em;
+        }
+
+        /* ── Data + Questions split layout ── */
+        .split-layout {
+            display: flex;
+            gap: 1.5em;
+            align-items: flex-start;
+            width: 94%;
+            margin: 0 auto;
+        }
+        .split-left {
+            flex: 1.15;
+        }
+        .split-right {
+            flex: 0.85;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        /* ── STR refresher pills ── */
+        .refresh-grid {
+            display: flex;
+            gap: 0.7em;
+            justify-content: center;
+            margin-top: 0.5em;
+            flex-wrap: nowrap;
+        }
+        .refresh-pill {
+            background: rgba(57, 224, 122, 0.08);
+            border: 1px solid rgba(57, 224, 122, 0.25);
+            border-radius: 10px;
+            padding: 0.5em 0.8em;
+            flex: 1;
+            min-width: 0;
+            max-width: 24%;
+            text-align: center;
+            font-size: 0.6em;
+            line-height: 1.5;
+        }
+        .refresh-pill .pill-icon {
+            font-size: 1.5em;
+            display: block;
+            margin-bottom: 0.15em;
+        }
+        .refresh-pill strong {
+            color: var(--cyan);
+            display: block;
+            font-size: 1em;
+            margin-bottom: 0.1em;
+        }
+
+        /* ── Debrief answer boxes ── */
+        .ans-row {
+            display: flex;
+            gap: 0.8em;
+            justify-content: center;
+            margin: 0.6em auto;
+            width: 96%;
+        }
+        .ans-box {
+            flex: 1;
+            border-radius: 10px;
+            padding: 0.5em 0.7em;
+            font-size: 0.6em;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .ans-elim {
+            background: rgba(255,92,92,0.1);
+            border: 1px solid rgba(255,92,92,0.3);
+        }
+        .ans-cant {
+            background: rgba(57,224,122,0.1);
+            border: 1px solid rgba(57,224,122,0.3);
+        }
+        .ans-why {
+            background: rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.25);
+        }
+        .ans-key {
+            background: rgba(255,209,102,0.1);
+            border: 1px solid rgba(255,209,102,0.35);
+        }
+        .ans-label {
+            font-weight: 700;
+            font-size: 1.2em;
+            display: block;
+            margin-bottom: 0.3em;
+        }
+
+        /* ── Speaker notes ── */
+        .reveal aside.notes { font-size: 14px; }
+
+        /* ── Slide number ── */
+        .reveal .slide-number {
+            color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7em;
+        }
+
+        /* ── Timer bar on title ── */
+        .timer-hint {
+            display: inline-block;
+            border: 1px solid var(--dim);
+            border-radius: 6px;
+            padding: 0.35em 1em;
+            font-size: 0.5em;
+            color: var(--muted);
+            letter-spacing: 0.08em;
+            margin-top: 1em;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ── Degraded cell styling ── */
+        .degraded-cell {
+            color: var(--dim) !important;
+            font-style: italic;
+            letter-spacing: 0.05em;
+        }
+        .degraded-row td {
+            background: rgba(255,209,102,0.03) !important;
+        }
+        .degraded-row .locus-col {
+            color: var(--yellow) !important;
+            opacity: 0.7;
+        }
+        .degraded-row .scene-col {
+            color: var(--dim) !important;
+            font-style: italic;
+        }
+        .degrade-q {
+            color: var(--dim) !important;
+            font-style: italic;
+        }
+
+        /* ── Day 3: Mini-table for debrief degraded-loci comparison ── */
+        .mini-table {
+            width: 80%;
+            border-collapse: collapse;
+            margin: 0.4em auto;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.52em;
+        }
+        .mini-table th {
+            background: rgba(255,209,102,0.12);
+            color: var(--yellow);
+            font-weight: 600;
+            padding: 0.4em 0.8em;
+            border: 1px solid var(--dim);
+            font-family: 'Outfit', sans-serif;
+            letter-spacing: 0.04em;
+        }
+        .mini-table td {
+            padding: 0.35em 0.8em;
+            border: 1px solid var(--dim);
+            text-align: center;
+            color: var(--white);
+        }
+        .mini-table tr:nth-child(even) td {
+            background: rgba(255,255,255,0.03);
+        }
+        .mini-table .locus-col {
+            text-align: left;
+            color: var(--yellow);
+            font-weight: 600;
+            padding-left: 1em;
+        }
+        .mini-table-caption {
+            font-size: 0.5em;
+            color: var(--muted);
+            text-align: center;
+            margin-top: 0.3em;
+            font-style: italic;
+        }
+
+        /* ── Day 3: Insight box ── */
+        .insight-box {
+            background: rgba(0,229,255,0.08);
+            border: 1px solid rgba(0,229,255,0.3);
+            border-left: 4px solid var(--cyan);
+            border-radius: 8px;
+            padding: 0.5em 1.2em;
+            margin: 0.5em auto;
+            width: 80%;
+            text-align: center;
+            font-size: 0.58em;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Animated DNA Canvas Background -->
+<canvas id="dna-canvas" aria-hidden="true"></canvas>
+
+<div class="reveal">
+    <div class="slides">
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 1 — DO NOW TITLE
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Do Now — Forensic Science</div>
+            <h1 style="font-size:2.6em; margin: 0.15em 0 0;">
+                The Harborside Heist
+            </h1>
+            <h2 style="font-size:1.05em; color: var(--cyan) !important; font-weight:300; margin:0.2em 0 0.5em;">
+                14 Loci, Degraded DNA &amp; Six Suspects
+            </h2>
+            <div class="dline"></div>
+            <p style="font-size:0.72em; color:var(--muted);">
+                Forensic Science &nbsp;|&nbsp; Mr. Porter
+            </p>
+            <div class="timer-hint">&#9201; &nbsp;You have 7 minutes — work independently</div>
+            <aside class="notes">
+                Put this on the projector as students walk in. Give them 7 minutes — this is more complex than Days 1 and 2.
+                Day 3 ramps complexity significantly: 14 CODIS loci (up from 6), 6 suspects (up from 4), 5 degraded loci, AND a hidden twist — two suspects are identical twins with matching DNA at all 14 loci. Students won't know about the twins until the debrief. The Q4 question ("what if recovering degraded loci STILL couldn't distinguish them?") is designed to get them thinking before the reveal.
+                After 7 minutes, bring the class together for a debrief discussion.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 2 — SCENARIO
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">The Scenario</div>
+            <h2>Break-In at Ashford Marina</h2>
+            <div class="dline"></div>
+            <div class="scenario-box">
+                &#9875; &nbsp;Overnight break-in at a luxury yacht moored at Ashford Marina. Thieves stole navigation electronics and a safe containing cash and documents. A <strong style="color:var(--yellow)">blood smear</strong> was found on a shattered cabin porthole.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--yellow); background: rgba(255,209,102,0.06); border-color: rgba(255,209,102,0.2);">
+                &#x1F9EA; &nbsp;DNA was extracted from the blood smear, but exposure to <strong style="color:var(--yellow)">saltwater spray and morning condensation</strong> degraded the sample. Only <strong style="color:var(--yellow)">9 of 14 STR loci</strong> produced reliable results — five loci are inconclusive.
+            </div>
+            <div class="scenario-box" style="border-left-color: var(--green); background: rgba(57,224,122,0.05); border-color: rgba(57,224,122,0.2);">
+                &#128270; &nbsp;Six individuals had marina key-card access that night. Each provided a DNA sample. <strong style="color:var(--green)">Your job:</strong> Analyze the STR profiles to determine your prime suspect(s) and explain why others can be eliminated.
+            </div>
+            <aside class="notes">
+                Read the scenario out loud or let students read independently.
+                More complex than Days 1-2. Real CODIS uses 20 core STR loci (expanded from 13 in January 2017). Saltwater is a common DNA degradation factor in maritime cases — salt crystals damage the sugar-phosphate backbone.
+                Key framing: despite losing 5 loci, 9 remaining loci is still a LOT of data. Students should be systematic — go locus by locus.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 3 — STR REFRESHER (4 pills)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Quick Refresher</div>
+            <h2>What is an STR?</h2>
+            <div class="dline"></div>
+            <div class="refresh-grid">
+                <div class="refresh-pill">
+                    <span class="pill-icon">&#x1F9EC;</span>
+                    <strong>Short Tandem Repeat</strong>
+                    A short DNA sequence that repeats over and over at a specific location on a chromosome
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">&#x1F522;</span>
+                    <strong>Allele Numbers</strong>
+                    The number tells you how many times the sequence repeats — e.g., <span style="color:var(--cyan); font-family:'JetBrains Mono'">14, 17</span> means 14 repeats on one chromosome and 17 on the other
+                </div>
+                <div class="refresh-pill">
+                    <span class="pill-icon">&#x1F4CD;</span>
+                    <strong>14 CODIS Loci</strong>
+                    Forensic labs check STRs at many locations (loci) — CODIS originally used 13 core loci. More loci = more discriminating power to tell people apart
+                </div>
+                <div class="refresh-pill" style="border-color: rgba(255,209,102,0.35); background: rgba(255,209,102,0.07);">
+                    <span class="pill-icon">&#x1F30A;</span>
+                    <strong style="color: var(--yellow);">Degraded Samples</strong>
+                    Saltwater, heat, UV, or bacteria can break down DNA strands — some loci may fail to produce results, leaving <em>gaps</em> in the profile
+                </div>
+            </div>
+            <p class="muted" style="margin-top:0.5em;">A mismatch at <em>any available</em> locus = eliminated. But 5 degraded loci mean some suspects may remain unresolved.</p>
+            <aside class="notes">
+                Quick review — spend 30 seconds here max. Students have seen this twice now.
+                Updates from Day 2: pill 3 now references 14 CODIS loci and discriminating power. Pill 4 mentions saltwater as a degradation factor alongside heat/UV.
+                Key distinction: DEGRADED means no data — it's NOT a match AND is NOT a mismatch. It's simply missing.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 4 — DATA TABLE + QUESTIONS (COMBINED)
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge">Evidence — Analyze &amp; Answer</div>
+            <h2 style="font-size:1.3em; margin-bottom:0.3em;">Analyze the STR Profiles</h2>
+            <div class="dline"></div>
+
+            <div class="split-layout">
+                <!-- LEFT: Data Table -->
+                <div class="split-left" style="flex: 1.55;">
+                    <table class="str-table" style="width:100%; font-size:0.44em;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:0.8em; padding:0.3em 0.6em;">STR Locus</th>
+                                <th style="color:var(--yellow); padding:0.3em 0.6em;">Crime Scene</th>
+                                <th style="padding:0.3em 0.6em;">Suspect A</th>
+                                <th style="padding:0.3em 0.6em;">Suspect B</th>
+                                <th style="padding:0.3em 0.6em;">Suspect C</th>
+                                <th style="padding:0.3em 0.6em;">Suspect D</th>
+                                <th style="padding:0.3em 0.6em;">Suspect E</th>
+                                <th style="padding:0.3em 0.6em;">Suspect F</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D3S1358</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">15, 17</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">15, 17</td>
+                                <td style="padding:0.3em 0.6em;">15, 17</td>
+                                <td style="padding:0.3em 0.6em;">15, 17</td>
+                                <td style="padding:0.3em 0.6em;">16, 16</td>
+                                <td style="padding:0.3em 0.6em;">15, 17</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">vWA</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">16, 19</td>
+                                <td style="padding:0.3em 0.6em;">16, 19</td>
+                                <td style="padding:0.3em 0.6em;">16, 19</td>
+                                <td style="padding:0.3em 0.6em;">14, 17</td>
+                                <td style="padding:0.3em 0.6em;">16, 19</td>
+                                <td style="padding:0.3em 0.6em;">16, 19</td>
+                                <td style="padding:0.3em 0.6em;">16, 19</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D16S539</td>
+                                <td class="scene-col degraded-cell" style="padding:0.3em 0.6em;">— degraded</td>
+                                <td style="padding:0.3em 0.6em;">11, 12</td>
+                                <td style="padding:0.3em 0.6em;">9, 13</td>
+                                <td style="padding:0.3em 0.6em;">10, 11</td>
+                                <td style="padding:0.3em 0.6em;">9, 13</td>
+                                <td style="padding:0.3em 0.6em;">12, 13</td>
+                                <td style="padding:0.3em 0.6em;">9, 12</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">CSF1PO</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">11, 13</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">10, 14</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">TPOX</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">8, 11</td>
+                                <td style="padding:0.3em 0.6em;">9, 10</td>
+                                <td style="padding:0.3em 0.6em;">8, 11</td>
+                                <td style="padding:0.3em 0.6em;">8, 11</td>
+                                <td style="padding:0.3em 0.6em;">8, 11</td>
+                                <td style="padding:0.3em 0.6em;">8, 11</td>
+                                <td style="padding:0.3em 0.6em;">8, 11</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D8S1179</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">12, 14</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">10, 13</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D21S11</td>
+                                <td class="scene-col degraded-cell" style="padding:0.3em 0.6em;">— degraded</td>
+                                <td style="padding:0.3em 0.6em;">29, 31</td>
+                                <td style="padding:0.3em 0.6em;">28, 30</td>
+                                <td style="padding:0.3em 0.6em;">30, 32.2</td>
+                                <td style="padding:0.3em 0.6em;">28, 30</td>
+                                <td style="padding:0.3em 0.6em;">29, 30</td>
+                                <td style="padding:0.3em 0.6em;">29, 31</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D18S51</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">15, 19</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                                <td style="padding:0.3em 0.6em;">14, 18</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D2S1338</td>
+                                <td class="scene-col degraded-cell" style="padding:0.3em 0.6em;">— degraded</td>
+                                <td style="padding:0.3em 0.6em;">19, 23</td>
+                                <td style="padding:0.3em 0.6em;">17, 24</td>
+                                <td style="padding:0.3em 0.6em;">20, 22</td>
+                                <td style="padding:0.3em 0.6em;">17, 24</td>
+                                <td style="padding:0.3em 0.6em;">21, 24</td>
+                                <td style="padding:0.3em 0.6em;">18, 23</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D19S433</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">12, 14</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                                <td style="padding:0.3em 0.6em;">11, 16</td>
+                                <td style="padding:0.3em 0.6em;">13, 15</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">TH01</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">7, 9.3</td>
+                                <td style="padding:0.3em 0.6em;">7, 9.3</td>
+                                <td style="padding:0.3em 0.6em;">7, 9.3</td>
+                                <td style="padding:0.3em 0.6em;">6, 8</td>
+                                <td style="padding:0.3em 0.6em;">7, 9.3</td>
+                                <td style="padding:0.3em 0.6em;">7, 9.3</td>
+                                <td style="padding:0.3em 0.6em;">6, 9.3</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col" style="padding:0.3em 0.6em;">FGA</td>
+                                <td class="scene-col" style="padding:0.3em 0.6em;">21, 24</td>
+                                <td style="padding:0.3em 0.6em;">22, 25</td>
+                                <td style="padding:0.3em 0.6em;">21, 24</td>
+                                <td style="padding:0.3em 0.6em;">20, 23</td>
+                                <td style="padding:0.3em 0.6em;">21, 24</td>
+                                <td style="padding:0.3em 0.6em;">19, 24</td>
+                                <td style="padding:0.3em 0.6em;">21, 24</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D5S818</td>
+                                <td class="scene-col degraded-cell" style="padding:0.3em 0.6em;">— degraded</td>
+                                <td style="padding:0.3em 0.6em;">11, 13</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">9, 11</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">11, 12</td>
+                                <td style="padding:0.3em 0.6em;">10, 13</td>
+                            </tr>
+                            <tr class="degraded-row">
+                                <td class="locus-col" style="padding:0.3em 0.6em;">D13S317</td>
+                                <td class="scene-col degraded-cell" style="padding:0.3em 0.6em;">— degraded</td>
+                                <td style="padding:0.3em 0.6em;">8, 12</td>
+                                <td style="padding:0.3em 0.6em;">11, 14</td>
+                                <td style="padding:0.3em 0.6em;">9, 13</td>
+                                <td style="padding:0.3em 0.6em;">11, 14</td>
+                                <td style="padding:0.3em 0.6em;">10, 12</td>
+                                <td style="padding:0.3em 0.6em;">11, 13</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="muted" style="margin-top:0.3em; font-size:0.42em !important; text-align:center;">
+                        Each pair = two alleles at that locus &nbsp;|&nbsp; <span style="color:var(--dim); font-style:italic;">— degraded</span> = no reliable result from crime scene sample
+                    </p>
+                </div>
+
+                <!-- RIGHT: Questions -->
+                <div class="split-right" style="flex: 0.45;">
+                    <div style="font-size:0.50em; color:var(--muted); margin-bottom:0.35em; font-family:'JetBrains Mono',monospace; letter-spacing:0.08em;">ANSWER IN YOUR NOTEBOOK</div>
+
+                    <div class="q-card fragment fade-up" style="font-size:0.50em;">
+                        <span class="q-num">Q1.</span>
+                        Which suspect(s) can be <strong style="color:var(--red)">confidently eliminated</strong>?
+                        For each, cite the locus (or loci) that rules them out.
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="font-size:0.50em;">
+                        <span class="q-num">Q2.</span>
+                        Which suspect(s) <strong style="color:var(--green)">cannot be eliminated</strong> based on the available data?
+                        List every available locus where they match.
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="border-left-color: var(--cyan); background: rgba(0,229,255,0.05); border-color: rgba(0,229,255,0.2); font-size:0.50em;">
+                        <span class="q-num" style="color:var(--cyan);">Q3.</span>
+                        Suspect F is a "near-miss." What makes their profile so close, and what single piece of evidence eliminates them?
+                    </div>
+
+                    <div class="q-card fragment fade-up" style="border-left-color: var(--yellow); background: rgba(255,209,102,0.05); border-color: rgba(255,209,102,0.2); font-size:0.50em;">
+                        <span class="q-num" style="color:var(--yellow);">Q4.</span>
+                        If recovering the degraded loci <em>still</em> couldn't distinguish your prime suspects, what might explain that — and what other evidence would investigators need?
+                    </div>
+                </div>
+            </div>
+
+            <aside class="notes">
+                Main working slide — students see data and questions simultaneously. Reveal Q1–Q4 one at a time using spacebar.
+                Allow 5–6 min of independent work. Walk the room. Encourage students to be systematic — mark each locus as match/mismatch for each suspect.
+
+                FULL ANSWER KEY:
+                Available loci (9): D3S1358, vWA, CSF1PO, TPOX, D8S1179, D18S51, D19S433, TH01, FGA
+                Degraded loci (5): D16S539, D21S11, D2S1338, D5S818, D13S317
+
+                — Suspect A: ELIMINATED — mismatches at D3S1358 (14,18 ≠ 15,17), TPOX (9,10 ≠ 8,11), D19S433 (12,14 ≠ 13,15), FGA (22,25 ≠ 21,24). 4 mismatches.
+                — Suspect B: CANNOT ELIMINATE — matches all 9 available loci. Prime suspect.
+                — Suspect C: ELIMINATED — mismatches at vWA (14,17 ≠ 16,19), CSF1PO (11,13 ≠ 10,12), D8S1179 (12,14 ≠ 13,15), D18S51 (15,19 ≠ 14,18), TH01 (6,8 ≠ 7,9.3), FGA (20,23 ≠ 21,24). 6 mismatches.
+                — Suspect D: CANNOT ELIMINATE — matches all 9 available loci. Prime suspect. (TWIST: B and D are identical twins — their DNA is identical at ALL 14 loci, including the degraded ones.)
+                — Suspect E: ELIMINATED — mismatches at D3S1358 (16,16 ≠ 15,17), CSF1PO (10,14 ≠ 10,12), D8S1179 (10,13 ≠ 13,15), D19S433 (11,16 ≠ 13,15), FGA (19,24 ≠ 21,24). 5 mismatches.
+                — Suspect F: ELIMINATED — mismatch at TH01 only (6,9.3 ≠ 7,9.3). Near-miss! Only 1 allele different at 1 locus. Matched 8 of 9 available loci.
+
+                Q4: This is the setup for the twin reveal. Even recovering ALL degraded loci won't help — B and D are identical twins with identical DNA. Students might guess twins, family members, or lab error. Accept all reasoning. The debrief slide reveals the answer.
+
+                Go to debrief slide after work time.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 5 — DEBRIEF: ELIMINATIONS
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge" style="background: var(--cyan); color: #040c06;">Debrief — Answers</div>
+            <h2 style="font-size:1.25em; margin-bottom:0.2em;">What Did You Find?</h2>
+            <div class="dline"></div>
+
+            <div class="ans-row fragment fade-up" style="margin-top:0.4em;">
+                <div class="ans-box ans-elim" style="flex:1;">
+                    <span class="ans-label" style="color:var(--red);">&#10007; Eliminated</span>
+                    <strong>Suspect A</strong> — 4 mismatches<br>
+                    <span style="font-size:0.85em; color:var(--muted);">D3S1358, TPOX, D19S433, FGA</span><br>
+                    <strong>Suspect C</strong> — 6 mismatches<br>
+                    <span style="font-size:0.85em; color:var(--muted);">vWA, CSF1PO, D8S1179, D18S51, TH01, FGA</span><br>
+                    <strong>Suspect E</strong> — 5 mismatches<br>
+                    <span style="font-size:0.85em; color:var(--muted);">D3S1358, CSF1PO, D8S1179, D19S433, FGA</span>
+                </div>
+                <div class="ans-box ans-cant" style="flex:1;">
+                    <span class="ans-label" style="color:var(--green);">? Prime Suspects</span>
+                    <strong>Suspects B &amp; D</strong><br>
+                    Both match all 9 available loci<br><br>
+                    <span style="font-size:0.9em; color:var(--muted);">D3S1358, vWA, CSF1PO, TPOX, D8S1179, D18S51, D19S433, TH01, FGA</span>
+                </div>
+                <div class="ans-box ans-key" style="flex:1;">
+                    <span class="ans-label" style="color:var(--yellow);">The Near-Miss</span>
+                    <strong>Suspect F</strong> matched <strong>8 of 9</strong> available loci<br><br>
+                    Eliminated by a single allele at TH01:<br>
+                    <span style="font-family:'JetBrains Mono',monospace; color:var(--red);">6</span><span style="color:var(--muted);">, 9.3</span> &nbsp;&#8800;&nbsp; <span style="font-family:'JetBrains Mono',monospace; color:var(--green);">7</span><span style="color:var(--muted);">, 9.3</span><br>
+                    <span style="font-size:0.9em; color:var(--muted);">One mismatch is enough.</span>
+                </div>
+            </div>
+
+            <div class="insight-box fragment fade-up" style="margin-top:0.6em;">
+                <strong style="color:var(--cyan);">But wait&hellip;</strong> &nbsp; B and D both match at all 9 available loci. Could recovering the 5 degraded loci tell them apart?
+            </div>
+
+            <aside class="notes">
+                Reveal the three answer boxes first, discuss briefly, then reveal the teaser question at the bottom to transition to the next slide.
+
+                Discussion prompts for this slide:
+                — "Suspect F matched 8 of 9 loci. Why is 1 mismatch enough to eliminate?" (DNA is inherited — both alleles at every locus must match. One wrong allele = different person.)
+                — "Even with 5 failed loci, we eliminated 4 of 6 suspects. Is the partial profile useful?" (Absolutely — it narrows the field and can exonerate.)
+                — "Why did CODIS expand from 13 to 20 core loci in January 2017?" (More loci = better discrimination, reduces adventitious matches as database grows.)
+
+                Then advance to next slide for the twin reveal.
+            </aside>
+        </section>
+
+        <!-- ══════════════════════════════════════════
+             SLIDE 6 — TWIN REVEAL
+        ══════════════════════════════════════════ -->
+        <section>
+            <div class="label-badge" style="background: var(--red); color: #040c06;">Debrief — Plot Twist</div>
+            <h2 style="font-size:1.25em; margin-bottom:0.2em;">The Lab Recovered All 5 Degraded Loci&hellip;</h2>
+            <div class="dline"></div>
+
+            <!-- Fragment 1: Twin reveal + mini-table side by side -->
+            <div class="split-layout fragment fade-up" style="align-items:center; gap:2em; margin-top:0.3em;">
+                <div style="flex:1;">
+                    <div class="scenario-box" style="border-left-color: var(--red); background: rgba(255,92,92,0.08); border-color: rgba(255,92,92,0.3); width:100%; padding:0.6em 1.2em; font-size:0.7em; text-align:center; margin:0;">
+                        <strong style="color:var(--red); font-size:1.4em; display:block; margin-bottom:0.3em;">Suspects B &amp; D are identical twins.</strong>
+                        Their DNA profiles are <strong style="color:var(--yellow);">identical at every single locus</strong> — all 14 of 14.<br>
+                        <span style="color:var(--muted); font-size:0.9em;">Identical twins come from the same fertilized egg and share 100% of their nuclear DNA. No number of STR loci can distinguish them.</span>
+                    </div>
+                </div>
+                <div style="flex:0.8;">
+                    <table class="mini-table" style="width:100%; font-size:0.55em;">
+                        <thead>
+                            <tr>
+                                <th style="text-align:left; padding-left:0.8em;">Recovered Locus</th>
+                                <th>Suspect B</th>
+                                <th>Suspect D</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="locus-col">D16S539</td>
+                                <td>9, 13</td>
+                                <td style="color:var(--yellow);">9, 13</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D21S11</td>
+                                <td>28, 30</td>
+                                <td style="color:var(--yellow);">28, 30</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D2S1338</td>
+                                <td>17, 24</td>
+                                <td style="color:var(--yellow);">17, 24</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D5S818</td>
+                                <td>10, 12</td>
+                                <td style="color:var(--yellow);">10, 12</td>
+                            </tr>
+                            <tr>
+                                <td class="locus-col">D13S317</td>
+                                <td>11, 14</td>
+                                <td style="color:var(--yellow);">11, 14</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="mini-table-caption" style="font-size:0.45em;">Every recovered locus is identical — exactly what we'd expect from identical twins.</p>
+                </div>
+            </div>
+
+            <!-- Fragment 2: So what now? — horizontal row -->
+            <div class="ans-row fragment fade-up" style="margin-top:0.5em;">
+                <div class="ans-box ans-why" style="flex:1;">
+                    <span class="ans-label" style="color:var(--cyan);">&#x1F50D; So What Now?</span>
+                    STR analysis has hit its limit. Investigators need <strong>non-DNA evidence</strong>:<br>
+                    fingerprints, security cameras, key-card swipe logs, alibis, eyewitnesses
+                </div>
+                <div class="ans-box" style="flex:1; background: rgba(57,224,122,0.08); border: 1px solid rgba(57,224,122,0.25);">
+                    <span class="ans-label" style="color:var(--green);">&#x1F9EC; Cutting-Edge Science</span>
+                    Emerging techniques <em>can</em> distinguish identical twins:<br>
+                    <strong>epigenetic profiling</strong> (DNA methylation differs) and <strong>somatic mutations</strong> (rare changes unique to each twin)
+                </div>
+                <div class="ans-box ans-key" style="flex:1;">
+                    <span class="ans-label" style="color:var(--yellow);">&#x1F4A1; Key Takeaway</span>
+                    DNA is powerful but not omnipotent. Forensic science relies on <strong>multiple lines of evidence</strong> — not DNA alone.
+                </div>
+            </div>
+
+            <aside class="notes">
+                The twin reveal should get a reaction. Let it land, then advance to the "So What Now?" row.
+
+                Discussion prompts:
+                — "How can two people have identical DNA at ALL 14 loci?" (Identical/monozygotic twins — same fertilized egg, 100% shared nuclear DNA.)
+                — "If DNA can't tell them apart, is the DNA evidence useless?" (No! It still eliminated 4 of 6 suspects and narrowed the field to 2 specific people.)
+                — "What non-DNA evidence could crack this case?" (Key-card access logs with timestamps, marina security cameras, fingerprints on the porthole, shoe impressions, phone GPS data, alibis)
+                — "Has this actually happened in real life?" (YES — 2009 Berlin jewelry heist: identical twins both released because prosecutors couldn't prove which twin's DNA was at the scene. 2019 Marseille case: epigenetic analysis used for the first time to convict one twin.)
+
+                Key teaching points:
+                1. DNA evidence is probabilistic and has known limitations
+                2. Identical twins are a fundamental limit of STR-based profiling
+                3. Forensic investigations always use MULTIPLE types of evidence
+                4. Science is advancing — epigenetic profiling and whole-genome sequencing of somatic mutations may eventually solve this problem routinely
+            </aside>
+        </section>
+
+    </div><!-- /slides -->
+</div><!-- /reveal -->
+
+<!-- ══════════════════════════════════════════
+     CANVAS — ANIMATED DNA HELIX BACKGROUND
+══════════════════════════════════════════ -->
+<script>
+(function() {
+    const canvas = document.getElementById('dna-canvas');
+    const ctx = canvas.getContext('2d');
+
+    let W, H, offset = 0;
+
+    function resize() {
+        W = canvas.width  = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    // Draw one scrolling double helix column
+    function drawHelix(xCenter, amplitude, wavelength, color1, color2, phase) {
+        const numRungs = Math.ceil(H / (wavelength / 2)) + 2;
+        const step = wavelength / 2;
+
+        ctx.lineWidth = 1.8;
+        ctx.lineCap = 'round';
+
+        for (let i = 0; i < numRungs * 2; i++) {
+            const y = (i * step + offset) % (H + wavelength) - wavelength / 2;
+
+            // Strand 1 x position
+            const x1 = xCenter + Math.sin((i * Math.PI) + phase) * amplitude;
+            // Strand 2 x position (opposite phase)
+            const x2 = xCenter + Math.sin((i * Math.PI) + phase + Math.PI) * amplitude;
+
+            // Rung connecting strands (horizontal bar)
+            const rungAlpha = 0.5 + 0.5 * Math.abs(Math.sin((i * Math.PI) + phase));
+            ctx.beginPath();
+            ctx.strokeStyle = `rgba(57, 224, 122, ${rungAlpha * 0.7})`;
+            ctx.moveTo(x1, y);
+            ctx.lineTo(x2, y);
+            ctx.stroke();
+
+            // Node dots
+            ctx.beginPath();
+            ctx.fillStyle = color1;
+            ctx.arc(x1, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.fillStyle = color2;
+            ctx.arc(x2, y, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Draw the backbone strands as smooth curves
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(0, 229, 255, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.strokeStyle = `rgba(57, 224, 122, 0.5)`;
+        ctx.lineWidth = 1.5;
+        for (let y = 0; y < H + wavelength; y += 2) {
+            const x = xCenter + Math.sin(((y - offset) / wavelength) * Math.PI * 2 + phase + Math.PI) * amplitude;
+            if (y === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, W, H);
+
+        // Three helix columns spread across the screen
+        drawHelix(W * 0.08,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  0);
+        drawHelix(W * 0.5,   60, 200, 'rgba(57,224,122,0.85)', 'rgba(0,229,255,0.85)',  1.2);
+        drawHelix(W * 0.92,  55, 180, 'rgba(0,229,255,0.9)',   'rgba(57,224,122,0.9)',  2.4);
+
+        offset += 0.4;
+        requestAnimationFrame(animate);
+    }
+    animate();
+})();
+</script>
+
+<!-- ══════════════════════════════════════════
+     REVEAL.JS INIT
+══════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@5/plugin/notes/notes.js"></script>
+<script>
+    Reveal.initialize({
+        hash: true,
+        history: true,
+        transition: 'fade',
+        transitionSpeed: 'slow',
+        backgroundTransition: 'fade',
+        center: true,
+        controls: true,
+        controlsTutorial: false,
+        progress: true,
+        slideNumber: 'c/t',
+        keyboard: true,
+        overview: true,
+        width: 1920,
+        height: 1080,
+        margin: 0.05,
+        plugins: [RevealNotes]
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10.1.3 Vibrational Motion — Spring-Cart System</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body {
+    width: 100%; height: 100%; overflow: hidden;
+    background: #1a1a2e;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    color: #e0e0e0;
+    user-select: none;
+  }
+
+  #app {
+    display: flex; flex-direction: column;
+    width: 100%; height: 100%;
+    padding: 12px; gap: 10px;
+  }
+
+  /* ── Header ── */
+  #header {
+    text-align: center; flex-shrink: 0;
+    padding: 6px 0 2px;
+  }
+  #header h1 {
+    font-size: 18px; font-weight: 600; letter-spacing: 0.4px;
+    color: #e0e0e0;
+  }
+  #header p {
+    font-size: 12px; color: rgba(200,200,200,0.55);
+    margin-top: 2px; letter-spacing: 0.2px;
+  }
+
+  /* ── Toolbar ── */
+  #toolbar {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px; flex-shrink: 0; flex-wrap: wrap;
+  }
+
+  .pill-btn {
+    padding: 5px 16px; border-radius: 20px; font-size: 12px; font-weight: 500;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05);
+    color: rgba(224,224,224,0.65);
+    cursor: pointer; transition: all 0.18s; letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+  .pill-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: #e0e0e0;
+  }
+  .pill-btn.active {
+    background: rgba(56, 189, 248, 0.18);
+    border-color: #38bdf8;
+    color: #7efcf0;
+  }
+  .pill-btn.reset-pill {
+    border-color: rgba(255,255,255,0.12);
+  }
+  .pill-btn.reset-pill:hover {
+    border-color: rgba(255,255,255,0.3);
+    color: #e0e0e0;
+  }
+  .pill-btn.clear-pill {
+    border-color: rgba(245,158,11,0.3);
+    color: rgba(245,158,11,0.65);
+  }
+  .pill-btn.clear-pill:hover {
+    border-color: #f59e0b;
+    color: #f59e0b;
+    background: rgba(245,158,11,0.08);
+  }
+  .pill-btn.pause-pill.active {
+    background: rgba(239, 68, 68, 0.18);
+    border-color: #ef4444;
+    color: #fca5a5;
+  }
+
+  /* ── Speed control ── */
+  .speed-control {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 12px; border-radius: 20px;
+    border: 1.5px solid rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05);
+    font-size: 12px; color: rgba(224,224,224,0.65);
+  }
+  .speed-control label { white-space: nowrap; }
+  .speed-control input[type="range"] {
+    -webkit-appearance: none; appearance: none;
+    width: 80px; height: 4px; border-radius: 2px;
+    background: rgba(148,163,184,0.25); outline: none;
+  }
+  .speed-control input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #38bdf8; cursor: pointer;
+    border: 2px solid #0e7490;
+  }
+  .speed-control input[type="range"]::-moz-range-thumb {
+    width: 14px; height: 14px; border-radius: 50%;
+    background: #38bdf8; cursor: pointer;
+    border: 2px solid #0e7490;
+  }
+  .speed-control .speed-val {
+    min-width: 36px; text-align: center;
+    color: #7efcf0; font-weight: 600;
+  }
+
+  /* ── Canvas panel ── */
+  #panel {
+    flex: 1; position: relative;
+    background: #16213e;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+    min-height: 0;
+  }
+  #panel canvas {
+    display: block; width: 100%; height: 100%;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header">
+    <h1>10.1.3 Vibrational Motion — Spring-Cart System</h1>
+    <p>Drag the cart and release to observe the motion</p>
+  </div>
+
+  <div id="toolbar">
+    <button class="pill-btn pause-pill" id="btnPause">⏸ Pause</button>
+    <button class="pill-btn reset-pill" id="btnReset">↺ Reset</button>
+    <div class="speed-control">
+      <label>Speed</label>
+      <input type="range" id="speedSlider" min="0.1" max="2" step="0.1" value="1">
+      <span class="speed-val" id="speedVal">1.0x</span>
+    </div>
+    <button class="pill-btn" id="btnMotion">Motion Diagram</button>
+    <button class="pill-btn clear-pill" id="btnClear" style="display:none">Clear Dots</button>
+    <button class="pill-btn" id="btnForce">Force Diagram</button>
+  </div>
+
+  <div id="panel">
+    <canvas id="simCanvas"></canvas>
+  </div>
+</div>
+
+<script>
+(() => {
+  'use strict';
+
+  // ── Canvas setup ──
+  const canvas = document.getElementById('simCanvas');
+  const ctx = canvas.getContext('2d');
+  const DPR = window.devicePixelRatio || 1;
+
+  let W = 0, H = 0; // logical pixels
+
+  function resize() {
+    const panel = document.getElementById('panel');
+    const r = panel.getBoundingClientRect();
+    W = r.width;
+    H = r.height;
+    canvas.width  = W * DPR;
+    canvas.height = H * DPR;
+    canvas.style.width  = W + 'px';
+    canvas.style.height = H + 'px';
+    computeLayout();
+  }
+
+  // ── Layout ──
+  // Wall is at leftmost; track runs horizontally across panel
+  // Position markers: V (far left / compressed), IV, III (eq), II, I (far right / stretched)
+
+  let wallX, trackY, trackLeft, trackRight, eqX;
+  let markerSpacing; // px between markers
+  const NUM_MARKERS = 5; // positions I..V
+  const MARKER_LABELS = ['V','IV','III','II','I']; // left to right
+
+  function computeLayout() {
+    const marginLeft = W * 0.06;
+    const marginRight = W * 0.06;
+    wallX = marginLeft;
+    trackY = H * 0.52;
+    trackLeft  = wallX + 32; // where track begins (just past wall)
+    trackRight = W - marginRight - 10;
+    markerSpacing = (trackRight - trackLeft) / (NUM_MARKERS - 1);
+    eqX = trackLeft + markerSpacing * 2; // III is center (index 2)
+  }
+
+  // marker world-x for index 0..4 (left to right = V..I)
+  function markerX(idx) {
+    return trackLeft + markerSpacing * idx;
+  }
+
+  // ── Physics ──
+  // SHM: a = -(k/m)*x, with light damping
+  // Target period ~7s → ω₀ = 2π/7 ≈ 0.898 rad/s → k/m = ω₀² ≈ 0.806
+  const K_OVER_M = 0.806;
+  const DAMPING  = 0.006; // minimal damping — oscillates for a long time
+
+  const MAX_DISPLACEMENT = markerSpacing; // half-range, set on layout (updated dynamically)
+  let cartX    = 0; // logical px, absolute position on screen
+  let velocity = 0; // px/s
+  let dragging = false;
+  let dragOffsetX = 0;
+
+  function resetCart() {
+    cartX    = eqX;
+    velocity = 0;
+    dragging = false;
+    motionDots.length = 0;
+  }
+
+  // ── Cart dimensions ──
+  const CART_W = 54;
+  const CART_H = 32;
+
+  function cartCenterX() { return cartX; }
+  function cartLeft()    { return cartX - CART_W / 2; }
+  function cartTop()     { return trackY - CART_H / 2; }
+
+  // displacement from equilibrium (positive = right = stretched)
+  function displacement() { return cartX - eqX; }
+
+  // ── Playback control ──
+  let paused = false;
+  let speedMultiplier = 1.0; // 0.1 to 2.0
+
+  // ── Physics step ──
+  const dt = 1 / 60;
+
+  function step() {
+    if (dragging || paused) return;
+    const effectiveDt = dt * speedMultiplier;
+    const x = displacement();
+    const accel = -K_OVER_M * x - DAMPING * velocity;
+    velocity += accel * effectiveDt;
+    cartX += velocity * effectiveDt;
+    // clamp so cart stays on track
+    const minX = markerX(0) - markerSpacing * 0.1;
+    const maxX = markerX(4) + markerSpacing * 0.1;
+    if (cartX < minX) { cartX = minX; velocity = Math.abs(velocity) * 0.5; }
+    if (cartX > maxX) { cartX = maxX; velocity = -Math.abs(velocity) * 0.5; }
+  }
+
+  // ── Motion diagram dots ──
+  const motionDots = [];
+  let showMotion = false;
+  let dotFrameCounter = 0;
+  const DOT_EVERY = 14; // frames between dot drops (60fps → ~4.3 drops/s)
+  // Full period ~7s → ~420 frames → ~30 dots per oscillation ✓
+
+  function maybeDrop() {
+    if (!showMotion || dragging || paused) return;
+    dotFrameCounter++;
+    if (dotFrameCounter >= DOT_EVERY) {
+      dotFrameCounter = 0;
+      motionDots.push({ x: cartX, y: trackY, v: Math.abs(velocity) });
+    }
+  }
+
+  // ── Toggle state ──
+  let showForce = false;
+
+  // ── Spring drawing ──
+  // Zigzag coil between (x1,y) and (x2,y), horizontal
+  // coilCount stays fixed; spacing changes
+  function drawSpring(ctx, x1, x2, y) {
+    const s = DPR;
+    const COILS = 14;
+    const AMP   = 9 * s; // perpendicular amplitude
+    const totalW = (x2 - x1) * s;
+    // We'll use 2*COILS segments (each coil = up + down zigzag)
+    const segments = COILS * 2;
+    const segW = totalW / segments;
+
+    ctx.save();
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2 * s;
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1 * s, y * s);
+    // short horizontal lead
+    ctx.lineTo(x1 * s + segW * 0.5, y * s);
+    for (let i = 0; i < segments; i++) {
+      const startX = x1 * s + segW * 0.5 + i * segW;
+      const endX   = startX + segW;
+      const midX   = (startX + endX) / 2;
+      const yOff   = (i % 2 === 0) ? -AMP : AMP;
+      ctx.lineTo(midX, y * s + yOff);
+      ctx.lineTo(endX, y * s);
+    }
+    // short horizontal lead at end
+    ctx.lineTo(x2 * s, y * s);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // ── Cart drawing ──
+  function drawCart(ctx, cx, cy) {
+    const s = DPR;
+    const cw = CART_W * s;
+    const ch = CART_H * s;
+    const rx = 5 * s;
+    const lx = (cx - CART_W / 2) * s;
+    const ty = (cy - CART_H / 2) * s;
+
+    // drop shadow
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur  = 10 * s;
+    ctx.shadowOffsetY = 4 * s;
+
+    // gradient fill
+    const grd = ctx.createLinearGradient(lx, ty, lx + cw, ty + ch);
+    grd.addColorStop(0,   '#7efcf0');
+    grd.addColorStop(0.4, '#38bdf8');
+    grd.addColorStop(1,   '#0e7490');
+
+    ctx.beginPath();
+    ctx.roundRect(lx, ty, cw, ch, rx);
+    ctx.fillStyle = grd;
+    ctx.fill();
+    ctx.restore();
+
+    // subtle inner highlight
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(lx + 2*s, ty + 2*s, cw - 4*s, ch * 0.35, rx * 0.6);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
+    ctx.fill();
+    ctx.restore();
+
+    // outline
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(lx, ty, cw, ch, rx);
+    ctx.strokeStyle = 'rgba(126,252,240,0.35)';
+    ctx.lineWidth = 1.5 * s;
+    ctx.stroke();
+    ctx.restore();
+
+    // wheels (small circles at bottom corners)
+    const wheelR  = 5 * s;
+    const wheelY  = ty + ch + wheelR * 0.3;
+    const wheel1X = lx + 10 * s;
+    const wheel2X = lx + cw - 10 * s;
+    for (const wx of [wheel1X, wheel2X]) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(wx, wheelY, wheelR, 0, Math.PI * 2);
+      ctx.fillStyle = '#0f172a';
+      ctx.fill();
+      ctx.strokeStyle = '#38bdf8';
+      ctx.lineWidth = 1.5 * s;
+      ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // ── Arrow helper ──
+  function drawArrow(ctx, x1, y, x2, color, label) {
+    const s = DPR;
+    if (Math.abs(x2 - x1) < 4) return; // too small
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle   = color;
+    ctx.lineWidth   = 2.5 * s;
+
+    ctx.beginPath();
+    ctx.moveTo(x1 * s, y * s);
+    ctx.lineTo(x2 * s, y * s);
+    ctx.stroke();
+
+    // arrowhead
+    const dir = x2 > x1 ? 1 : -1;
+    const headL = 10 * s;
+    const headW = 5 * s;
+    ctx.beginPath();
+    ctx.moveTo(x2 * s, y * s);
+    ctx.lineTo(x2 * s - dir * headL, y * s - headW);
+    ctx.lineTo(x2 * s - dir * headL, y * s + headW);
+    ctx.closePath();
+    ctx.fill();
+
+    // label
+    if (label) {
+      ctx.font = `${11 * s}px 'Segoe UI', system-ui, sans-serif`;
+      ctx.fillStyle = color;
+      ctx.textAlign = dir > 0 ? 'left' : 'right';
+      ctx.fillText(label, (x2 + dir * 14) * s, (y + 1) * s);
+    }
+    ctx.restore();
+  }
+
+  // ── Draw ──
+  function draw() {
+    const s = DPR;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // ── Track ──
+    const trackY_drawn = trackY + CART_H / 2 + 6; // drawn below cart bottom
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.3)';
+    ctx.lineWidth = 2 * s;
+    ctx.beginPath();
+    ctx.moveTo(wallX * s, trackY_drawn * s);
+    ctx.lineTo((trackRight + 10) * s, trackY_drawn * s);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── Wall ──
+    const wallTop  = trackY - CART_H - 20;
+    const wallBot  = trackY_drawn + 8;
+    const wallWid  = 14;
+    ctx.save();
+    // wall block
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(wallX * s, wallTop * s, wallWid * s, (wallBot - wallTop) * s);
+    // hatch lines
+    ctx.strokeStyle = 'rgba(100,116,139,0.5)';
+    ctx.lineWidth = 1.2 * s;
+    const hatchSpacing = 8;
+    for (let hy = wallTop; hy < wallBot + hatchSpacing; hy += hatchSpacing) {
+      ctx.beginPath();
+      ctx.moveTo(wallX * s, hy * s);
+      ctx.lineTo((wallX + wallWid) * s, (hy - hatchSpacing * 0.6) * s);
+      ctx.stroke();
+    }
+    // wall face line
+    ctx.strokeStyle = 'rgba(148,163,184,0.5)';
+    ctx.lineWidth = 2.5 * s;
+    ctx.beginPath();
+    ctx.moveTo((wallX + wallWid) * s, wallTop * s);
+    ctx.lineTo((wallX + wallWid) * s, wallBot * s);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── Spring attachment point on wall ──
+    const springY    = trackY; // spring runs at cart center height
+    const springWallX = wallX + wallWid;
+    const springCartX = cartLeft(); // attach to left face of cart
+
+    // ── Spring ──
+    drawSpring(ctx, springWallX, springCartX, springY);
+
+    // ── Position markers ──
+    const markerLabelY = trackY_drawn + 20;
+    const tickH = 7;
+    for (let i = 0; i < NUM_MARKERS; i++) {
+      const mx = markerX(i);
+      const label = MARKER_LABELS[i];
+      const isEq  = (i === 2);
+
+      // tick
+      ctx.save();
+      ctx.strokeStyle = isEq
+        ? 'rgba(126,252,240,0.5)'
+        : 'rgba(148,163,184,0.25)';
+      ctx.lineWidth = (isEq ? 2 : 1.5) * s;
+      ctx.beginPath();
+      ctx.moveTo(mx * s, trackY_drawn * s);
+      ctx.lineTo(mx * s, (trackY_drawn + tickH) * s);
+      ctx.stroke();
+      ctx.restore();
+
+      // label
+      ctx.save();
+      ctx.font = `bold ${13 * s}px 'Segoe UI', system-ui, sans-serif`;
+      ctx.fillStyle = isEq ? 'rgba(126,252,240,0.75)' : 'rgba(148,163,184,0.5)';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, mx * s, markerLabelY * s);
+      ctx.restore();
+    }
+
+    // small sub-tick marks between major markers
+    ctx.save();
+    ctx.strokeStyle = 'rgba(148,163,184,0.12)';
+    ctx.lineWidth = 1 * s;
+    for (let i = 0; i < NUM_MARKERS - 1; i++) {
+      const x1 = markerX(i);
+      const x2 = markerX(i + 1);
+      for (let t = 1; t < 4; t++) {
+        const tx = x1 + (x2 - x1) * t / 4;
+        ctx.beginPath();
+        ctx.moveTo(tx * s, trackY_drawn * s);
+        ctx.lineTo(tx * s, (trackY_drawn + 4) * s);
+        ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    // ── Equilibrium dashed line ──
+    ctx.save();
+    ctx.setLineDash([5 * s, 5 * s]);
+    ctx.strokeStyle = 'rgba(126,252,240,0.12)';
+    ctx.lineWidth = 1.5 * s;
+    ctx.beginPath();
+    ctx.moveTo(eqX * s, (trackY - CART_H / 2 - 14) * s);
+    ctx.lineTo(eqX * s, (trackY_drawn - 2) * s);
+    ctx.stroke();
+    ctx.restore();
+
+    // ── Motion diagram dots ──
+    if (showMotion && motionDots.length > 0) {
+      // find max velocity for normalization
+      let maxV = 0.1;
+      for (const d of motionDots) maxV = Math.max(maxV, d.v);
+
+      for (const d of motionDots) {
+        const t = d.v / maxV; // 0 = slow, 1 = fast
+        const alpha = 0.25 + 0.65 * t;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(d.x * s, d.y * s, 3.5 * s, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(56,189,248,${alpha.toFixed(2)})`;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
+    // ── Cart ──
+    drawCart(ctx, cartX, trackY);
+
+    // ── Force Diagram overlay ──
+    if (showForce) {
+      const disp = displacement();
+      const forceScale = 0.9; // px per px of displacement
+      const F = -disp * forceScale; // spring force direction (opposite to displacement)
+
+      if (Math.abs(F) > 3) {
+        // Force arrow (orange/gold)
+        const arrowStartX = cartX;
+        const arrowEndX   = cartX + F;
+        drawArrow(ctx, arrowStartX, trackY, arrowEndX, '#f59e0b', 'F_spring');
+      }
+
+      // Velocity arrow (green) — only if moving
+      const VEL_SCALE = 0.18; // visual scale
+      if (Math.abs(velocity) > 8) {
+        const vEnd = cartX + velocity * VEL_SCALE;
+        drawArrow(ctx, cartX, trackY - 24, vEnd, '#22c55e', 'v');
+      }
+    }
+
+    // ── Drag hint ──
+    if (!dragging && !paused && Math.abs(displacement()) < 2 && Math.abs(velocity) < 2) {
+      ctx.save();
+      ctx.font = `${11 * s}px 'Segoe UI', system-ui, sans-serif`;
+      ctx.fillStyle = 'rgba(200,200,200,0.3)';
+      ctx.textAlign = 'center';
+      ctx.fillText('← drag me →', cartX * s, (trackY - CART_H / 2 - 18) * s);
+      ctx.restore();
+    }
+
+    // ── Paused indicator ──
+    if (paused) {
+      ctx.save();
+      ctx.font = `bold ${16 * s}px 'Segoe UI', system-ui, sans-serif`;
+      ctx.fillStyle = 'rgba(239,68,68,0.55)';
+      ctx.textAlign = 'center';
+      ctx.fillText('PAUSED', (W / 2) * s, 30 * s);
+      ctx.restore();
+    }
+  }
+
+  // ── Animation loop ──
+  function loop() {
+    step();
+    maybeDrop();
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // ── Interaction ──
+  function getPointer(e) {
+    const r = canvas.getBoundingClientRect();
+    const t = e.touches ? e.touches[0] : e;
+    return {
+      x: (t.clientX - r.left),
+      y: (t.clientY - r.top)
+    };
+  }
+
+  function hitCart(px, py) {
+    const margin = 12;
+    return (
+      px >= cartLeft() - margin &&
+      px <= cartLeft() + CART_W + margin &&
+      py >= trackY - CART_H / 2 - margin &&
+      py <= trackY + CART_H / 2 + margin
+    );
+  }
+
+  function onPointerDown(e) {
+    e.preventDefault();
+    const p = getPointer(e);
+    if (hitCart(p.x, p.y)) {
+      dragging = true;
+      dragOffsetX = p.x - cartX;
+      canvas.style.cursor = 'grabbing';
+      velocity = 0;
+    }
+  }
+
+  let lastDragX = 0;
+  let lastDragTime = 0;
+  let dragVelocity = 0;
+
+  function onPointerMove(e) {
+    const p = getPointer(e);
+    if (!dragging) {
+      canvas.style.cursor = hitCart(p.x, p.y) ? 'grab' : 'default';
+      return;
+    }
+    e.preventDefault();
+    const now = performance.now();
+    const rawX = p.x - dragOffsetX;
+    // track velocity for release
+    if (now - lastDragTime > 0) {
+      dragVelocity = (rawX - lastDragX) / ((now - lastDragTime) / 1000);
+    }
+    lastDragX = rawX;
+    lastDragTime = now;
+    // clamp
+    const minX = markerX(0) - markerSpacing * 0.15;
+    const maxX = markerX(4) + markerSpacing * 0.15;
+    cartX = Math.max(minX, Math.min(maxX, rawX));
+  }
+
+  function onPointerUp(e) {
+    if (dragging) {
+      dragging = false;
+      // impart drag velocity (clamped)
+      const maxV = markerSpacing * 5;
+      velocity = Math.max(-maxV, Math.min(maxV, dragVelocity));
+      canvas.style.cursor = 'grab';
+    }
+  }
+
+  // Mouse events
+  canvas.addEventListener('mousedown',  onPointerDown, { passive: false });
+  canvas.addEventListener('mousemove',  onPointerMove);
+  window.addEventListener('mouseup',    onPointerUp);
+
+  // Touch events (Chromebook)
+  canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+  canvas.addEventListener('touchmove',  onPointerMove, { passive: false });
+  window.addEventListener('touchend',   onPointerUp);
+
+  // ── Button controls ──
+  const btnPause = document.getElementById('btnPause');
+  btnPause.addEventListener('click', () => {
+    paused = !paused;
+    btnPause.classList.toggle('active', paused);
+    btnPause.textContent = paused ? '▶ Play' : '⏸ Pause';
+  });
+
+  const speedSlider = document.getElementById('speedSlider');
+  const speedVal    = document.getElementById('speedVal');
+  speedSlider.addEventListener('input', () => {
+    speedMultiplier = parseFloat(speedSlider.value);
+    speedVal.textContent = speedMultiplier.toFixed(1) + 'x';
+  });
+
+  document.getElementById('btnReset').addEventListener('click', () => {
+    resetCart();
+    paused = false;
+    btnPause.classList.remove('active');
+    btnPause.textContent = '⏸ Pause';
+  });
+
+  const btnMotion = document.getElementById('btnMotion');
+  const btnClear  = document.getElementById('btnClear');
+  btnMotion.addEventListener('click', () => {
+    showMotion = !showMotion;
+    btnMotion.classList.toggle('active', showMotion);
+    btnClear.style.display = showMotion ? 'inline-block' : 'none';
+    if (!showMotion) motionDots.length = 0;
+    dotFrameCounter = 0;
+  });
+  btnClear.addEventListener('click', () => {
+    motionDots.length = 0;
+  });
+
+  const btnForce = document.getElementById('btnForce');
+  btnForce.addEventListener('click', () => {
+    showForce = !showForce;
+    btnForce.classList.toggle('active', showForce);
+  });
+
+  // ── Init ──
+  resize();
+  resetCart();
+  window.addEventListener('resize', () => { resize(); });
+  loop();
+
+})();
+</script>
+</body>
+</html>

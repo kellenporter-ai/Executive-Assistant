@@ -27,7 +27,7 @@ All stability work completed as of 2026-03-10. Full audit history archived in `d
 - **Location:** `projects/Gemini Assistant/`
 - **Architecture:** Web chat UI (FastAPI + vanilla HTML) that acts as a thin shell over Gemini CLI subprocess
 - **Key decision:** Frontend pipes user input to `gemini` CLI process stdin, streams stdout back. CLI handles all auth (Google account OAuth or API key), tool calling, agent delegation, and file operations natively. No SDK, no custom auth code.
-- **Status (2026-03-13):** CLI-proxy architecture complete. Backend rewritten from SDK-based (`google-genai`) to subprocess spawner — each message runs `gemini -p "msg" -o stream-json [--resume session_id]`. Removed `tools.py` (CLI has native tools), dropped 4 SDK dependencies. Frontend streams NDJSON events via SSE with real-time tool call status. End-to-end tested.
+- **Status (2026-03-13):** CLI-proxy architecture complete. Backend rewritten from SDK-based (`google-genai`) to subprocess spawner — each message runs `gemini -p "msg" -o stream-json [--resume session_id]`. Removed `tools.py` (CLI has native tools), dropped 4 SDK dependencies. Frontend overhauled to VS Code-style UI: sidebar (chat history + file explorer), multi-tab chats, drag-drop/paste file attachments, light/dark theme toggle. Session delete optimized (direct file removal instead of CLI subprocess). End-to-end tested.
 - **Next step:** User testing — have a colleague try the full setup flow (install CLI, auth, fill context, launch). Polish based on feedback.
 
 ## Porter's Portal Reference
