@@ -8,6 +8,7 @@ No SDK, no API management — the CLI handles auth, tools, and agents natively.
 import os
 import re
 import json
+import glob
 import asyncio
 import shutil
 import uuid
@@ -136,6 +137,42 @@ async def delete_session(session_id: str):
     )
     await proc.communicate()
     return {"status": "ok"}
+
+
+@app.get("/api/sessions/{session_id}/messages")
+async def get_session_messages(session_id: str):
+    """Load message history from a saved Gemini CLI session."""
+    # Session files are stored in ~/.gemini/tmp/<project>/chats/
+    gemini_dir = os.path.expanduser("~/.gemini/tmp")
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id[:8]}*.json")
+    matches = glob.glob(pattern, recursive=True)
+
+    if not matches:
+        return {"messages": []}
+
+    try:
+        with open(matches[0], "r") as f:
+            data = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return {"messages": []}
+
+    messages = []
+    for m in data.get("messages", []):
+        msg_type = m.get("type", "")
+        content = m.get("content", "")
+
+        # User messages have content as a list of parts
+        if msg_type == "user":
+            if isinstance(content, list):
+                texts = [p.get("text", "") for p in content if isinstance(p, dict) and "text" in p]
+                content = " ".join(texts)
+            messages.append({"role": "user", "content": content})
+
+        # Gemini (assistant) messages have content as a string
+        elif msg_type == "gemini" and content:
+            messages.append({"role": "assistant", "content": content})
+
+    return {"messages": messages}
 
 
 # --- File Browser ---

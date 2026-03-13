@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Executive Assistant</title>
   <style>
-    :root {
+    /* Dark theme (default) */
+    :root, [data-theme="dark"] {
       --bg-primary: #1e1e2e;
       --bg-secondary: #181825;
       --bg-sidebar: #11111b;
@@ -30,6 +31,38 @@
       --pink: #f5c2e7;
       --radius: 8px;
       --sidebar-width: 260px;
+      --shadow-modal: rgba(0,0,0,0.65);
+      --code-bg: rgba(0,0,0,0.3);
+      --scrollbar-thumb: #313244;
+    }
+
+    /* Light theme */
+    [data-theme="light"] {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f5f5f5;
+      --bg-sidebar: #eaeaea;
+      --bg-input: #ffffff;
+      --bg-user: #dbeafe;
+      --bg-assistant: #f9fafb;
+      --bg-tool: #f3f4f6;
+      --bg-tab: #eeeeee;
+      --bg-tab-active: #ffffff;
+      --bg-hover: #e5e7eb;
+      --text-primary: #1f2937;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --accent: #2563eb;
+      --accent-hover: #3b82f6;
+      --accent-dim: rgba(37, 99, 235, 0.08);
+      --border: #d1d5db;
+      --border-light: #e5e7eb;
+      --success: #16a34a;
+      --warning: #ca8a04;
+      --error: #dc2626;
+      --pink: #ec4899;
+      --shadow-modal: rgba(0,0,0,0.3);
+      --code-bg: rgba(0,0,0,0.06);
+      --scrollbar-thumb: #d1d5db;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -454,7 +487,7 @@
     .tool-call-body.open { display: block; }
 
     .tool-call-body pre {
-      background: rgba(0,0,0,0.25);
+      background: var(--code-bg);
       padding: 8px;
       border-radius: 4px;
       overflow-x: auto;
@@ -475,7 +508,7 @@
     .message p { margin: 4px 0; }
 
     .message code {
-      background: rgba(0,0,0,0.3);
+      background: var(--code-bg);
       padding: 1px 5px;
       border-radius: 3px;
       font-family: 'JetBrains Mono', 'SF Mono', monospace;
@@ -483,7 +516,7 @@
     }
 
     .message pre {
-      background: rgba(0,0,0,0.35);
+      background: var(--code-bg);
       padding: 10px;
       border-radius: 6px;
       overflow-x: auto;
@@ -713,7 +746,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.65);
+      background: var(--shadow-modal);
       z-index: 100;
       align-items: center;
       justify-content: center;
@@ -734,7 +767,7 @@
     .modal p { color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5; font-size: 0.85rem; }
 
     .modal code {
-      background: rgba(0,0,0,0.3);
+      background: var(--code-bg);
       padding: 1px 5px;
       border-radius: 3px;
       font-family: 'JetBrains Mono', 'SF Mono', monospace;
@@ -811,7 +844,7 @@
     /* Scrollbar styling */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 3px; }
     ::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
 
     @media (max-width: 768px) {
@@ -826,6 +859,7 @@
   <div class="titlebar">
     <button class="titlebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar">&#9776;</button>
     <span class="titlebar-title">Executive Assistant</span>
+    <button class="titlebar-toggle" onclick="toggleTheme()" id="themeToggle" title="Toggle light/dark theme">&#9788;</button>
     <div class="status-dot" id="statusDot"></div>
   </div>
 
@@ -1082,16 +1116,35 @@
       }
     }
 
-    function resumeSession(sessionId, preview) {
+    async function resumeSession(sessionId, preview) {
       // Check if already open in a tab
       const existing = tabs.find(t => t.sessionId === sessionId);
       if (existing) { switchTab(existing.id); return; }
       const tabId = createNewTab(sessionId, preview.slice(0, 40));
       const tab = tabs.find(t => t.id === tabId);
       tab.sessionId = sessionId;
-      // Show resumed session notice
+
+      // Load actual message history from the session file
       chatContainer.innerHTML = '';
-      addMessage('Resumed session: ' + preview.slice(0, 80), 'system');
+      addMessage('Loading conversation...', 'system');
+
+      try {
+        const res = await fetch(`/api/sessions/${sessionId}/messages`);
+        const data = await res.json();
+        chatContainer.innerHTML = '';
+
+        if (data.messages && data.messages.length > 0) {
+          for (const msg of data.messages) {
+            addMessage(msg.content, msg.role);
+            tab.messages.push(msg);
+          }
+        } else {
+          addMessage('Resumed session (no message history available). Continue the conversation below.', 'system');
+        }
+      } catch {
+        chatContainer.innerHTML = '';
+        addMessage('Resumed session: ' + preview.slice(0, 80), 'system');
+      }
     }
 
     async function deleteSession(sessionId) {
@@ -1605,6 +1658,29 @@
       if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
       if (e.key === 'Escape') closeFilePreview();
     });
+
+    // ===== THEME =====
+    function initTheme() {
+      const saved = localStorage.getItem('ea-theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', saved);
+      updateThemeIcon(saved);
+    }
+
+    function toggleTheme() {
+      const current = document.documentElement.getAttribute('data-theme') || 'dark';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      localStorage.setItem('ea-theme', next);
+      updateThemeIcon(next);
+    }
+
+    function updateThemeIcon(theme) {
+      const btn = document.getElementById('themeToggle');
+      btn.innerHTML = theme === 'dark' ? '&#9788;' : '&#9790;';
+      btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+    }
+
+    initTheme();
 
     // ===== LAUNCH =====
     init();
