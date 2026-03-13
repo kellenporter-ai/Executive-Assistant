@@ -1,0 +1,9 @@
+temp/
+*.pyc
+__pycache__/
+.env
+node_modules/
+dist/
+.DS_Store
+app/.venv/
+app/.auth/

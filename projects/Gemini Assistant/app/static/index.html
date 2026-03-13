@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Executive Assistant</title>
+  <style>
+    :root {
+      --bg-primary: #1a1a2e;
+      --bg-secondary: #16213e;
+      --bg-chat: #0f0f23;
+      --bg-user: #1e3a5f;
+      --bg-assistant: #1a1a2e;
+      --bg-tool: #0d1b2a;
+      --text-primary: #e0e0e0;
+      --text-secondary: #a0a0b0;
+      --text-muted: #6b7280;
+      --accent: #4f8ff7;
+      --accent-hover: #6ba3ff;
+      --border: #2a2a4a;
+      --success: #4ade80;
+      --warning: #fbbf24;
+      --error: #f87171;
+      --radius: 12px;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* --- Header --- */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 20px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      animation: pulse 2s infinite;
+    }
+
+    .status-dot.error { background: var(--error); animation: none; }
+    .status-dot.loading { background: var(--warning); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .header-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      transition: all 0.2s;
+    }
+
+    .header-actions button:hover {
+      background: var(--border);
+      color: var(--text-primary);
+    }
+
+    /* --- Chat Area --- */
+    .chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      max-width: 85%;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      line-height: 1.6;
+      font-size: 0.95rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--bg-user);
+      border-bottom-right-radius: 4px;
+    }
+
+    .message.assistant {
+      align-self: flex-start;
+      background: var(--bg-assistant);
+      border: 1px solid var(--border);
+      border-bottom-left-radius: 4px;
+    }
+
+    .message.system {
+      align-self: center;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 8px;
+    }
+
+    /* --- Tool Calls --- */
+    .tool-calls {
+      align-self: flex-start;
+      max-width: 85%;
+    }
+
+    .tool-call {
+      background: var(--bg-tool);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 8px;
+      overflow: hidden;
+      font-size: 0.85rem;
+    }
+
+    .tool-call-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(79, 143, 247, 0.1);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tool-call-header:hover {
+      background: rgba(79, 143, 247, 0.15);
+    }
+
+    .tool-call-icon {
+      font-size: 0.75rem;
+      color: var(--accent);
+    }
+
+    .tool-call-name {
+      color: var(--accent);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-weight: 500;
+    }
+
+    .tool-call-args {
+      color: var(--text-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.8rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      flex: 1;
+    }
+
+    .tool-call-body {
+      display: none;
+      padding: 10px 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .tool-call-body.open {
+      display: block;
+    }
+
+    .tool-call-body pre {
+      background: rgba(0,0,0,0.3);
+      padding: 10px;
+      border-radius: 6px;
+      overflow-x: auto;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    /* --- Markdown in messages --- */
+    .message h1, .message h2, .message h3, .message h4 {
+      margin: 12px 0 6px;
+      color: var(--text-primary);
+    }
+    .message h1 { font-size: 1.3rem; }
+    .message h2 { font-size: 1.15rem; }
+    .message h3 { font-size: 1rem; }
+
+    .message p { margin: 6px 0; }
+
+    .message code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
+    }
+
+    .message pre {
+      background: rgba(0,0,0,0.4);
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+
+    .message pre code {
+      background: none;
+      padding: 0;
+    }
+
+    .message ul, .message ol {
+      padding-left: 20px;
+      margin: 6px 0;
+    }
+
+    .message li { margin: 4px 0; }
+
+    .message table {
+      border-collapse: collapse;
+      margin: 8px 0;
+      font-size: 0.9rem;
+      width: 100%;
+    }
+
+    .message th, .message td {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      text-align: left;
+    }
+
+    .message th {
+      background: rgba(79, 143, 247, 0.1);
+    }
+
+    .message blockquote {
+      border-left: 3px solid var(--accent);
+      padding-left: 12px;
+      color: var(--text-secondary);
+      margin: 8px 0;
+    }
+
+    .message a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .message a:hover {
+      text-decoration: underline;
+    }
+
+    .message hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 12px 0;
+    }
+
+    /* --- Thinking indicator --- */
+    .thinking {
+      align-self: flex-start;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 18px;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+
+    .thinking-dots span {
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.4s infinite;
+    }
+
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40% { transform: translateY(-8px); }
+    }
+
+    /* --- Input Area --- */
+    .input-area {
+      padding: 16px 20px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .input-wrapper {
+      display: flex;
+      gap: 10px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .input-wrapper textarea {
+      flex: 1;
+      background: var(--bg-chat);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.95rem;
+      resize: none;
+      outline: none;
+      min-height: 48px;
+      max-height: 200px;
+      transition: border-color 0.2s;
+    }
+
+    .input-wrapper textarea:focus {
+      border-color: var(--accent);
+    }
+
+    .input-wrapper textarea::placeholder {
+      color: var(--text-muted);
+    }
+
+    .send-btn {
+      background: var(--accent);
+      border: none;
+      border-radius: var(--radius);
+      width: 48px;
+      height: 48px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+      flex-shrink: 0;
+      align-self: flex-end;
+    }
+
+    .send-btn:hover:not(:disabled) {
+      background: var(--accent-hover);
+    }
+
+    .send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .send-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    /* --- Welcome Screen --- */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 16px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 40px;
+    }
+
+    .welcome h2 {
+      font-size: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .welcome p {
+      max-width: 500px;
+      line-height: 1.6;
+    }
+
+    .welcome .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 12px;
+    }
+
+    .welcome .suggestion {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .welcome .suggestion:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* --- Setup Modal --- */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      max-width: 480px;
+      width: 90%;
+    }
+
+    .modal h2 {
+      margin-bottom: 16px;
+      font-size: 1.2rem;
+    }
+
+    .modal p {
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .modal input {
+      width: 100%;
+      padding: 10px 14px;
+      background: var(--bg-chat);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-primary);
+      font-size: 0.95rem;
+      outline: none;
+      margin-bottom: 16px;
+    }
+
+    .modal input:focus {
+      border-color: var(--accent);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .modal-actions button {
+      padding: 8px 20px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--border) !important;
+      color: var(--text-secondary);
+    }
+
+    /* --- Responsive --- */
+    @media (max-width: 768px) {
+      .message { max-width: 95%; }
+      .header h1 { font-size: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div class="status-dot" id="statusDot"></div>
+      <h1>Executive Assistant</h1>
+    </div>
+    <div class="header-actions">
+      <button onclick="reloadContext()" title="Reload GEMINI.md and context files">Reload Context</button>
+      <button onclick="clearChat()" title="Clear conversation history">New Chat</button>
+      <button onclick="openSettings()" title="Settings">Settings</button>
+    </div>
+  </div>
+
+  <div class="chat-container" id="chatContainer">
+    <div class="welcome" id="welcome">
+      <h2>Your Executive Assistant</h2>
+      <p>I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
+      <div class="suggestions">
+        <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
+        <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Current priorities</div>
+        <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
+        <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="input-area">
+    <div class="input-wrapper">
+      <textarea
+        id="messageInput"
+        placeholder="Type a message..."
+        rows="1"
+        onkeydown="handleKeyDown(event)"
+        oninput="autoResize(this)"
+      ></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal">
+      <h2>Settings</h2>
+      <p>Configure your Gemini API connection. Leave blank to use Google account authentication (via <code>gemini auth login</code>).</p>
+      <label style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 6px;">API Key (optional)</label>
+      <input type="password" id="apiKeyInput" placeholder="Gemini API key or leave blank for Google auth">
+      <label style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 6px;">Model</label>
+      <input type="text" id="modelInput" placeholder="gemini-2.5-flash" value="gemini-2.5-flash">
+      <div class="modal-actions">
+        <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
+        <button class="btn-primary" onclick="saveSettings()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Auth Error Modal -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal">
+      <h2>Authentication Required</h2>
+      <p>The EA couldn't connect to Gemini. You have two options:</p>
+      <p><strong>Option 1:</strong> Run <code>gemini auth login</code> in your terminal to log in with your Google account.</p>
+      <p><strong>Option 2:</strong> Enter a Gemini API key in Settings.</p>
+      <p>After authenticating, restart the EA.</p>
+      <div class="modal-actions">
+        <button class="btn-primary" onclick="closeAuthModal()">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const sendBtn = document.getElementById('sendBtn');
+    const statusDot = document.getElementById('statusDot');
+    const welcome = document.getElementById('welcome');
+    let isWaiting = false;
+
+    // --- Check status on load ---
+    async function checkStatus() {
+      try {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        if (data.ready) {
+          statusDot.className = 'status-dot';
+        } else {
+          statusDot.className = 'status-dot error';
+          document.getElementById('authModal').classList.add('open');
+        }
+      } catch {
+        statusDot.className = 'status-dot error';
+      }
+    }
+
+    checkStatus();
+
+    // --- Message Handling ---
+    async function sendMessage() {
+      const text = messageInput.value.trim();
+      if (!text || isWaiting) return;
+
+      // Hide welcome screen
+      if (welcome) welcome.remove();
+
+      // Add user message
+      addMessage(text, 'user');
+      messageInput.value = '';
+      autoResize(messageInput);
+
+      // Show thinking indicator
+      isWaiting = true;
+      sendBtn.disabled = true;
+      const thinkingEl = addThinking();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text })
+        });
+
+        // Remove thinking indicator
+        thinkingEl.remove();
+
+        if (res.status === 401) {
+          document.getElementById('authModal').classList.add('open');
+          addMessage('Authentication failed. Please check your credentials.', 'system');
+          return;
+        }
+
+        if (!res.ok) {
+          const err = await res.json();
+          addMessage(`Error: ${err.detail || 'Something went wrong'}`, 'system');
+          return;
+        }
+
+        const data = await res.json();
+
+        // Show tool calls if any
+        if (data.tool_calls && data.tool_calls.length > 0) {
+          addToolCalls(data.tool_calls);
+        }
+
+        // Show assistant response
+        if (data.response) {
+          addMessage(data.response, 'assistant');
+        }
+
+      } catch (e) {
+        thinkingEl.remove();
+        addMessage(`Connection error: ${e.message}`, 'system');
+      } finally {
+        isWaiting = false;
+        sendBtn.disabled = false;
+        messageInput.focus();
+      }
+    }
+
+    function addMessage(text, role) {
+      const div = document.createElement('div');
+      div.className = `message ${role}`;
+      if (role === 'assistant') {
+        div.innerHTML = renderMarkdown(text);
+      } else {
+        div.textContent = text;
+      }
+      chatContainer.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    function addToolCalls(calls) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'tool-calls';
+
+      for (const call of calls) {
+        const div = document.createElement('div');
+        div.className = 'tool-call';
+
+        const argsPreview = Object.entries(call.args || {})
+          .map(([k, v]) => {
+            const val = typeof v === 'string' ? v : JSON.stringify(v);
+            return `${k}=${val.length > 40 ? val.slice(0, 40) + '...' : val}`;
+          })
+          .join(', ');
+
+        div.innerHTML = `
+          <div class="tool-call-header" onclick="this.nextElementSibling.classList.toggle('open')">
+            <span class="tool-call-icon">&#9881;</span>
+            <span class="tool-call-name">${escapeHtml(call.name)}</span>
+            <span class="tool-call-args">${escapeHtml(argsPreview)}</span>
+          </div>
+          <div class="tool-call-body">
+            <pre>${escapeHtml(call.result || '(no output)')}</pre>
+          </div>
+        `;
+        wrapper.appendChild(div);
+      }
+
+      chatContainer.appendChild(wrapper);
+      scrollToBottom();
+    }
+
+    function addThinking() {
+      const div = document.createElement('div');
+      div.className = 'thinking';
+      div.innerHTML = `
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <span>Thinking...</span>
+      `;
+      chatContainer.appendChild(div);
+      scrollToBottom();
+      return div;
+    }
+
+    // --- Markdown Rendering (lightweight) ---
+    function renderMarkdown(text) {
+      if (!text) return '';
+      let html = escapeHtml(text);
+
+      // Code blocks (``` ... ```)
+      html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
+        `<pre><code class="language-${lang}">${code.trim()}</code></pre>`
+      );
+
+      // Inline code
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      // Headers
+      html = html.replace(/^#### (.+)$/gm, '<h4>$1</h4>');
+      html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+      html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+      html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+      // Bold and italic
+      html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+      // Links
+      html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+
+      // Blockquotes
+      html = html.replace(/^&gt; (.+)$/gm, '<blockquote>$1</blockquote>');
+
+      // Unordered lists
+      html = html.replace(/^[*-] (.+)$/gm, '<li>$1</li>');
+      html = html.replace(/(<li>[\s\S]*?<\/li>)/g, (match) => {
+        if (!match.startsWith('<ul>')) return `<ul>${match}</ul>`;
+        return match;
+      });
+
+      // Horizontal rules
+      html = html.replace(/^---$/gm, '<hr>');
+
+      // Tables (basic)
+      html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
+        const cells = content.split('|').map(c => c.trim());
+        if (cells.every(c => /^[-:]+$/.test(c))) return ''; // separator row
+        const tag = 'td';
+        return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+      });
+      html = html.replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, (match) =>
+        `<table>${match}</table>`
+      );
+
+      // Paragraphs (lines not wrapped in other elements)
+      html = html.replace(/^(?!<[a-z]|$)(.+)$/gm, '<p>$1</p>');
+
+      // Clean up empty paragraphs
+      html = html.replace(/<p><\/p>/g, '');
+
+      return html;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // --- UI Helpers ---
+    function scrollToBottom() {
+      requestAnimationFrame(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+      });
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 200) + 'px';
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function sendSuggestion(text) {
+      messageInput.value = text;
+      sendMessage();
+    }
+
+    async function clearChat() {
+      await fetch('/api/clear', { method: 'POST' });
+      chatContainer.innerHTML = '';
+      // Re-add welcome
+      chatContainer.innerHTML = `
+        <div class="welcome" id="welcome">
+          <h2>Your Executive Assistant</h2>
+          <p>I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
+          <div class="suggestions">
+            <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
+            <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Current priorities</div>
+            <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
+            <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
+          </div>
+        </div>
+      `;
+    }
+
+    async function reloadContext() {
+      const res = await fetch('/api/reload', { method: 'POST' });
+      if (res.ok) {
+        addMessage('Context reloaded from GEMINI.md and context files.', 'system');
+      }
+    }
+
+    function openSettings() {
+      document.getElementById('settingsModal').classList.add('open');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsModal').classList.remove('open');
+    }
+
+    function closeAuthModal() {
+      document.getElementById('authModal').classList.remove('open');
+    }
+
+    async function saveSettings() {
+      const apiKey = document.getElementById('apiKeyInput').value.trim() || null;
+      const model = document.getElementById('modelInput').value.trim() || null;
+
+      const res = await fetch('/api/configure', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ api_key: apiKey, model: model })
+      });
+
+      if (res.ok) {
+        closeSettings();
+        statusDot.className = 'status-dot';
+        addMessage('Settings updated.', 'system');
+      } else {
+        const err = await res.json();
+        alert(`Error: ${err.detail}`);
+      }
+    }
+
+    // Focus input on load
+    messageInput.focus();
+  </script>
+</body>
+</html>

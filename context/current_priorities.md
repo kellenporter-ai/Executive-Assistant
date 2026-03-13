@@ -22,6 +22,14 @@ All stability work completed as of 2026-03-10. Full audit history archived in `d
 - Full assessment lifecycle + skill-to-agent mapping documented in `agents/ROUTING.md`
 - **Two audit rounds completed (2026-03-12):** Round 1 added 6 agents, 4 skills, 3 tools, expanded ROUTING.md. Round 2 standardized all agent structures, added error handling to skills, wired orphaned tools, fixed deploy delegation (→ release-engineer), added QA-before-user in create-assessment.
 
+## Priority 4: Gemini Executive Assistant for Teachers
+- **Goal:** Distributable WAT-based EA powered by Gemini CLI for other teachers
+- **Location:** `projects/Gemini Assistant/`
+- **Architecture:** Web chat UI (FastAPI + vanilla HTML) that acts as a thin shell over Gemini CLI subprocess
+- **Key decision:** Frontend pipes user input to `gemini` CLI process stdin, streams stdout back. CLI handles all auth (Google account OAuth or API key), tool calling, agent delegation, and file operations natively. No SDK, no custom auth code.
+- **Status (2026-03-13):** WAT structure complete (GEMINI.md, 8 agents, 13 workflows, context templates, memory system). Web UI built and styled. Backend needs rewrite from SDK-based (`google-genai`) to CLI-proxy architecture (`gemini` subprocess). Current SDK approach can't use Gemini CLI's OAuth tokens.
+- **Next step:** Rewrite `app/gemini_client.py` to spawn `gemini` as a PTY subprocess, pipe messages to stdin, parse/stream stdout back. Remove `tools.py` (CLI has native tools). Simplify `requirements.txt`.
+
 ## Porter's Portal Reference
 - Path: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal` (git submodule)
 - Core goals: ZPD-calibrated tasks, social constructivism, ISLE pedagogy, gamification, differentiation
