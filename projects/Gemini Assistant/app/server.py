@@ -197,20 +197,20 @@ async def get_session_messages(session_id: str):
 @app.get("/api/files")
 async def list_files(path: str = ""):
     """List files and directories in the workspace."""
-    target = os.path.normpath(os.path.join(WORKSPACE, path))
+    target = Path(WORKSPACE).joinpath(path).resolve()
     # Security: ensure within workspace
-    if not target.startswith(WORKSPACE):
+    if not target.is_relative_to(Path(WORKSPACE).resolve()):
         raise HTTPException(status_code=403, detail="Access denied")
-    if not os.path.isdir(target):
+    if not os.path.isdir(str(target)):
         raise HTTPException(status_code=404, detail="Directory not found")
 
     SKIP = {".git", ".venv", "__pycache__", "node_modules", ".gemini"}
     entries = []
     try:
-        for name in sorted(os.listdir(target)):
+        for name in sorted(os.listdir(str(target))):
             if name in SKIP or name.startswith("."):
                 continue
-            full = os.path.join(target, name)
+            full = os.path.join(str(target), name)
             rel = os.path.relpath(full, WORKSPACE)
             is_dir = os.path.isdir(full)
             entries.append({
@@ -260,16 +260,16 @@ async def search_files(query: str):
 @app.get("/api/files/read")
 async def read_file(path: str):
     """Read a file from the workspace (text preview, max 50KB)."""
-    target = os.path.normpath(os.path.join(WORKSPACE, path))
-    if not target.startswith(WORKSPACE):
+    target = Path(WORKSPACE).joinpath(path).resolve()
+    if not target.is_relative_to(Path(WORKSPACE).resolve()):
         raise HTTPException(status_code=403, detail="Access denied")
-    if not os.path.isfile(target):
+    if not os.path.isfile(str(target)):
         raise HTTPException(status_code=404, detail="File not found")
-    if os.path.getsize(target) > 50_000:
+    if os.path.getsize(str(target)) > 50_000:
         return {"content": "(File too large to preview — over 50KB)", "truncated": True}
 
     try:
-        with open(target, "r", encoding="utf-8", errors="replace") as f:
+        with open(str(target), "r", encoding="utf-8", errors="replace") as f:
             return {"content": f.read(), "truncated": False}
     except Exception as e:
         return {"content": f"(Cannot read file: {e})", "truncated": True}

@@ -381,21 +381,20 @@
     .chat-container {
       flex: 1;
       overflow-y: auto;
-      padding: 30px 10% 50px;
+      padding: 24px 40px 50px;
       display: flex;
       flex-direction: column;
-      gap: 24px;
+      gap: 16px;
       scroll-behavior: smooth;
     }
 
     .message {
-      max-width: 85%;
-      padding: 16px 20px;
+      max-width: 100%;
+      padding: 12px 16px;
       border-radius: var(--radius);
       line-height: 1.6;
       font-size: 0.95rem;
       position: relative;
-      box-shadow: var(--shadow-lg);
       transition: transform 0.2s;
       display: flex;
       flex-direction: column;
@@ -404,10 +403,21 @@
     }
 
     .message.user {
-      align-self: flex-end;
-      background: var(--accent);
-      color: #ffffff;
-      border-bottom-right-radius: 4px;
+      align-self: flex-start;
+      background: var(--accent-dim);
+      color: var(--text-primary);
+      border-left: 3px solid var(--accent);
+      position: relative;
+      margin-left: 20px;
+    }
+
+    .message.user::before {
+      content: '>';
+      position: absolute;
+      left: -20px;
+      color: var(--accent);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
     }
 
     .message.assistant {
@@ -415,7 +425,6 @@
       background: var(--bg-assistant);
       backdrop-filter: var(--blur);
       border: 1px solid var(--border);
-      border-bottom-left-radius: 4px;
     }
 
     /* Markdown styling within messages */
@@ -482,14 +491,13 @@
       border-radius: 4px;
     }
     
-    .message.user code { background: rgba(255, 255, 255, 0.2); }
 
     .message ul, .message ol { margin: 0.8em 0; padding-left: 1.5em; }
     .message li { margin-bottom: 0.4em; }
 
     /* ===== INPUT AREA ===== */
     .input-area {
-      padding: 20px 10%;
+      padding: 16px 40px;
       background: transparent;
       flex-shrink: 0;
     }
@@ -562,8 +570,8 @@
     .tool-call {
       background: var(--bg-tool);
       border: 1px solid var(--border);
-      border-radius: 10px;
-      margin-bottom: 12px;
+      border-radius: 8px;
+      margin: 4px 0;
       overflow: hidden;
       font-size: 0.85rem;
       box-shadow: 0 4px 12px rgba(0,0,0,0.05);
@@ -578,12 +586,32 @@
       cursor: pointer;
       user-select: none;
       transition: background 0.2s;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
     }
 
     .tool-call-header:hover { background: rgba(137, 180, 250, 0.2); }
-    ::-webkit-scrollbar { width: 8px; height: 8px; }
-    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
-    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .tool-call-status { font-size: 0.75rem; padding: 2px 8px; border-radius: 4px; margin-left: auto; font-family: 'JetBrains Mono', monospace; }
+    .tool-call-status.running { background: var(--accent-dim); color: var(--accent); }
+    .tool-call-status.success { background: rgba(166, 227, 161, 0.15); color: var(--success); }
+    .tool-call-status.error { background: rgba(243, 139, 168, 0.15); color: var(--error); }
+
+    .tool-call-body { display: none; padding: 10px 14px; border-top: 1px solid var(--border); max-height: 300px; overflow-y: auto; }
+    .tool-call-body.open { display: block; }
+    .tool-call-body pre { font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; white-space: pre-wrap; word-break: break-all; color: var(--text-secondary); margin: 0; background: none !important; border: none !important; }
+
+    .spinning i, .spinning svg { animation: spin 1.5s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .stats-bar { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; padding: 4px 16px; margin: 4px 0; opacity: 0.7; }
+
+    .diff-block { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; border-radius: 8px; overflow: hidden; margin: 8px 0; border: 1px solid var(--border); }
+    .diff-header { padding: 6px 12px; background: var(--bg-tool); color: var(--text-muted); font-size: 0.75rem; border-bottom: 1px solid var(--border); }
+    .diff-line { padding: 1px 12px; white-space: pre-wrap; }
+    .diff-line.added { background: rgba(166, 227, 161, 0.1); color: var(--success); }
+    .diff-line.removed { background: rgba(243, 139, 168, 0.1); color: var(--error); }
+    .diff-line.context { color: var(--text-muted); }
 
     /* ===== WELCOME ===== */
     .welcome {
@@ -692,7 +720,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      padding: 0 10% 12px;
+      padding: 0 40px 12px;
     }
 
     .attachment-preview {
@@ -720,52 +748,6 @@
       opacity: 0.7;
     }
     .attachment-preview .remove:hover { opacity: 1; color: var(--error); }
-
-    /* ===== MESSAGE ATTACHMENTS ===== */
-    .attachments {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
-    }
-
-    .message.assistant .attachments {
-      border-top-color: var(--border);
-    }
-
-    .attachment-img {
-      max-width: 100%;
-      max-height: 300px;
-      border-radius: 8px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      cursor: zoom-in;
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .attachment-img:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    }
-
-    .attachment-chip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      background: rgba(255, 255, 255, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      font-size: 0.85rem;
-      color: #fff;
-    }
-
-    .message.assistant .attachment-chip {
-      background: var(--bg-tool);
-      border-color: var(--border);
-      color: var(--text-primary);
-    }
 
     /* ===== THINKING ===== */
     .thinking {
@@ -840,11 +822,6 @@
       white-space: nowrap;
     }
 
-    .message.user .attachment-chip {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: #fff;
-    }
 
     /* ===== INPUT AREA REFINEMENT ===== */
     .input-actions button {
@@ -1748,7 +1725,11 @@
           addMessage('Generation stopped.', 'system');
         } else {
           if (!thinkingRemoved) thinkingEl.remove();
-          addMessage(`Connection error: ${e.message}`, 'system');
+          // Save partial response if we got anything
+          if (assistantText) {
+            tab.messages.push({ role: 'assistant', content: assistantText });
+          }
+          addMessage(`Connection lost. Partial response preserved above.`, 'system');
         }
       } finally {
         isWaiting = false;
@@ -1808,12 +1789,13 @@
       st.textContent = `${event.status === 'success' ? 'done' : 'error'} (${duration}s)`;
       
       const output = event.output || '(no output)';
-      div.querySelector('.tool-call-body pre').textContent =
-        output.length > 3000 ? output.slice(0, 3000) + '\n...(truncated)' : output;
-        
-      // Auto-sync to current tab state
-      const tab = getActiveTab();
-      if (tab) tab._html = chatContainer.innerHTML;
+      const diffHtml = renderDiff(output);
+      if (diffHtml) {
+        div.querySelector('.tool-call-body pre').outerHTML = diffHtml;
+      } else {
+        div.querySelector('.tool-call-body pre').textContent =
+          output.length > 3000 ? output.slice(0, 3000) + '\n...(truncated)' : output;
+      }
     }
 
     // ===== MESSAGE RENDERING =====
@@ -1826,11 +1808,7 @@
         div.textContent = text;
       }
       chatContainer.appendChild(div);
-      
-      // Auto-sync to current tab state
-      const tab = getActiveTab();
-      if (tab) tab._html = chatContainer.innerHTML;
-      
+
       lucide.createIcons();
       scrollToBottom();
       return div;
@@ -1865,20 +1843,7 @@
 
     function renderMarkdown(text) {
       if (!text) return '';
-      const html = marked.parse(text);
-      // Post-process to add event listeners to copy buttons
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = html;
-      tempDiv.querySelectorAll('.copy-btn').forEach(btn => {
-        btn.onclick = () => {
-          const raw = btn.closest('.code-container').querySelector('.raw-code').innerHTML;
-          // Decode HTML entities
-          const txt = document.createElement('textarea');
-          txt.innerHTML = raw;
-          copyToClipboard(txt.value, btn);
-        };
-      });
-      return tempDiv.innerHTML;
+      return marked.parse(text);
     }
 
     function escapeHtml(text) {
@@ -1958,6 +1923,45 @@
     }
 
     initTheme();
+
+    // ===== DIFF RENDERING =====
+    function renderDiff(text) {
+      if (!text.includes('--- ') || !text.includes('+++ ')) return null;
+      const lines = text.split('\n');
+      let html = '<div class="diff-block">';
+      let inDiff = false;
+      for (const line of lines) {
+        if (line.startsWith('--- ') || line.startsWith('+++ ')) {
+          html += `<div class="diff-header">${escapeHtml(line)}</div>`;
+          inDiff = true;
+        } else if (line.startsWith('+')) {
+          html += `<div class="diff-line added">${escapeHtml(line)}</div>`;
+        } else if (line.startsWith('-')) {
+          html += `<div class="diff-line removed">${escapeHtml(line)}</div>`;
+        } else if (line.startsWith('@@')) {
+          html += `<div class="diff-header">${escapeHtml(line)}</div>`;
+        } else {
+          html += `<div class="diff-line context">${escapeHtml(line)}</div>`;
+        }
+      }
+      html += '</div>';
+      return html;
+    }
+
+    // ===== EVENT DELEGATION =====
+    // Copy buttons lose their handlers when innerHTML is serialized — use delegation instead
+    chatContainer.addEventListener('click', e => {
+      const btn = e.target.closest('.copy-btn');
+      if (!btn) return;
+      const container = btn.closest('.code-container');
+      if (!container) return;
+      const raw = container.querySelector('.raw-code')?.innerHTML;
+      if (raw) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = raw;
+        copyToClipboard(txt.value, btn);
+      }
+    });
 
     // ===== LAUNCH =====
     init();
