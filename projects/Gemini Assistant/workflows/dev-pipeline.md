@@ -45,20 +45,13 @@ For each component in the plan:
 Present the result to the user:
 ```
 ## Implementation Complete
-
-**Goal:** [original request]
-**Changes:**
-- [file: description of change]
-- [file: description of change]
-
-**Tests:** [pass/fail summary]
-**QA:** [pass/fail with any notes]
-**Documentation:** [updated / not needed]
-
-**Next Steps:** [deploy instructions, remaining manual steps, or follow-up items]
+...
 ```
 
-## Error Handling
+**7. Log Action** — Record the final project outcome (success/fail) to the local database:
+```bash
+python3 tools/system/log_action.py --agent "Manager" --action "Implementation Handoff" --category "Projects" --status "success"
+```
 
 - **Auth/Permission errors** — Stop and escalate immediately.
 - **Ambiguous requirements** — Ask for clarification before guessing.

@@ -43,7 +43,8 @@ Before starting work, read `memory/MEMORY.md` for cross-session knowledge. If a 
 2. **Plan** — Outline: new/modified types, functions, queries, indexes, security rules.
 3. **Implement** — Follow existing conventions. Mirror patterns already in the codebase.
 4. **Validate** — Build and verify no type errors or compilation failures.
-5. **Report** — Compressed summary.
+5. **Log** — Record the action and P.A.R.A category using `tools/system/log_action.py`.
+6. **Report** — Compressed summary.
 
 ## Task Report Format
 

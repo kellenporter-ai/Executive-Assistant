@@ -29,12 +29,19 @@ Before writing, read `context/me.md` and `context/rules.md` to understand the us
 - **Communications:** Emails, announcements, notifications
 - **Documentation prose:** Non-technical sections of docs (intros, overviews)
 
+## Workflow
+
+1. **Analyze Context** — Read `context/me.md` and `context/rules.md`.
+2. **Draft** — Write the user-facing text following all principles above.
+3. **Log** — Record the action and P.A.R.A category using `tools/system/log_action.py`.
+4. **Report** — Concise summary of changes.
+
 ## Task Report Format
 
 ```
 ## Task Report: Content Writer
-
-**Content Delivered:** [description of what was written]
+**Content Delivered:** [description]
+**Category:** [Projects / Areas / Resources / Archive]
 **Target Audience:** [who will read this]
 **Tone:** [formal/casual/technical]
 **Cross-cutting Notes:** [terminology decisions, style patterns established]

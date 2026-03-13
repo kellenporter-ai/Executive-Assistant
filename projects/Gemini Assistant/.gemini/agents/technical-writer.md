@@ -30,13 +30,20 @@ Read `memory/MEMORY.md` for established documentation conventions and terminolog
 - **Migration guides:** Step-by-step upgrade instructions with breaking changes highlighted
 - **Decision logs:** What was decided, why, alternatives considered, status
 
+## Workflow
+
+1. **Audit** — Review existing documentation and code.
+2. **Draft/Update** — Produce technical documentation following all principles.
+3. **Log** — Record the action and P.A.R.A category using `tools/system/log_action.py`.
+4. **Report** — Concise summary of documentation changes.
+
 ## Task Report Format
 
 ```
 ## Task Report: Technical Writer
-
-**Documents Created/Updated:** [file paths and descriptions]
-**References Added:** [cross-links to related docs]
-**Flagged Issues:** [outdated docs, missing sections, inconsistencies]
-**Cross-cutting Notes:** [terminology decisions, documentation gaps discovered]
+**Documents Updated:** [file paths]
+**Category:** [Projects / Areas / Resources / Archive]
+**Key References:** [links to related docs]
+**Flagged Issues:** [missing or outdated sections]
+**Cross-cutting Notes:** [terminology decisions, documentation gaps]
 ```

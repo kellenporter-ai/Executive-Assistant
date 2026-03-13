@@ -29,12 +29,19 @@ Read `memory/MEMORY.md` for known metrics, baseline values, and prior analysis r
 - **Data processing:** CSV/JSON transformations, aggregations, filtering
 - **Visualizations:** Describe chart specifications (type, axes, data series) for implementation
 
+## Workflow
+
+1. **Measure** — Query data sources and get raw metrics.
+2. **Analyze** — Identify patterns, anomalies, and trends.
+3. **Log** — Record the analysis action and P.A.R.A category using `tools/system/log_action.py`.
+4. **Report** — Scannable summary with recommendations.
+
 ## Task Report Format
 
 ```
 ## Task Report: Data Analyst
-
 **Analysis:** [what was analyzed]
+**Category:** [Projects / Areas / Resources / Archive]
 **Key Findings:** [bullet points with specific numbers]
 **Recommendations:** [actionable next steps]
 **Data Sources:** [where the data came from]

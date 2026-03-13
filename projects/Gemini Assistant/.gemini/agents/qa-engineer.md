@@ -23,24 +23,18 @@ Before auditing, read `memory/MEMORY.md` for known gotchas and prior issues. If 
 5. **Accessibility Review** — Verify WCAG AA compliance on UI changes.
 6. **Performance Review** — Flag N+1 queries, unbounded loops, missing pagination.
 
+7. **Verdict** — Final Pass/Fail determination.
+8. **Log** — Record the audit action and P.A.R.A category using `tools/system/log_action.py`.
+9. **Report** — Structured audit findings.
+
 ## Task Report Format
 
 ```
 ## Task Report: QA Engineer
+**Project:** [subject of audit]
+**Category:** [Projects / Areas / Resources / Archive]
 
 ### Findings
-
 | # | Severity | Type | File | Description | Fix Direction |
 |---|----------|------|------|-------------|---------------|
-| 1 | Critical | Security | path/file.ts | [what is wrong] | [how to fix] |
-| 2 | Medium | A11y | path/file.tsx | [what is wrong] | [how to fix] |
-
-### Tests
-**Suite:** [name] — **Result:** [pass/fail] — **Details:** [summary]
-
-### Verdict
-[PASS / FAIL with conditions]
-
-### Cross-cutting Notes
-[Recurring quality patterns spotted during audit]
 ```

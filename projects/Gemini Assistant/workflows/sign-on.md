@@ -37,34 +37,38 @@ cd projects/<dir> && git fetch --all && git status && git pull --rebase
 
 Read `memory/MEMORY.md` for cross-session knowledge.
 
+Check recent logs for this session and broadly across all sessions:
+```bash
+python3 tools/system/get_logs.py # Current session only
+python3 tools/system/get_logs.py --all # Overview of all active tasks
+```
+
 Look for the most recent context-sync entry in `decisions/`:
 ```bash
 ls -t decisions/ | head -10
 ```
-
-If the last context sync was 7+ days ago, nudge:
-> "It's been [N] days since your last context sync. Want me to run one?"
 
 ## Step 4: Dashboard
 
 Present a clean, scannable dashboard:
 
 ```
-## Good morning
+## Good morning (Session ID: [GEMINI_SESSION_ID])
 
 **Machine:** [hostname / CPU summary]
 **Local LLM:** [Ready / Not available]
 
-### Repo Status
-| Repo | Branch | Status | Last Commit |
-|------|--------|--------|-------------|
-| [name] | [branch] | [clean/dirty] | [hash — message] |
+### Your Current Session Activity
+[Summary from python3 tools/system/get_logs.py]
+
+### Global Project Status
+[Insert query output from: python3 tools/system/state_db.py summary]
+
+### Active Elsewhere (Parallel Tasks)
+[If `get_logs.py --all` shows other recent sessions, list their last actions here]
 
 ### Current Priorities
 [Top items from context/current_priorities.md]
-
-### Heads Up
-[Any sync nudges, merge issues, service problems, or stale context warnings]
 ```
 
 Ask for the first task.

@@ -28,6 +28,8 @@ load_dotenv(os.path.join(WORKSPACE, ".env"))
 ATTACHMENTS_DIR = os.path.join(WORKSPACE, "temp", "attachments")
 os.makedirs(ATTACHMENTS_DIR, exist_ok=True)
 
+# Active chat tasks tracking: { session_id: asyncio.Task }
+active_tasks = {}
 
 app = FastAPI(title="Gemini Executive Assistant")
 
@@ -37,6 +39,9 @@ app = FastAPI(title="Gemini Executive Assistant")
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+
+class CancelRequest(BaseModel):
+    session_id: str
 
 
 # --- API Routes ---
@@ -50,11 +55,44 @@ async def chat(request: ChatRequest):
     session_id = request.session_id
 
     async def event_stream():
-        async for event in stream_chat(request.message, session_id):
-            yield f"data: {json.dumps(event)}\n\n"
+        nonlocal session_id
+        task = asyncio.current_task()
+        
+        # We'll use a temporary ID if one isn't provided yet
+        track_id = session_id or f"temp-{uuid.uuid4().hex[:8]}"
+        active_tasks[track_id] = task
+        
+        try:
+            # Pass track_id as session_id if original was None
+            async for event in stream_chat(request.message, session_id or track_id):
+                # Update track_id if session_id is returned in the first event
+                if event.get("type") == "init" and event.get("session_id"):
+                    new_session_id = event["session_id"]
+                    if track_id != new_session_id:
+                        active_tasks[new_session_id] = task
+                        active_tasks.pop(track_id, None)
+                        track_id = new_session_id
+                
+                yield f"data: {json.dumps(event)}\n\n"
+        except asyncio.CancelledError:
+            yield f"data: {json.dumps({'type': 'error', 'message': 'Request cancelled by user'})}\n\n"
+        finally:
+            active_tasks.pop(track_id, None)
+            
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
+
+
+@app.post("/api/cancel")
+async def cancel_chat(request: CancelRequest):
+    """Cancel an active chat task."""
+    task = active_tasks.get(request.session_id)
+    if not task:
+        return {"status": "not_found", "message": "No active task for this session"}
+    
+    task.cancel()
+    return {"status": "cancelled"}
 
 
 @app.get("/api/status")
@@ -104,38 +142,17 @@ async def list_sessions():
 
 @app.delete("/api/sessions/{session_id}")
 async def delete_session(session_id: str):
-    """Delete a chat session."""
-    gemini = get_gemini_path()
-    # Find the session index by listing sessions first
-    proc = await asyncio.create_subprocess_exec(
-        gemini, "--list-sessions",
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=WORKSPACE,
-    )
-    stdout, _ = await proc.communicate()
-    output = stdout.decode("utf-8")
+    """Delete a chat session by removing its file directly."""
+    gemini_dir = os.path.expanduser("~/.gemini/tmp")
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id[:8]}*.json")
+    matches = glob.glob(pattern, recursive=True)
 
-    session_index = None
-    for line in output.split("\n"):
-        match = re.match(
-            r"\s*(\d+)\.\s+.+?\[([a-f0-9-]+)\]",
-            line,
-        )
-        if match and match.group(2) == session_id:
-            session_index = match.group(1)
-            break
-
-    if not session_index:
+    if not matches:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    proc = await asyncio.create_subprocess_exec(
-        gemini, "--delete-session", session_index,
-        stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=WORKSPACE,
-    )
-    await proc.communicate()
+    for match in matches:
+        os.remove(match)
+
     return {"status": "ok"}
 
 
@@ -206,6 +223,38 @@ async def list_files(path: str = ""):
         raise HTTPException(status_code=403, detail="Permission denied")
 
     return {"entries": entries, "path": os.path.relpath(target, WORKSPACE)}
+
+
+@app.get("/api/files/search")
+async def search_files(query: str):
+    """Search for files in the workspace by name."""
+    if not query.strip():
+        return {"results": []}
+    
+    results = []
+    # Search recursively, ignoring common noise directories
+    SKIP = {".git", ".venv", "__pycache__", "node_modules", ".gemini"}
+    
+    for root, dirs, files in os.walk(WORKSPACE):
+        # Filter directories in-place to avoid walking into skipped ones
+        dirs[:] = [d for d in dirs if d not in SKIP and not d.startswith(".")]
+        
+        for file in files:
+            if query.lower() in file.lower():
+                full_path = os.path.join(root, file)
+                rel_path = os.path.relpath(full_path, WORKSPACE)
+                results.append({
+                    "name": file,
+                    "path": rel_path,
+                    "is_dir": False,
+                    "size": os.path.getsize(full_path)
+                })
+                if len(results) >= 50: # Limit results for UI stability
+                    break
+        if len(results) >= 50:
+            break
+            
+    return {"results": results}
 
 
 @app.get("/api/files/read")

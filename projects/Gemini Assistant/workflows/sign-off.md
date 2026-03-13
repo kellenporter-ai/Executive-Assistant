@@ -38,7 +38,15 @@ Present proposed updates for user confirmation before writing.
 
 ## Step 4: Consolidate Memory
 
-Run the remember workflow (@workflows/remember.md) to extract and persist session learnings.
+1. **Log Pruning:** Archive old operational logs to keep the working memory lean.
+   ```bash
+   python3 tools/system/prune_logs.py --days 14
+   ```
+2. **Background Remember:** Trigger a background process to extract and persist session learnings.
+   ```bash
+   python3 tools/system/background_remember.py --session_id [GEMINI_SESSION_ID]
+   ```
+   *Note: This runs in the background. Results will be available in the next session.*
 
 ## Step 5: Session Summary
 

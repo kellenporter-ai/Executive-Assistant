@@ -21,18 +21,21 @@ Read `memory/MEMORY.md` for known deploy gotchas and prior incidents. If a proje
 3. **Performance** — Compare response times to pre-deploy baseline.
 4. **Rollback Assessment** — If issues found, assess severity and recommend rollback or hotfix.
 
+## Workflow
+
+1. **Test** — Run health checks and smoke tests.
+2. **Monitor** — Review error logs and performance metrics.
+3. **Log** — Record the monitoring action and P.A.R.A category using `tools/system/log_action.py`.
+4. **Report** — Health summary with recommendations.
+
 ## Task Report Format
 
 ```
 ## Task Report: Deployment Monitor
-
-**Deploy:** [what was deployed, when]
+**Deploy:** [what was deployed]
+**Category:** [Projects / Areas / Resources / Archive]
 **Health Checks:**
 | Endpoint/Service | Status | Response Time | Notes |
 |-----------------|--------|---------------|-------|
 | [endpoint] | [OK/FAIL] | [ms] | [details] |
-
-**Error Log Summary:** [new errors since deploy]
-**Recommendation:** [healthy / investigate / rollback]
-**Cross-cutting Notes:** [deploy patterns or gotchas discovered]
 ```

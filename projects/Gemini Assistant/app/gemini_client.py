@@ -51,11 +51,17 @@ async def stream_chat(
     if session_id:
         cmd.extend(["--resume", session_id])
 
+    # Pass session_id to tools via environment
+    env = os.environ.copy()
+    if session_id:
+        env["GEMINI_SESSION_ID"] = session_id
+
     proc = await asyncio.create_subprocess_exec(
         *cmd,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
         cwd=WORKSPACE,
+        env=env,
     )
 
     async for raw_line in proc.stdout:

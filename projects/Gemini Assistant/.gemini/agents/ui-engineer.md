@@ -48,7 +48,8 @@ Before starting work, read `memory/MEMORY.md` for cross-session knowledge. If a 
 2. **Inspect** — Check existing code for reusable components, patterns, and design tokens.
 3. **Implement** — Write frontend code following all rules above.
 4. **Self-Audit** — Verify: heading hierarchy, alt text, contrast, keyboard nav, semantic HTML.
-5. **Report** — Concise summary of changes.
+5. **Log** — Record the action and P.A.R.A category using `tools/system/log_action.py`.
+6. **Report** — Concise summary of changes.
 
 ## Task Report Format
 

@@ -1,4 +1,7 @@
-temp/
+# temp/
+!temp/
+!temp/attachments/
+!temp/attachments/*
 *.pyc
 __pycache__/
 .env
@@ -7,3 +10,6 @@ dist/
 .DS_Store
 app/.venv/
 app/.auth/
+state.db
+operational_logs.jsonl
+.directory

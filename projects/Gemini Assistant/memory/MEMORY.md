@@ -9,5 +9,5 @@
 - **Reference:** Pointers to external resources
 
 ## Index
-<!-- Add links to memory files as they are created -->
-<!-- Format: - [description](filename.md) -->
+- [Parallel session isolation preference](parallel-session-isolation.md) (user)
+- [GEMINI_SESSION_ID for session-aware logging](gemini-session-id-logging.md) (project)

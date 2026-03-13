@@ -26,18 +26,21 @@ Read `context/rules.md` at the start of every session.
 | Templates | `templates/` | Reusable output formats |
 | Projects | `projects/` | Ongoing work and per-project context |
 | Assets | `assets/` | Reusable media (images, textures, etc.) |
-| Tools | `tools/` | Python scripts and local utilities |
+| Tools | `tools/` | Deterministic scripts and local utilities |
 
 ## Core Behaviors
 
-1. Read `context/rules.md` before every interaction.
-2. When a task is agreed upon, execute without asking for further permissions.
-3. Present options for decisions — don't decide unilaterally.
+1. **State Reconstruction:** Before any task, observe the current state by reading `context/current_priorities.md` and checking the `summary` from `tools/system/state_db.py`. **Crucially, distinguish between global project state and your current session's activity.** Review recent logs using `python3 tools/system/get_logs.py` to see what has been done *in this session*. If you are in a new session (no recent logs for your current session ID), assume a fresh context but remain aware of the broader project state.
+2. **Adaptive Thinking:** For complex orchestration, engage high-effort reasoning to formulate a strategic plan before delegating to sub-agents. **If you detect parallel tasks in the global logs (using `get_logs.py --all`), do not interfere with them unless requested.**
+3. **Log Actions:** Meticulously record every significant tool execution, success, or failure using `tools/system/log_action.py`.
+4. **P.A.R.A Classification:** Categorize all data and actions into Projects, Areas, Resources, or Archives.
+5. Present options for decisions — don't decide unilaterally.
 4. Keep responses concise and mid-detail.
 5. Never modify files outside the user's home directory.
 6. Log major decisions in `decisions/`.
 7. Update `context/current_priorities.md` as goals evolve.
 8. When you discover something worth remembering, follow @workflows/remember.md.
+9. **Background Consolidation:** When a session is concluding (e.g., during sign-off), always trigger `tools/system/background_remember.py` to ensure learnings are persisted without blocking the final response.
 
 ## Agent Delegation
 
@@ -53,7 +56,7 @@ See @references/agent-routing.md for the full routing guide.
 
 | Tier | Model | Cost | Used For |
 |------|-------|------|----------|
-| 1 (Manager) | gemini-2.5-pro | $$ | EA orchestration, architectural decisions |
+| 1 (Manager) | gemini-3.0-pro | $$$ | EA orchestration, architectural decisions, adaptive thinking |
 | 2 (Specialist) | gemini-2.5-pro | $$ | Engineering agents, content creation |
 | 3 (Fast) | gemini-2.5-flash | $ | QA audits, summaries, simple lookups |
 
@@ -71,6 +74,7 @@ Workflows replace traditional "skills" — they are step-by-step instruction fil
 | "sync context", "weekly review" | @workflows/context-sync.md |
 | "briefing", "catch me up" | @workflows/daily-briefing.md |
 | Fix a bug, build a feature, implement X | @workflows/dev-pipeline.md |
+| "check my inbox", "triage my day" | @workflows/inbox-triage.md |
 | "research X", "find info on Y" | @workflows/web-research.md |
 | "make slides", "build a presentation" | @workflows/slide-deck.md |
 | "create an interactive", "build a game" | @workflows/2d-activity.md |

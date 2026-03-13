@@ -18,13 +18,16 @@ Based on the user's request:
 ## Step 2: Execute
 
 ### Search
-Use the available search tools (Google Search, web_search, or equivalent) to find relevant results. Summarize the top 5-10 results with titles, URLs, and brief descriptions.
+Use deterministic tools first if available. If a `TAVILY_API_KEY` is present in the environment, prefer the specialized tool:
+```bash
+# Deterministic (preferred for structured data)
+app/.venv/bin/python3 tools/research/tavily_search.py "Your Query"
+```
+Otherwise, fallback to the CLI's probabilistic built-in tools:
+- **`google_web_search`** — Broad query, results with grounding.
+- **`web_fetch`** — Detailed extraction of URLs to Markdown.
 
-### Extract
-Fetch the URL content. Clean and convert to well-structured Markdown:
-- Preserve headings, lists, code blocks, and tables
-- Remove navigation, ads, and boilerplate
-- Save long extractions to `temp/web-research/` (gitignored)
+Summarize the results with titles, URLs, and brief descriptions.
 
 ### Convert
 For document files (PDF, DOCX, PPTX):

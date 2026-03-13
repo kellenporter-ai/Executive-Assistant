@@ -39,16 +39,17 @@ Read `memory/MEMORY.md` for known performance baselines, budgets, and prior opti
 2. **Identify** — Find the bottleneck. Don't optimize what doesn't matter.
 3. **Fix** — Make the minimal change that addresses the bottleneck.
 4. **Verify** — Measure again. Confirm improvement with numbers.
+5. **Log** — Record the optimization action and P.A.R.A category using `tools/system/log_action.py`.
+6. **Report** — Performance summary.
 
 ## Task Report Format
 
 ```
 ## Task Report: Performance Engineer
-
-**Issue:** [what was slow/large]
+**Issue:** [what was slow]
+**Category:** [Projects / Areas / Resources / Archive]
 **Baseline:** [measurements before]
-**Fix:** [what was changed]
 **Result:** [measurements after]
-**Remaining Opportunities:** [other optimizations not yet addressed]
+**Remaining Opportunities:** [unaddressed optimizations]
 **Cross-cutting Notes:** [patterns relevant to other agents]
 ```

@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Collision Lab</title>
+    <meta name="description" content="A professional 2D physics lab tool for simulating collisions with advanced controls and data logging.">
+    <style>
+        :root {
+            --background-color: #1a1e23;
+            --text-color: #f0f4f8;
+            --primary-color: #0d6efd;
+            --primary-hover-color: #0b5ed7;
+            --secondary-color: #2a3038;
+            --border-color: #404853;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --grid-color: rgba(64, 72, 83, 0.5);
+            --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow: hidden;
+        }
+
+        body {
+            display: grid;
+            grid-template-rows: auto 1fr;
+            grid-template-columns: 320px 1fr 320px;
+            grid-template-areas:
+                "header header header"
+                "controls-sidebar main data-sidebar";
+            height: 100vh;
+        }
+
+        .main-header {
+            grid-area: header;
+            text-align: center;
+            padding: 0.5rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--secondary-color);
+        }
+
+        .main-header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        #simulation-container {
+            grid-area: main;
+            position: relative;
+            min-width: 0;
+            min-height: 0;
+        }
+
+        #simulationCanvas {
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+            touch-action: none;
+        }
+
+        #simulationCanvas:active {
+            cursor: grabbing;
+        }
+
+        .sidebar {
+            background-color: var(--secondary-color);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            padding: 1rem;
+        }
+
+        #controls-sidebar {
+            grid-area: controls-sidebar;
+            border-right: 1px solid var(--border-color);
+        }
+
+        #data-sidebar {
+            grid-area: data-sidebar;
+            border-left: 1px solid var(--border-color);
+        }
+
+        .control-group {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            background: #343a40;
+        }
+
+        .control-group h2 {
+            font-size: 1.1rem;
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+        }
+        
+        input[type="number"] {
+            width: calc(100% - 12px);
+            background: var(--background-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 6px;
+        }
+        
+        select {
+             width: 100%;
+             background: var(--background-color);
+             color: var(--text-color);
+             border: 1px solid var(--border-color);
+             border-radius: 4px;
+             padding: 8px;
+        }
+
+        .range-value {
+            display: inline-block;
+            margin-left: 0.5rem;
+            font-weight: bold;
+            color: var(--warning-color);
+        }
+        
+        .input-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        button {
+            padding: 0.75rem;
+            border: none;
+            border-radius: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        button:hover, button:focus {
+            background-color: var(--primary-hover-color);
+            outline: 2px solid var(--warning-color);
+            outline-offset: 2px;
+        }
+        
+        #selectedObjectControls {
+            opacity: 0.5;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        
+        #selectedObjectControls.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #collision-log-panel h2 { text-align: center; }
+        .log-data { background: #212529; padding: 10px; border-radius: 5px;}
+        .log-data p { margin: 0 0 8px 0; font-size: 0.9rem; }
+        .log-data strong { color: var(--warning-color); }
+        .log-data .label { opacity: 0.7; }
+        .log-data .value { float: right; font-weight: bold; }
+        
+        .divider {
+            border: 0;
+            height: 1px;
+            background: var(--border-color);
+            margin: 12px 0;
+        }
+        
+        /* Responsive Design: Stack layout on smaller screens */
+        @media (max-width: 1366px) {
+            body {
+                grid-template-rows: auto 1fr auto;
+                grid-template-columns: 1fr 320px;
+                grid-template-areas:
+                    "header header"
+                    "main main"
+                    "controls-sidebar data-sidebar";
+                overflow-y: auto;
+            }
+            .sidebar {
+                max-height: 45vh;
+            }
+        }
+        @media (max-width: 768px) {
+             body {
+                grid-template-rows: auto 1fr auto auto;
+                grid-template-columns: 1fr;
+                grid-template-areas:
+                    "header"
+                    "main"
+                    "controls-sidebar"
+                    "data-sidebar";
+            }
+            .sidebar {
+                max-height: none;
+                border: 0;
+                border-top: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="main-header">
+        <h1>Advanced Collision Lab</h1>
+    </header>
+
+    <aside id="controls-sidebar" class="sidebar">
+        <section class="control-group" aria-labelledby="time-controls-heading">
+            <h2 id="time-controls-heading">Time Controls</h2>
+            <div class="button-group">
+                <button id="pausePlayButton">Pause</button>
+            </div>
+            <label for="timeScale">Time Scale: <span id="timeScaleValue" class="range-value">1.0x</span></label>
+            <input type="range" id="timeScale" min="0.1" max="1" step="0.05" value="1">
+        </section>
+
+        <section class="control-group" aria-labelledby="env-setup-heading">
+            <h2 id="env-setup-heading">Environment Setup</h2>
+            <label for="presets">Presets</label>
+            <select id="presets">
+                <option value="custom">Custom</option>
+                <option value="head-on-elastic">Head-on Elastic</option>
+                <option value="inelastic-crash">Inelastic Crash</option>
+                <option value="newtons-cradle">Newton's Cradle</option>
+                <option value="equal-mass">Equal Mass Collision</option>
+            </select>
+            <div>
+                <input type="checkbox" id="gridToggle" checked>
+                <label for="gridToggle" style="display: inline-block;">Show Coordinate Grid</label>
+            </div>
+            <div>
+                <input type="checkbox" id="vectors" checked>
+                <label for="vectors" style="display: inline-block;">Show Velocity Vectors</label>
+            </div>
+        </section>
+
+        <section id="selectedObjectControls" class="control-group" aria-labelledby="selected-object-heading">
+            <h2 id="selected-object-heading">Selected Object Properties</h2>
+            <div class="input-grid">
+                <div>
+                    <label for="obj-x">X Position</label>
+                    <input type="number" id="obj-x" step="0.1">
+                </div>
+                <div>
+                    <label for="obj-y">Y Position</label>
+                    <input type="number" id="obj-y" step="0.1">
+                </div>
+            </div>
+             <div class="input-grid">
+                <div>
+                    <label for="obj-vx">Vx (m/s)</label>
+                    <input type="number" id="obj-vx" step="0.1">
+                </div>
+                <div>
+                    <label for="obj-vy">Vy (m/s)</label>
+                    <input type="number" id="obj-vy" step="0.1">
+                </div>
+            </div>
+            <label for="mass">Mass (kg): <span id="massValue" class="range-value">5</span></label>
+            <input type="range" id="mass" min="1" max="50" step="1" value="5">
+        </section>
+    </aside>
+
+    <main id="simulation-container" aria-label="Physics Simulation Area">
+        <canvas id="simulationCanvas" role="img" aria-label="Interactive physics simulation of colliding disks."></canvas>
+    </main>
+
+    <aside id="data-sidebar" class="sidebar">
+        <section id="collision-log-panel" class="control-group">
+            <h2 id="collision-log-heading">Most Recent Collision Log</h2>
+            <div class="log-data">
+                <p class="label">Status: <span id="logStatus" class="value">Awaiting collision...</span></p>
+            </div>
+            <hr class="divider">
+            <div id="preCollisionLog" class="log-data">
+                <h3>Pre-Collision</h3>
+                <p><span class="label">Momentum (kg·m/s):</span> <span id="preColMomentum" class="value">N/A</span></p>
+                <p><span class="label">Kinetic Energy (J):</span> <span id="preColKE" class="value">N/A</span></p>
+            </div>
+            <hr class="divider">
+            <div id="postCollisionLog" class="log-data">
+                <h3>Post-Collision</h3>
+                <p><span class="label">Momentum (kg·m/s):</span> <span id="postColMomentum" class="value">N/A</span></p>
+                <p><span class="label">Kinetic Energy (J):</span> <span id="postColKE" class="value">N/A</span></p>
+            </div>
+        </section>
+    </aside>
+    
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- Canvas & Context ---
+    const canvas = document.getElementById('simulationCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- DOM Elements ---
+    const controls = {
+        pausePlayBtn: document.getElementById('pausePlayButton'),
+        timeScaleSlider: document.getElementById('timeScale'),
+        timeScaleValue: document.getElementById('timeScaleValue'),
+        presetsSelect: document.getElementById('presets'),
+        gridToggle: document.getElementById('gridToggle'),
+        vectorsToggle: document.getElementById('vectors'),
+        selectedObjectPanel: document.getElementById('selectedObjectControls'),
+        objX: document.getElementById('obj-x'),
+        objY: document.getElementById('obj-y'),
+        objVx: document.getElementById('obj-vx'),
+        objVy: document.getElementById('obj-vy'),
+        massSlider: document.getElementById('mass'),
+        massValue: document.getElementById('massValue'),
+        logStatus: document.getElementById('logStatus'),
+        preColMomentum: document.getElementById('preColMomentum'),
+        preColKE: document.getElementById('preColKE'),
+        postColMomentum: document.getElementById('postColMomentum'),
+        postColKE: document.getElementById('postColKE'),
+    };
+    
+    // --- State ---
+    let circles = [];
+    let selectedCircle = null;
+    let isDragging = false;
+    let dragOffset = { x: 0, y: 0 };
+    let isPaused = false;
+    let timeScale = 1.0;
+    let lastTime = 0;
+    let showGrid = true;
+    const GRID_SPACING = 50;
+
+    const PRESETS = {
+        'custom': () => {},
+        'head-on-elastic': (w, h) => {
+            circles = [
+                new Circle(w * 0.25, h / 2, 20, 10, '#0d6efd', 5, 0),
+                new Circle(w * 0.75, h / 2, 20, 10, '#198754', -5, 0)
+            ];
+            updateSystemRestitution(1.0);
+        },
+        'inelastic-crash': (w, h) => {
+            circles = [
+                new Circle(w * 0.25, h / 2, 25, 20, '#dc3545', 4, 0),
+                new Circle(w * 0.75, h / 2, 20, 10, '#ffc107', -2, 0)
+            ];
+            updateSystemRestitution(0.0);
+        },
+        'newtons-cradle': (w, h) => {
+             circles = [
+                new Circle(w/2 - 90, h/2, 20, 10, '#0d6efd', 8, 0),
+                new Circle(w/2 - 45, h/2, 20, 10, '#6f42c1'),
+                new Circle(w/2, h/2, 20, 10, '#20c997'),
+                new Circle(w/2 + 45, h/2, 20, 10, '#ffc107'),
+                new Circle(w/2 + 90, h/2, 20, 10, '#dc3545'),
+            ];
+            updateSystemRestitution(1.0);
+        },
+        'equal-mass': (w, h) => {
+            circles = [
+                new Circle(w*0.2, h*0.3, 20, 15, '#198754', 5, 3),
+                new Circle(w*0.8, h*0.7, 20, 15, '#0d6efd', -4, -2)
+            ];
+            updateSystemRestitution(0.8);
+        }
+    };
+    
+    // --- Physics & Drawing Classes ---
+    class Circle {
+        constructor(x, y, radius, mass, color, vx = 0, vy = 0) {
+            this.id = Math.random();
+            this.x = x; this.y = y;
+            this.radius = radius;
+            this.mass = mass;
+            this.color = color;
+            this.vx = vx; this.vy = vy;
+        }
+
+        draw(ctx) {
+            const highlightOffset = this.radius * 0.3;
+            const grad = ctx.createRadialGradient(
+                this.x - highlightOffset, this.y - highlightOffset, this.radius * 0.1,
+                this.x, this.y, this.radius * 1.5
+            );
+            grad.addColorStop(0, 'rgba(255,255,255,0.7)');
+            grad.addColorStop(0.5, this.color);
+            grad.addColorStop(1, 'rgba(0,0,0,0.5)');
+
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            ctx.fillStyle = grad;
+            ctx.fill();
+
+            if (selectedCircle === this) {
+                ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--warning-color').trim();
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+        
+        update(dt) {
+            this.x += this.vx * dt;
+            this.y += this.vy * dt;
+        }
+    }
+
+    // --- Core Loop ---
+    function gameLoop(timestamp) {
+        const dt = (timestamp - lastTime) / 16.67; // Normalize to 60fps
+        lastTime = timestamp;
+
+        const scaledDt = isPaused ? 0 : dt * timeScale;
+        
+        update(scaledDt);
+        draw();
+        
+        requestAnimationFrame(gameLoop);
+    }
+    
+    function update(dt) {
+        if (dt === 0) return;
+        circles.forEach(c => c.update(dt));
+        checkCollisions();
+    }
+    
+    function draw() {
+        const rect = canvas.getBoundingClientRect();
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        
+        if (showGrid) drawGrid(rect.width, rect.height);
+
+        circles.forEach(circle => {
+            circle.draw(ctx);
+            if (controls.vectorsToggle.checked && (circle.vx !== 0 || circle.vy !== 0)) {
+                drawVelocityVector(circle);
+            }
+        });
+    }
+
+    function drawGrid(w, h) {
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid-color').trim();
+        ctx.lineWidth = 1;
+        ctx.font = "12px " + getComputedStyle(document.documentElement).getPropertyValue('--font-family');
+        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--grid-color').trim();
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+
+        for (let x = GRID_SPACING; x < w; x += GRID_SPACING) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0); ctx.lineTo(x, h);
+            ctx.stroke();
+            ctx.fillText(x, x, 10);
+        }
+        for (let y = GRID_SPACING; y < h; y += GRID_SPACING) {
+            ctx.beginPath();
+            ctx.moveTo(0, y); ctx.lineTo(w, y);
+            ctx.stroke();
+            ctx.fillText(y, 20, y);
+        }
+        // Axes
+        ctx.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--border-color').trim();
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(w,0); ctx.stroke(); // X-Axis
+        ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(0,h); ctx.stroke(); // Y-Axis
+    }
+
+    function drawVelocityVector(circle) {
+        const scale = 5;
+        const endX = circle.x + circle.vx * scale;
+        const endY = circle.y + circle.vy * scale;
+        const magnitude = Math.sqrt(circle.vx**2 + circle.vy**2);
+
+        ctx.save();
+        ctx.strokeStyle = 'rgba(240, 240, 240, 0.9)';
+        ctx.fillStyle = 'rgba(240, 240, 240, 0.9)';
+        ctx.lineWidth = 2;
+        
+        // Line
+        ctx.beginPath();
+        ctx.moveTo(circle.x, circle.y);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        
+        // Arrowhead
+        const angle = Math.atan2(endY - circle.y, endX - circle.x);
+        ctx.translate(endX, endY);
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.lineTo(-10, 5);
+        ctx.lineTo(-10, -5);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        
+        // Magnitude text
+        if (magnitude > 0.5) {
+            ctx.save();
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText(magnitude.toFixed(1), endX + 10, endY - 10);
+            ctx.restore();
+        }
+    }
+
+    // --- Physics ---
+    function checkCollisions() {
+        const rect = canvas.getBoundingClientRect();
+        // Circle-wall collisions
+        circles.forEach(c => {
+            if ((c.x - c.radius < 0 && c.vx < 0) || (c.x + c.radius > rect.width && c.vx > 0)) {
+                c.vx *= -1;
+            }
+            if ((c.y - c.radius < 0 && c.vy < 0) || (c.y + c.radius > rect.height && c.vy > 0)) {
+                c.vy *= -1;
+            }
+        });
+        
+        // Circle-circle collisions
+        for (let i = 0; i < circles.length; i++) {
+            for (let j = i + 1; j < circles.length; j++) {
+                handleCircleCollision(circles[i], circles[j]);
+            }
+        }
+    }
+    
+    function handleCircleCollision(c1, c2) {
+        const dx = c2.x - c1.x;
+        const dy = c2.y - c1.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < c1.radius + c2.radius) {
+            // --- DATA CAPTURE (PRE-COLLISION) ---
+            logCollisionState('pre', circles);
+
+            const normalX = dx / dist;
+            const normalY = dy / dist;
+            
+            const relativeVelX = c1.vx - c2.vx;
+            const relativeVelY = c1.vy - c2.vy;
+            const velAlongNormal = relativeVelX * normalX + relativeVelY * normalY;
+
+            if (velAlongNormal > 0) return;
+            
+            // For simplicity, we assume fixed restitution for the whole system for now.
+            // A more complex model could average the restitution of the two bodies.
+            const restitution = 1.0; 
+            const impulseScalar = -(1 + restitution) * velAlongNormal / (1 / c1.mass + 1 / c2.mass);
+            
+            c1.vx += (impulseScalar / c1.mass) * normalX;
+            c1.vy += (impulseScalar / c1.mass) * normalY;
+            c2.vx -= (impulseScalar / c2.mass) * normalX;
+            c2.vy -= (impulseScalar / c2.mass) * normalY;
+            
+            // --- DATA CAPTURE (POST-COLLISION) ---
+            logCollisionState('post', circles);
+            
+            // Static resolution to prevent overlap
+            const overlap = 0.5 * (c1.radius + c2.radius - dist);
+            c1.x -= overlap * normalX;
+            c1.y -= overlap * normalY;
+            c2.x += overlap * normalX;
+            c2.y += overlap * normalY;
+        }
+    }
+    
+    // --- UI & Event Handlers ---
+    function init() {
+        resizeCanvas();
+        addEventListeners();
+        loadPreset('head-on-elastic');
+        requestAnimationFrame(gameLoop);
+    }
+    
+    function resizeCanvas() {
+        const dpr = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        ctx.scale(dpr, dpr);
+    }
+
+    function addEventListeners() {
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            loadPreset(controls.presetsSelect.value); // Reload preset on resize
+        });
+        
+        // Time controls
+        controls.pausePlayBtn.addEventListener('click', togglePause);
+        document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); togglePause(); }});
+        controls.timeScaleSlider.addEventListener('input', e => {
+            timeScale = parseFloat(e.target.value);
+            controls.timeScaleValue.textContent = `${timeScale.toFixed(2)}x`;
+        });
+        
+        // Environment controls
+        controls.presetsSelect.addEventListener('change', e => loadPreset(e.target.value));
+        controls.gridToggle.addEventListener('change', e => showGrid = e.target.checked);
+        
+        // Selected Object Controls
+        ['x', 'y', 'vx', 'vy'].forEach(prop => {
+            controls[`obj${prop.toUpperCase()}`].addEventListener('change', e => {
+                if(selectedCircle) {
+                    selectedCircle[prop] = parseFloat(e.target.value);
+                    if (isPaused) draw(); // Redraw if paused to show change
+                }
+            });
+        });
+        controls.massSlider.addEventListener('input', e => {
+            if (selectedCircle) {
+                const newMass = parseInt(e.target.value, 10);
+                selectedCircle.mass = newMass;
+                controls.massValue.textContent = newMass;
+                // Radius scales with mass (area proportional to mass)
+                selectedCircle.radius = Math.sqrt(newMass / Math.PI) * 6;
+                if (isPaused) draw();
+            }
+        });
+        
+        // Canvas interaction
+        canvas.addEventListener('mousedown', onMouseDown);
+        canvas.addEventListener('mousemove', onMouseMove);
+        canvas.addEventListener('mouseup', onMouseUp);
+        canvas.addEventListener('mouseleave', onMouseUp); // End drag if mouse leaves
+    }
+    
+    function onMouseDown(e) {
+        const pos = getMousePos(e);
+        let clickedOnCircle = false;
+        for (let i = circles.length - 1; i >= 0; i--) {
+            const circle = circles[i];
+            const dist = Math.sqrt((pos.x - circle.x)**2 + (pos.y - circle.y)**2);
+            if (dist < circle.radius) {
+                selectedCircle = circle;
+                isDragging = true;
+                dragOffset.x = pos.x - circle.x;
+                dragOffset.y = pos.y - circle.y;
+                clickedOnCircle = true;
+                break;
+            }
+        }
+        if (!clickedOnCircle) { selectedCircle = null; }
+        updateSelectedObjectUI();
+    }
+    
+    function onMouseMove(e) {
+        if (isDragging && selectedCircle) {
+            const pos = getMousePos(e);
+            selectedCircle.x = pos.x - dragOffset.x;
+            selectedCircle.y = pos.y - dragOffset.y;
+            selectedCircle.vx = selectedCircle.vy = 0; // Stop movement when dragged
+            updateSelectedObjectUI();
+            if(isPaused) draw();
+        }
+    }
+    
+    function onMouseUp() {
+        isDragging = false;
+    }
+    
+    function getMousePos(evt) {
+        const rect = canvas.getBoundingClientRect();
+        return {
+            x: evt.clientX - rect.left,
+            y: evt.clientY - rect.top
+        };
+    }
+    
+    function togglePause() {
+        isPaused = !isPaused;
+        controls.pausePlayBtn.textContent = isPaused ? 'Play' : 'Pause';
+    }
+    
+    function loadPreset(name) {
+        const rect = canvas.getBoundingClientRect();
+        const presetFn = PRESETS[name];
+        if (presetFn) {
+            circles = [];
+            presetFn(rect.width, rect.height);
+        }
+        clearLogs();
+        if(isPaused) draw();
+    }
+
+    function updateSystemRestitution(value) {
+        // This is a placeholder. The collision function currently uses a hardcoded value.
+        // For a full implementation, this value would be stored and used in handleCircleCollision.
+        console.log("System restitution set to:", value);
+    }
+    
+    function updateSelectedObjectUI() {
+        if (selectedCircle) {
+            controls.selectedObjectPanel.classList.add('active');
+            controls.objX.value = selectedCircle.x.toFixed(1);
+            controls.objY.value = selectedCircle.y.toFixed(1);
+            controls.objVx.value = selectedCircle.vx.toFixed(1);
+            controls.objVy.value = selectedCircle.vy.toFixed(1);
+            controls.massSlider.value = selectedCircle.mass;
+            controls.massValue.textContent = selectedCircle.mass;
+        } else {
+            controls.selectedObjectPanel.classList.remove('active');
+        }
+    }
+    
+    function logCollisionState(phase, circleArray) {
+        let p_x = 0, p_y = 0, ke = 0;
+        circleArray.forEach(c => {
+            p_x += c.mass * c.vx;
+            p_y += c.mass * c.vy;
+            ke += 0.5 * c.mass * (c.vx ** 2 + c.vy ** 2);
+        });
+        const totalP = Math.sqrt(p_x**2 + p_y**2);
+        
+        controls.logStatus.textContent = 'Collision Detected!';
+        controls.logStatus.style.color = 'var(--success-color)';
+
+        if (phase === 'pre') {
+            controls.preColMomentum.textContent = totalP.toFixed(2);
+            controls.preColKE.textContent = ke.toFixed(2);
+        } else {
+            controls.postColMomentum.textContent = totalP.toFixed(2);
+            controls.postColKE.textContent = ke.toFixed(2);
+        }
+    }
+    
+    function clearLogs() {
+        controls.logStatus.textContent = 'Awaiting collision...';
+        controls.logStatus.style.color = 'inherit';
+        ['preColMomentum', 'preColKE', 'postColMomentum', 'postColKE'].forEach(id => {
+            document.getElementById(id).textContent = 'N/A';
+        });
+    }
+
+    init();
+});
+</script>
+
+</body>
+</html>
