@@ -21,13 +21,12 @@ Gemini Assistant/
 ├── start.sh                      # Launch script (Mac/Linux)
 ├── start.bat                     # Launch script (Windows)
 │
-├── app/                          # Web chat interface (local server)
-│   ├── server.py                 #   FastAPI backend
-│   ├── gemini_client.py          #   Gemini API wrapper with function calling
-│   ├── tools.py                  #   Local tool implementations (sandboxed)
-│   ├── requirements.txt          #   Python dependencies
+├── app/                          # Web chat interface (CLI proxy server)
+│   ├── server.py                 #   FastAPI backend (streams CLI output via SSE)
+│   ├── gemini_client.py          #   CLI subprocess spawner (no SDK)
+│   ├── requirements.txt          #   Python dependencies (fastapi, uvicorn only)
 │   └── static/
-│       └── index.html            #   Chat UI (served on localhost:3131)
+│       └── index.html            #   Chat UI with streaming (served on localhost:3131)
 │
 ├── .gemini/                      # Gemini CLI configuration
 │   ├── settings.json             #   Experimental agents enabled

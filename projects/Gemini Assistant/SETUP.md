@@ -4,9 +4,10 @@ This guide walks you through setting up and personalizing your EA.
 
 ## Prerequisites
 
-1. **Python 3.10+** — [python.org/downloads](https://www.python.org/downloads/)
-2. **A Google account** — For Gemini API access (free tier or API key)
-3. **Git** — Optional, for repo sync features
+1. **Gemini CLI** — Install with `npm install -g @google/gemini-cli`
+2. **Python 3.10+** — [python.org/downloads](https://www.python.org/downloads/)
+3. **A Google account** — For Gemini authentication
+4. **Git** — Optional, for repo sync features
 
 ## Quick Start (3 steps)
 
@@ -24,20 +25,16 @@ These files tell the EA who you are. Open each one and fill in the sections:
 
 **This is the most important step.** The more context you provide, the better the EA performs.
 
-### 2. Set up authentication
+### 2. Authenticate with Gemini
 
-You have two options:
+Run these two commands in your terminal:
 
-**Option A: Google account login (recommended)**
-1. Install Gemini CLI: follow instructions at [geminicli.com](https://geminicli.com)
-2. Run `gemini auth login` in your terminal
-3. Log in with your Google account in the browser that opens
-4. Done — the EA will use your Google account automatically
+```bash
+npm install -g @google/gemini-cli
+gemini auth login
+```
 
-**Option B: API key**
-1. Get an API key from [aistudio.google.com](https://aistudio.google.com)
-2. Create a file called `.env` in this folder
-3. Add: `GEMINI_API_KEY=your-key-here`
+A browser window will open — log in with your Google account. That's it. The CLI handles all authentication natively.
 
 ### 3. Launch the EA
 
@@ -49,7 +46,7 @@ You have two options:
 **Windows:**
 Double-click `start.bat`
 
-The first launch installs dependencies (takes ~30 seconds). After that, it starts instantly.
+The first launch installs Python dependencies (takes ~30 seconds). After that, it starts instantly.
 
 Your browser will open to `http://localhost:3131` with the chat interface.
 
@@ -61,6 +58,7 @@ Type messages in the text box and press Enter (or click the send button). The EA
 - Read and write files in your workspace
 - Run shell commands (git, npm, etc.)
 - Follow multi-step workflows automatically
+- Delegate to specialist agents for complex tasks
 
 ### Quick Actions
 - **"sign on"** — Start-of-day dashboard with repo status and priorities
@@ -68,12 +66,13 @@ Type messages in the text box and press Enter (or click the send button). The EA
 - **"briefing"** — Quick catch-up on recent activity
 
 ### Header Buttons
-- **Reload Context** — Re-reads GEMINI.md and context files (useful after you edit them)
 - **New Chat** — Clears conversation history for a fresh start
-- **Settings** — Change API key or model
 
 ### Tool Calls
-When the EA reads files, runs commands, or makes changes, you'll see collapsible tool call indicators. Click them to see details of what the EA did.
+When the EA reads files, runs commands, or makes changes, you'll see collapsible tool call indicators with live status. Click them to see details of what the EA did.
+
+### Streaming Responses
+Responses stream in real-time as the Gemini CLI generates them. You'll see text appear word-by-word and tool calls update from "running" to "done" as they complete.
 
 ## Two Ways to Use the EA
 
@@ -89,15 +88,23 @@ Run `gemini` in this directory — the CLI reads GEMINI.md automatically. Best f
 - Advanced agent delegation features
 - Maximum control and speed
 
-Both use the same GEMINI.md, context files, memory, and agents — they're interchangeable.
+Both use the same GEMINI.md, context files, memory, and agents — they're interchangeable. The web interface is a thin proxy over the same CLI.
 
 ## How It Works
 
+### Architecture
+The web UI is a thin shell over the Gemini CLI. When you send a message:
+1. The server spawns `gemini -p "your message" -o stream-json`
+2. The CLI loads GEMINI.md, authenticates, calls tools, and delegates to agents
+3. The server streams NDJSON events back to the browser
+4. The browser renders text, tool calls, and results in real-time
+5. Session continuity is maintained via `--resume` on subsequent messages
+
 ### The Brain: GEMINI.md
-The EA's operating instructions. Loaded automatically at session start. You generally don't need to modify it.
+The EA's operating instructions. Loaded automatically by the CLI at each invocation. You generally don't need to modify it.
 
 ### Agents: .gemini/agents/
-Specialist sub-agents that handle scoped work (frontend, backend, QA, etc.). Auto-discovered by Gemini CLI; called via function calling in the web interface.
+Specialist sub-agents that handle scoped work (frontend, backend, QA, etc.). Auto-discovered and delegated to by the Gemini CLI natively.
 
 ### Workflows: workflows/
 Step-by-step procedures for common tasks. Think of them as recipes the EA follows when you ask for specific things.
@@ -130,8 +137,8 @@ For each project: create `projects/<name>/` with a `context.md` describing the s
 
 | Problem | Solution |
 |---------|----------|
-| "Authentication failed" | Run `gemini auth login` or add API key to `.env` |
+| "Gemini CLI not found" | Run `npm install -g @google/gemini-cli` |
+| "Authentication failed" | Run `gemini auth login` in your terminal |
 | Browser doesn't open | Go to `http://localhost:3131` manually |
 | "Python not found" | Install Python 3.10+ from python.org |
 | Slow first message | Normal — first message loads the model. Subsequent messages are faster |
-| Tool calls failing | Check that the EA has file permissions in this directory |

@@ -177,6 +177,15 @@
       color: var(--accent);
     }
 
+    .tool-call-icon.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     .tool-call-name {
       color: var(--accent);
       font-family: 'SF Mono', 'Fira Code', monospace;
@@ -191,6 +200,28 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       flex: 1;
+    }
+
+    .tool-call-status {
+      font-size: 0.75rem;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+
+    .tool-call-status.running {
+      color: var(--warning);
+      background: rgba(251, 191, 36, 0.15);
+    }
+
+    .tool-call-status.success {
+      color: var(--success);
+      background: rgba(74, 222, 128, 0.15);
+    }
+
+    .tool-call-status.error {
+      color: var(--error);
+      background: rgba(248, 113, 113, 0.15);
     }
 
     .tool-call-body {
@@ -437,7 +468,7 @@
       color: var(--accent);
     }
 
-    /* --- Setup Modal --- */
+    /* --- Error Modal --- */
     .modal-overlay {
       display: none;
       position: fixed;
@@ -473,20 +504,12 @@
       font-size: 0.9rem;
     }
 
-    .modal input {
-      width: 100%;
-      padding: 10px 14px;
-      background: var(--bg-chat);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: var(--text-primary);
-      font-size: 0.95rem;
-      outline: none;
-      margin-bottom: 16px;
-    }
-
-    .modal input:focus {
-      border-color: var(--accent);
+    .modal code {
+      background: rgba(0,0,0,0.3);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 0.85em;
     }
 
     .modal-actions {
@@ -501,17 +524,17 @@
       border: none;
       cursor: pointer;
       font-size: 0.9rem;
-    }
-
-    .btn-primary {
       background: var(--accent);
       color: white;
     }
 
-    .btn-secondary {
-      background: transparent;
-      border: 1px solid var(--border) !important;
-      color: var(--text-secondary);
+    /* --- Stats bar --- */
+    .stats-bar {
+      align-self: flex-start;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      padding: 4px 0;
+      font-family: 'SF Mono', 'Fira Code', monospace;
     }
 
     /* --- Responsive --- */
@@ -528,16 +551,14 @@
       <h1>Executive Assistant</h1>
     </div>
     <div class="header-actions">
-      <button onclick="reloadContext()" title="Reload GEMINI.md and context files">Reload Context</button>
-      <button onclick="clearChat()" title="Clear conversation history">New Chat</button>
-      <button onclick="openSettings()" title="Settings">Settings</button>
+      <button onclick="clearChat()" title="Start a new conversation">New Chat</button>
     </div>
   </div>
 
   <div class="chat-container" id="chatContainer">
     <div class="welcome" id="welcome">
       <h2>Your Executive Assistant</h2>
-      <p>I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
+      <p>Powered by Gemini CLI. I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
       <div class="suggestions">
         <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
         <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Current priorities</div>
@@ -562,32 +583,16 @@
     </div>
   </div>
 
-  <!-- Settings Modal -->
-  <div class="modal-overlay" id="settingsModal">
+  <!-- CLI Not Found Modal -->
+  <div class="modal-overlay" id="errorModal">
     <div class="modal">
-      <h2>Settings</h2>
-      <p>Configure your Gemini API connection. Leave blank to use Google account authentication (via <code>gemini auth login</code>).</p>
-      <label style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 6px;">API Key (optional)</label>
-      <input type="password" id="apiKeyInput" placeholder="Gemini API key or leave blank for Google auth">
-      <label style="color: var(--text-secondary); font-size: 0.85rem; display: block; margin-bottom: 6px;">Model</label>
-      <input type="text" id="modelInput" placeholder="gemini-2.5-flash" value="gemini-2.5-flash">
+      <h2>Gemini CLI Not Found</h2>
+      <p>The EA requires the Gemini CLI to be installed and authenticated.</p>
+      <p><strong>Step 1:</strong> Install the CLI:<br><code>npm install -g @google/gemini-cli</code></p>
+      <p><strong>Step 2:</strong> Authenticate:<br><code>gemini auth login</code></p>
+      <p>After setup, restart the EA.</p>
       <div class="modal-actions">
-        <button class="btn-secondary" onclick="closeSettings()">Cancel</button>
-        <button class="btn-primary" onclick="saveSettings()">Save</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Auth Error Modal -->
-  <div class="modal-overlay" id="authModal">
-    <div class="modal">
-      <h2>Authentication Required</h2>
-      <p>The EA couldn't connect to Gemini. You have two options:</p>
-      <p><strong>Option 1:</strong> Run <code>gemini auth login</code> in your terminal to log in with your Google account.</p>
-      <p><strong>Option 2:</strong> Enter a Gemini API key in Settings.</p>
-      <p>After authenticating, restart the EA.</p>
-      <div class="modal-actions">
-        <button class="btn-primary" onclick="closeAuthModal()">Got it</button>
+        <button onclick="document.getElementById('errorModal').classList.remove('open')">Got it</button>
       </div>
     </div>
   </div>
@@ -600,6 +605,9 @@
     const welcome = document.getElementById('welcome');
     let isWaiting = false;
 
+    // Track tool call elements by tool_id for result pairing
+    let toolCallElements = {};
+
     // --- Check status on load ---
     async function checkStatus() {
       try {
@@ -609,7 +617,7 @@
           statusDot.className = 'status-dot';
         } else {
           statusDot.className = 'status-dot error';
-          document.getElementById('authModal').classList.add('open');
+          document.getElementById('errorModal').classList.add('open');
         }
       } catch {
         statusDot.className = 'status-dot error';
@@ -618,7 +626,7 @@
 
     checkStatus();
 
-    // --- Message Handling ---
+    // --- Streaming Message Handler ---
     async function sendMessage() {
       const text = messageInput.value.trim();
       if (!text || isWaiting) return;
@@ -634,7 +642,16 @@
       // Show thinking indicator
       isWaiting = true;
       sendBtn.disabled = true;
+      statusDot.className = 'status-dot loading';
       const thinkingEl = addThinking();
+
+      // Reset tool tracking
+      toolCallElements = {};
+
+      // Current assistant message element (for streaming deltas)
+      let assistantEl = null;
+      let assistantText = '';
+      let thinkingRemoved = false;
 
       try {
         const res = await fetch('/api/chat', {
@@ -643,43 +660,178 @@
           body: JSON.stringify({ message: text })
         });
 
-        // Remove thinking indicator
-        thinkingEl.remove();
-
-        if (res.status === 401) {
-          document.getElementById('authModal').classList.add('open');
-          addMessage('Authentication failed. Please check your credentials.', 'system');
-          return;
-        }
-
         if (!res.ok) {
-          const err = await res.json();
+          thinkingEl.remove();
+          const err = await res.json().catch(() => ({ detail: 'Connection failed' }));
           addMessage(`Error: ${err.detail || 'Something went wrong'}`, 'system');
           return;
         }
 
-        const data = await res.json();
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
 
-        // Show tool calls if any
-        if (data.tool_calls && data.tool_calls.length > 0) {
-          addToolCalls(data.tool_calls);
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          // Process complete SSE lines
+          const lines = buffer.split('\n');
+          buffer = lines.pop(); // Keep incomplete line in buffer
+
+          for (const line of lines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+
+            let event;
+            try {
+              event = JSON.parse(data);
+            } catch {
+              continue;
+            }
+
+            // Remove thinking indicator on first real event
+            if (!thinkingRemoved && event.type !== 'init' && event.type !== 'message' || (event.type === 'message' && event.role === 'assistant')) {
+              thinkingEl.remove();
+              thinkingRemoved = true;
+            }
+
+            switch (event.type) {
+              case 'tool_use':
+                // Remove thinking before showing tools
+                if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
+                addToolUse(event);
+                break;
+
+              case 'tool_result':
+                updateToolResult(event);
+                break;
+
+              case 'message':
+                if (event.role === 'assistant') {
+                  if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
+                  if (event.delta) {
+                    // Streaming delta — append to current assistant message
+                    assistantText += event.content;
+                    if (!assistantEl) {
+                      assistantEl = addMessage('', 'assistant');
+                    }
+                    assistantEl.innerHTML = renderMarkdown(assistantText);
+                    scrollToBottom();
+                  } else {
+                    // Full message (non-delta)
+                    addMessage(event.content, 'assistant');
+                  }
+                }
+                break;
+
+              case 'result':
+                // Show stats
+                if (event.stats) {
+                  const duration = event.stats.duration_ms
+                    ? `${(event.stats.duration_ms / 1000).toFixed(1)}s`
+                    : '';
+                  const tokens = event.stats.total_tokens
+                    ? `${event.stats.total_tokens.toLocaleString()} tokens`
+                    : '';
+                  const tools = event.stats.tool_calls
+                    ? `${event.stats.tool_calls} tool calls`
+                    : '';
+                  const parts = [duration, tokens, tools].filter(Boolean).join(' · ');
+                  if (parts) {
+                    const statsEl = document.createElement('div');
+                    statsEl.className = 'stats-bar';
+                    statsEl.textContent = parts;
+                    chatContainer.appendChild(statsEl);
+                    scrollToBottom();
+                  }
+                }
+                break;
+
+              case 'error':
+                if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
+                addMessage(`Error: ${event.message}`, 'system');
+                break;
+            }
+          }
         }
 
-        // Show assistant response
-        if (data.response) {
-          addMessage(data.response, 'assistant');
-        }
+        // If thinking was never removed (empty response), clean up
+        if (!thinkingRemoved) thinkingEl.remove();
 
       } catch (e) {
-        thinkingEl.remove();
+        if (!thinkingRemoved) thinkingEl.remove();
         addMessage(`Connection error: ${e.message}`, 'system');
       } finally {
         isWaiting = false;
         sendBtn.disabled = false;
+        statusDot.className = 'status-dot';
         messageInput.focus();
       }
     }
 
+    // --- Tool Call Rendering ---
+    function addToolUse(event) {
+      // Create a wrapper if this is the first tool in a batch
+      let wrapper = chatContainer.querySelector('.tool-calls:last-child');
+      if (!wrapper || wrapper.nextElementSibling) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'tool-calls';
+        chatContainer.appendChild(wrapper);
+      }
+
+      const argsPreview = Object.entries(event.parameters || {})
+        .map(([k, v]) => {
+          const val = typeof v === 'string' ? v : JSON.stringify(v);
+          return `${k}=${val.length > 50 ? val.slice(0, 50) + '...' : val}`;
+        })
+        .join(', ');
+
+      const div = document.createElement('div');
+      div.className = 'tool-call';
+      div.id = `tool-${event.tool_id}`;
+      div.innerHTML = `
+        <div class="tool-call-header" onclick="this.nextElementSibling.classList.toggle('open')">
+          <span class="tool-call-icon spinning">&#9881;</span>
+          <span class="tool-call-name">${escapeHtml(event.tool_name)}</span>
+          <span class="tool-call-args">${escapeHtml(argsPreview)}</span>
+          <span class="tool-call-status running">running</span>
+        </div>
+        <div class="tool-call-body">
+          <pre>Waiting for result...</pre>
+        </div>
+      `;
+      wrapper.appendChild(div);
+      toolCallElements[event.tool_id] = div;
+      scrollToBottom();
+    }
+
+    function updateToolResult(event) {
+      const div = toolCallElements[event.tool_id];
+      if (!div) return;
+
+      const icon = div.querySelector('.tool-call-icon');
+      const statusEl = div.querySelector('.tool-call-status');
+      const body = div.querySelector('.tool-call-body pre');
+
+      icon.classList.remove('spinning');
+
+      if (event.status === 'success') {
+        statusEl.className = 'tool-call-status success';
+        statusEl.textContent = 'done';
+      } else {
+        statusEl.className = 'tool-call-status error';
+        statusEl.textContent = 'error';
+      }
+
+      const output = event.output || '(no output)';
+      body.textContent = output.length > 3000 ? output.slice(0, 3000) + '\n...(truncated)' : output;
+    }
+
+    // --- Message Rendering ---
     function addMessage(text, role) {
       const div = document.createElement('div');
       div.className = `message ${role}`;
@@ -691,38 +843,6 @@
       chatContainer.appendChild(div);
       scrollToBottom();
       return div;
-    }
-
-    function addToolCalls(calls) {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'tool-calls';
-
-      for (const call of calls) {
-        const div = document.createElement('div');
-        div.className = 'tool-call';
-
-        const argsPreview = Object.entries(call.args || {})
-          .map(([k, v]) => {
-            const val = typeof v === 'string' ? v : JSON.stringify(v);
-            return `${k}=${val.length > 40 ? val.slice(0, 40) + '...' : val}`;
-          })
-          .join(', ');
-
-        div.innerHTML = `
-          <div class="tool-call-header" onclick="this.nextElementSibling.classList.toggle('open')">
-            <span class="tool-call-icon">&#9881;</span>
-            <span class="tool-call-name">${escapeHtml(call.name)}</span>
-            <span class="tool-call-args">${escapeHtml(argsPreview)}</span>
-          </div>
-          <div class="tool-call-body">
-            <pre>${escapeHtml(call.result || '(no output)')}</pre>
-          </div>
-        `;
-        wrapper.appendChild(div);
-      }
-
-      chatContainer.appendChild(wrapper);
-      scrollToBottom();
     }
 
     function addThinking() {
@@ -742,7 +862,7 @@
       if (!text) return '';
       let html = escapeHtml(text);
 
-      // Code blocks (``` ... ```)
+      // Code blocks
       html = html.replace(/```(\w*)\n([\s\S]*?)```/g, (_, lang, code) =>
         `<pre><code class="language-${lang}">${code.trim()}</code></pre>`
       );
@@ -777,21 +897,18 @@
       // Horizontal rules
       html = html.replace(/^---$/gm, '<hr>');
 
-      // Tables (basic)
+      // Tables
       html = html.replace(/^\|(.+)\|$/gm, (match, content) => {
         const cells = content.split('|').map(c => c.trim());
-        if (cells.every(c => /^[-:]+$/.test(c))) return ''; // separator row
-        const tag = 'td';
-        return '<tr>' + cells.map(c => `<${tag}>${c}</${tag}>`).join('') + '</tr>';
+        if (cells.every(c => /^[-:]+$/.test(c))) return '';
+        return '<tr>' + cells.map(c => `<td>${c}</td>`).join('') + '</tr>';
       });
       html = html.replace(/(<tr>[\s\S]*?<\/tr>\n?)+/g, (match) =>
         `<table>${match}</table>`
       );
 
-      // Paragraphs (lines not wrapped in other elements)
+      // Paragraphs
       html = html.replace(/^(?!<[a-z]|$)(.+)$/gm, '<p>$1</p>');
-
-      // Clean up empty paragraphs
       html = html.replace(/<p><\/p>/g, '');
 
       return html;
@@ -829,12 +946,10 @@
 
     async function clearChat() {
       await fetch('/api/clear', { method: 'POST' });
-      chatContainer.innerHTML = '';
-      // Re-add welcome
       chatContainer.innerHTML = `
         <div class="welcome" id="welcome">
           <h2>Your Executive Assistant</h2>
-          <p>I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
+          <p>Powered by Gemini CLI. I can help you with tasks, answer questions, read and write files, run commands, and manage your workspace.</p>
           <div class="suggestions">
             <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
             <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Current priorities</div>
@@ -843,45 +958,6 @@
           </div>
         </div>
       `;
-    }
-
-    async function reloadContext() {
-      const res = await fetch('/api/reload', { method: 'POST' });
-      if (res.ok) {
-        addMessage('Context reloaded from GEMINI.md and context files.', 'system');
-      }
-    }
-
-    function openSettings() {
-      document.getElementById('settingsModal').classList.add('open');
-    }
-
-    function closeSettings() {
-      document.getElementById('settingsModal').classList.remove('open');
-    }
-
-    function closeAuthModal() {
-      document.getElementById('authModal').classList.remove('open');
-    }
-
-    async function saveSettings() {
-      const apiKey = document.getElementById('apiKeyInput').value.trim() || null;
-      const model = document.getElementById('modelInput').value.trim() || null;
-
-      const res = await fetch('/api/configure', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ api_key: apiKey, model: model })
-      });
-
-      if (res.ok) {
-        closeSettings();
-        statusDot.className = 'status-dot';
-        addMessage('Settings updated.', 'system');
-      } else {
-        const err = await res.json();
-        alert(`Error: ${err.detail}`);
-      }
     }
 
     // Focus input on load

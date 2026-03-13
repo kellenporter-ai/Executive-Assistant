@@ -3,7 +3,7 @@
 # Gemini Executive Assistant — Launcher (macOS/Linux)
 #
 # Usage: ./start.sh
-# First run installs dependencies automatically.
+# First run installs Python dependencies automatically.
 #
 
 set -e
@@ -16,6 +16,16 @@ echo ""
 echo "  Gemini Executive Assistant"
 echo "  =========================="
 echo ""
+
+# Check Gemini CLI
+if ! command -v gemini &> /dev/null; then
+    echo "  Error: Gemini CLI is required but not installed."
+    echo "  Install with: npm install -g @google/gemini-cli"
+    echo "  Then authenticate: gemini auth login"
+    exit 1
+fi
+
+echo "  Gemini CLI: $(which gemini)"
 
 # Check Python 3
 if ! command -v python3 &> /dev/null; then
@@ -34,11 +44,12 @@ fi
 # Activate venv
 source app/.venv/bin/activate
 
-# Install dependencies if needed
-if [ ! -f "app/.venv/.installed" ]; then
+# Install/update dependencies if requirements changed
+REQS_HASH=$(md5sum app/requirements.txt 2>/dev/null | cut -d' ' -f1 || md5 -q app/requirements.txt 2>/dev/null)
+if [ ! -f "app/.venv/.installed" ] || [ "$(cat app/.venv/.installed 2>/dev/null)" != "$REQS_HASH" ]; then
     echo "  Installing dependencies..."
     pip install -q -r app/requirements.txt
-    touch app/.venv/.installed
+    echo "$REQS_HASH" > app/.venv/.installed
     echo "  Dependencies installed."
 fi
 

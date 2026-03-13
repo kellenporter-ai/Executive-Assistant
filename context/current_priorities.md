@@ -27,8 +27,8 @@ All stability work completed as of 2026-03-10. Full audit history archived in `d
 - **Location:** `projects/Gemini Assistant/`
 - **Architecture:** Web chat UI (FastAPI + vanilla HTML) that acts as a thin shell over Gemini CLI subprocess
 - **Key decision:** Frontend pipes user input to `gemini` CLI process stdin, streams stdout back. CLI handles all auth (Google account OAuth or API key), tool calling, agent delegation, and file operations natively. No SDK, no custom auth code.
-- **Status (2026-03-13):** WAT structure complete (GEMINI.md, 8 agents, 13 workflows, context templates, memory system). Web UI built and styled. Backend needs rewrite from SDK-based (`google-genai`) to CLI-proxy architecture (`gemini` subprocess). Current SDK approach can't use Gemini CLI's OAuth tokens.
-- **Next step:** Rewrite `app/gemini_client.py` to spawn `gemini` as a PTY subprocess, pipe messages to stdin, parse/stream stdout back. Remove `tools.py` (CLI has native tools). Simplify `requirements.txt`.
+- **Status (2026-03-13):** CLI-proxy architecture complete. Backend rewritten from SDK-based (`google-genai`) to subprocess spawner — each message runs `gemini -p "msg" -o stream-json [--resume session_id]`. Removed `tools.py` (CLI has native tools), dropped 4 SDK dependencies. Frontend streams NDJSON events via SSE with real-time tool call status. End-to-end tested.
+- **Next step:** User testing — have a colleague try the full setup flow (install CLI, auth, fill context, launch). Polish based on feedback.
 
 ## Porter's Portal Reference
 - Path: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal` (git submodule)

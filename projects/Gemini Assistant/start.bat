@@ -8,6 +8,16 @@ echo   Gemini Executive Assistant
 echo   ==========================
 echo.
 
+REM Check Gemini CLI
+where gemini >nul 2>&1
+if errorlevel 1 (
+    echo   Error: Gemini CLI is required but not installed.
+    echo   Install with: npm install -g @google/gemini-cli
+    echo   Then authenticate: gemini auth login
+    pause
+    exit /b 1
+)
+
 REM Check Python
 python --version >nul 2>&1
 if errorlevel 1 (

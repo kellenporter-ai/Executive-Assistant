@@ -1,128 +1,77 @@
 """
-Gemini Executive Assistant — Local Web Server
+Gemini Executive Assistant — CLI Proxy Server
 
-Serves a chat UI on localhost and proxies messages to the Gemini API
-with function calling for local file/shell operations.
+Thin web server that pipes messages to the Gemini CLI and streams responses back.
+No SDK, no API management — the CLI handles auth, tools, and agents natively.
 """
 
 import os
 import json
-import asyncio
-from pathlib import Path
-from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
-# Load .env from workspace root
-workspace = str(Path(__file__).resolve().parent.parent)
-load_dotenv(os.path.join(workspace, ".env"))
+from gemini_client import stream_chat, get_gemini_path, WORKSPACE
 
-from gemini_client import GeminiChat
+load_dotenv(os.path.join(WORKSPACE, ".env"))
 
 
 # --- State ---
-chat_session: GeminiChat | None = None
+current_session_id: str | None = None
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Initialize on startup."""
-    global chat_session
-    try:
-        chat_session = GeminiChat()
-        print(f"\n  Gemini EA ready — authenticated via {chat_session._auth_method}")
-        print(f"  Model: {chat_session.model}")
-        print(f"  Workspace: {workspace}\n")
-    except Exception as e:
-        print(f"\n  ⚠ Failed to initialize Gemini client: {e}")
-        print(f"  Make sure you've run 'gemini auth login' or set GEMINI_API_KEY in .env\n")
-    yield
+app = FastAPI(title="Gemini Executive Assistant")
 
 
-app = FastAPI(title="Gemini Executive Assistant", lifespan=lifespan)
-
-
-# --- Request/Response Models ---
+# --- Request Models ---
 
 class ChatRequest(BaseModel):
     message: str
 
-class ChatResponse(BaseModel):
-    response: str
-    tool_calls: list[dict] = []
-
-class ConfigRequest(BaseModel):
-    api_key: str | None = None
-    model: str | None = None
-
 
 # --- API Routes ---
 
-@app.post("/api/chat", response_model=ChatResponse)
+@app.post("/api/chat")
 async def chat(request: ChatRequest):
-    """Send a message to the EA and get a response."""
-    if not chat_session:
-        raise HTTPException(status_code=503, detail="Gemini client not initialized. Check authentication.")
+    """Stream a chat response from the Gemini CLI."""
     if not request.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
 
-    try:
-        result = await chat_session.send_message(request.message)
-        return ChatResponse(
-            response=result["response"],
-            tool_calls=result["tool_calls"]
-        )
-    except Exception as e:
-        error_msg = str(e)
-        if "401" in error_msg or "403" in error_msg or "UNAUTHENTICATED" in error_msg:
-            raise HTTPException(
-                status_code=401,
-                detail="Authentication failed. Run 'gemini auth login' or check your API key."
-            )
-        raise HTTPException(status_code=500, detail=f"Gemini API error: {error_msg}")
+    async def event_stream():
+        global current_session_id
+        async for event in stream_chat(request.message, current_session_id):
+            # Capture session_id from init event for conversation continuity
+            if event.get("type") == "init" and "session_id" in event:
+                current_session_id = event["session_id"]
+            yield f"data: {json.dumps(event)}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(event_stream(), media_type="text/event-stream")
 
 
 @app.post("/api/clear")
-async def clear_history():
-    """Clear conversation history."""
-    if chat_session:
-        chat_session.clear_history()
+async def clear_chat():
+    """Clear the current session (next message starts fresh)."""
+    global current_session_id
+    current_session_id = None
     return {"status": "ok"}
-
-
-@app.post("/api/reload")
-async def reload_context():
-    """Reload system prompt from GEMINI.md and context files."""
-    if chat_session:
-        chat_session.reload_system_prompt()
-    return {"status": "ok", "message": "System prompt reloaded"}
-
-
-@app.post("/api/configure")
-async def configure(request: ConfigRequest):
-    """Update configuration (API key, model)."""
-    global chat_session
-    try:
-        api_key = request.api_key
-        chat_session = GeminiChat(api_key=api_key)
-        if request.model:
-            chat_session.model = request.model
-        return {"status": "ok", "model": chat_session.model}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Configuration error: {e}")
 
 
 @app.get("/api/status")
 async def status():
-    """Check if the EA is ready."""
+    """Check if the Gemini CLI is available."""
+    try:
+        get_gemini_path()
+        cli_available = True
+    except RuntimeError:
+        cli_available = False
     return {
-        "ready": chat_session is not None,
-        "model": chat_session.model if chat_session else None,
-        "workspace": workspace,
+        "ready": cli_available,
+        "session_id": current_session_id,
+        "workspace": WORKSPACE,
     }
 
 
@@ -144,5 +93,6 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("EA_PORT", "3131"))
     print(f"\n  Starting Gemini Executive Assistant on http://localhost:{port}")
+    print(f"  Workspace: {WORKSPACE}")
     print(f"  Press Ctrl+C to stop\n")
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
