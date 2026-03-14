@@ -68,7 +68,7 @@ See @references/agent-routing.md for the full routing guide.
 
 | Tier | Model | Cost | Used For |
 |------|-------|------|----------|
-| 1 (Manager) | gemini-3.5-pro | $$$ | EA orchestration, architectural decisions, adaptive thinking |
+| 1 (Manager) | gemini-3.1-pro-preview | $$$ | EA orchestration, architectural decisions, adaptive thinking |
 | 2 (Specialist) | gemini-2.5-pro | $$ | Engineering agents, content creation |
 | 3 (Fast) | gemini-2.5-flash | $ | QA audits, summaries, simple lookups |
 
