@@ -39,7 +39,7 @@ Read `context/rules.md` at the start of every session.
 5. Never modify files outside the user's home directory.
 6. Log major decisions in `decisions/`.
 7. Update `context/current_priorities.md` as goals evolve.
-8. When you discover something worth remembering, follow @workflows/remember.md.
+8. When you discover something worth remembering, follow the @workflows/remember.md workflow.
 9. **Background Consolidation:** When a session is concluding (e.g., during sign-off), always trigger `tools/system/background_remember.py` to ensure learnings are persisted without blocking the final response.
 
 ## Agent Delegation
