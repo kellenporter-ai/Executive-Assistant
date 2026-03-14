@@ -10,6 +10,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/lucide@0.474.0"></script>
 
+  <!-- Sanitization -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+
   <!-- Markdown & Syntax Highlighting -->
   <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" id="hljs-dark">
@@ -44,6 +47,8 @@
       --sidebar-width: 280px;
       --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
       --blur: blur(12px);
+      --purple: #cba6f7;
+      --purple-dim: rgba(203, 166, 247, 0.15);
     }
 
     [data-theme="light"] {
@@ -70,6 +75,8 @@
       --error: #dc2626;
       --shadow-lg: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
       --blur: blur(12px);
+      --purple: #7c3aed;
+      --purple-dim: rgba(124, 58, 237, 0.12);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -81,8 +88,9 @@
       cursor: pointer;
       font-family: inherit;
       color: inherit;
-      outline: none;
     }
+    button:focus { outline: none; }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
     body {
       font-family: 'Inter', -apple-system, sans-serif;
@@ -260,6 +268,7 @@
     .sidebar-item .delete-btn:hover { background: var(--error); color: #fff; }
     .sidebar-item .meta { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
     .sidebar-item:hover .meta { display: none; }
+    .sidebar-item .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
     .sidebar-footer {
       margin-top: auto;
@@ -327,7 +336,19 @@
       border-bottom: 1px solid var(--border);
       overflow-x: auto;
       height: 40px;
+      position: relative;
     }
+    .tab-bar::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 40px;
+      background: linear-gradient(to right, transparent, var(--bg-secondary));
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .tab-bar.scrollable::after { opacity: 1; }
 
     .tab {
       display: flex;
@@ -602,6 +623,7 @@
 
     .spinning i, .spinning svg { animation: spin 1.5s linear infinite; }
     @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
     .stats-bar { font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; padding: 4px 16px; margin: 4px 0; opacity: 0.7; }
 
@@ -914,7 +936,7 @@
       display: none;
       position: fixed;
       inset: 0;
-      background: rgba(17, 17, 27, 0.8);
+      background: rgba(0, 0, 0, 0.7);
       backdrop-filter: blur(8px);
       z-index: 2000;
       align-items: center;
@@ -1074,6 +1096,27 @@
     }
     .message-actions button:hover { background: var(--bg-hover); color: var(--accent); border-color: var(--accent); }
 
+    .copy-btn {
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      transition: all 0.2s;
+    }
+    .copy-btn:hover { color: var(--text-primary); border-color: var(--accent); }
+
+    /* ===== TOUCH DEVICE OVERRIDES ===== */
+    @media (hover: none) {
+      .sidebar-item .delete-btn { display: block; opacity: 0.5; }
+      .sidebar-item .meta { display: none; }
+      .message .message-actions { display: flex; opacity: 0.6; }
+      .message .message-actions:active { opacity: 1; }
+    }
+
     /* ===== UPLOAD PROGRESS ===== */
     .upload-progress {
       display: flex; align-items: center; gap: 8px;
@@ -1137,7 +1180,7 @@
     .session-tag.tag-blue { background: rgba(137, 180, 250, 0.15); color: var(--accent); }
     .session-tag.tag-green { background: rgba(166, 227, 161, 0.15); color: var(--success); }
     .session-tag.tag-yellow { background: rgba(249, 226, 175, 0.15); color: var(--warning); }
-    .session-tag.tag-purple { background: rgba(203, 166, 247, 0.15); color: #cba6f7; }
+    .session-tag.tag-purple { background: var(--purple-dim); color: var(--purple); }
 
     .tag-picker {
       display: none; position: absolute; right: 8px; top: 100%;
@@ -1150,6 +1193,7 @@
     .tag-picker .session-tag { cursor: pointer; }
     .tag-picker .session-tag:hover { filter: brightness(1.3); }
 
+    .sidebar-divider { border-top: 1px solid var(--border); margin: 4px 8px; }
     .sidebar-item { position: relative; }
 
     /* ===== SIDEBAR FILTER TABS ===== */
@@ -1212,7 +1256,7 @@
       padding: 2px 8px; border-radius: 4px;
       font-size: 0.68rem; font-weight: 600;
       font-family: 'JetBrains Mono', monospace;
-      background: rgba(203, 166, 247, 0.12); color: #cba6f7;
+      background: var(--purple-dim); color: var(--purple);
       white-space: nowrap;
     }
   </style>
@@ -1220,7 +1264,7 @@
 <body>
   <!-- Title Bar -->
   <div class="titlebar">
-    <button class="titlebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i data-lucide="menu"></i></button>
+    <button class="titlebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar" aria-label="Toggle sidebar"><i data-lucide="menu"></i></button>
     <span class="titlebar-title">Executive Assistant</span>
     <div class="workspace-indicator" id="workspaceIndicator" title="Active workspace">
       <i data-lucide="folder-open"></i>
@@ -1228,16 +1272,16 @@
     </div>
     <span class="model-badge" id="modelBadge" title="Active model">gemini-2.5-pro</span>
     <span style="flex:1"></span>
-    <button class="titlebar-toggle" onclick="exportConversation()" title="Export conversation"><i data-lucide="download"></i></button>
-    <button class="titlebar-toggle" onclick="openSettings()" title="Settings"><i data-lucide="settings"></i></button>
-    <button class="titlebar-toggle" onclick="toggleTheme()" id="themeToggle" title="Toggle light/dark theme"><i data-lucide="sun"></i></button>
-    <div class="status-dot" id="statusDot"></div>
+    <button class="titlebar-toggle" onclick="exportConversation()" title="Export conversation" aria-label="Export conversation"><i data-lucide="download"></i></button>
+    <button class="titlebar-toggle" onclick="openSettings()" title="Settings" aria-label="Settings"><i data-lucide="settings"></i></button>
+    <button class="titlebar-toggle" onclick="toggleTheme()" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+    <div class="status-dot" id="statusDot" role="status" aria-label="Connected"></div>
   </div>
 
   <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
   <div class="main">
     <!-- Sidebar -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar" id="sidebar" role="complementary" aria-label="Sidebar">
       <!-- Chat History -->
       <div class="sidebar-section expanded">
         <div class="sidebar-header" onclick="toggleSection(this)">
@@ -1294,19 +1338,19 @@
     <!-- Workspace -->
     <div class="workspace">
       <!-- Tab Bar -->
-      <div class="tab-bar" id="tabBar">
+      <div class="tab-bar" id="tabBar" role="tablist">
         <button class="new-tab-btn" onclick="createNewTab()" title="New chat (Ctrl+T)"><i data-lucide="plus"></i></button>
       </div>
 
       <!-- Chat Container (welcome injected by JS via getWelcomeHTML()) -->
-      <div class="chat-container" id="chatContainer"></div>
+      <div class="chat-container" id="chatContainer" role="log" aria-live="polite"></div>
 
       <!-- Input Area -->
       <div class="input-area">
         <div class="attachment-bar" id="attachmentBar"></div>
         <div class="input-wrapper">
           <div class="input-actions">
-            <button onclick="document.getElementById('fileInput').click()" title="Attach file (Ctrl+U)">&#128206;</button>
+            <button onclick="document.getElementById('fileInput').click()" title="Attach file (Ctrl+U)"><i data-lucide="paperclip"></i></button>
           </div>
           <textarea
             id="messageInput"
@@ -1343,7 +1387,7 @@
   </div>
 
   <!-- File Preview Panel -->
-  <div class="file-preview" id="filePreview">
+  <div class="file-preview" id="filePreview" role="dialog" aria-label="File preview">
     <div class="file-preview-header">
       <span id="filePreviewTitle">file.txt</span>
       <button onclick="closeFilePreview()">&times;</button>
@@ -1352,7 +1396,7 @@
   </div>
 
   <!-- Error Modal -->
-  <div class="modal-overlay" id="errorModal">
+  <div class="modal-overlay" id="errorModal" role="dialog" aria-modal="true" aria-label="Error">
     <div class="modal">
       <h2>Gemini CLI Not Found</h2>
       <p>Install: <code>npm install -g @google/gemini-cli</code></p>
@@ -1365,7 +1409,7 @@
 
   <!-- Settings Panel -->
   <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
-  <div class="settings-panel" id="settingsPanel">
+  <div class="settings-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="Settings">
     <div class="settings-header">
       <span>Settings</span>
       <button onclick="closeSettings()">&times;</button>
@@ -1407,32 +1451,45 @@
   </div>
 
   <!-- Image Lightbox -->
-  <div class="modal-overlay" id="imageLightbox" onclick="closeLightbox()">
+  <div class="modal-overlay" id="imageLightbox" onclick="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image preview">
+    <button onclick="closeLightbox()" aria-label="Close preview" style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1001;" type="button">&times;</button>
     <img id="lightboxImg" alt="Enlarged preview" style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.6);" onclick="event.stopPropagation()">
   </div>
 
-  <input type="file" id="fileInput" multiple onchange="handleFileSelect(this.files)">
+  <input type="file" id="fileInput" multiple aria-label="Attach files" onchange="handleFileSelect(this.files)">
 
   <script>
     // ===== STATE =====
-    const tabs = []; // { id, title, sessionId, messages: [{role, content}], attachments: [] }
+    const tabs = []; // { id, title, sessionId, messages: [{role, content}], attachments: [], isWaiting, abortController, toolCallElements, assistantEl, assistantText }
     let activeTabId = null;
-    let isWaiting = false;
     let pendingAttachments = []; // { filename, path, dataUrl? }
-    let toolCallElements = {};
     let expandedDirs = new Set();
     let uploadCount = 0; // Track in-progress uploads
 
+    // Safe localStorage wrappers (handles disabled/quota errors)
+    function safeGet(key, fallback) {
+      try { return localStorage.getItem(key); } catch { return fallback !== undefined ? fallback : null; }
+    }
+    function safeSet(key, value) {
+      try { localStorage.setItem(key, value); } catch {}
+    }
+    function safeJsonParse(str, fallback) {
+      try { return JSON.parse(str); } catch { return fallback; }
+    }
+
+    // Derived convenience — true if any tab is streaming
+    function getIsWaiting() { return tabs.some(t => t.isWaiting); }
+
     // Settings (persisted to localStorage)
     const settings = {
-      approvalMode: localStorage.getItem('ea-approval-mode') || 'yolo',
-      model: localStorage.getItem('ea-model') || '',
-      notifications: localStorage.getItem('ea-notifications') || 'off',
+      approvalMode: safeGet('ea-approval-mode', 'yolo') || 'yolo',
+      model: safeGet('ea-model', '') || '',
+      notifications: safeGet('ea-notifications', 'off') || 'off',
     };
 
     // Session tags (persisted to localStorage)
     // { sessionId: "red" | "blue" | "green" | "yellow" | "purple" }
-    let sessionTags = JSON.parse(localStorage.getItem('ea-session-tags') || '{}');
+    let sessionTags = safeJsonParse(safeGet('ea-session-tags', '{}'), {});
     let activeTagFilter = 'all';
     let workspaceName = '...';
 
@@ -1446,16 +1503,22 @@
     const tabBar = document.getElementById('tabBar');
     const attachmentBar = document.getElementById('attachmentBar');
 
+    // Scoped icon rendering — avoids full-DOM rescan
+    function createIconsIn(el) {
+      if (el) lucide.createIcons({ nameAttr: 'data-lucide', node: el });
+      else lucide.createIcons();
+    }
+
     // ===== WELCOME TEMPLATE =====
     function getWelcomeHTML() {
       return `<div class="welcome">
         <h2>Executive Assistant</h2>
         <p>Powered by Gemini CLI. Ask me anything, run workflows, or manage your workspace.</p>
         <div class="suggestions">
-          <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
-          <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Priorities</div>
-          <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
-          <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
+          <button type="button" class="suggestion" onclick="sendSuggestion('sign on')">Sign on</button>
+          <button type="button" class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Priorities</button>
+          <button type="button" class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</button>
+          <button type="button" class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</button>
         </div>
       </div>`;
     }
@@ -1480,7 +1543,12 @@
         const res = await fetch('/api/status');
         const data = await res.json();
         statusDot.className = data.ready ? 'status-dot' : 'status-dot error';
-        if (!data.ready) document.getElementById('errorModal').classList.add('open');
+        statusDot.setAttribute('aria-label', data.ready ? 'Connected' : 'Connection error');
+        if (!data.ready) {
+          document.getElementById('errorModal').classList.add('open');
+          const gotItBtn = document.querySelector('#errorModal .modal-actions button');
+          if (gotItBtn) gotItBtn.focus();
+        }
         // Populate workspace indicator
         if (data.workspace_name) {
           workspaceName = data.workspace_name;
@@ -1489,13 +1557,14 @@
         }
       } catch {
         statusDot.className = 'status-dot error';
+        statusDot.setAttribute('aria-label', 'Connection error');
       }
     }
 
     // ===== TABS =====
     function createNewTab(sessionId = null, title = 'New Chat') {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      tabs.push({ id, title, sessionId, messages: [], attachments: [] });
+      tabs.push({ id, title, sessionId, messages: [], attachments: [], isWaiting: false, abortController: null, toolCallElements: {}, assistantEl: null, assistantText: '' });
       switchTab(id);
       renderTabs();
       return id;
@@ -1519,8 +1588,8 @@
         chatContainer.innerHTML = tab._html;
       } else if (tab.messages.length > 0) {
         chatContainer.innerHTML = '';
-        for (const msg of tab.messages) {
-          renderMessageToDOM(msg.content, msg.role);
+        for (let i = 0; i < tab.messages.length; i++) {
+          renderMessageToDOM(tab.messages[i].content, tab.messages[i].role, i);
         }
       } else {
         chatContainer.innerHTML = getWelcomeHTML();
@@ -1528,7 +1597,7 @@
 
       renderTabs();
       highlightActiveSession();
-      lucide.createIcons();
+      createIconsIn(chatContainer);
       messageInput.focus();
       scrollToBottom();
     }
@@ -1553,6 +1622,8 @@
       for (const tab of tabs) {
         const el = document.createElement('div');
         el.className = `tab${tab.id === activeTabId ? ' active' : ''}`;
+        el.setAttribute('role', 'tab');
+        el.setAttribute('aria-selected', tab.id === activeTabId ? 'true' : 'false');
         el.onclick = () => switchTab(tab.id);
         el.dataset.tabId = tab.id;
         el.innerHTML = `
@@ -1562,7 +1633,8 @@
         tabBar.appendChild(el);
       }
       tabBar.appendChild(newTabBtn || createNewTabBtn());
-      lucide.createIcons();
+      createIconsIn(tabBar);
+      tabBar.classList.toggle('scrollable', tabBar.scrollWidth > tabBar.clientWidth);
     }
 
     function startRenameTab(tabId, e) {
@@ -1661,7 +1733,7 @@
           list.appendChild(div);
         }
         highlightActiveSession();
-        lucide.createIcons();
+        createIconsIn(list);
       } catch {
         document.getElementById('sessionList').innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">Failed to load</div>';
       }
@@ -1691,18 +1763,22 @@
         }
 
         tab._html = chatContainer.innerHTML;
-        lucide.createIcons();
+        createIconsIn(chatContainer);
       } catch (e) {
         chatContainer.innerHTML = '';
         addMessage('Failed to load history for session: ' + preview, 'system');
       }
     }
 
-    function renderMessageToDOM(text, role) {
+    function renderMessageToDOM(text, role, index) {
       const tab = getActiveTab();
       const div = document.createElement('div');
       div.className = `message ${role}`;
-      if (tab) div.dataset.msgIndex = tab.messages.length;
+      if (index !== undefined) {
+        div.dataset.msgIndex = index;
+      } else if (tab) {
+        div.dataset.msgIndex = tab.messages.length;
+      }
       if (role === 'assistant') {
         div.innerHTML = renderMarkdown(text);
         addMessageActions(div, text);
@@ -1840,7 +1916,7 @@
           loadFiles(entry.path);
         }
       }
-      lucide.createIcons();
+      createIconsIn(container);
     }
 
     function getFileIcon(name) {
@@ -1998,11 +2074,13 @@
     });
 
     // ===== CHAT =====
-    let currentAbortController = null;
-
     async function cancelGeneration() {
-      const tab = getActiveTab();
-      if (!tab || !isWaiting) return;
+      // Find the tab that is currently streaming (prefer active tab, fall back to any streaming tab)
+      let tab = getActiveTab();
+      if (!tab || !tab.isWaiting) {
+        tab = tabs.find(t => t.isWaiting);
+      }
+      if (!tab) return;
 
       try {
         if (tab.sessionId) {
@@ -2012,23 +2090,26 @@
             body: JSON.stringify({ session_id: tab.sessionId })
           });
         }
-        if (currentAbortController) currentAbortController.abort();
+        if (tab.abortController) tab.abortController.abort();
       } catch (e) {
         console.error('Cancel failed:', e);
       } finally {
-        isWaiting = false;
-        sendBtn.style.display = 'flex';
-        document.getElementById('stopBtn').classList.remove('active');
-        statusDot.className = 'status-dot';
+        tab.isWaiting = false;
+        if (!getIsWaiting()) {
+          sendBtn.style.display = 'flex';
+          document.getElementById('stopBtn').classList.remove('active');
+          statusDot.className = 'status-dot';
+          statusDot.setAttribute('aria-label', 'Connected');
+        }
       }
     }
 
     async function sendMessage(overrideText = null) {
       const text = overrideText || messageInput.value.trim();
-      if ((!text && pendingAttachments.length === 0) || isWaiting) return;
-
+      // Capture the originating tab at the START — use this reference throughout
       const tab = getActiveTab();
       if (!tab) return;
+      if ((!text && pendingAttachments.length === 0) || tab.isWaiting) return;
 
       // Remove welcome
       const welcome = chatContainer.querySelector('.welcome');
@@ -2082,22 +2163,19 @@
 
       // Show thinking & Stop button
       requestStartTime = Date.now();
-      isWaiting = true;
+      tab.isWaiting = true;
+      tab.toolCallElements = {};
+      tab.assistantEl = null;
+      tab.assistantText = '';
+      tab.abortController = new AbortController();
       sendBtn.style.display = 'none';
       const stopBtn = document.getElementById('stopBtn');
       stopBtn.classList.add('active');
       statusDot.className = 'status-dot loading';
+      statusDot.setAttribute('aria-label', 'Processing');
 
       const thinkingEl = addThinking();
-      toolCallElements = {};
-      currentAbortController = new AbortController();
-
-      let assistantEl = null;
-      let assistantText = '';
       let thinkingRemoved = false;
-
-      // Pending approval resolvers: { tool_id: { resolve } }
-      const pendingApprovals = {};
 
       try {
         const res = await fetch('/api/chat', {
@@ -2109,7 +2187,7 @@
             approval_mode: settings.approvalMode,
             model: settings.model || null,
           }),
-          signal: currentAbortController.signal
+          signal: tab.abortController.signal
         });
 
         if (!res.ok) {
@@ -2152,21 +2230,23 @@
 
             switch (event.type) {
               case 'tool_use':
-                addToolUse(event);
+                addToolUse(event, tab);
                 break;
               case 'tool_result':
-                updateToolResult(event);
+                updateToolResult(event, tab);
                 break;
               case 'message':
                 if (event.role === 'assistant') {
                   if (event.delta) {
-                    assistantText += event.content;
-                    if (!assistantEl) {
-                      assistantEl = addMessage('', 'assistant');
+                    tab.assistantText += event.content;
+                    if (!tab.assistantEl) {
+                      tab.assistantEl = addMessage('', 'assistant');
                     }
-                    assistantEl.innerHTML = renderMarkdown(assistantText);
+                    tab.assistantEl.innerHTML = renderMarkdown(tab.assistantText);
                     scrollToBottom();
                   } else {
+                    // Fix 3: Non-delta full messages saved to state
+                    tab.messages.push({ role: 'assistant', content: event.content });
                     const el = addMessage(event.content, 'assistant');
                     addMessageActions(el, event.content);
                   }
@@ -2195,31 +2275,63 @@
           }
         }
 
+        // Fix 8: Process remaining SSE buffer after stream ends
+        if (buffer.trim()) {
+          const remainingLines = buffer.split('\n');
+          for (const line of remainingLines) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6);
+            if (data === '[DONE]') continue;
+            let event;
+            try { event = JSON.parse(data); } catch { continue; }
+            if (event.type === 'message' && event.role === 'assistant') {
+              if (event.delta) {
+                tab.assistantText += event.content;
+                if (!tab.assistantEl) tab.assistantEl = addMessage('', 'assistant');
+                tab.assistantEl.innerHTML = renderMarkdown(tab.assistantText);
+              } else {
+                tab.messages.push({ role: 'assistant', content: event.content });
+                const el = addMessage(event.content, 'assistant');
+                addMessageActions(el, event.content);
+              }
+            }
+          }
+        }
+
         if (!thinkingRemoved) thinkingEl.remove();
-        if (assistantText) {
-          tab.messages.push({ role: 'assistant', content: assistantText });
-          if (assistantEl) addMessageActions(assistantEl, assistantText);
+        if (tab.assistantText) {
+          tab.messages.push({ role: 'assistant', content: tab.assistantText });
+          if (tab.assistantEl) addMessageActions(tab.assistantEl, tab.assistantText);
         }
 
         loadSessions();
 
       } catch (e) {
         if (e.name === 'AbortError') {
+          // Fix 6: Remove thinking indicator on AbortError
+          if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
           addMessage('Generation stopped.', 'system');
         } else {
           if (!thinkingRemoved) thinkingEl.remove();
-          if (assistantText) {
-            tab.messages.push({ role: 'assistant', content: assistantText });
+          if (tab.assistantText) {
+            tab.messages.push({ role: 'assistant', content: tab.assistantText });
           }
           addMessage('Connection lost. Partial response preserved above.', 'system');
         }
       } finally {
-        isWaiting = false;
-        sendBtn.style.display = 'flex';
-        stopBtn.classList.remove('active');
-        statusDot.className = 'status-dot';
+        // Use captured `tab` reference, NOT getActiveTab()
+        tab.isWaiting = false;
+        tab.abortController = null;
+        tab.assistantEl = null;
+
+        // Only update UI chrome if no other tab is still streaming
+        if (!getIsWaiting()) {
+          sendBtn.style.display = 'flex';
+          stopBtn.classList.remove('active');
+          statusDot.className = 'status-dot';
+          statusDot.setAttribute('aria-label', 'Connected');
+        }
         messageInput.focus();
-        currentAbortController = null;
 
         // Refresh token usage
         loadTokenUsage();
@@ -2228,7 +2340,7 @@
         if (settings.notifications === 'on' && requestStartTime) {
           const elapsed = Date.now() - requestStartTime;
           if (elapsed > 10000 && document.hidden) {
-            sendNotification('Task complete', assistantText ? assistantText.slice(0, 100) : 'Your request has finished.');
+            sendNotification('Task complete', tab.assistantText ? tab.assistantText.slice(0, 100) : 'Your request has finished.');
           }
         }
         requestStartTime = null;
@@ -2236,7 +2348,7 @@
     }
 
     // ===== TOOL CALLS =====
-    function addToolUse(event) {
+    function addToolUse(event, tab) {
       let wrapper = chatContainer.querySelector('.tool-calls:last-child');
       if (!wrapper || wrapper.nextElementSibling) {
         wrapper = document.createElement('div');
@@ -2265,106 +2377,14 @@
         </div>
       `;
       wrapper.appendChild(div);
-      toolCallElements[event.tool_id] = div;
-      lucide.createIcons();
+      if (tab) tab.toolCallElements[event.tool_id] = div;
+      createIconsIn(div);
       scrollToBottom();
     }
 
-    function addToolUseWithApproval(event) {
-      let wrapper = chatContainer.querySelector('.tool-calls:last-child');
-      if (!wrapper || wrapper.nextElementSibling) {
-        wrapper = document.createElement('div');
-        wrapper.className = 'tool-calls';
-        chatContainer.appendChild(wrapper);
-      }
-      const argsPreview = Object.entries(event.parameters || {})
-        .map(([k, v]) => {
-          const val = typeof v === 'string' ? v : JSON.stringify(v);
-          return `${k}=${val.length > 45 ? val.slice(0, 45) + '...' : val}`;
-        }).join(', ');
-
-      // Build rich parameter display
-      const params = event.parameters || {};
-      let paramsHtml = '';
-      for (const [k, v] of Object.entries(params)) {
-        const val = typeof v === 'string' ? v : JSON.stringify(v, null, 2);
-        paramsHtml += `<div class="tool-param-row"><span class="tool-param-key">${escapeHtml(k)}</span><span class="tool-param-val">${escapeHtml(val)}</span></div>`;
-      }
-
-      const div = document.createElement('div');
-      div.className = 'tool-call';
-      div.id = `tool-${event.tool_id}`;
-      div.dataset.startTime = Date.now();
-      div.innerHTML = `
-        <div class="tool-call-header" onclick="this.parentElement.querySelector('.tool-params-preview')?.classList.toggle('open'); this.parentElement.querySelector('.tool-call-body')?.classList.toggle('open')">
-          <span class="tool-call-icon"><i data-lucide="shield-alert"></i></span>
-          <span class="tool-call-name">${escapeHtml(event.tool_name)}</span>
-          <span class="tool-call-args">${escapeHtml(argsPreview)}</span>
-          <span class="tool-call-status waiting">awaiting approval</span>
-        </div>
-        <div class="tool-params-preview open">
-          ${paramsHtml || '<div style="color:var(--text-muted);font-size:0.78rem;">No parameters</div>'}
-        </div>
-        <div class="tool-call-body">
-          <pre>Waiting for approval...</pre>
-        </div>
-        <div class="tool-approval">
-          <span class="approval-label">Allow this tool call?</span>
-          <button class="approve-btn" onclick="approveToolCall('${event.tool_id}', this)">Approve</button>
-          <button class="reject-btn" onclick="rejectToolCall('${event.tool_id}', this)">Reject</button>
-        </div>
-      `;
-      wrapper.appendChild(div);
-      toolCallElements[event.tool_id] = div;
-      lucide.createIcons();
-      scrollToBottom();
-    }
-
-    async function approveToolCall(toolId, btn) {
-      const div = toolCallElements[toolId];
-      if (!div) return;
-      const approval = div.querySelector('.tool-approval');
-      if (approval) approval.remove();
-      const st = div.querySelector('.tool-call-status');
-      st.className = 'tool-call-status running';
-      st.textContent = 'running';
-      const iconEl = div.querySelector('.tool-call-icon');
-      iconEl.classList.add('spinning');
-
-      try {
-        await fetch('/api/tool-approval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tool_id: toolId, approved: true })
-        });
-      } catch (e) {
-        console.error('Approval failed:', e);
-      }
-    }
-
-    async function rejectToolCall(toolId, btn) {
-      const div = toolCallElements[toolId];
-      if (!div) return;
-      const approval = div.querySelector('.tool-approval');
-      if (approval) approval.remove();
-      const st = div.querySelector('.tool-call-status');
-      st.className = 'tool-call-status error';
-      st.textContent = 'rejected';
-      div.querySelector('.tool-call-icon').classList.remove('spinning');
-
-      try {
-        await fetch('/api/tool-approval', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tool_id: toolId, approved: false })
-        });
-      } catch (e) {
-        console.error('Rejection failed:', e);
-      }
-    }
-
-    function updateToolResult(event) {
-      const div = toolCallElements[event.tool_id];
+    function updateToolResult(event, tab) {
+      const tcElements = (tab && tab.toolCallElements) || {};
+      const div = tcElements[event.tool_id];
       if (!div) return;
 
       const startTime = parseInt(div.dataset.startTime);
@@ -2420,7 +2440,7 @@
       }
       chatContainer.appendChild(div);
 
-      lucide.createIcons();
+      createIconsIn(div);
       scrollToBottom();
       return div;
     }
@@ -2435,8 +2455,8 @@
       const actions = document.createElement('div');
       actions.className = 'message-actions';
       actions.innerHTML = `
-        <button onclick="copyMessageText(this)" title="Copy">&#128203;</button>
-        <button onclick="regenerateMessage(this)" title="Regenerate">&#8635;</button>
+        <button onclick="copyMessageText(this)" title="Copy"><i data-lucide="copy"></i></button>
+        <button onclick="regenerateMessage(this)" title="Regenerate"><i data-lucide="refresh-cw"></i></button>
       `;
       el.style.position = 'relative';
       el.appendChild(actions);
@@ -2450,16 +2470,18 @@
       if (actions) actions.remove();
       const text = clone.innerText;
       navigator.clipboard.writeText(text).then(() => {
-        btn.innerHTML = '&#10003;';
-        setTimeout(() => { btn.innerHTML = '&#128203;'; }, 1500);
+        btn.innerHTML = '<i data-lucide="check"></i>';
+        createIconsIn(btn);
+        setTimeout(() => { btn.innerHTML = '<i data-lucide="copy"></i>'; createIconsIn(btn); }, 1500);
       });
     }
 
     function regenerateMessage(btn) {
       const msg = btn.closest('.message');
-      if (!msg || isWaiting) return;
+      if (!msg || getIsWaiting()) return;
       const tab = getActiveTab();
       if (!tab || tab.messages.length < 2) return;
+      tab._html = null;
 
       // Find the last user message
       let lastUserIdx = -1;
@@ -2527,7 +2549,7 @@
 
     function renderMarkdown(text) {
       if (!text) return '';
-      return marked.parse(text);
+      return DOMPurify.sanitize(marked.parse(text));
     }
 
     // Optimized escapeHtml — avoids DOM element creation per call
@@ -2575,10 +2597,10 @@
       if (e.ctrlKey && e.key === 't') { e.preventDefault(); createNewTab(); }
       if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId); }
       if (e.ctrlKey && e.key === 'u') { e.preventDefault(); document.getElementById('fileInput').click(); }
-      if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
+      if (e.ctrlKey && e.key === 'b') { if (document.activeElement !== messageInput) { e.preventDefault(); toggleSidebar(); } }
       if (e.key === 'Escape') {
         // Priority: cancel generation > close settings > close lightbox > close file preview
-        if (isWaiting) { cancelGeneration(); }
+        if (getIsWaiting()) { cancelGeneration(); }
         else if (document.getElementById('settingsPanel').classList.contains('open')) { closeSettings(); }
         else if (document.getElementById('imageLightbox').classList.contains('open')) { closeLightbox(); }
         else { closeFilePreview(); }
@@ -2587,7 +2609,7 @@
 
     // ===== THEME =====
     function initTheme() {
-      const saved = localStorage.getItem('ea-theme') || 'dark';
+      const saved = safeGet('ea-theme', 'dark') || 'dark';
       document.documentElement.setAttribute('data-theme', saved);
       updateThemeIcon(saved);
       document.getElementById('hljs-dark').disabled = (saved === 'light');
@@ -2598,7 +2620,7 @@
       const current = document.documentElement.getAttribute('data-theme') || 'dark';
       const next = current === 'dark' ? 'light' : 'dark';
       document.documentElement.setAttribute('data-theme', next);
-      localStorage.setItem('ea-theme', next);
+      safeSet('ea-theme', next);
       updateThemeIcon(next);
       document.getElementById('hljs-dark').disabled = (next === 'light');
       document.getElementById('hljs-light').disabled = (next === 'dark');
@@ -2608,37 +2630,78 @@
       const btn = document.getElementById('themeToggle');
       btn.innerHTML = theme === 'dark' ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
       btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
-      lucide.createIcons();
+      createIconsIn(btn);
     }
 
     initTheme();
 
+    // ===== FOCUS TRAP =====
+    let _focusTrapPrev = null;
+    let _focusTrapHandler = null;
+
+    function trapFocus(containerEl) {
+      _focusTrapPrev = document.activeElement;
+      const focusable = containerEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      first.focus();
+      _focusTrapHandler = (e) => {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) {
+          if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+          if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+      };
+      containerEl.addEventListener('keydown', _focusTrapHandler);
+    }
+
+    function releaseFocus(containerEl) {
+      if (_focusTrapHandler && containerEl) {
+        containerEl.removeEventListener('keydown', _focusTrapHandler);
+        _focusTrapHandler = null;
+      }
+      if (_focusTrapPrev) { _focusTrapPrev.focus(); _focusTrapPrev = null; }
+    }
+
     // ===== SETTINGS =====
     function openSettings() {
-      document.getElementById('settingsPanel').classList.add('open');
+      const panel = document.getElementById('settingsPanel');
+      panel.classList.add('open');
       document.getElementById('settingsBackdrop').classList.add('open');
+      trapFocus(panel);
     }
 
     function closeSettings() {
-      document.getElementById('settingsPanel').classList.remove('open');
+      const panel = document.getElementById('settingsPanel');
+      releaseFocus(panel);
+      panel.classList.remove('open');
       document.getElementById('settingsBackdrop').classList.remove('open');
     }
 
     function saveSetting(key, value) {
       settings[key] = value;
-      localStorage.setItem(`ea-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
+      safeSet(`ea-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
     }
 
     // ===== IMAGE LIGHTBOX =====
+    let _lightboxPrevFocus = null;
+
     function openLightbox(src) {
+      _lightboxPrevFocus = document.activeElement;
       const overlay = document.getElementById('imageLightbox');
       const img = document.getElementById('lightboxImg');
       img.src = src;
       overlay.classList.add('open');
+      // Focus the close button
+      const closeBtn = overlay.querySelector('button[aria-label="Close preview"]');
+      if (closeBtn) closeBtn.focus();
     }
 
     function closeLightbox() {
       document.getElementById('imageLightbox').classList.remove('open');
+      if (_lightboxPrevFocus) { _lightboxPrevFocus.focus(); _lightboxPrevFocus = null; }
     }
 
     // ===== CONVERSATION EXPORT =====
@@ -2699,11 +2762,9 @@
       if (copyBtn) {
         const container = copyBtn.closest('.code-container');
         if (container) {
-          const raw = container.querySelector('.raw-code')?.innerHTML;
+          const raw = container.querySelector('.raw-code')?.textContent;
           if (raw) {
-            const txt = document.createElement('textarea');
-            txt.innerHTML = raw;
-            copyToClipboard(txt.value, copyBtn);
+            copyToClipboard(raw, copyBtn);
           }
         }
         return;
@@ -2756,7 +2817,7 @@
       } else {
         sessionTags[sessionId] = tag;
       }
-      localStorage.setItem('ea-session-tags', JSON.stringify(sessionTags));
+      safeSet('ea-session-tags', JSON.stringify(sessionTags));
       closeAllTagPickers();
       loadSessions();
     }
