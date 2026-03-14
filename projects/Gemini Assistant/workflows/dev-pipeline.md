@@ -8,6 +8,19 @@ Full development lifecycle for features and bug fixes. Orchestrates specialist a
 2. **Explore the codebase** — Find relevant files, understand existing patterns and conventions.
 3. **Reproduction (bugs only)** — Write a test or script that demonstrates the failure. Do not proceed until the bug is confirmed.
 
+## Step 1b: Delegation Gate (MANDATORY)
+
+Before writing any code yourself, ask: **"Does an agent exist for this?"**
+
+Check `.gemini/agents/` and `references/agent-routing.md`. If ANY part of the task falls within an agent's domain, delegate that part. The EA NEVER writes code inline when the dev-pipeline is invoked — not even for "quick" fixes.
+
+**Anti-patterns to avoid:**
+- "I'll just do this small part myself" → NO. Delegate it.
+- "This is too simple for an agent" → If it's code, delegate it.
+- "I'll fix this one file and then delegate the rest" → Delegate ALL of it.
+
+The EA's role in dev-pipeline is: plan → delegate → review → QA → commit. Nothing else.
+
 ## Step 2: Strategy & Design
 
 1. **Draft a plan** — Outline changes across backend, frontend, and tests.

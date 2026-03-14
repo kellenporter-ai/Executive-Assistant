@@ -44,14 +44,15 @@ async def stream_chat(
     """
     gemini = get_gemini_path()
 
-    # Always use --approval-mode yolo: the subprocess model has no stdin pipe,
-    # so --approval-mode ask would hang forever waiting for interactive input.
-    # The approval_mode parameter is kept in the signature for future use.
+    # Only 'yolo' and 'plan' modes work in subprocess mode.
+    # 'default' and 'auto_edit' require stdin for interactive approval prompts,
+    # which aren't available when spawning gemini as a subprocess.
+    effective_mode = approval_mode if approval_mode in ("yolo", "plan") else "yolo"
     cmd = [
         gemini,
         "-p", message,
         "-o", "stream-json",
-        "--approval-mode", "yolo",
+        "--approval-mode", effective_mode,
     ]
     if model:
         cmd.extend(["--model", model])

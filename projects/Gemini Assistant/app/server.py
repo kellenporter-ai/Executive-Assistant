@@ -83,11 +83,10 @@ async def chat(request: ChatRequest):
         active_tasks[track_id] = task
 
         try:
-            # approval_mode is accepted in the request body but not passed through —
-            # the subprocess model doesn't support interactive approval yet.
             async for event in stream_chat(
                 request.message,
                 session_id,
+                approval_mode=request.approval_mode or "yolo",
                 model=request.model,
             ):
                 # Update track_id if session_id is returned in the first event

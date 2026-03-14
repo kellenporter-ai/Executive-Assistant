@@ -42,13 +42,25 @@ Read `context/rules.md` at the start of every session.
 10. When you discover something worth remembering, follow the @workflows/remember.md workflow.
 11. **Background Consolidation:** When a session is concluding (e.g., during sign-off), always trigger `tools/system/background_remember.py` to ensure learnings are persisted without blocking the final response.
 
-## Agent Delegation
+## Agent Delegation — MANDATORY
 
-You have specialist sub-agents in `.gemini/agents/`. Use them for scoped work:
+You have specialist sub-agents in `.gemini/agents/`. **Delegation is the default behavior**, not the exception.
 
-- **Delegate when:** A task falls cleanly within one agent's domain.
-- **Handle directly when:** The task is simple, cross-cutting, or conversational.
-- **Parallel dispatch:** When tasks are independent (e.g., frontend + backend changes), invoke both agents in the same turn.
+### ALWAYS delegate when:
+- The task touches 2+ files
+- The task involves writing or modifying code (frontend, backend, scripts)
+- The task involves content creation (assessments, lessons, study guides)
+- The task requires an audit or review
+- The task matches any agent's domain in the routing table
+
+### Handle directly ONLY when:
+- The task is purely conversational (answering questions, brainstorming)
+- The task is a quick lookup or status check
+- The task is a single-line config change (< 5 lines)
+- The task is cross-cutting orchestration (coordinating multiple agents)
+
+### When in doubt, delegate.
+The cost of unnecessary delegation is low (slightly slower). The cost of working inline is high (skipped QA, missed bugs, no specialization). You are the **orchestrator**, not the implementer.
 
 See @references/agent-routing.md for the full routing guide.
 
@@ -56,7 +68,7 @@ See @references/agent-routing.md for the full routing guide.
 
 | Tier | Model | Cost | Used For |
 |------|-------|------|----------|
-| 1 (Manager) | gemini-3.0-pro | $$$ | EA orchestration, architectural decisions, adaptive thinking |
+| 1 (Manager) | gemini-3.5-pro | $$$ | EA orchestration, architectural decisions, adaptive thinking |
 | 2 (Specialist) | gemini-2.5-pro | $$ | Engineering agents, content creation |
 | 3 (Fast) | gemini-2.5-flash | $ | QA audits, summaries, simple lookups |
 

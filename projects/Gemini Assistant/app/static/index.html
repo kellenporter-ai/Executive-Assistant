@@ -1270,7 +1270,7 @@
       <i data-lucide="folder-open"></i>
       <span id="workspaceName">...</span>
     </div>
-    <span class="model-badge" id="modelBadge" title="Active model">gemini-2.5-pro</span>
+    <span class="model-badge" id="modelBadge" title="Active model">default</span>
     <span style="flex:1"></span>
     <button class="titlebar-toggle" onclick="exportConversation()" title="Export conversation" aria-label="Export conversation"><i data-lucide="download"></i></button>
     <button class="titlebar-toggle" onclick="openSettings()" title="Settings" aria-label="Settings"><i data-lucide="settings"></i></button>
@@ -1422,19 +1422,21 @@
         </div>
         <select class="setting-select" id="settingModel" onchange="saveSetting('model', this.value); updateModelBadge()">
           <option value="">Default (CLI decides)</option>
+          <option value="gemini-3.5-pro">Gemini 3.5 Pro</option>
+          <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+          <option value="gemini-3.0-pro">Gemini 3.0 Pro</option>
           <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
           <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
         </select>
       </div>
       <div class="setting-row">
         <div class="setting-label">
           Approval Mode
-          <small>Controls whether tool calls require your approval</small>
+          <small>Yolo: execute all tools automatically. Plan: read-only, no tool execution.</small>
         </div>
         <select class="setting-select" id="settingApprovalMode" onchange="saveSetting('approvalMode', this.value)">
-          <option value="yolo">Auto-approve (yolo)</option>
-          <option value="ask" disabled>Ask before running (coming soon)</option>
+          <option value="yolo">Auto-approve all (yolo)</option>
+          <option value="plan">Read-only (plan mode)</option>
         </select>
       </div>
       <div class="setting-row">
@@ -2784,9 +2786,11 @@
       const model = settings.model || 'default';
       const labels = {
         '': 'default',
+        'gemini-3.5-pro': 'gemini-3.5-pro',
+        'gemini-3.5-flash': 'gemini-3.5-flash',
+        'gemini-3.0-pro': 'gemini-3.0-pro',
         'gemini-2.5-pro': 'gemini-2.5-pro',
         'gemini-2.5-flash': 'gemini-2.5-flash',
-        'gemini-2.0-flash': 'gemini-2.0-flash',
       };
       badge.textContent = labels[settings.model] || model;
     }
