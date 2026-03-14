@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RYB Color Mixing Palette</title>
+    <style>
+        :root {
+            --bg-color: #f4f4f9;
+            --text-color: #333;
+            --panel-bg: #fff;
+            --border-radius: 16px;
+            --shadow: 0 8px 24px rgba(0,0,0,0.08);
+            --red-thumb: #E63946;
+            --yellow-thumb: #F9C74F;
+            --blue-thumb: #1D3557; 
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0 0 10px 0;
+            font-size: 2.2em;
+            color: #1a1a1a;
+        }
+
+        p.subtitle {
+            color: #666;
+            margin: 0;
+            font-size: 1.1em;
+        }
+
+        main {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            box-shadow: var(--shadow);
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-sizing: border-box;
+        }
+
+        h2 {
+            font-size: 1.4em;
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: #444;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Controls Panel */
+        .controls {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .control-group {
+            width: 100%;
+        }
+
+        .control-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .label-red { color: #c92a2a; }
+        .label-yellow { color: #b35900; } /* Darkened for better a11y contrast */
+        .label-blue { color: #1864ab; }
+
+        .slider-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+        }
+
+        input[type="range"]:focus {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #e0e0e0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -10px;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:active {
+            transform: scale(1.1);
+        }
+
+        input[type="range"]::-moz-range-track {
+            width: 100%;
+            height: 10px;
+            cursor: pointer;
+            background: #e0e0e0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            height: 28px;
+            width: 28px;
+            border-radius: 50%;
+            background: #ffffff;
+            cursor: pointer;
+            border: 3px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+
+        #slider-r::-webkit-slider-thumb { background: var(--red-thumb); }
+        #slider-y::-webkit-slider-thumb { background: var(--yellow-thumb); }
+        #slider-b::-webkit-slider-thumb { background: var(--blue-thumb); }
+        #slider-r::-moz-range-thumb { background: var(--red-thumb); }
+        #slider-y::-moz-range-thumb { background: var(--yellow-thumb); }
+        #slider-b::-moz-range-thumb { background: var(--blue-thumb); }
+
+        .slider-value {
+            min-width: 50px;
+            text-align: right;
+            font-variant-numeric: tabular-nums;
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        .btn-reset {
+            margin-top: 30px;
+            padding: 12px 24px;
+            border: none;
+            background: #f0f0f0;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1em;
+            color: #444;
+            transition: background 0.2s, color 0.2s;
+            width: 100%;
+        }
+
+        .btn-reset:hover {
+            background: #e0e0e0;
+            color: #111;
+        }
+
+        /* Palette Panel */
+        .palette-container {
+            justify-content: center;
+        }
+
+        .palette-circle {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            border: 6px solid #f0f0f0;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.1), 0 15px 25px rgba(0,0,0,0.05);
+            transition: background-color 0.15s ease-out;
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .palette-circle::after {
+            content: '';
+            position: absolute;
+            top: 8%;
+            left: 12%;
+            width: 40%;
+            height: 30%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0) 100%);
+            border-radius: 50%;
+            transform: rotate(-25deg);
+            pointer-events: none;
+        }
+
+        .result-info {
+            text-align: center;
+            background: #f8f9fa;
+            padding: 15px 30px;
+            border-radius: 12px;
+            width: 80%;
+            box-sizing: border-box;
+        }
+
+        .color-classification {
+            font-size: 0.85em;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .color-name {
+            font-size: 1.6em;
+            font-weight: 800;
+            color: #222;
+        }
+
+        /* Wheel Panel */
+        .wheel-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 10px 0;
+        }
+
+        #wheel-svg {
+            transform: rotate(-90deg);
+            overflow: visible;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+        }
+
+        .slice {
+            cursor: pointer;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), stroke-width 0.2s, stroke 0.2s;
+            stroke: #fff;
+            stroke-width: 2px;
+            transform-origin: 0 0;
+        }
+
+        .slice:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            stroke: #111;
+        }
+
+        .slice.active {
+            stroke: #333;
+            stroke-width: 4px;
+            transform: scale(1.1);
+        }
+
+        .wheel-hint {
+            font-size: 0.9em;
+            color: #777;
+            text-align: center;
+            margin-top: 25px;
+            line-height: 1.4;
+            max-width: 250px;
+        }
+
+        @media (max-width: 850px) {
+            main {
+                flex-direction: column;
+                align-items: center;
+            }
+            .panel {
+                width: 100%;
+                max-width: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Color Mixing Studio</h1>
+        <p class="subtitle">Experience traditional subtractive RYB color mixing directly in your browser.</p>
+    </header>
+
+    <main>
+        <!-- Panel 1: Controls -->
+        <div class="panel">
+            <h2>Paint Tubes</h2>
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-header">
+                        <label for="slider-r" class="label-red">Red Paint</label>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" id="slider-r" min="0" max="100" value="0" aria-label="Amount of Red paint">
+                        <div class="slider-value" id="val-r" aria-live="polite">0%</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-header">
+                        <label for="slider-y" class="label-yellow">Yellow Paint</label>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" id="slider-y" min="0" max="100" value="0" aria-label="Amount of Yellow paint">
+                        <div class="slider-value" id="val-y" aria-live="polite">0%</div>
+                    </div>
+                </div>
+                <div class="control-group">
+                    <div class="control-header">
+                        <label for="slider-b" class="label-blue">Blue Paint</label>
+                    </div>
+                    <div class="slider-wrapper">
+                        <input type="range" id="slider-b" min="0" max="100" value="0" aria-label="Amount of Blue paint">
+                        <div class="slider-value" id="val-b" aria-live="polite">0%</div>
+                    </div>
+                </div>
+            </div>
+            <button id="reset-btn" class="btn-reset">Wash Palette</button>
+        </div>
+
+        <!-- Panel 2: Palette -->
+        <div class="panel palette-container">
+            <h2>Mixing Palette</h2>
+            <div class="palette-circle" id="palette"></div>
+            <div class="result-info">
+                <div class="color-classification" id="color-class" aria-live="polite">Start Mixing</div>
+                <div class="color-name" id="color-name" aria-live="polite">White Canvas</div>
+            </div>
+        </div>
+
+        <!-- Panel 3: Color Wheel -->
+        <div class="panel">
+            <h2>Color Wheel Reference</h2>
+            <div class="wheel-container">
+                <!-- SVG rotated -90deg so 0 radians starts at the top (12 o'clock) -->
+                <svg id="wheel-svg" width="220" height="220" viewBox="-110 -110 220 220" aria-label="Interactive color wheel reference"></svg>
+            </div>
+            <p class="wheel-hint">
+                The traditional 12-segment RYB color wheel. The closest matching color to your mix will be highlighted.
+            </p>
+        </div>
+    </main>
+
+    <script>
+        // Define the 12 segments of the RYB color wheel in clockwise order starting from the top
+        const segments = [
+            { name: "Yellow", type: "Primary", ryb: [0, 1, 0] },
+            { name: "Yellow-Orange", type: "Tertiary", ryb: [0.5, 1, 0] },
+            { name: "Orange", type: "Secondary", ryb: [1, 1, 0] },
+            { name: "Red-Orange", type: "Tertiary", ryb: [1, 0.5, 0] },
+            { name: "Red", type: "Primary", ryb: [1, 0, 0] },
+            { name: "Red-Purple", type: "Tertiary", ryb: [1, 0, 0.5] },
+            { name: "Purple", type: "Secondary", ryb: [1, 0, 1] },
+            { name: "Blue-Purple", type: "Tertiary", ryb: [0.5, 0, 1] },
+            { name: "Blue", type: "Primary", ryb: [0, 0, 1] },
+            { name: "Blue-Green", type: "Tertiary", ryb: [0, 0.5, 1] },
+            { name: "Green", type: "Secondary", ryb: [0, 1, 1] },
+            { name: "Yellow-Green", type: "Tertiary", ryb: [0, 1, 0.5] }
+        ];
+
+        /**
+         * Converts Subtractive RYB mix to Screen RGB using 3D trilinear interpolation.
+         * This creates a realistic paint-mixing effect where R+Y=Orange, Y+B=Green, R+B=Purple, and R+Y+B=Black.
+         */
+        function rybToRgb(r, y, b) {
+            // Empirically defined RGB values for the 8 corners of the RYB color cube
+            const corners = [
+                [255, 255, 255], // 000: White Canvas
+                [237, 28,  36 ], // 100: Red
+                [255, 242, 0  ], // 010: Yellow
+                [242, 101, 34 ], // 110: Orange (Red + Yellow)
+                [0,   114, 188], // 001: Blue
+                [102, 45,  145], // 101: Purple (Red + Blue)
+                [0,   166, 81 ], // 011: Green (Yellow + Blue)
+                [50,  40,  40 ]  // 111: Mud / Black (All three)
+            ];
+
+            function lerp(start, end, t) {
+                return start + (end - start) * t;
+            }
+
+            function lerpColor(c1, c2, t) {
+                return [
+                    lerp(c1[0], c2[0], t),
+                    lerp(c1[1], c2[1], t),
+                    lerp(c1[2], c2[2], t)
+                ];
+            }
+
+            // Interpolate along the Red axis
+            const c00 = lerpColor(corners[0], corners[1], r);
+            const c10 = lerpColor(corners[2], corners[3], r);
+            const c01 = lerpColor(corners[4], corners[5], r);
+            const c11 = lerpColor(corners[6], corners[7], r);
+
+            // Interpolate along the Yellow axis
+            const c0 = lerpColor(c00, c10, y);
+            const c1 = lerpColor(c01, c11, y);
+
+            // Interpolate along the Blue axis
+            const finalRgb = lerpColor(c0, c1, b);
+            
+            return finalRgb.map(Math.round);
+        }
+
+        // Calculate Euclidean distance between two RGB colors
+        function colorDistance(rgb1, rgb2) {
+            return Math.sqrt(
+                Math.pow(rgb1[0] - rgb2[0], 2) +
+                Math.pow(rgb1[1] - rgb2[1], 2) +
+                Math.pow(rgb1[2] - rgb2[2], 2)
+            );
+        }
+
+        // Draw the interactive Color Wheel SVG
+        const svg = document.getElementById('wheel-svg');
+        const cx = 0, cy = 0, radius = 100;
+        const sliceAngle = 360 / 12;
+
+        segments.forEach((seg, index) => {
+            // Compute true RGB for this segment purely mathematically based on its RYB ideal definition
+            seg.rgb = rybToRgb(seg.ryb[0], seg.ryb[1], seg.ryb[2]);
+            
+            // Calculate SVG Path (an arc)
+            const startAngleRads = (index * sliceAngle - sliceAngle / 2) * (Math.PI / 180);
+            const endAngleRads = (index * sliceAngle + sliceAngle / 2) * (Math.PI / 180);
+            
+            const x1 = cx + radius * Math.cos(startAngleRads);
+            const y1 = cy + radius * Math.sin(startAngleRads);
+            const x2 = cx + radius * Math.cos(endAngleRads);
+            const y2 = cy + radius * Math.sin(endAngleRads);
+
+            const pathData = `M ${cx} ${cy} L ${x1} ${y1} A ${radius} ${radius} 0 0 1 ${x2} ${y2} Z`;
+
+            const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+            path.setAttribute("d", pathData);
+            path.setAttribute("fill", `rgb(${seg.rgb[0]}, ${seg.rgb[1]}, ${seg.rgb[2]})`);
+            path.setAttribute("class", "slice");
+
+            svg.appendChild(path);
+            seg.pathElement = path;
+        });
+
+        // DOM Elements
+        const sliderR = document.getElementById('slider-r');
+        const sliderY = document.getElementById('slider-y');
+        const sliderB = document.getElementById('slider-b');
+        const valR = document.getElementById('val-r');
+        const valY = document.getElementById('val-y');
+        const valB = document.getElementById('val-b');
+        const palette = document.getElementById('palette');
+        const colorName = document.getElementById('color-name');
+        const colorClass = document.getElementById('color-class');
+
+        // Main mix update function
+        function updateMix() {
+            const r = parseInt(sliderR.value, 10);
+            const y = parseInt(sliderY.value, 10);
+            const b = parseInt(sliderB.value, 10);
+
+            // Update UI Labels
+            valR.textContent = r + '%';
+            valY.textContent = y + '%';
+            valB.textContent = b + '%';
+
+            // Normalize (0.0 to 1.0)
+            const nr = r / 100;
+            const ny = y / 100;
+            const nb = b / 100;
+
+            // Convert to Screen RGB
+            const rgb = rybToRgb(nr, ny, nb);
+            
+            // Apply to Palette
+            palette.style.backgroundColor = `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
+
+            // Classify resulting color
+            classifyColor(nr, ny, nb, rgb);
+        }
+
+        function classifyColor(r, y, b, rgb) {
+            // Reset active wheel slices
+            segments.forEach(seg => seg.pathElement.classList.remove('active'));
+
+            if (r === 0 && y === 0 && b === 0) {
+                colorName.textContent = "White Canvas";
+                colorClass.textContent = "Start Mixing";
+                return;
+            }
+
+            // Check for muddy brown/black (when high amounts of all 3 primaries are mixed)
+            if (r > 0.4 && y > 0.4 && b > 0.4) {
+                colorName.textContent = "Muddy Brown / Black";
+                colorClass.textContent = "Neutral Mix";
+                return;
+            }
+
+            // Find closest pure segment on the color wheel
+            let closestSeg = null;
+            let minDistance = Infinity;
+
+            segments.forEach(seg => {
+                const dist = colorDistance(rgb, seg.rgb);
+                if (dist < minDistance) {
+                    minDistance = dist;
+                    closestSeg = seg;
+                }
+            });
+
+            // Threshold for matching a color wheel segment closely
+            if (minDistance < 85) {
+                colorName.textContent = closestSeg.name;
+                colorClass.textContent = closestSeg.type + " Color";
+                closestSeg.pathElement.classList.add('active');
+            } else {
+                colorName.textContent = "Custom Mix";
+                if (r > 0 && y > 0 && b > 0) {
+                    colorClass.textContent = "Desaturated Color";
+                } else {
+                    colorClass.textContent = "Tint / Shade";
+                }
+            }
+        }
+
+        // Attach listeners
+        sliderR.addEventListener('input', updateMix);
+        sliderY.addEventListener('input', updateMix);
+        sliderB.addEventListener('input', updateMix);
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            sliderR.value = 0;
+            sliderY.value = 0;
+            sliderB.value = 0;
+            updateMix();
+        });
+
+        // Initialize state on load
+        updateMix();
+    </script>
+</body>
+</html>

@@ -12,6 +12,8 @@ import glob
 import asyncio
 import shutil
 import uuid
+import time
+from contextlib import asynccontextmanager
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
@@ -20,6 +22,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
+from fastapi.middleware.cors import CORSMiddleware
 from gemini_client import stream_chat, get_gemini_path, WORKSPACE
 
 # Lock to prevent race conditions on token usage file read-modify-write
@@ -31,10 +34,29 @@ load_dotenv(os.path.join(WORKSPACE, ".env"))
 ATTACHMENTS_DIR = os.path.join(WORKSPACE, "temp", "attachments")
 os.makedirs(ATTACHMENTS_DIR, exist_ok=True)
 
+# Archive directories
+ARCHIVE_DIR = os.path.join(WORKSPACE, "temp", "archived_sessions")
+PERMANENT_ARCHIVE_DIR = os.path.join(WORKSPACE, "temp", "permanent_archives")
+os.makedirs(ARCHIVE_DIR, exist_ok=True)
+os.makedirs(PERMANENT_ARCHIVE_DIR, exist_ok=True)
+
 # Active chat tasks tracking: { session_id: asyncio.Task }
 active_tasks = {}
 
-app = FastAPI(title="Gemini Executive Assistant")
+@asynccontextmanager
+async def lifespan(app):
+    cleanup_old_archives()
+    yield
+
+app = FastAPI(title="Gemini Executive Assistant", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 # --- Request Models ---
@@ -189,32 +211,69 @@ async def list_sessions():
     # Parse lines like:  1. prompt preview... (time ago) [session_id]
     for line in output.split("\n"):
         match = re.match(
-            r"\s*\d+\.\s+(.+?)\s+\((.+?)\)\s+\[([a-f0-9-]+)\]",
+            r"\s*(\d+)\.\s+(.+?)\s+\((.+?)\)\s+\[([a-f0-9-]+)\]",
             line,
         )
         if match:
             sessions.append({
-                "preview": match.group(1).strip(),
-                "time_ago": match.group(2).strip(),
-                "session_id": match.group(3).strip(),
+                "index": match.group(1).strip(),
+                "preview": match.group(2).strip(),
+                "time_ago": match.group(3).strip(),
+                "session_id": match.group(4).strip(),
             })
     return {"sessions": sessions}
 
 
 @app.delete("/api/sessions/{session_id}")
-async def delete_session(session_id: str):
-    """Delete a chat session by removing its file directly."""
+async def archive_session(session_id: str, index: str | None = None):
+    """Archive a chat session by moving it to the 24h archive directory.
+    If an index is provided, also use the Gemini CLI to delete it from the active session list."""
+    if index:
+        gemini = get_gemini_path()
+        await asyncio.create_subprocess_exec(
+            gemini, "--delete-session", index,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=WORKSPACE,
+        )
+
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
-    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id}*.json")
+    short_id = session_id.split("-")[0]
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{short_id}*.json")
     matches = glob.glob(pattern, recursive=True)
+
+    if not matches:
+        if index: # If CLI delete succeeded, we might not find the file anymore
+             return {"status": "ok", "archived": True, "cli_deleted": True}
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    for match in matches:
+        dest = os.path.join(ARCHIVE_DIR, os.path.basename(match))
+        shutil.move(match, dest)
+
+    return {"status": "ok", "archived": True}
+
+
+@app.post("/api/sessions/{session_id}/archive")
+async def permanent_archive_session(session_id: str):
+    """Permanently archive a session (not auto-deleted after 24h)."""
+    gemini_dir = os.path.expanduser("~/.gemini/tmp")
+    short_id = session_id.split("-")[0]
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{short_id}*.json")
+    matches = glob.glob(pattern, recursive=True)
+
+    # Also check the 24h archive in case it was already archived
+    archive_pattern = os.path.join(ARCHIVE_DIR, f"session-*{short_id}*.json")
+    matches += glob.glob(archive_pattern)
 
     if not matches:
         raise HTTPException(status_code=404, detail="Session not found")
 
     for match in matches:
-        os.remove(match)
+        dest = os.path.join(PERMANENT_ARCHIVE_DIR, os.path.basename(match))
+        shutil.move(match, dest)
 
-    return {"status": "ok"}
+    return {"status": "ok", "permanent": True}
 
 
 @app.get("/api/sessions/{session_id}/messages")
@@ -222,7 +281,8 @@ async def get_session_messages(session_id: str):
     """Load message history from a saved Gemini CLI session."""
     # Session files are stored in ~/.gemini/tmp/<project>/chats/
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
-    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id}*.json")
+    short_id = session_id.split("-")[0]
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{short_id}*.json")
     matches = glob.glob(pattern, recursive=True)
 
     if not matches:
@@ -336,6 +396,40 @@ async def read_file(path: str):
         return {"content": f"(Cannot read file: {e})", "truncated": True}
 
 
+@app.get("/api/files/git-status")
+async def git_status():
+    """Get list of files with uncommitted changes in the workspace."""
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            "git", "status", "--porcelain", "-u",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=WORKSPACE,
+        )
+        stdout, _ = await proc.communicate()
+        output = stdout.decode("utf-8")
+
+        modified = []  # M, MM
+        added = []     # A, ??
+        deleted = []   # D
+
+        for line in output.strip().split("\n"):
+            if not line.strip():
+                continue
+            status = line[:2].strip()
+            filepath = line[3:].strip().strip('"')
+            if status in ('M', 'MM', 'AM'):
+                modified.append(filepath)
+            elif status in ('??', 'A'):
+                added.append(filepath)
+            elif status == 'D':
+                deleted.append(filepath)
+
+        return {"modified": modified, "added": added, "deleted": deleted}
+    except Exception:
+        return {"modified": [], "added": [], "deleted": []}
+
+
 # --- File Upload ---
 
 @app.post("/api/upload")
@@ -360,6 +454,19 @@ async def upload_file(file: UploadFile = File(...)):
 
 # --- Static Files ---
 
+def cleanup_old_archives():
+    """Delete archived sessions older than 24 hours."""
+    if not os.path.isdir(ARCHIVE_DIR):
+        return
+    cutoff = time.time() - (24 * 60 * 60)
+    for f in os.listdir(ARCHIVE_DIR):
+        filepath = os.path.join(ARCHIVE_DIR, f)
+        if os.path.isfile(filepath) and os.path.getmtime(filepath) < cutoff:
+            os.remove(filepath)
+
+
+
+
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
@@ -367,7 +474,10 @@ app.mount("/static", StaticFiles(directory=static_dir), name="static")
 @app.get("/")
 async def index():
     """Serve the chat UI."""
-    return FileResponse(os.path.join(static_dir, "index.html"))
+    return FileResponse(
+        os.path.join(static_dir, "index.html"),
+        headers={"Cache-Control": "no-cache, no-store, must-revalidate"},
+    )
 
 
 # --- Entry Point ---

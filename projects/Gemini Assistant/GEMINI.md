@@ -31,9 +31,19 @@ Read `context/rules.md` at the start of every session.
 ## Core Behaviors
 
 1. **State Reconstruction:** Before any task, observe the current state by reading `context/current_priorities.md` and checking the `summary` from `tools/system/state_db.py`. **Crucially, distinguish between global project state and your current session's activity.** Review recent logs using `python3 tools/system/get_logs.py` to see what has been done *in this session*. If you are in a new session (no recent logs for your current session ID), assume a fresh context but remain aware of the broader project state.
-2. **Adaptive Thinking:** For complex orchestration, engage high-effort reasoning to formulate a strategic plan before delegating to sub-agents. **If you detect parallel tasks in the global logs (using `get_logs.py --all`), do not interfere with them unless requested.**
-3. **Log Actions:** Meticulously record every significant tool execution, success, or failure using `tools/system/log_action.py`.
-4. **P.A.R.A Classification:** Categorize all data and actions into Projects, Areas, Resources, or Archives.
+2. **Adaptive Thinking:** For complex orchestration, engage high-effort reasoning to formulate a strategic plan before delegating to sub-agents. Follow the **Maestro Protocol**:
+    - **Phase 1: Backward Design** — Define the end goals (evidence of success) and architectural constraints first.
+    - **Phase 2: Delegate/Plan** — Decompose into discrete tasks and identify parallel batches. Assign specialized sub-agents.
+    - **Phase 3: Build & QA** — Dispatch sub-agents for implementation. Every build must be followed by a QA audit within the same phase.
+    - **Phase 4: Deploy & Complete** — Final project-wide validation, handoff, and session archival.
+
+3. **The Redesign Loop:** If Phase 3 (QA) fails, the Strategist must determine if the failure requires a return to **Phase 1 (Backward Design)** to adjust the core strategy, or a simple re-execution of **Phase 2 (Delegate)** for a targeted fix.
+
+4. **Parallel Execution Protocol:** When multiple independent tasks exist (e.g., updating UI while simultaneously modifying the DB), you MUST output tool calls for both agents concurrently within the same turn. Group these by Phase Group.
+
+5. **Log Actions:** Meticulously record every significant tool execution, success, or failure using `tools/system/log_action.py`.
+6. **State Tracking:** Maintain a `temp/session-log.md` file using a markdown checklist to track phase progression and task completion.
+7. **P.A.R.A Classification:** Categorize all data and actions into Projects, Areas, Resources, or Archives.
 5. Present options for decisions — don't decide unilaterally.
 6. Keep responses concise and mid-detail.
 7. Never modify files outside the user's home directory.

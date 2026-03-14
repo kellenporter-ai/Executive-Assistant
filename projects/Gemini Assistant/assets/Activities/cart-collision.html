@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart Collision Lab</title>
+    <style>
+        :root {
+            --bg-color: #f4f6f8;
+            --panel-bg: #ffffff;
+            --text-color: #2c3e50;
+            --primary-color: #3498db;
+            --primary-hover: #2980b9;
+            --danger-color: #e74c3c;
+            --danger-hover: #c0392b;
+            --border-color: #dcdde1;
+            --cart1-color: #ff4757;
+            --cart2-color: #2ed573;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        #sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--panel-bg);
+            padding: 24px;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.08);
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            z-index: 10;
+        }
+
+        #sidebar h2 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        #main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        }
+
+        .canvas-container {
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            padding: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            border: 1px solid #e1e8ed;
+        }
+
+        .control-group {
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            border-radius: 10px;
+            background: #fafbfc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+
+        .control-group h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+        .cart-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 10px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .slider-container {
+            margin-bottom: 15px;
+        }
+
+        .slider-container:last-child {
+            margin-bottom: 0;
+        }
+
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .slider-container label span {
+            font-family: 'Courier New', Courier, monospace;
+            background: #e1e8ed;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            color: #2c3e50;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            cursor: pointer;
+            accent-color: var(--primary-color);
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 6px rgba(52, 152, 219, 0.2);
+        }
+
+        button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        button:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #btn-reset {
+            background-color: var(--danger-color);
+            box-shadow: 0 4px 6px rgba(231, 76, 60, 0.2);
+        }
+
+        #btn-reset:hover {
+            background-color: var(--danger-hover);
+            box-shadow: 0 6px 8px rgba(231, 76, 60, 0.3);
+        }
+
+        #data-panel {
+            background: #1e272e;
+            color: #ecf0f1;
+            padding: 18px;
+            border-radius: 10px;
+            font-size: 14px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        #data-panel h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 16px;
+            color: #4bcffa;
+            border-bottom: 1px solid #34495e;
+            padding-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .data-row span:last-child {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 15px;
+            font-weight: bold;
+            background: rgba(255,255,255,0.1);
+            padding: 4px 8px;
+            border-radius: 4px;
+            min-width: 70px;
+            text-align: right;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .data-row.total {
+            color: #f1c40f;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #7f8c8d;
+            font-weight: bold;
+        }
+
+        .instructions {
+            font-size: 13px;
+            color: #7f8c8d;
+            text-align: center;
+            line-height: 1.5;
+            padding: 10px;
+            background: #f1f2f6;
+            border-radius: 8px;
+        }
+
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+                overflow: auto;
+            }
+            #sidebar {
+                width: 100%;
+                min-width: unset;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            }
+            #main-content {
+                padding: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Collision Lab</h2>
+        <div class="buttons">
+            <button id="btn-play">▶ Play</button>
+            <button id="btn-pause" disabled>⏸ Pause</button>
+            <button id="btn-reset">↺ Reset</button>
+        </div>
+
+        <div class="control-group">
+            <h3 style="color: var(--cart1-color)">
+                <span class="cart-indicator" style="background: var(--cart1-color)"></span>Cart 1
+            </h3>
+            <div class="slider-container">
+                <label>Mass (kg) <span id="val-m1">1.0</span></label>
+                <input type="range" id="m1" min="0.5" max="5" step="0.5" value="1.0">
+            </div>
+            <div class="slider-container">
+                <label>Initial Velocity (m/s) <span id="val-u1">2.0</span></label>
+                <input type="range" id="u1" min="-5" max="5" step="0.5" value="2.0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3 style="color: var(--cart2-color)">
+                <span class="cart-indicator" style="background: var(--cart2-color)"></span>Cart 2
+            </h3>
+            <div class="slider-container">
+                <label>Mass (kg) <span id="val-m2">1.0</span></label>
+                <input type="range" id="m2" min="0.5" max="5" step="0.5" value="1.0">
+            </div>
+            <div class="slider-container">
+                <label>Initial Velocity (m/s) <span id="val-u2">-1.0</span></label>
+                <input type="range" id="u2" min="-5" max="5" step="0.5" value="-1.0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <h3>Environment</h3>
+            <div class="slider-container">
+                <label>Elasticity (e) <span id="val-e">1.00</span></label>
+                <input type="range" id="e" min="0" max="1" step="0.05" value="1.0">
+                <div style="display: flex; justify-content: space-between; font-size: 11px; color: #7f8c8d; margin-top: 6px; font-weight: 500;">
+                    <span>0 (Inelastic / Sticks)</span>
+                    <span>1 (Elastic / Bounces)</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="data-panel">
+            <h3>Real-time Physics</h3>
+            <div class="data-row">
+                <span><span class="cart-indicator" style="background: var(--cart1-color); width: 10px; height: 10px;"></span> Momentum (p₁)</span>
+                <span id="out-p1">0.00</span>
+            </div>
+            <div class="data-row">
+                <span><span class="cart-indicator" style="background: var(--cart2-color); width: 10px; height: 10px;"></span> Momentum (p₂)</span>
+                <span id="out-p2">0.00</span>
+            </div>
+            <div class="data-row total">
+                <span>Σ System Momentum</span>
+                <span id="out-ptot">0.00</span>
+            </div>
+            <div style="height: 15px;"></div>
+            <div class="data-row">
+                <span><span class="cart-indicator" style="background: var(--cart1-color); width: 10px; height: 10px;"></span> Kinetic Energy (K₁)</span>
+                <span id="out-ke1">0.00</span>
+            </div>
+            <div class="data-row">
+                <span><span class="cart-indicator" style="background: var(--cart2-color); width: 10px; height: 10px;"></span> Kinetic Energy (K₂)</span>
+                <span id="out-ke2">0.00</span>
+            </div>
+            <div class="data-row total">
+                <span>Σ System Energy</span>
+                <span id="out-ketot">0.00</span>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <strong>Note:</strong> Total momentum is conserved during inter-cart collisions. The track walls apply an external impulse, reversing momentum during a wall bounce.
+        </div>
+    </div>
+
+    <div id="main-content">
+        <div class="canvas-container">
+            <!-- Native resolution 800x400 -->
+            <canvas id="sim-canvas" width="800" height="400"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim-canvas');
+        const ctx = canvas.getContext('2d');
+
+        let isPlaying = false;
+        let animationId;
+        let lastTime = 0;
+
+        const state = {
+            c1: { x: 2, v: 2, m: 1, w: 0.8, color: '#ff4757' },
+            c2: { x: 6, v: -1, m: 1, w: 0.8, color: '#2ed573' },
+            e: 1.0,
+            pixelsPerMeter: 100,
+            trackLength: 8
+        };
+
+        const els = {
+            m1: document.getElementById('m1'), val_m1: document.getElementById('val-m1'),
+            u1: document.getElementById('u1'), val_u1: document.getElementById('val-u1'),
+            m2: document.getElementById('m2'), val_m2: document.getElementById('val-m2'),
+            u2: document.getElementById('u2'), val_u2: document.getElementById('val-u2'),
+            e: document.getElementById('e'), val_e: document.getElementById('val-e'),
+            btnPlay: document.getElementById('btn-play'),
+            btnPause: document.getElementById('btn-pause'),
+            btnReset: document.getElementById('btn-reset'),
+            out_p1: document.getElementById('out-p1'),
+            out_p2: document.getElementById('out-p2'),
+            out_ptot: document.getElementById('out-ptot'),
+            out_ke1: document.getElementById('out-ke1'),
+            out_ke2: document.getElementById('out-ke2'),
+            out_ketot: document.getElementById('out-ketot')
+        };
+
+        function init() {
+            els.m1.addEventListener('input', () => updateParam('m1', els.m1.value));
+            els.u1.addEventListener('input', () => updateParam('u1', els.u1.value));
+            els.m2.addEventListener('input', () => updateParam('m2', els.m2.value));
+            els.u2.addEventListener('input', () => updateParam('u2', els.u2.value));
+            els.e.addEventListener('input', () => updateParam('e', els.e.value));
+            
+            els.btnPlay.addEventListener('click', play);
+            els.btnPause.addEventListener('click', pause);
+            els.btnReset.addEventListener('click', reset);
+            
+            reset();
+            
+            // Initial render
+            requestAnimationFrame(() => {
+                updateData();
+                draw();
+            });
+        }
+
+        function updateParam(param, value) {
+            value = parseFloat(value);
+            if (param === 'm1') { 
+                state.c1.m = value; 
+                els.val_m1.textContent = value.toFixed(1); 
+                state.c1.w = 0.6 + value * 0.2; 
+            }
+            if (param === 'u1') { 
+                els.val_u1.textContent = value.toFixed(1); 
+                if(!isPlaying) state.c1.v = value; 
+            }
+            if (param === 'm2') { 
+                state.c2.m = value; 
+                els.val_m2.textContent = value.toFixed(1); 
+                state.c2.w = 0.6 + value * 0.2; 
+            }
+            if (param === 'u2') { 
+                els.val_u2.textContent = value.toFixed(1); 
+                if(!isPlaying) state.c2.v = value; 
+            }
+            if (param === 'e') { 
+                state.e = value; 
+                els.val_e.textContent = value.toFixed(2); 
+            }
+            
+            if (!isPlaying) {
+                updateData();
+                draw();
+            }
+        }
+
+        function reset() {
+            pause();
+            
+            state.c1.m = parseFloat(els.m1.value);
+            state.c2.m = parseFloat(els.m2.value);
+            state.c1.w = 0.6 + state.c1.m * 0.2;
+            state.c2.w = 0.6 + state.c2.m * 0.2;
+            state.e = parseFloat(els.e.value);
+            
+            state.c1.x = 2;
+            state.c1.v = parseFloat(els.u1.value);
+            state.c2.x = 6;
+            state.c2.v = parseFloat(els.u2.value);
+            
+            updateData();
+            draw();
+        }
+
+        function play() {
+            if (isPlaying) return;
+            isPlaying = true;
+            els.btnPlay.disabled = true;
+            els.btnPause.disabled = false;
+            
+            lastTime = performance.now();
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function pause() {
+            isPlaying = false;
+            els.btnPlay.disabled = false;
+            els.btnPause.disabled = true;
+            cancelAnimationFrame(animationId);
+        }
+
+        function loop(time) {
+            if (!isPlaying) return;
+            const dt = (time - lastTime) / 1000;
+            lastTime = time;
+            
+            updatePhysics(dt);
+            updateData();
+            draw();
+            
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function updatePhysics(dt) {
+            // Cap dt to prevent huge jumps (e.g., when returning from inactive tab)
+            if (dt > 0.1) dt = 0.1;
+
+            state.c1.x += state.c1.v * dt;
+            state.c2.x += state.c2.v * dt;
+
+            // Collision detection and resolution
+            if (state.c1.x < state.c2.x) {
+                if (state.c1.x + state.c1.w / 2 >= state.c2.x - state.c2.w / 2) {
+                    resolveCollision(state.c1, state.c2);
+                    // Push apart to prevent sinking
+                    let overlap = (state.c1.x + state.c1.w / 2) - (state.c2.x - state.c2.w / 2);
+                    state.c1.x -= overlap / 2;
+                    state.c2.x += overlap / 2;
+                }
+            } else {
+                if (state.c2.x + state.c2.w / 2 >= state.c1.x - state.c1.w / 2) {
+                    resolveCollision(state.c2, state.c1);
+                    // Push apart to prevent sinking
+                    let overlap = (state.c2.x + state.c2.w / 2) - (state.c1.x - state.c1.w / 2);
+                    state.c2.x -= overlap / 2;
+                    state.c1.x += overlap / 2;
+                }
+            }
+
+            // Boundary collisions (perfectly elastic walls)
+            const trackStart = 0;
+            const trackEnd = state.trackLength;
+            
+            if (state.c1.x - state.c1.w / 2 < trackStart) {
+                state.c1.x = trackStart + state.c1.w / 2;
+                state.c1.v = Math.abs(state.c1.v);
+            }
+            if (state.c1.x + state.c1.w / 2 > trackEnd) {
+                state.c1.x = trackEnd - state.c1.w / 2;
+                state.c1.v = -Math.abs(state.c1.v);
+            }
+            if (state.c2.x - state.c2.w / 2 < trackStart) {
+                state.c2.x = trackStart + state.c2.w / 2;
+                state.c2.v = Math.abs(state.c2.v);
+            }
+            if (state.c2.x + state.c2.w / 2 > trackEnd) {
+                state.c2.x = trackEnd - state.c2.w / 2;
+                state.c2.v = -Math.abs(state.c2.v);
+            }
+        }
+
+        function resolveCollision(cLeft, cRight) {
+            const m1 = cLeft.m;
+            const m2 = cRight.m;
+            const u1 = cLeft.v;
+            const u2 = cRight.v;
+            const e = state.e;
+
+            // Relative velocity
+            const relVel = u1 - u2;
+            
+            // Only resolve if they are converging
+            if (relVel > 0) {
+                const v1 = (m1 * u1 + m2 * u2 - m2 * e * (u1 - u2)) / (m1 + m2);
+                const v2 = (m1 * u1 + m2 * u2 + m1 * e * (u1 - u2)) / (m1 + m2);
+                cLeft.v = v1;
+                cRight.v = v2;
+            }
+        }
+
+        function updateData() {
+            let p1 = state.c1.m * state.c1.v;
+            let p2 = state.c2.m * state.c2.v;
+            
+            // Clean up float errors for display
+            if (Math.abs(p1) < 0.005) p1 = 0;
+            if (Math.abs(p2) < 0.005) p2 = 0;
+            
+            const ptot = p1 + p2;
+            
+            let ke1 = 0.5 * state.c1.m * state.c1.v * state.c1.v;
+            let ke2 = 0.5 * state.c2.m * state.c2.v * state.c2.v;
+            if (Math.abs(ke1) < 0.005) ke1 = 0;
+            if (Math.abs(ke2) < 0.005) ke2 = 0;
+            
+            const ketot = ke1 + ke2;
+            
+            els.out_p1.textContent = p1.toFixed(2);
+            els.out_p2.textContent = p2.toFixed(2);
+            els.out_ptot.textContent = ptot.toFixed(2);
+            
+            els.out_ke1.textContent = ke1.toFixed(2);
+            els.out_ke2.textContent = ke2.toFixed(2);
+            els.out_ketot.textContent = ketot.toFixed(2);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const groundY = 280;
+
+            // Sky gradient
+            const grad = ctx.createLinearGradient(0, 0, 0, groundY);
+            grad.addColorStop(0, '#e0f7fa');
+            grad.addColorStop(1, '#ffffff');
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, canvas.width, groundY);
+
+            // Ground fill
+            ctx.fillStyle = '#f1f2f6';
+            ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+            
+            // Track surface
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(800, groundY);
+            ctx.strokeStyle = '#576574';
+            ctx.lineWidth = 6;
+            ctx.stroke();
+
+            // Track markings (meters)
+            ctx.font = '14px -apple-system, sans-serif';
+            ctx.fillStyle = '#8395a7';
+            ctx.textAlign = 'center';
+            for (let i = 0; i <= state.trackLength; i++) {
+                const x = i * state.pixelsPerMeter;
+                
+                // Tick mark
+                ctx.beginPath();
+                ctx.moveTo(x, groundY);
+                ctx.lineTo(x, groundY + 12);
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                
+                // Label
+                ctx.fillText(i + 'm', x, groundY + 30);
+            }
+
+            // End walls
+            ctx.fillStyle = '#222f3e';
+            ctx.fillRect(0, groundY - 80, 15, 80);
+            ctx.fillRect(canvas.width - 15, groundY - 80, 15, 80);
+
+            // Draw objects
+            drawCart(state.c1, groundY);
+            drawCart(state.c2, groundY);
+        }
+
+        // Helper to draw standard rounded rectangle path
+        function buildRoundRectPath(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function drawCart(cart, groundY) {
+            const px = cart.x * state.pixelsPerMeter;
+            const pw = cart.w * state.pixelsPerMeter;
+            const ph = 50;
+            const wheelRadius = 10;
+            const py = groundY - ph - (wheelRadius * 2) + 4; // slight embed for wheels
+
+            // Drop shadow
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+            ctx.shadowBlur = 8;
+            ctx.shadowOffsetX = 3;
+            ctx.shadowOffsetY = 5;
+
+            // Main Cart Body
+            ctx.fillStyle = cart.color;
+            if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(px - pw / 2, py, pw, ph, 8);
+                ctx.fill();
+            } else {
+                buildRoundRectPath(px - pw / 2, py, pw, ph, 8);
+                ctx.fill();
+            }
+            
+            // Remove shadow for inner details and vectors
+            ctx.shadowColor = 'transparent';
+            
+            // Subtle body stroke
+            ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Glass/Highlight effect on top half
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.25)';
+            if (ctx.roundRect) {
+                ctx.beginPath();
+                ctx.roundRect(px - pw / 2, py, pw, ph / 2, [8, 8, 0, 0]);
+                ctx.fill();
+            } else {
+                ctx.fillRect(px - pw / 2, py, pw, ph / 2);
+            }
+
+            // Wheels
+            const wheelY = groundY - wheelRadius;
+            const wheelOffset = 20; // from edge
+            
+            ctx.fillStyle = '#222f3e';
+            // Left wheel
+            ctx.beginPath();
+            ctx.arc(px - pw / 2 + wheelOffset, wheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+            // Right wheel
+            ctx.beginPath();
+            ctx.arc(px + pw / 2 - wheelOffset, wheelY, wheelRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Hubcaps
+            ctx.fillStyle = '#c8d6e5';
+            ctx.beginPath();
+            ctx.arc(px - pw / 2 + wheelOffset, wheelY, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(px + pw / 2 - wheelOffset, wheelY, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Mass Label inside cart
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 20px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            // Add subtle text shadow for readability
+            ctx.shadowColor = 'rgba(0,0,0,0.3)';
+            ctx.shadowBlur = 3;
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
+            ctx.fillText(cart.m.toFixed(1) + 'kg', px, py + ph / 2);
+            ctx.shadowColor = 'transparent';
+
+            // Velocity Vector Arrow
+            if (Math.abs(cart.v) > 0.05) {
+                ctx.beginPath();
+                const arrowStart = px;
+                const arrowY = py - 25; // Above the cart
+                const arrowLen = cart.v * 18; // 18px per m/s
+                const arrowEnd = px + arrowLen; 
+                
+                ctx.moveTo(arrowStart, arrowY);
+                ctx.lineTo(arrowEnd, arrowY);
+                ctx.strokeStyle = cart.color;
+                ctx.lineWidth = 4;
+                ctx.lineCap = 'round';
+                ctx.stroke();
+                
+                // Arrowhead
+                ctx.beginPath();
+                ctx.moveTo(arrowEnd, arrowY);
+                const dir = cart.v > 0 ? 1 : -1;
+                ctx.lineTo(arrowEnd - dir * 12, arrowY - 7);
+                ctx.lineTo(arrowEnd - dir * 12, arrowY + 7);
+                ctx.fillStyle = cart.color;
+                ctx.fill();
+
+                // Velocity Text
+                ctx.fillStyle = cart.color;
+                ctx.font = 'bold 14px -apple-system, sans-serif';
+                ctx.textAlign = dir > 0 ? 'left' : 'right';
+                // Move text slightly away from arrowhead
+                ctx.fillText(cart.v.toFixed(1) + ' m/s', arrowEnd + dir * 15, arrowY);
+            }
+        }
+
+        // Run setup when the page is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

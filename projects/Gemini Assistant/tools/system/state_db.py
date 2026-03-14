@@ -72,6 +72,15 @@ def init_db():
         )
     ''')
 
+    # Sessions table to track archived state
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS sessions (
+            session_id TEXT PRIMARY KEY,
+            status TEXT CHECK(status IN ('active', 'archived')) DEFAULT 'active',
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Key-Value state for ephemeral data
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS kv_state (
@@ -142,6 +151,25 @@ def add_task(description, project_name=None, area_name=None, priority=2):
     finally:
         conn.close()
 
+def archive_session(session_id):
+    conn = get_connection()
+    try:
+        conn.execute("INSERT OR REPLACE INTO sessions (session_id, status, updated_at) VALUES (?, 'archived', CURRENT_TIMESTAMP)", (session_id,))
+        conn.commit()
+        return {"status": "success", "message": f"Session '{session_id}' archived."}
+    except Exception as e:
+        return {"error": str(e)}
+    finally:
+        conn.close()
+
+def get_archived_sessions():
+    conn = get_connection()
+    try:
+        rows = conn.execute("SELECT session_id FROM sessions WHERE status = 'archived'").fetchall()
+        return [row['session_id'] for row in rows]
+    finally:
+        conn.close()
+
 def query_state():
     conn = get_connection()
     try:
@@ -190,6 +218,10 @@ if __name__ == "__main__":
     t_parser.add_argument("--area", help="Area name")
     t_parser.add_argument("--priority", type=int, default=2)
 
+    # Archive Session
+    as_parser = subparsers.add_parser("archive-session")
+    as_parser.add_argument("--id", required=True, help="Session ID to archive")
+
     # Query
     subparsers.add_parser("summary")
 
@@ -206,6 +238,8 @@ if __name__ == "__main__":
         print(json.dumps(add_resource(args.title, args.link, args.notes, args.tags), indent=2))
     elif args.command == "add-task":
         print(json.dumps(add_task(args.desc, args.project, args.area, args.priority), indent=2))
+    elif args.command == "archive-session":
+        print(json.dumps(archive_session(args.id), indent=2))
     elif args.command == "summary":
         print(json.dumps(query_state(), indent=2))
     else:

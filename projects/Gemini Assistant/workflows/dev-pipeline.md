@@ -2,64 +2,36 @@
 
 Full development lifecycle for features and bug fixes. Orchestrates specialist agents from design through validation.
 
-## Step 1: Research & Understand
+## Step 1: Backward Design (Phase 1)
 
-1. **Analyze the request** — What exactly needs to change? Is this a new feature, enhancement, or bug fix?
-2. **Explore the codebase** — Find relevant files, understand existing patterns and conventions.
-3. **Reproduction (bugs only)** — Write a test or script that demonstrates the failure. Do not proceed until the bug is confirmed.
+1. **Analyze the request** — Define the end goals (evidence of success) and architectural constraints first.
+2. **Success Criteria Mapping** — Identify what "Pass" looks like before writing code.
+3. **Redesign Loop Detection** — If this is a re-entry from a QA failure, analyze why the initial design failed before starting Step 2.
 
-## Step 1b: Delegation Gate (MANDATORY)
+## Step 2: Delegate/Plan (Phase 2)
 
-Before writing any code yourself, ask: **"Does an agent exist for this?"**
-
-Check `.gemini/agents/` and `references/agent-routing.md`. If ANY part of the task falls within an agent's domain, delegate that part. The EA NEVER writes code inline when the dev-pipeline is invoked — not even for "quick" fixes.
-
-**Anti-patterns to avoid:**
-- "I'll just do this small part myself" → NO. Delegate it.
-- "This is too simple for an agent" → If it's code, delegate it.
-- "I'll fix this one file and then delegate the rest" → Delegate ALL of it.
-
-The EA's role in dev-pipeline is: plan → delegate → review → QA → commit. Nothing else.
-
-## Step 2: Strategy & Design
-
-1. **Draft a plan** — Outline changes across backend, frontend, and tests.
+1. **Task Decomposition** — Decompose into discrete tasks and identify parallel batches (independent tasks).
 2. **Identify agents** — Which specialists are needed? (ui-engineer, backend-engineer, etc.)
 3. **Dependency mapping** — Which changes depend on others? What can run in parallel?
 4. **User review** — Present the plan for confirmation before writing code.
 
-## Step 3: Execution
+## Step 3: Build & QA (Phase 3)
 
 For each component in the plan:
 
-1. **Delegate to the appropriate agent** with a scoped task description.
-2. **Parallel dispatch** — If tasks are independent (e.g., frontend + backend), invoke both agents in the same turn.
-3. **Self-correction** — If a build or test fails, the agent must:
+1. **Delegate (Build)** — Dispatch sub-agents in YOLO mode. Use native parallel dispatch for independent tasks by emitting contiguous tool calls in a single turn.
+2. **Hard Gate Verification** — Every build must be followed by an automated verification (linters/tests) and a `qa-engineer` audit.
+3. **Self-Correction (Redesign Loop)** — If a build or test fails, the agent must:
    - Research the error
    - Apply one fix
-   - Retry
-   - Max 3 correction loops, then escalate to the user
+   - Retry (Max 3 correction loops)
+   - If failures persist, escalate to Step 1 (Backward Design) to re-evaluate the strategy.
 
-## Step 4: Quality Audit
+## Step 4: Deploy & Complete (Phase 4)
 
-1. **Invoke qa-engineer** with the list of changes and the original requirements.
-2. QA runs tests, checks security, accessibility, and spec compliance.
-3. If QA rejects, route findings back to the responsible engineering agent with fix directions.
-4. Re-run QA after fixes. Max 2 QA cycles before escalating.
-
-## Step 5: Final Validation
-
-1. **Run full test suite** — All relevant tests must pass.
-2. **Run linting/type checking** — No new violations.
-3. **Documentation** — Update relevant docs if the change affects APIs, configuration, or user-facing behavior.
-
-## Step 6: Handoff
-
-Present the result to the user:
-```
-## Implementation Complete
-...
-```
+1. **Final Validation** — Run full project-wide test suite and build.
+2. **Handoff** — Present the result to the user.
+3. **Session Archival** — Finalize the `session-log.md` and log the action.
 
 **7. Log Action** — Record the final project outcome (success/fail) to the local database:
 ```bash

@@ -13,3 +13,8 @@
 - [Communication preferences - No Slack](communication-preferences.md) (user)
 - [GEMINI_SESSION_ID for session-aware logging](gemini-session-id-logging.md) (project)
 - [UI connection timeouts from large shell outputs](ui-connection-timeouts.md) (feedback)
+- [QA Audit Mandatory](qa-audit-mandatory.md) (feedback)
+- [Workflow terminology preference (Backward Design)](workflow-terminology-preference.md) (feedback)
+- [Session archiving logic](session-archiving-logic.md) (project)
+- [Gemini CLI session file naming](gemini-session-file-naming.md) (project)
+- [Gemini CLI session deletion](gemini-cli-session-deletion.md) (project)

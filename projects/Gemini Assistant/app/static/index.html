@@ -241,7 +241,7 @@
       cursor: pointer;
       font-size: 0.85rem;
       color: var(--text-secondary);
-      transition: all 0.2s;
+      transition: background 0.15s, color 0.15s;
     }
 
     .sidebar-item:hover { background: var(--bg-hover); color: var(--text-primary); }
@@ -254,7 +254,8 @@
     }
 
     .sidebar-item .delete-btn {
-      display: none;
+      opacity: 0;
+      visibility: hidden;
       background: none;
       border: none;
       color: var(--text-muted);
@@ -262,12 +263,12 @@
       padding: 4px;
       border-radius: 4px;
       margin-left: auto;
-      transition: all 0.2s;
+      transition: opacity 0.15s, visibility 0.15s, background 0.15s, color 0.15s;
     }
-    .sidebar-item:hover .delete-btn { display: block; }
+    .sidebar-item:hover .delete-btn { opacity: 1; visibility: visible; }
     .sidebar-item .delete-btn:hover { background: var(--error); color: #fff; }
-    .sidebar-item .meta { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); }
-    .sidebar-item:hover .meta { display: none; }
+    .sidebar-item .meta { margin-left: auto; font-size: 0.75rem; color: var(--text-muted); transition: opacity 0.15s; }
+    .sidebar-item:hover .meta { opacity: 0; pointer-events: none; }
     .sidebar-item .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 
     .sidebar-footer {
@@ -317,14 +318,39 @@
     [data-lucide="message-square"] { color: var(--accent); }
     [data-lucide="trash-2"] { color: var(--text-muted); }
     .sidebar-item:hover [data-lucide="trash-2"] { color: var(--error); }
+    [data-lucide="archive"] { color: var(--text-muted); }
+    .sidebar-item:hover [data-lucide="archive"] { color: var(--accent); }
     [data-lucide="folder"], [data-lucide="folder-open"] { color: var(--accent); opacity: 0.8; }
     [data-lucide="terminal"] { color: #a6e3a1; }
     [data-lucide="file-code"], [data-lucide="file-code-2"] { color: #89b4fa; }
     [data-lucide="settings"] { color: #f9e2af; }
     [data-lucide="image"] { color: #fab387; }
 
-    /* Indent for file tree */
-    .file-item { padding-left: calc(12px + var(--depth, 0) * 16px); }
+    /* Indent for file tree — compact like VS Code */
+    .file-item {
+      padding-left: calc(8px + var(--depth, 0) * 14px);
+      gap: 6px;
+      padding-top: 4px;
+      padding-bottom: 4px;
+      padding-right: 8px;
+      margin: 1px 6px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+    }
+    .file-item .lucide { width: 14px; height: 14px; }
+
+    /* Git status indicators */
+    .file-item.git-modified .label { color: #f9e2af; }
+    .file-item.git-added .label { color: #a6e3a1; }
+    .file-item.git-deleted .label { color: #f38ba8; text-decoration: line-through; }
+    .file-item.git-has-changes .label { color: #f9e2af; }
+    .file-item.git-has-changes .label::after { content: ' \2022'; color: #f9e2af; }
+
+    [data-theme="light"] .file-item.git-modified .label { color: #b45309; }
+    [data-theme="light"] .file-item.git-added .label { color: #16a34a; }
+    [data-theme="light"] .file-item.git-deleted .label { color: #dc2626; }
+    [data-theme="light"] .file-item.git-has-changes .label { color: #b45309; }
+    [data-theme="light"] .file-item.git-has-changes .label::after { color: #b45309; }
 
     /* ===== WORKSPACE ===== */
     .workspace { flex: 1; display: flex; flex-direction: column; min-width: 0; background: transparent; }
@@ -524,7 +550,8 @@
 
     .input-wrapper {
       display: flex;
-      gap: 12px;
+      flex-wrap: wrap;
+      gap: 0 12px;
       background: var(--bg-input);
       backdrop-filter: var(--blur);
       border: 1px solid var(--border);
@@ -533,6 +560,36 @@
       box-shadow: var(--shadow-lg);
       transition: border-color 0.2s, box-shadow 0.2s;
     }
+
+    .input-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 2px 0 0;
+      font-size: 0.75rem;
+      order: 10; /* push to bottom row */
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      color: var(--text-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      font-size: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      user-select: none;
+    }
+    .mode-toggle:hover { background: var(--bg-hover); color: var(--text-primary); border-color: var(--border); }
+    .mode-toggle.active { color: var(--accent); }
+    .mode-toggle .chevron { font-size: 0.7rem; opacity: 0.5; }
+    .mode-toggle .lucide { width: 12px; height: 12px; }
 
     .input-wrapper:focus-within {
       border-color: var(--accent);
@@ -708,6 +765,11 @@
       to { transform: scale(1); opacity: 1; }
     }
 
+    @keyframes settingsFadeIn {
+      from { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
     .modal h2 { margin-bottom: 16px; font-size: 1.25rem; font-weight: 600; }
     .modal p { color: var(--text-secondary); margin-bottom: 20px; line-height: 1.6; font-size: 0.95rem; }
 
@@ -796,11 +858,37 @@
     .thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
     .thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
     .thinking-dots span:nth-child(3) { animation-delay: 0s; }
+    .thinking-status { font-size: 0.78rem; color: var(--text-muted); opacity: 0.7; }
+    .thinking-elapsed { font-size: 0.72rem; color: var(--text-muted); opacity: 0.5; margin-left: auto; font-family: 'JetBrains Mono', monospace; }
 
     @keyframes bounce {
       0%, 80%, 100% { transform: scale(0); }
       40% { transform: scale(1.0); }
     }
+
+    /* Activity feed — real-time status below thinking indicator */
+    .activity-feed {
+      align-self: flex-start;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      padding: 4px 20px 8px;
+      font-family: 'JetBrains Mono', monospace;
+      max-height: 120px;
+      overflow-y: auto;
+      width: 100%;
+    }
+    .activity-feed .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 2px 0;
+      opacity: 0.6;
+      transition: opacity 0.3s;
+    }
+    .activity-feed .activity-item:last-child { opacity: 1; }
+    .activity-feed .activity-icon { color: var(--accent); font-size: 0.7rem; }
+    .activity-feed .activity-icon.done { color: var(--success); }
+    .activity-feed .activity-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
     /* ===== CHAT ATTACHMENTS ===== */
     .attachments {
@@ -1052,7 +1140,7 @@
       border-radius: var(--radius);
       box-shadow: 0 20px 50px rgba(0,0,0,0.5);
       z-index: 1000;
-      animation: modalFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      animation: settingsFadeIn 0.2s ease-out;
       overflow: hidden;
     }
     .settings-panel.open { display: block; }
@@ -1111,8 +1199,8 @@
 
     /* ===== TOUCH DEVICE OVERRIDES ===== */
     @media (hover: none) {
-      .sidebar-item .delete-btn { display: block; opacity: 0.5; }
-      .sidebar-item .meta { display: none; }
+      .sidebar-item .delete-btn { opacity: 0.5; visibility: visible; }
+      .sidebar-item .meta { opacity: 0; pointer-events: none; }
       .message .message-actions { display: flex; opacity: 0.6; }
       .message .message-actions:active { opacity: 1; }
     }
@@ -1289,7 +1377,7 @@
           <div class="actions">
             <button onclick="event.stopPropagation(); createNewTab()" title="New chat"><i data-lucide="plus"></i></button>
             <button onclick="event.stopPropagation(); loadSessions()" title="Refresh"><i data-lucide="refresh-cw"></i></button>
-            <button onclick="event.stopPropagation(); clearAllSessions()" title="Delete all sessions"><i data-lucide="trash-2"></i></button>
+            <button onclick="event.stopPropagation(); archiveAllSessions()" title="Archive all sessions"><i data-lucide="trash-2"></i></button>
           </div>
         </div>
         <div class="sidebar-filters" id="tagFilters">
@@ -1312,7 +1400,7 @@
         <div class="sidebar-header" onclick="toggleSection(this)">
           <span>Files</span>
           <div class="actions">
-            <button onclick="event.stopPropagation(); loadFiles('')" title="Refresh"><i data-lucide="refresh-cw"></i></button>
+            <button onclick="event.stopPropagation(); loadFiles(''); loadGitStatus()" title="Refresh"><i data-lucide="refresh-cw"></i></button>
           </div>
         </div>
         <div class="file-search-container">
@@ -1349,9 +1437,6 @@
       <div class="input-area">
         <div class="attachment-bar" id="attachmentBar"></div>
         <div class="input-wrapper">
-          <div class="input-actions">
-            <button onclick="document.getElementById('fileInput').click()" title="Attach file (Ctrl+U)"><i data-lucide="paperclip"></i></button>
-          </div>
           <textarea
             id="messageInput"
             placeholder="Type a message..."
@@ -1365,6 +1450,16 @@
           <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">
             <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
+          <div class="input-toolbar">
+            <button class="mode-toggle" id="modeToggle" onclick="toggleApprovalMode()" title="Toggle approval mode (Yolo = auto-execute tools, Plan = read-only)">
+              <span class="chevron">&raquo;</span>
+              <span id="modeLabel">Auto-approve all</span>
+            </button>
+            <span style="flex:1"></span>
+            <button class="mode-toggle" onclick="document.getElementById('fileInput').click()" title="Attach file (Ctrl+U)">
+              <i data-lucide="paperclip"></i>
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -1464,6 +1559,7 @@
     let activeTabId = null;
     let pendingAttachments = []; // { filename, path, dataUrl? }
     let expandedDirs = new Set();
+    let gitStatus = { modified: [], added: [], deleted: [] };
     let uploadCount = 0; // Track in-progress uploads
 
     // Safe localStorage wrappers (handles disabled/quota errors)
@@ -1474,7 +1570,7 @@
       try { localStorage.setItem(key, value); } catch {}
     }
     function safeJsonParse(str, fallback) {
-      try { return JSON.parse(str); } catch { return fallback; }
+      try { const v = JSON.parse(str); return v != null ? v : fallback; } catch { return fallback; }
     }
 
     // Derived convenience — true if any tab is streaming
@@ -1529,12 +1625,14 @@
       createNewTab();
       loadSessions();
       loadFiles('');
+      loadGitStatus();
       loadTokenUsage();
       // Sync settings UI
       document.getElementById('settingApprovalMode').value = settings.approvalMode;
       document.getElementById('settingModel').value = settings.model;
       document.getElementById('settingNotifications').value = settings.notifications;
       updateModelBadge();
+      updateModeToggle();
       lucide.createIcons();
     }
 
@@ -1576,15 +1674,50 @@
       // Save current chat content to the old tab
       if (activeTabId) {
         const current = tabs.find(t => t.id === activeTabId);
-        if (current) current._html = chatContainer.innerHTML;
+        if (current) {
+          current._html = chatContainer.innerHTML;
+          // If this tab is still streaming, create offscreen container so the stream can continue writing
+          if (current.isWaiting) {
+            current._offscreen = document.createElement('div');
+            current._offscreen.innerHTML = current._html;
+            // Re-bind assistantEl to the offscreen copy
+            if (current.assistantEl) {
+              const msgs = current._offscreen.querySelectorAll('.message.assistant');
+              if (msgs.length) current.assistantEl = msgs[msgs.length - 1];
+            }
+            // Re-bind tool call elements to offscreen copies
+            if (current.toolCallElements) {
+              for (const [toolId] of Object.entries(current.toolCallElements)) {
+                const el = current._offscreen.querySelector(`#tool-${CSS.escape(toolId)}`);
+                if (el) current.toolCallElements[toolId] = el;
+              }
+            }
+          }
+        }
       }
 
       activeTabId = tabId;
       const tab = tabs.find(t => t.id === tabId);
       if (!tab) return;
 
-      // Restore chat content
-      if (tab._html) {
+      // Restore chat content — prefer offscreen container if it exists (streaming tab was backgrounded)
+      if (tab._offscreen) {
+        chatContainer.innerHTML = tab._offscreen.innerHTML;
+        // Re-bind assistantEl to live DOM if still streaming
+        if (tab.isWaiting && tab.assistantEl) {
+          const msgs = chatContainer.querySelectorAll('.message.assistant');
+          if (msgs.length) tab.assistantEl = msgs[msgs.length - 1];
+        }
+        // Re-bind tool call elements to live DOM
+        if (tab.toolCallElements) {
+          for (const [toolId] of Object.entries(tab.toolCallElements)) {
+            const el = chatContainer.querySelector(`#tool-${CSS.escape(toolId)}`);
+            if (el) tab.toolCallElements[toolId] = el;
+          }
+        }
+        tab._offscreen = null;
+        tab._html = null;
+      } else if (tab._html) {
         chatContainer.innerHTML = tab._html;
       } else if (tab.messages.length > 0) {
         chatContainer.innerHTML = '';
@@ -1698,13 +1831,31 @@
 
     function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
 
+    // ===== TAB-AWARE DOM CONTAINER =====
+    // Returns the correct container for DOM writes: chatContainer if tab is active, offscreen div if backgrounded.
+    function getTabContainer(tab) {
+      if (!tab) return chatContainer;
+      if (tab.id === activeTabId) return chatContainer;
+      // Background tab — use an offscreen container so streaming doesn't spill into the visible tab
+      if (!tab._offscreen) {
+        tab._offscreen = document.createElement('div');
+        tab._offscreen.innerHTML = tab._html || '';
+      }
+      return tab._offscreen;
+    }
+
+    function isTabVisible(tab) {
+      return !tab || tab.id === activeTabId;
+    }
+
     // ===== SESSIONS =====
     async function loadSessions() {
       try {
         const res = await fetch('/api/sessions');
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         const list = document.getElementById('sessionList');
-        if (data.sessions.length === 0) {
+        if (!data.sessions || data.sessions.length === 0) {
           list.innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">No previous sessions</div>';
           return;
         }
@@ -1717,6 +1868,7 @@
           const div = document.createElement('div');
           div.className = 'sidebar-item';
           div.dataset.sessionId = s.session_id;
+          div.dataset.sessionIndex = s.index;
           div.onclick = () => resumeSession(s.session_id, s.preview);
 
           const tagHtml = tag
@@ -1728,13 +1880,14 @@
             <span class="label">${escapeHtml(s.preview)}</span>
             ${tagHtml}
             <span class="meta">${s.time_ago}</span>
-            <button class="delete-btn" data-action="delete-session" title="Delete"><i data-lucide="trash-2"></i></button>
+            <button class="delete-btn" data-action="archive-session" title="Archive (Shift+click to keep permanently)"><i data-lucide="archive"></i></button>
           `;
           list.appendChild(div);
         }
         highlightActiveSession();
         createIconsIn(list);
-      } catch {
+      } catch (err) {
+        console.error('loadSessions failed:', err);
         document.getElementById('sessionList').innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">Failed to load</div>';
       }
     }
@@ -1789,24 +1942,61 @@
       return div;
     }
 
-    async function deleteSession(sessionId) {
-      if (!confirm('Delete this session?')) return;
-      await fetch(`/api/sessions/${sessionId}`, { method: 'DELETE' });
-      loadSessions();
+    function archiveSession(sessionId, permanent = false) {
+      const item = document.querySelector(`[data-session-id="${CSS.escape(sessionId)}"]`);
+      const index = item ? item.dataset.sessionIndex : null;
+      
+      // Optimistic removal from UI
+      if (item) {
+        if (permanent) {
+          item.style.background = 'var(--accent-dim)';
+        }
+        item.style.transition = 'opacity 0.15s, transform 0.15s';
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+        setTimeout(() => item.remove(), 150);
+      }
+      // Detach from any open tab
+      const tab = tabs.find(t => t.sessionId === sessionId);
+      if (tab) {
+        tab.sessionId = null;
+      }
+      // Background API call
+      let endpoint = permanent
+        ? `/api/sessions/${sessionId}/archive`
+        : `/api/sessions/${sessionId}`;
+      if (!permanent && index) {
+        endpoint += `?index=${index}`;
+      }
+      const method = permanent ? 'POST' : 'DELETE';
+      fetch(endpoint, { method }).catch(() => {
+        loadSessions(); // Restore on failure
+      });
     }
 
-    async function clearAllSessions() {
-      if (!confirm('Are you sure you want to delete ALL chat sessions? This cannot be undone.')) return;
-      try {
-        const res = await fetch('/api/sessions');
-        const data = await res.json();
-        await Promise.allSettled(
-          data.sessions.map(s => fetch(`/api/sessions/${s.session_id}`, { method: 'DELETE' }))
+    function archiveAllSessions() {
+      const items = document.querySelectorAll('#sessionList .sidebar-item');
+      if (items.length === 0) return;
+      // Optimistic removal
+      items.forEach((item, i) => {
+        item.style.transition = `opacity 0.15s ${i * 30}ms, transform 0.15s ${i * 30}ms`;
+        item.style.opacity = '0';
+        item.style.transform = 'translateX(-20px)';
+      });
+      setTimeout(() => {
+        document.getElementById('sessionList').innerHTML =
+          '<div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">No previous sessions</div>';
+      }, 150 + items.length * 30);
+      // Background API calls
+      fetch('/api/sessions').then(r => r.json()).then(data => {
+        // Reverse order to keep indices stable while deleting
+        const sorted = [...data.sessions].sort((a, b) => parseInt(b.index) - parseInt(a.index));
+        Promise.allSettled(
+          sorted.map(s => fetch(`/api/sessions/${s.session_id}?index=${s.index}`, { method: 'DELETE' }))
         );
-        loadSessions();
-      } catch (e) {
-        console.error('Failed to clear sessions:', e);
-      }
+      }).catch(() => loadSessions());
+      // Detach all tabs
+      tabs.forEach(t => { t.sessionId = null; });
     }
 
     // Event delegation for session list
@@ -1820,9 +2010,9 @@
       if (actionEl.dataset.action === 'tag-picker') {
         e.stopPropagation();
         toggleTagPicker(sessionId, e);
-      } else if (actionEl.dataset.action === 'delete-session') {
+      } else if (actionEl.dataset.action === 'archive-session') {
         e.stopPropagation();
-        deleteSession(sessionId);
+        archiveSession(sessionId, e.shiftKey);
       }
     });
 
@@ -1917,6 +2107,35 @@
         }
       }
       createIconsIn(container);
+      applyGitStatus();
+    }
+
+    async function loadGitStatus() {
+      try {
+        const res = await fetch('/api/files/git-status');
+        gitStatus = await res.json();
+        applyGitStatus();
+      } catch {}
+    }
+
+    function applyGitStatus() {
+      const changedDirs = new Set();
+      const allChanged = [...gitStatus.modified, ...gitStatus.added, ...gitStatus.deleted];
+      for (const filepath of allChanged) {
+        const parts = filepath.split('/');
+        for (let i = 1; i < parts.length; i++) {
+          changedDirs.add(parts.slice(0, i).join('/'));
+        }
+      }
+      document.querySelectorAll('.file-item').forEach(el => {
+        const path = el.dataset.filePath;
+        if (!path) return;
+        el.classList.remove('git-modified', 'git-added', 'git-deleted', 'git-has-changes');
+        if (gitStatus.modified.includes(path)) el.classList.add('git-modified');
+        else if (gitStatus.added.includes(path)) el.classList.add('git-added');
+        else if (gitStatus.deleted.includes(path)) el.classList.add('git-deleted');
+        else if (changedDirs.has(path)) el.classList.add('git-has-changes');
+      });
     }
 
     function getFileIcon(name) {
@@ -2111,7 +2330,7 @@
       if (!tab) return;
       if ((!text && pendingAttachments.length === 0) || tab.isWaiting) return;
 
-      // Remove welcome
+      // Remove welcome (tab is always active at this point — sendMessage is user-initiated)
       const welcome = chatContainer.querySelector('.welcome');
       if (welcome) welcome.remove();
 
@@ -2123,8 +2342,8 @@
         fullMessage = `[Attached files: ${refs}]\n\n${text}`;
       }
 
-      // Show user message
-      const userEl = addMessage(text || '(attached files)', 'user');
+      // Show user message (tab is active here, but pass it for consistency)
+      const userEl = addMessage(text || '(attached files)', 'user', tab);
       if (attachments.length > 0) {
         const attDiv = document.createElement('div');
         attDiv.className = 'attachments';
@@ -2174,8 +2393,18 @@
       statusDot.className = 'status-dot loading';
       statusDot.setAttribute('aria-label', 'Processing');
 
-      const thinkingEl = addThinking();
+      const thinkingEl = addThinking(tab);
       let thinkingRemoved = false;
+      function removeThinking() {
+        if (thinkingRemoved) return;
+        cleanupThinking(thinkingEl);
+        thinkingEl.remove();
+        // Also remove from tab container (may differ from thinkingEl's parent after tab switch)
+        const tc = getTabContainer(tab);
+        const stale = tc.querySelector('.thinking-wrapper');
+        if (stale) { cleanupThinking(stale); stale.remove(); }
+        thinkingRemoved = true;
+      }
 
       try {
         const res = await fetch('/api/chat', {
@@ -2191,9 +2420,9 @@
         });
 
         if (!res.ok) {
-          if (!thinkingRemoved) thinkingEl.remove();
+          removeThinking();
           const err = await res.json().catch(() => ({ detail: 'Connection failed' }));
-          addMessage(`Error: ${err.detail || 'Something went wrong'}`, 'system');
+          addMessage(`Error: ${err.detail || 'Something went wrong'}`, 'system', tab);
           return;
         }
 
@@ -2221,18 +2450,32 @@
             if (event.type === 'init' && event.session_id) {
               tab.sessionId = event.session_id;
               highlightActiveSession();
+              if (!thinkingRemoved) {
+                updateThinkingStatus(thinkingEl, 'Connected — processing request...');
+              }
             }
 
-            if (!thinkingRemoved && (event.type === 'tool_use' || (event.type === 'message' && event.role === 'assistant'))) {
-              thinkingEl.remove();
-              thinkingRemoved = true;
+            // Remove thinking only on first assistant message (not tool_use — keep status visible during tool work)
+            if (!thinkingRemoved && event.type === 'message' && event.role === 'assistant') {
+              removeThinking();
             }
 
             switch (event.type) {
               case 'tool_use':
+                // Update thinking status with tool name
+                if (!thinkingRemoved) {
+                  updateThinkingStatus(thinkingEl, `Running ${event.tool_name}...`);
+                }
                 addToolUse(event, tab);
                 break;
               case 'tool_result':
+                // Mark tool as done in thinking feed
+                if (!thinkingRemoved) {
+                  const toolName = tab.toolCallElements[event.tool_id]
+                    ? tab.toolCallElements[event.tool_id].querySelector('.tool-call-name')?.textContent || 'tool'
+                    : 'tool';
+                  updateThinkingStatus(thinkingEl, `${toolName} ${event.status === 'success' ? 'completed' : 'failed'}`, event.status === 'success' ? 'done' : 'running');
+                }
                 updateToolResult(event, tab);
                 break;
               case 'message':
@@ -2240,20 +2483,21 @@
                   if (event.delta) {
                     tab.assistantText += event.content;
                     if (!tab.assistantEl) {
-                      tab.assistantEl = addMessage('', 'assistant');
+                      tab.assistantEl = addMessage('', 'assistant', tab);
                     }
                     tab.assistantEl.innerHTML = renderMarkdown(tab.assistantText);
-                    scrollToBottom();
+                    if (isTabVisible(tab)) scrollToBottom();
                   } else {
                     // Fix 3: Non-delta full messages saved to state
                     tab.messages.push({ role: 'assistant', content: event.content });
-                    const el = addMessage(event.content, 'assistant');
+                    const el = addMessage(event.content, 'assistant', tab);
                     addMessageActions(el, event.content);
                   }
                 }
                 break;
               case 'result':
                 if (event.stats) {
+                  const container = getTabContainer(tab);
                   const parts = [];
                   if (event.stats.duration_ms) parts.push(`${(event.stats.duration_ms / 1000).toFixed(1)}s`);
                   if (event.stats.total_tokens) parts.push(`${event.stats.total_tokens.toLocaleString()} tokens`);
@@ -2262,14 +2506,14 @@
                     const el = document.createElement('div');
                     el.className = 'stats-bar';
                     el.textContent = parts.join(' \u00b7 ');
-                    chatContainer.appendChild(el);
-                    scrollToBottom();
+                    container.appendChild(el);
+                    if (isTabVisible(tab)) scrollToBottom();
                   }
                 }
                 break;
               case 'error':
-                if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
-                addMessage(`Error: ${event.message}`, 'system');
+                removeThinking();
+                addMessage(`Error: ${event.message}`, 'system', tab);
                 break;
             }
           }
@@ -2287,18 +2531,18 @@
             if (event.type === 'message' && event.role === 'assistant') {
               if (event.delta) {
                 tab.assistantText += event.content;
-                if (!tab.assistantEl) tab.assistantEl = addMessage('', 'assistant');
+                if (!tab.assistantEl) tab.assistantEl = addMessage('', 'assistant', tab);
                 tab.assistantEl.innerHTML = renderMarkdown(tab.assistantText);
               } else {
                 tab.messages.push({ role: 'assistant', content: event.content });
-                const el = addMessage(event.content, 'assistant');
+                const el = addMessage(event.content, 'assistant', tab);
                 addMessageActions(el, event.content);
               }
             }
           }
         }
 
-        if (!thinkingRemoved) thinkingEl.remove();
+        removeThinking();
         if (tab.assistantText) {
           tab.messages.push({ role: 'assistant', content: tab.assistantText });
           if (tab.assistantEl) addMessageActions(tab.assistantEl, tab.assistantText);
@@ -2308,21 +2552,26 @@
 
       } catch (e) {
         if (e.name === 'AbortError') {
-          // Fix 6: Remove thinking indicator on AbortError
-          if (!thinkingRemoved) { thinkingEl.remove(); thinkingRemoved = true; }
-          addMessage('Generation stopped.', 'system');
+          removeThinking();
+          addMessage('Generation stopped.', 'system', tab);
         } else {
-          if (!thinkingRemoved) thinkingEl.remove();
+          removeThinking();
           if (tab.assistantText) {
             tab.messages.push({ role: 'assistant', content: tab.assistantText });
           }
-          addMessage('Connection lost. Partial response preserved above.', 'system');
+          addMessage('Connection lost. Partial response preserved above.', 'system', tab);
         }
       } finally {
         // Use captured `tab` reference, NOT getActiveTab()
         tab.isWaiting = false;
         tab.abortController = null;
         tab.assistantEl = null;
+
+        // If the stream finished while this tab was backgrounded, sync _html from offscreen and discard
+        if (tab._offscreen) {
+          tab._html = tab._offscreen.innerHTML;
+          tab._offscreen = null;
+        }
 
         // Only update UI chrome if no other tab is still streaming
         if (!getIsWaiting()) {
@@ -2349,11 +2598,12 @@
 
     // ===== TOOL CALLS =====
     function addToolUse(event, tab) {
-      let wrapper = chatContainer.querySelector('.tool-calls:last-child');
+      const container = getTabContainer(tab);
+      let wrapper = container.querySelector('.tool-calls:last-child');
       if (!wrapper || wrapper.nextElementSibling) {
         wrapper = document.createElement('div');
         wrapper.className = 'tool-calls';
-        chatContainer.appendChild(wrapper);
+        container.appendChild(wrapper);
       }
       const argsPreview = Object.entries(event.parameters || {})
         .map(([k, v]) => {
@@ -2379,7 +2629,7 @@
       wrapper.appendChild(div);
       if (tab) tab.toolCallElements[event.tool_id] = div;
       createIconsIn(div);
-      scrollToBottom();
+      if (isTabVisible(tab)) scrollToBottom();
     }
 
     function updateToolResult(event, tab) {
@@ -2428,8 +2678,9 @@
     }
 
     // ===== MESSAGE RENDERING =====
-    function addMessage(text, role) {
-      const tab = getActiveTab();
+    function addMessage(text, role, targetTab = null) {
+      const tab = targetTab || getActiveTab();
+      const container = getTabContainer(tab);
       const div = document.createElement('div');
       div.className = `message ${role}`;
       if (tab) div.dataset.msgIndex = tab.messages.length;
@@ -2438,10 +2689,10 @@
       } else {
         div.textContent = text;
       }
-      chatContainer.appendChild(div);
+      container.appendChild(div);
 
       createIconsIn(div);
-      scrollToBottom();
+      if (isTabVisible(tab)) scrollToBottom();
       return div;
     }
 
@@ -2518,13 +2769,73 @@
       sendMessage(lastUserText);
     }
 
-    function addThinking() {
+    function addThinking(targetTab = null) {
+      const tab = targetTab || getActiveTab();
+      const container = getTabContainer(tab);
+
+      // Wrapper holds both the thinking bar and the activity feed
+      const wrapper = document.createElement('div');
+      wrapper.className = 'thinking-wrapper';
+
       const div = document.createElement('div');
       div.className = 'thinking';
-      div.innerHTML = '<div class="thinking-dots"><span></span><span></span><span></span></div><span>Thinking...</span>';
-      chatContainer.appendChild(div);
-      scrollToBottom();
-      return div;
+      div.innerHTML = `
+        <div class="thinking-dots"><span></span><span></span><span></span></div>
+        <span class="thinking-label">Thinking...</span>
+        <span class="thinking-elapsed"></span>
+      `;
+      wrapper.appendChild(div);
+
+      // Activity feed for real-time status
+      const feed = document.createElement('div');
+      feed.className = 'activity-feed';
+      wrapper.appendChild(feed);
+
+      container.appendChild(wrapper);
+
+      // Elapsed timer
+      const startTime = Date.now();
+      const elapsedEl = div.querySelector('.thinking-elapsed');
+      const labelEl = div.querySelector('.thinking-label');
+      const timer = setInterval(() => {
+        const secs = Math.floor((Date.now() - startTime) / 1000);
+        if (secs < 60) elapsedEl.textContent = `${secs}s`;
+        else elapsedEl.textContent = `${Math.floor(secs / 60)}m ${secs % 60}s`;
+      }, 1000);
+
+      // Attach methods to the wrapper for updating status
+      wrapper._timer = timer;
+      wrapper._feed = feed;
+      wrapper._label = labelEl;
+
+      if (isTabVisible(tab)) scrollToBottom();
+      return wrapper;
+    }
+
+    function updateThinkingStatus(thinkingEl, text, icon = 'running') {
+      if (!thinkingEl || !thinkingEl._feed) return;
+      const feed = thinkingEl._feed;
+      const label = thinkingEl._label;
+
+      // Update the main label
+      if (label) label.textContent = text;
+
+      // Add to activity feed
+      const item = document.createElement('div');
+      item.className = 'activity-item';
+      const iconClass = icon === 'done' ? 'activity-icon done' : 'activity-icon';
+      const iconChar = icon === 'done' ? '✓' : '›';
+      item.innerHTML = `<span class="${iconClass}">${iconChar}</span><span class="activity-text">${escapeHtml(text)}</span>`;
+      feed.appendChild(item);
+
+      // Keep feed trimmed to last 8 items
+      while (feed.children.length > 8) feed.removeChild(feed.firstChild);
+
+      feed.scrollTop = feed.scrollHeight;
+    }
+
+    function cleanupThinking(thinkingEl) {
+      if (thinkingEl && thinkingEl._timer) clearInterval(thinkingEl._timer);
     }
 
     // ===== MARKDOWN & HIGHLIGHTING =====
@@ -2683,6 +2994,25 @@
     function saveSetting(key, value) {
       settings[key] = value;
       safeSet(`ea-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
+      if (key === 'approvalMode') updateModeToggle();
+    }
+
+    function toggleApprovalMode() {
+      const next = settings.approvalMode === 'yolo' ? 'plan' : 'yolo';
+      saveSetting('approvalMode', next);
+      document.getElementById('settingApprovalMode').value = next;
+    }
+
+    function updateModeToggle() {
+      const label = document.getElementById('modeLabel');
+      const toggle = document.getElementById('modeToggle');
+      if (settings.approvalMode === 'yolo') {
+        label.textContent = 'Auto-approve all';
+        toggle.classList.remove('active');
+      } else {
+        label.textContent = 'Plan (read-only)';
+        toggle.classList.add('active');
+      }
     }
 
     // ===== IMAGE LIGHTBOX =====

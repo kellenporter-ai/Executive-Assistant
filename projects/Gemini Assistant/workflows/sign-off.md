@@ -27,14 +27,15 @@ git log --oneline @{upstream}..HEAD
 
 Ask the user if they want to push. Never force-push without explicit permission.
 
-## Step 3: Update Priorities
+## Step 3: Update Priorities & Session State
 
 Read `context/current_priorities.md`. Based on the session's work:
 - Are any priorities now complete?
 - Should any new priorities be added?
 - Has priority ordering changed?
+- **Should this session be archived?** (If the task is complete and doesn't need to be referenced in future sign-ons)
 
-Present proposed updates for user confirmation before writing.
+Present proposed updates and session status (Archive vs. Keep) for user confirmation before writing.
 
 ## Step 4: Consolidate Memory
 
@@ -62,6 +63,7 @@ Present a brief summary:
 **Committed:** [yes/no — commit hashes if yes]
 **Pushed:** [yes/no]
 **Priorities Updated:** [yes/no]
+**Session Archived:** [yes/no]
 **Memories Saved:** [count and brief descriptions]
 
 **Open Items:**

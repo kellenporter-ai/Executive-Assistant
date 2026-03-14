@@ -1,9 +1,24 @@
 import json
 import os
+import sqlite3
 from pathlib import Path
 from datetime import datetime, timedelta
 
 LOG_FILE = Path("memory/operational_logs.jsonl")
+DB_PATH = Path("memory/state.db")
+
+def get_archived_sessions():
+    """Returns a list of archived session IDs from the state database."""
+    if not DB_PATH.exists():
+        return []
+    try:
+        conn = sqlite3.connect(DB_PATH)
+        conn.row_factory = sqlite3.Row
+        rows = conn.execute("SELECT session_id FROM sessions WHERE status = 'archived'").fetchall()
+        conn.close()
+        return [row['session_id'] for row in rows]
+    except Exception:
+        return []
 
 def get_recent_logs(hours=24, session_id=None, show_all=False):
     """Retrieves and summarizes logs from the last N hours."""
@@ -14,6 +29,7 @@ def get_recent_logs(hours=24, session_id=None, show_all=False):
     if not session_id and not show_all:
         session_id = os.environ.get("GEMINI_SESSION_ID")
 
+    archived_sessions = get_archived_sessions()
     cutoff = datetime.utcnow() - timedelta(hours=hours)
     recent_entries = []
 
@@ -21,6 +37,11 @@ def get_recent_logs(hours=24, session_id=None, show_all=False):
         with open(LOG_FILE, "r", encoding="utf-8") as f:
             for line in f:
                 entry = json.loads(line)
+                
+                # Filter out archived sessions unless specifically requested
+                if entry.get("session_id") in archived_sessions and not show_all:
+                    continue
+
                 # Parse timestamp: 2026-03-13T17:15:00Z -> remove Z for fromisoformat
                 ts_str = entry["timestamp"].replace("Z", "")
                 ts = datetime.fromisoformat(ts_str)
