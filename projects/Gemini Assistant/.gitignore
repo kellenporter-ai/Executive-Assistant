@@ -1,7 +1,9 @@
-# temp/
-!temp/
+# Temp outputs — keep directory structure, ignore contents
+temp/**
+!temp/.gitkeep
 !temp/attachments/
-!temp/attachments/*
+temp/attachments/*
+!temp/attachments/.gitkeep
 *.pyc
 __pycache__/
 .env
@@ -13,3 +15,12 @@ app/.auth/
 state.db
 operational_logs.jsonl
 .directory
+
+# Credentials — NEVER commit these
+credentials.json
+token.json
+token_gmail.json
+token_calendar.json
+service-account*.json
+client-secret*.json
+*.key.json

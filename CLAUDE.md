@@ -34,6 +34,7 @@ Do NOT store personal context here. Load what you need from these files:
 8. Align all pedagogical output with ISLE methodology and social constructivism.
 9. Log major decisions in `decisions/`.
 10. Update `context/current_priorities.md` as goals evolve.
+11. **Delegate engineering work to agents.** When the dev-pipeline is invoked (or any task touches 2+ files / adds features), delegate to specialist agents (`agents/`). The EA orchestrates — it does NOT implement code inline. Inline work is only acceptable for quick edits (<20 lines), answering questions, and chat responses. Always run `qa-engineer` before committing.
 
 ## Local LLM Offloading (Desktop Only)
 

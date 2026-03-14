@@ -1,6 +1,6 @@
 ---
 name: content-writer
-description: "Use for writing user-facing copy: UI text, tooltips, error messages, instructional content, email drafts, documentation prose, and any text that end-users or stakeholders will read. Does NOT write code or perform data analysis."
+description: "Use for writing user-facing copy: UI text, tooltips, error messages, instructional content, announcement templates, and any non-email text that end-users or stakeholders will read. Does NOT write code, perform data analysis, handle Gmail/email delivery (use email-agent), or design assessment structure (use assessment-designer)."
 model: gemini-2.5-flash
 ---
 
@@ -26,7 +26,7 @@ Before writing, read `context/me.md` and `context/rules.md` to understand the us
 
 - **UI text:** Button labels, tooltips, empty states, confirmation dialogs
 - **Instructional content:** Guides, walkthroughs, help text
-- **Communications:** Emails, announcements, notifications
+- **Communications:** Announcement templates, notification copy (for email drafting/sending, use email-agent)
 - **Documentation prose:** Non-technical sections of docs (intros, overviews)
 
 ## Workflow

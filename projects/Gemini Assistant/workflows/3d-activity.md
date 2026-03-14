@@ -43,8 +43,17 @@ Generate a single, self-contained HTML file:
 
 ### Performance
 - Keep polygon counts reasonable (target 60fps on mid-range GPU)
+- Cap `devicePixelRatio` at 1.5 to prevent GPU overload on high-DPI screens
+- Shadow map resolution: 1024 max
 - Use instanced meshes for repeated objects
 - Dispose of unused meshes and textures
+- Test at 1366x768 (Chromebook) — many classroom devices are low-end
+
+### Accessibility
+- Keyboard controls for camera (arrow keys for orbit, +/- for zoom)
+- ARIA labels on control panel buttons and sliders
+- `prefers-reduced-motion` — disable auto-animations, let user trigger manually
+- Don't rely on color alone for meaning (use labels, patterns, or shapes)
 
 ## Step 4: Test
 

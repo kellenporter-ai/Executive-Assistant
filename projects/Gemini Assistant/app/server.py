@@ -22,6 +22,9 @@ from dotenv import load_dotenv
 
 from gemini_client import stream_chat, get_gemini_path, WORKSPACE
 
+# Lock to prevent race conditions on token usage file read-modify-write
+token_lock = asyncio.Lock()
+
 load_dotenv(os.path.join(WORKSPACE, ".env"))
 
 # Attachments directory
@@ -39,9 +42,26 @@ app = FastAPI(title="Gemini Executive Assistant")
 class ChatRequest(BaseModel):
     message: str
     session_id: str | None = None
+    approval_mode: str | None = "yolo"
+    model: str | None = None
 
 class CancelRequest(BaseModel):
     session_id: str
+
+# Token usage file (persisted across server restarts)
+TOKEN_USAGE_FILE = os.path.join(WORKSPACE, "temp", "token_usage.json")
+
+def _load_token_usage() -> dict:
+    try:
+        with open(TOKEN_USAGE_FILE, "r") as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {"sessions": {}, "total": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}}
+
+def _save_token_usage(data: dict):
+    os.makedirs(os.path.dirname(TOKEN_USAGE_FILE), exist_ok=True)
+    with open(TOKEN_USAGE_FILE, "w") as f:
+        json.dump(data, f, indent=2)
 
 
 # --- API Routes ---
@@ -57,14 +77,19 @@ async def chat(request: ChatRequest):
     async def event_stream():
         nonlocal session_id
         task = asyncio.current_task()
-        
+
         # We'll use a temporary ID if one isn't provided yet
         track_id = session_id or f"temp-{uuid.uuid4().hex[:8]}"
         active_tasks[track_id] = task
-        
+
         try:
-            # Only pass real session_id to CLI — temp track_id is for internal cancellation only
-            async for event in stream_chat(request.message, session_id):
+            # approval_mode is accepted in the request body but not passed through —
+            # the subprocess model doesn't support interactive approval yet.
+            async for event in stream_chat(
+                request.message,
+                session_id,
+                model=request.model,
+            ):
                 # Update track_id if session_id is returned in the first event
                 if event.get("type") == "init" and event.get("session_id"):
                     new_session_id = event["session_id"]
@@ -72,13 +97,34 @@ async def chat(request: ChatRequest):
                         active_tasks[new_session_id] = task
                         active_tasks.pop(track_id, None)
                         track_id = new_session_id
-                
+
+                # Track token usage from result events
+                if event.get("type") == "result" and event.get("stats"):
+                    stats = event["stats"]
+                    expected_fields = ("input_tokens", "output_tokens", "total_tokens")
+                    if all(k in stats for k in expected_fields):
+                        async with token_lock:
+                            usage = _load_token_usage()
+                            sid = track_id
+                            if sid not in usage["sessions"]:
+                                usage["sessions"][sid] = {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}
+                            for key in expected_fields:
+                                val = stats.get(key, 0)
+                                usage["sessions"][sid][key] = usage["sessions"][sid].get(key, 0) + val
+                                usage["total"][key] = usage["total"].get(key, 0) + val
+                            usage["sessions"][sid]["requests"] = usage["sessions"][sid].get("requests", 0) + 1
+                            usage["total"]["requests"] = usage["total"].get("requests", 0) + 1
+                            _save_token_usage(usage)
+                    else:
+                        import sys
+                        print(f"WARNING: stats present but missing expected fields {expected_fields}. Got: {list(stats.keys())}", file=sys.stderr)
+
                 yield f"data: {json.dumps(event)}\n\n"
         except asyncio.CancelledError:
             yield f"data: {json.dumps({'type': 'error', 'message': 'Request cancelled by user'})}\n\n"
         finally:
             active_tasks.pop(track_id, None)
-            
+
         yield "data: [DONE]\n\n"
 
     return StreamingResponse(event_stream(), media_type="text/event-stream")
@@ -106,7 +152,23 @@ async def status():
     return {
         "ready": cli_available,
         "workspace": WORKSPACE,
+        "workspace_name": os.path.basename(WORKSPACE),
     }
+
+
+# --- Token Usage ---
+
+@app.get("/api/token-usage")
+async def get_token_usage():
+    """Return accumulated token usage stats."""
+    return _load_token_usage()
+
+
+@app.delete("/api/token-usage")
+async def reset_token_usage():
+    """Reset token usage tracking."""
+    _save_token_usage({"sessions": {}, "total": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}})
+    return {"status": "ok"}
 
 
 # --- Session Management ---
@@ -144,7 +206,7 @@ async def list_sessions():
 async def delete_session(session_id: str):
     """Delete a chat session by removing its file directly."""
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
-    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id[:8]}*.json")
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id}*.json")
     matches = glob.glob(pattern, recursive=True)
 
     if not matches:
@@ -161,7 +223,7 @@ async def get_session_messages(session_id: str):
     """Load message history from a saved Gemini CLI session."""
     # Session files are stored in ~/.gemini/tmp/<project>/chats/
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
-    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id[:8]}*.json")
+    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{session_id}*.json")
     matches = glob.glob(pattern, recursive=True)
 
     if not matches:

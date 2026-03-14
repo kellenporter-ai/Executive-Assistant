@@ -18,12 +18,17 @@ Based on the user's request:
 ## Step 2: Execute
 
 ### Search
-Use deterministic tools first if available. If a `TAVILY_API_KEY` is present in the environment, prefer the specialized tool:
+Check if Tavily is configured before using it:
 ```bash
-# Deterministic (preferred for structured data)
+python3 -c "import os; print('Tavily ready' if os.getenv('TAVILY_API_KEY') else 'Tavily not configured — using built-in search')"
+```
+
+If `TAVILY_API_KEY` is set, prefer the deterministic tool:
+```bash
 app/.venv/bin/python3 tools/research/tavily_search.py "Your Query"
 ```
-Otherwise, fallback to the CLI's probabilistic built-in tools:
+
+Otherwise, use the CLI's built-in tools (always available, no setup required):
 - **`google_web_search`** — Broad query, results with grounding.
 - **`web_fetch`** — Detailed extraction of URLs to Markdown.
 

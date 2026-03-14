@@ -29,7 +29,7 @@ Present the outline for user approval before building.
 Generate a self-contained HTML file using Reveal.js:
 
 ### Technical Requirements
-- **Viewport:** 1280x720 — all content must fit without scrolling
+- **Viewport:** 1920x1080 — always use `width: 1920, height: 1080` in Reveal config. 1280x720 causes content overflow on projectors
 - **CDN:** Load Reveal.js from CDN (no local dependencies)
 - **Self-contained:** Single HTML file with all styles inline
 - **Typography:** h1: 2.2em, h2: 1.6em, body: 0.8-0.9em
@@ -51,7 +51,7 @@ Generate a self-contained HTML file using Reveal.js:
 ## Step 4: Validate
 
 1. Open the HTML file and verify:
-   - All slides render within 1280x720 without scrolling
+   - All slides render within 1920x1080 without scrolling
    - Navigation works (arrow keys, space bar)
    - No broken images or missing resources
    - Speaker notes are present where needed

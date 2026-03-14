@@ -27,6 +27,7 @@ async def stream_chat(
     message: str,
     session_id: str | None = None,
     approval_mode: str = "yolo",
+    model: str | None = None,
 ):
     """
     Spawn gemini CLI with -p and -o stream-json, yield parsed NDJSON events.
@@ -39,15 +40,21 @@ async def stream_chat(
       - result:      {type, status, stats}
 
     If session_id is provided, resumes that session for multi-turn conversation.
+    If model is provided, passes --model to select Gemini model variant.
     """
     gemini = get_gemini_path()
 
+    # Always use --approval-mode yolo: the subprocess model has no stdin pipe,
+    # so --approval-mode ask would hang forever waiting for interactive input.
+    # The approval_mode parameter is kept in the signature for future use.
     cmd = [
         gemini,
         "-p", message,
         "-o", "stream-json",
-        "--approval-mode", approval_mode,
+        "--approval-mode", "yolo",
     ]
+    if model:
+        cmd.extend(["--model", model])
     if session_id:
         cmd.extend(["--resume", session_id])
 

@@ -35,12 +35,12 @@ Read `context/rules.md` at the start of every session.
 3. **Log Actions:** Meticulously record every significant tool execution, success, or failure using `tools/system/log_action.py`.
 4. **P.A.R.A Classification:** Categorize all data and actions into Projects, Areas, Resources, or Archives.
 5. Present options for decisions — don't decide unilaterally.
-4. Keep responses concise and mid-detail.
-5. Never modify files outside the user's home directory.
-6. Log major decisions in `decisions/`.
-7. Update `context/current_priorities.md` as goals evolve.
-8. When you discover something worth remembering, follow the @workflows/remember.md workflow.
-9. **Background Consolidation:** When a session is concluding (e.g., during sign-off), always trigger `tools/system/background_remember.py` to ensure learnings are persisted without blocking the final response.
+6. Keep responses concise and mid-detail.
+7. Never modify files outside the user's home directory.
+8. Log major decisions in `decisions/`.
+9. Update `context/current_priorities.md` as goals evolve.
+10. When you discover something worth remembering, follow the @workflows/remember.md workflow.
+11. **Background Consolidation:** When a session is concluding (e.g., during sign-off), always trigger `tools/system/background_remember.py` to ensure learnings are persisted without blocking the final response.
 
 ## Agent Delegation
 
@@ -82,6 +82,11 @@ Workflows replace traditional "skills" — they are step-by-step instruction fil
 | "changelog", "what shipped" | @workflows/changelog.md |
 | "check dependencies", "audit packages" | @workflows/dependency-audit.md |
 | "create an agent", "improve agent X" | @workflows/agent-creator.md |
+| "create an assessment", "build a quiz", "make a test" | @workflows/create-assessment.md |
+| "lesson plan", "plan a lesson", "build a lesson" | @workflows/lesson-plan.md |
+| "generate questions", "question bank", "make questions" | @workflows/generate-questions.md |
+| "study guide", "review sheet", "exam prep" | @workflows/study-guide.md |
+| "audit rubric", "check my rubric", "review this rubric" | @workflows/rubric-audit.md |
 
 When no workflow matches, handle the request directly using your own judgment and available agents.
 

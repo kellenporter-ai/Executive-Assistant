@@ -8,13 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  
+  <script src="https://unpkg.com/lucide@0.474.0"></script>
+
   <!-- Markdown & Syntax Highlighting -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" id="hljs-dark">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" id="hljs-light" disabled>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked@15.0.7/marked.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css" id="hljs-dark">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github.min.css" id="hljs-light" disabled>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
   <style>
     /* Sleek Modern Theme (Catppuccin-inspired Glassmorphism) */
@@ -163,7 +163,6 @@
       color: var(--text-muted);
       font-weight: 600;
       letter-spacing: 0.02em;
-      flex: 1;
     }
 
     /* ===== MAIN LAYOUT ===== */
@@ -942,6 +941,280 @@
 
     /* Fix hidden elements */
     #fileInput { display: none; }
+
+    /* ===== STATUS DOT ===== */
+    .status-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--success);
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .status-dot.loading {
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    .status-dot.error { background: var(--error); }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ===== SYSTEM MESSAGES ===== */
+    .message.system {
+      align-self: center;
+      background: var(--bg-tool);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.82rem;
+      font-style: italic;
+      text-align: center;
+      max-width: 600px;
+      border-left: none;
+      margin-left: 0;
+    }
+    .message.system::before { display: none; }
+
+    /* ===== SIDEBAR BACKDROP (narrow screens) ===== */
+    .sidebar-backdrop {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 49;
+    }
+    .sidebar-backdrop.open { display: block; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .sidebar { position: absolute; z-index: 50; height: 100%; box-shadow: var(--shadow-lg); }
+      .sidebar.collapsed { width: 0; opacity: 0; transform: translateX(-20px); }
+      .chat-container { padding: 16px 16px 40px; }
+      .input-area { padding: 12px 16px; }
+      .attachment-bar { padding: 0 16px 8px; }
+    }
+
+    @media (max-width: 600px) {
+      .titlebar-title { display: none; }
+      .chat-container { padding: 12px 8px 32px; }
+      .input-area { padding: 8px; }
+      .attachment-bar { padding: 0 8px 6px; }
+      .tab { padding: 0 10px; font-size: 0.75rem; }
+      .message { font-size: 0.88rem; padding: 10px 12px; }
+      .welcome h2 { font-size: 1.3rem; }
+      .welcome .suggestions { flex-direction: column; align-items: center; }
+    }
+
+    /* ===== RENAME INPUT ===== */
+    .tab-rename-input {
+      background: var(--bg-input);
+      border: 1px solid var(--accent);
+      border-radius: 4px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 0.82rem;
+      padding: 2px 6px;
+      outline: none;
+      width: 120px;
+    }
+
+    /* ===== SETTINGS PANEL ===== */
+    .settings-panel {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%; max-width: 440px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+      z-index: 1000;
+      animation: modalFadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      overflow: hidden;
+    }
+    .settings-panel.open { display: block; }
+    .settings-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 20px; border-bottom: 1px solid var(--border);
+      font-weight: 600; font-size: 1.05rem;
+    }
+    .settings-header button {
+      background: none; border: none; color: var(--text-muted); font-size: 1.4rem;
+      cursor: pointer; padding: 0 4px; border-radius: 4px; transition: all 0.2s;
+    }
+    .settings-header button:hover { color: var(--error); }
+    .settings-body { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+    .setting-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .setting-label { font-size: 0.88rem; color: var(--text-secondary); }
+    .setting-label small { display: block; font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+    .setting-select, .setting-input {
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text-primary); padding: 6px 10px; font-size: 0.85rem; outline: none;
+      font-family: inherit;
+    }
+    .setting-select:focus, .setting-input:focus { border-color: var(--accent); }
+
+    /* ===== MESSAGE ACTIONS ===== */
+    .message-actions {
+      display: none;
+      position: absolute;
+      top: 4px; right: 8px;
+      gap: 4px;
+    }
+    .message:hover .message-actions { display: flex; }
+    .message-actions button {
+      background: var(--bg-tool); border: 1px solid var(--border);
+      color: var(--text-muted); width: 26px; height: 26px;
+      border-radius: 6px; cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 0.75rem; transition: all 0.2s;
+    }
+    .message-actions button:hover { background: var(--bg-hover); color: var(--accent); border-color: var(--accent); }
+
+    /* ===== UPLOAD PROGRESS ===== */
+    .upload-progress {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 12px; background: var(--accent-dim);
+      border: 1px solid var(--accent); border-radius: 8px;
+      font-size: 0.8rem; color: var(--accent);
+    }
+    .upload-progress .spinner {
+      width: 14px; height: 14px; border: 2px solid var(--accent);
+      border-top-color: transparent; border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    /* ===== SETTINGS BACKDROP ===== */
+    .settings-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.5); z-index: 999;
+    }
+    .settings-backdrop.open { display: block; }
+
+    /* ===== WORKSPACE INDICATOR ===== */
+    .workspace-indicator {
+      display: flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: 6px;
+      background: var(--accent-dim); border: 1px solid var(--border);
+      font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+      color: var(--accent); white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis; max-width: 200px; cursor: default;
+    }
+    .workspace-indicator i { flex-shrink: 0; }
+
+    /* ===== TOKEN USAGE BAR ===== */
+    .token-bar {
+      display: flex; align-items: center; gap: 12px;
+      padding: 0 16px; height: 28px;
+      background: var(--bg-secondary); backdrop-filter: var(--blur);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+      font-size: 0.72rem; font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+    }
+    .token-bar .token-stat { display: flex; align-items: center; gap: 4px; }
+    .token-bar .token-stat .label { color: var(--text-muted); }
+    .token-bar .token-stat .value { color: var(--text-secondary); font-weight: 500; }
+    .token-bar .spacer { flex: 1; }
+    .token-bar button {
+      font-size: 0.7rem; color: var(--text-muted); cursor: pointer;
+      padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border);
+      background: none; transition: all 0.2s;
+    }
+    .token-bar button:hover { color: var(--error); border-color: var(--error); }
+
+    /* ===== SESSION TAGS ===== */
+    .session-tag {
+      display: inline-flex; align-items: center; gap: 3px;
+      padding: 1px 6px; border-radius: 4px;
+      font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.04em;
+      cursor: pointer; transition: all 0.15s; flex-shrink: 0;
+    }
+    .session-tag.tag-red { background: rgba(243, 139, 168, 0.15); color: var(--error); }
+    .session-tag.tag-blue { background: rgba(137, 180, 250, 0.15); color: var(--accent); }
+    .session-tag.tag-green { background: rgba(166, 227, 161, 0.15); color: var(--success); }
+    .session-tag.tag-yellow { background: rgba(249, 226, 175, 0.15); color: var(--warning); }
+    .session-tag.tag-purple { background: rgba(203, 166, 247, 0.15); color: #cba6f7; }
+
+    .tag-picker {
+      display: none; position: absolute; right: 8px; top: 100%;
+      background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: 8px; padding: 6px; z-index: 50;
+      box-shadow: var(--shadow-lg); gap: 4px;
+      flex-wrap: wrap; min-width: 140px;
+    }
+    .tag-picker.open { display: flex; }
+    .tag-picker .session-tag { cursor: pointer; }
+    .tag-picker .session-tag:hover { filter: brightness(1.3); }
+
+    .sidebar-item { position: relative; }
+
+    /* ===== SIDEBAR FILTER TABS ===== */
+    .sidebar-filters {
+      display: flex; gap: 4px; padding: 4px 8px;
+      overflow-x: auto; flex-shrink: 0;
+    }
+    .sidebar-filter-btn {
+      padding: 3px 8px; border-radius: 12px;
+      font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+      letter-spacing: 0.03em; cursor: pointer;
+      background: var(--bg-hover); color: var(--text-muted);
+      border: 1px solid transparent; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .sidebar-filter-btn:hover { color: var(--text-secondary); }
+    .sidebar-filter-btn.active { background: var(--accent-dim); color: var(--accent); border-color: var(--accent); }
+
+    /* ===== APPROVAL MODE ===== */
+    .tool-approval {
+      display: flex; gap: 8px; padding: 10px 14px; align-items: center;
+      border-top: 1px solid var(--border);
+      background: rgba(249, 226, 175, 0.05);
+    }
+    .tool-approval button {
+      padding: 6px 16px; border-radius: 6px; font-size: 0.8rem;
+      font-weight: 600; cursor: pointer; transition: all 0.2s; border: none;
+    }
+    .tool-approval .approve-btn {
+      background: var(--success); color: #11111b;
+    }
+    .tool-approval .approve-btn:hover { filter: brightness(1.1); }
+    .tool-approval .reject-btn {
+      background: var(--error); color: #fff;
+    }
+    .tool-approval .reject-btn:hover { filter: brightness(1.1); }
+    .tool-call-status.waiting {
+      background: rgba(249, 226, 175, 0.15); color: var(--warning);
+    }
+    .tool-approval .approval-label {
+      font-size: 0.75rem; color: var(--warning);
+      font-family: 'JetBrains Mono', monospace;
+      margin-right: auto;
+    }
+    .tool-params-preview {
+      padding: 8px 14px; border-top: 1px solid var(--border);
+      background: rgba(0,0,0,0.1); max-height: 200px; overflow-y: auto;
+    }
+    .tool-param-row {
+      display: flex; gap: 8px; align-items: flex-start;
+      font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+      padding: 3px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+    }
+    .tool-param-key { color: var(--accent); white-space: nowrap; min-width: 80px; }
+    .tool-param-val { color: var(--text-secondary); word-break: break-all; }
+
+    /* ===== MODEL BADGE ===== */
+    .model-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 0.68rem; font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      background: rgba(203, 166, 247, 0.12); color: #cba6f7;
+      white-space: nowrap;
+    }
   </style>
 </head>
 <body>
@@ -949,10 +1222,19 @@
   <div class="titlebar">
     <button class="titlebar-toggle" onclick="toggleSidebar()" title="Toggle sidebar"><i data-lucide="menu"></i></button>
     <span class="titlebar-title">Executive Assistant</span>
+    <div class="workspace-indicator" id="workspaceIndicator" title="Active workspace">
+      <i data-lucide="folder-open"></i>
+      <span id="workspaceName">...</span>
+    </div>
+    <span class="model-badge" id="modelBadge" title="Active model">gemini-2.5-pro</span>
+    <span style="flex:1"></span>
+    <button class="titlebar-toggle" onclick="exportConversation()" title="Export conversation"><i data-lucide="download"></i></button>
+    <button class="titlebar-toggle" onclick="openSettings()" title="Settings"><i data-lucide="settings"></i></button>
     <button class="titlebar-toggle" onclick="toggleTheme()" id="themeToggle" title="Toggle light/dark theme"><i data-lucide="sun"></i></button>
     <div class="status-dot" id="statusDot"></div>
   </div>
 
+  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="toggleSidebar()"></div>
   <div class="main">
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
@@ -965,6 +1247,14 @@
             <button onclick="event.stopPropagation(); loadSessions()" title="Refresh"><i data-lucide="refresh-cw"></i></button>
             <button onclick="event.stopPropagation(); clearAllSessions()" title="Delete all sessions"><i data-lucide="trash-2"></i></button>
           </div>
+        </div>
+        <div class="sidebar-filters" id="tagFilters">
+          <button class="sidebar-filter-btn active" onclick="filterSessions('all')">All</button>
+          <button class="sidebar-filter-btn" data-tag="red" onclick="filterSessions('red')">Red</button>
+          <button class="sidebar-filter-btn" data-tag="blue" onclick="filterSessions('blue')">Blue</button>
+          <button class="sidebar-filter-btn" data-tag="green" onclick="filterSessions('green')">Green</button>
+          <button class="sidebar-filter-btn" data-tag="yellow" onclick="filterSessions('yellow')">Yellow</button>
+          <button class="sidebar-filter-btn" data-tag="purple" onclick="filterSessions('purple')">Purple</button>
         </div>
         <div class="sidebar-list" id="sessionList">
           <div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">Loading sessions...</div>
@@ -1008,19 +1298,8 @@
         <button class="new-tab-btn" onclick="createNewTab()" title="New chat (Ctrl+T)"><i data-lucide="plus"></i></button>
       </div>
 
-      <!-- Chat Container -->
-      <div class="chat-container" id="chatContainer">
-        <div class="welcome" id="welcome">
-          <h2>Executive Assistant</h2>
-          <p>Powered by Gemini CLI. Ask me anything, run workflows, or manage your workspace.</p>
-          <div class="suggestions">
-            <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
-            <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Priorities</div>
-            <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
-            <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
-          </div>
-        </div>
-      </div>
+      <!-- Chat Container (welcome injected by JS via getWelcomeHTML()) -->
+      <div class="chat-container" id="chatContainer"></div>
 
       <!-- Input Area -->
       <div class="input-area">
@@ -1040,11 +1319,21 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
           </button>
           <button class="send-btn" id="sendBtn" onclick="sendMessage()" title="Send (Enter)">
-            <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
           </button>
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Token Usage Bar -->
+  <div class="token-bar" id="tokenBar">
+    <div class="token-stat"><span class="label">Tokens:</span><span class="value" id="tokenTotal">0</span></div>
+    <div class="token-stat"><span class="label">In:</span><span class="value" id="tokenIn">0</span></div>
+    <div class="token-stat"><span class="label">Out:</span><span class="value" id="tokenOut">0</span></div>
+    <div class="token-stat"><span class="label">Requests:</span><span class="value" id="tokenRequests">0</span></div>
+    <span class="spacer"></span>
+    <button onclick="resetTokenUsage()" title="Reset counters">Reset</button>
   </div>
 
   <!-- Drop Overlay -->
@@ -1074,16 +1363,81 @@
     </div>
   </div>
 
+  <!-- Settings Panel -->
+  <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <span>Settings</span>
+      <button onclick="closeSettings()">&times;</button>
+    </div>
+    <div class="settings-body">
+      <div class="setting-row">
+        <div class="setting-label">
+          Model
+          <small>Which Gemini model to use for responses</small>
+        </div>
+        <select class="setting-select" id="settingModel" onchange="saveSetting('model', this.value); updateModelBadge()">
+          <option value="">Default (CLI decides)</option>
+          <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+          <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+          <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">
+          Approval Mode
+          <small>Controls whether tool calls require your approval</small>
+        </div>
+        <select class="setting-select" id="settingApprovalMode" onchange="saveSetting('approvalMode', this.value)">
+          <option value="yolo">Auto-approve (yolo)</option>
+          <option value="ask" disabled>Ask before running (coming soon)</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div class="setting-label">
+          Notifications
+          <small>Browser alerts when long tasks finish</small>
+        </div>
+        <select class="setting-select" id="settingNotifications" onchange="saveSetting('notifications', this.value); requestNotificationPermission()">
+          <option value="off">Off</option>
+          <option value="on">On</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Image Lightbox -->
+  <div class="modal-overlay" id="imageLightbox" onclick="closeLightbox()">
+    <img id="lightboxImg" alt="Enlarged preview" style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.6);" onclick="event.stopPropagation()">
+  </div>
+
   <input type="file" id="fileInput" multiple onchange="handleFileSelect(this.files)">
 
   <script>
     // ===== STATE =====
-    const tabs = []; // { id, title, sessionId, messages: [{role, content, html}], attachments: [] }
+    const tabs = []; // { id, title, sessionId, messages: [{role, content}], attachments: [] }
     let activeTabId = null;
     let isWaiting = false;
     let pendingAttachments = []; // { filename, path, dataUrl? }
     let toolCallElements = {};
-    let expandedDirs = new Set(); // Track expanded directories in file browser
+    let expandedDirs = new Set();
+    let uploadCount = 0; // Track in-progress uploads
+
+    // Settings (persisted to localStorage)
+    const settings = {
+      approvalMode: localStorage.getItem('ea-approval-mode') || 'yolo',
+      model: localStorage.getItem('ea-model') || '',
+      notifications: localStorage.getItem('ea-notifications') || 'off',
+    };
+
+    // Session tags (persisted to localStorage)
+    // { sessionId: "red" | "blue" | "green" | "yellow" | "purple" }
+    let sessionTags = JSON.parse(localStorage.getItem('ea-session-tags') || '{}');
+    let activeTagFilter = 'all';
+    let workspaceName = '...';
+
+    // Notification tracking
+    let requestStartTime = null;
 
     const chatContainer = document.getElementById('chatContainer');
     const messageInput = document.getElementById('messageInput');
@@ -1092,12 +1446,32 @@
     const tabBar = document.getElementById('tabBar');
     const attachmentBar = document.getElementById('attachmentBar');
 
+    // ===== WELCOME TEMPLATE =====
+    function getWelcomeHTML() {
+      return `<div class="welcome">
+        <h2>Executive Assistant</h2>
+        <p>Powered by Gemini CLI. Ask me anything, run workflows, or manage your workspace.</p>
+        <div class="suggestions">
+          <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
+          <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Priorities</div>
+          <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
+          <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
+        </div>
+      </div>`;
+    }
+
     // ===== INIT =====
     async function init() {
       await checkStatus();
       createNewTab();
       loadSessions();
       loadFiles('');
+      loadTokenUsage();
+      // Sync settings UI
+      document.getElementById('settingApprovalMode').value = settings.approvalMode;
+      document.getElementById('settingModel').value = settings.model;
+      document.getElementById('settingNotifications').value = settings.notifications;
+      updateModelBadge();
       lucide.createIcons();
     }
 
@@ -1107,6 +1481,12 @@
         const data = await res.json();
         statusDot.className = data.ready ? 'status-dot' : 'status-dot error';
         if (!data.ready) document.getElementById('errorModal').classList.add('open');
+        // Populate workspace indicator
+        if (data.workspace_name) {
+          workspaceName = data.workspace_name;
+          document.getElementById('workspaceName').textContent = workspaceName;
+          document.getElementById('workspaceIndicator').title = data.workspace || workspaceName;
+        }
       } catch {
         statusDot.className = 'status-dot error';
       }
@@ -1123,13 +1503,13 @@
 
     function switchTab(tabId) {
       if (activeTabId === tabId) return;
-      
+
       // Save current chat content to the old tab
       if (activeTabId) {
         const current = tabs.find(t => t.id === activeTabId);
         if (current) current._html = chatContainer.innerHTML;
       }
-      
+
       activeTabId = tabId;
       const tab = tabs.find(t => t.id === tabId);
       if (!tab) return;
@@ -1138,23 +1518,12 @@
       if (tab._html) {
         chatContainer.innerHTML = tab._html;
       } else if (tab.messages.length > 0) {
-        // Fallback: re-render from messages if HTML is lost
         chatContainer.innerHTML = '';
         for (const msg of tab.messages) {
           renderMessageToDOM(msg.content, msg.role);
         }
       } else {
-        chatContainer.innerHTML = `
-          <div class="welcome">
-            <h2>Executive Assistant</h2>
-            <p>Powered by Gemini CLI. Ask me anything, run workflows, or manage your workspace.</p>
-            <div class="suggestions">
-              <div class="suggestion" onclick="sendSuggestion('sign on')">Sign on</div>
-              <div class="suggestion" onclick="sendSuggestion('What are my current priorities?')">Priorities</div>
-              <div class="suggestion" onclick="sendSuggestion('Help me plan my day')">Plan my day</div>
-              <div class="suggestion" onclick="sendSuggestion('Show me the project structure')">Project structure</div>
-            </div>
-          </div>`;
+        chatContainer.innerHTML = getWelcomeHTML();
       }
 
       renderTabs();
@@ -1185,14 +1554,42 @@
         const el = document.createElement('div');
         el.className = `tab${tab.id === activeTabId ? ' active' : ''}`;
         el.onclick = () => switchTab(tab.id);
+        el.dataset.tabId = tab.id;
         el.innerHTML = `
-          <span class="tab-label">${escapeHtml(tab.title)}</span>
-          <button class="tab-close" onclick="closeTab('${tab.id}', event)" title="Close"><i data-lucide="x"></i></button>
+          <span class="tab-label" data-action="rename">${escapeHtml(tab.title)}</span>
+          <button class="tab-close" data-action="close" title="Close"><i data-lucide="x"></i></button>
         `;
         tabBar.appendChild(el);
       }
       tabBar.appendChild(newTabBtn || createNewTabBtn());
       lucide.createIcons();
+    }
+
+    function startRenameTab(tabId, e) {
+      e.stopPropagation();
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+      const labelEl = e.target;
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.className = 'tab-rename-input';
+      input.value = tab.title;
+      input.onblur = () => finishRenameTab(tabId, input);
+      input.onkeydown = (ev) => {
+        if (ev.key === 'Enter') { ev.preventDefault(); input.blur(); }
+        if (ev.key === 'Escape') { ev.preventDefault(); renderTabs(); }
+      };
+      labelEl.replaceWith(input);
+      input.focus();
+      input.select();
+    }
+
+    function finishRenameTab(tabId, input) {
+      const tab = tabs.find(t => t.id === tabId);
+      if (tab && input.value.trim()) {
+        tab.title = input.value.trim().slice(0, 60);
+      }
+      renderTabs();
     }
 
     function createNewTabBtn() {
@@ -1203,6 +1600,29 @@
       btn.innerHTML = '<i data-lucide="plus"></i>';
       return btn;
     }
+
+    // Event delegation for tab bar
+    tabBar.addEventListener('click', e => {
+      const closeBtn = e.target.closest('[data-action="close"]');
+      if (closeBtn) {
+        const tabEl = closeBtn.closest('.tab');
+        if (tabEl && tabEl.dataset.tabId) {
+          e.stopPropagation();
+          closeTab(tabEl.dataset.tabId, e);
+        }
+        return;
+      }
+    });
+    tabBar.addEventListener('dblclick', e => {
+      const label = e.target.closest('[data-action="rename"]');
+      if (label) {
+        const tabEl = label.closest('.tab');
+        if (tabEl && tabEl.dataset.tabId) {
+          e.stopPropagation();
+          startRenameTab(tabEl.dataset.tabId, e);
+        }
+      }
+    });
 
     function getActiveTab() { return tabs.find(t => t.id === activeTabId); }
 
@@ -1218,15 +1638,25 @@
         }
         list.innerHTML = '';
         for (const s of data.sessions) {
+          const tag = sessionTags[s.session_id];
+          // Filter by active tag
+          if (activeTagFilter !== 'all' && tag !== activeTagFilter) continue;
+
           const div = document.createElement('div');
           div.className = 'sidebar-item';
           div.dataset.sessionId = s.session_id;
           div.onclick = () => resumeSession(s.session_id, s.preview);
+
+          const tagHtml = tag
+            ? `<span class="session-tag tag-${escapeHtml(tag)}" data-action="tag-picker">${escapeHtml(tag)}</span>`
+            : `<span class="session-tag" style="opacity:0.3;border:1px dashed var(--text-muted);padding:1px 4px;" data-action="tag-picker">+</span>`;
+
           div.innerHTML = `
             <span class="icon"><i data-lucide="message-square"></i></span>
             <span class="label">${escapeHtml(s.preview)}</span>
+            ${tagHtml}
             <span class="meta">${s.time_ago}</span>
-            <button class="delete-btn" onclick="event.stopPropagation(); deleteSession('${s.session_id}')" title="Delete"><i data-lucide="trash-2"></i></button>
+            <button class="delete-btn" data-action="delete-session" title="Delete"><i data-lucide="trash-2"></i></button>
           `;
           list.appendChild(div);
         }
@@ -1238,13 +1668,12 @@
     }
 
     async function resumeSession(sessionId, preview) {
-      // Check if already open in a tab
       const existing = tabs.find(t => t.sessionId === sessionId);
       if (existing) { switchTab(existing.id); return; }
-      
+
       const tabId = createNewTab(sessionId, preview.slice(0, 40));
       const tab = tabs.find(t => t.id === tabId);
-      
+
       chatContainer.innerHTML = '<div class="thinking"><span>Loading conversation history...</span></div>';
 
       try {
@@ -1260,8 +1689,7 @@
         } else {
           addMessage('Resumed session (no message history available).', 'system');
         }
-        
-        // Save to tab state
+
         tab._html = chatContainer.innerHTML;
         lucide.createIcons();
       } catch (e) {
@@ -1270,12 +1698,14 @@
       }
     }
 
-    // Helper to render without auto-syncing back to tab
     function renderMessageToDOM(text, role) {
+      const tab = getActiveTab();
       const div = document.createElement('div');
       div.className = `message ${role}`;
+      if (tab) div.dataset.msgIndex = tab.messages.length;
       if (role === 'assistant') {
         div.innerHTML = renderMarkdown(text);
+        addMessageActions(div, text);
       } else {
         div.textContent = text;
       }
@@ -1294,14 +1724,31 @@
       try {
         const res = await fetch('/api/sessions');
         const data = await res.json();
-        for (const s of data.sessions) {
-          await fetch(`/api/sessions/${s.session_id}`, { method: 'DELETE' });
-        }
+        await Promise.allSettled(
+          data.sessions.map(s => fetch(`/api/sessions/${s.session_id}`, { method: 'DELETE' }))
+        );
         loadSessions();
       } catch (e) {
         console.error('Failed to clear sessions:', e);
       }
     }
+
+    // Event delegation for session list
+    document.getElementById('sessionList').addEventListener('click', e => {
+      const actionEl = e.target.closest('[data-action]');
+      if (!actionEl) return;
+      const item = actionEl.closest('.sidebar-item');
+      if (!item) return;
+      const sessionId = item.dataset.sessionId;
+
+      if (actionEl.dataset.action === 'tag-picker') {
+        e.stopPropagation();
+        toggleTagPicker(sessionId, e);
+      } else if (actionEl.dataset.action === 'delete-session') {
+        e.stopPropagation();
+        deleteSession(sessionId);
+      }
+    });
 
     function highlightActiveSession() {
       const tab = getActiveTab();
@@ -1317,12 +1764,10 @@
         const data = await res.json();
 
         if (path === '') {
-          // Root level — rebuild entire tree
           const list = document.getElementById('fileList');
           list.innerHTML = '';
           renderFileEntries(list, data.entries, 0);
         } else {
-          // Sub-directory — find the parent and toggle
           const parentEl = document.querySelector(`[data-file-path="${CSS.escape(path)}"]`);
           if (!parentEl) return;
           const childContainer = parentEl.nextElementSibling;
@@ -1342,12 +1787,14 @@
       } catch {}
     }
 
-    async function handleFileSearch(query) {
-      if (!query.trim()) {
-        loadFiles(''); // Revert to root view
-        return;
-      }
-      
+    let _fileSearchTimer = null;
+    function handleFileSearch(query) {
+      clearTimeout(_fileSearchTimer);
+      if (!query.trim()) { loadFiles(''); return; }
+      _fileSearchTimer = setTimeout(() => _doFileSearch(query), 200);
+    }
+
+    async function _doFileSearch(query) {
       try {
         const res = await fetch(`/api/files/search?query=${encodeURIComponent(query)}`);
         const data = await res.json();
@@ -1389,7 +1836,6 @@
         }
         container.appendChild(div);
 
-        // If directory was previously expanded, auto-expand it
         if (!isSearch && entry.is_dir && expandedDirs.has(entry.path)) {
           loadFiles(entry.path);
         }
@@ -1438,7 +1884,14 @@
 
     // ===== SIDEBAR =====
     function toggleSidebar() {
-      document.getElementById('sidebar').classList.toggle('collapsed');
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('collapsed');
+      const backdrop = document.getElementById('sidebarBackdrop');
+      if (window.innerWidth <= 900) {
+        backdrop.classList.toggle('open', !sidebar.classList.contains('collapsed'));
+      } else {
+        backdrop.classList.remove('open');
+      }
     }
 
     function toggleSection(header) {
@@ -1451,21 +1904,28 @@
       const formData = new FormData();
       formData.append('file', file);
 
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      if (!res.ok) return null;
-      const data = await res.json();
+      // Show progress indicator
+      uploadCount++;
+      renderAttachmentBar();
 
-      // Generate preview URL for images
-      let dataUrl = null;
-      if (file.type.startsWith('image/')) {
-        dataUrl = await new Promise(resolve => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(file);
-        });
+      try {
+        const res = await fetch('/api/upload', { method: 'POST', body: formData });
+        if (!res.ok) return null;
+        const data = await res.json();
+
+        let dataUrl = null;
+        if (file.type.startsWith('image/')) {
+          dataUrl = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.readAsDataURL(file);
+          });
+        }
+
+        return { filename: data.filename, path: data.path, dataUrl };
+      } finally {
+        uploadCount--;
       }
-
-      return { filename: data.filename, path: data.path, dataUrl };
     }
 
     function handleFileSelect(files) {
@@ -1473,8 +1933,8 @@
         uploadFile(file).then(att => {
           if (att) {
             pendingAttachments.push(att);
-            renderAttachmentBar();
           }
+          renderAttachmentBar();
         });
       }
       document.getElementById('fileInput').value = '';
@@ -1487,6 +1947,13 @@
 
     function renderAttachmentBar() {
       attachmentBar.innerHTML = '';
+      // Show upload progress if files are being uploaded
+      if (uploadCount > 0) {
+        const prog = document.createElement('div');
+        prog.className = 'upload-progress';
+        prog.innerHTML = `<div class="spinner"></div><span>Uploading ${uploadCount} file${uploadCount > 1 ? 's' : ''}...</span>`;
+        attachmentBar.appendChild(prog);
+      }
       pendingAttachments.forEach((att, i) => {
         const div = document.createElement('div');
         div.className = 'attachment-preview';
@@ -1536,7 +2003,7 @@
     async function cancelGeneration() {
       const tab = getActiveTab();
       if (!tab || !isWaiting) return;
-      
+
       try {
         if (tab.sessionId) {
           await fetch('/api/cancel', {
@@ -1556,8 +2023,8 @@
       }
     }
 
-    async function sendMessage() {
-      const text = messageInput.value.trim();
+    async function sendMessage(overrideText = null) {
+      const text = overrideText || messageInput.value.trim();
       if ((!text && pendingAttachments.length === 0) || isWaiting) return;
 
       const tab = getActiveTab();
@@ -1569,7 +2036,7 @@
 
       // Build message with attachment references
       let fullMessage = text;
-      const attachments = [...pendingAttachments];
+      const attachments = overrideText ? [] : [...pendingAttachments];
       if (attachments.length > 0) {
         const refs = attachments.map(a => a.path).join(', ');
         fullMessage = `[Attached files: ${refs}]\n\n${text}`;
@@ -1606,18 +2073,21 @@
       tab.messages.push({ role: 'user', content: text });
 
       // Clear input and attachments
-      messageInput.value = '';
-      autoResize(messageInput);
-      pendingAttachments = [];
-      renderAttachmentBar();
+      if (!overrideText) {
+        messageInput.value = '';
+        autoResize(messageInput);
+        pendingAttachments = [];
+        renderAttachmentBar();
+      }
 
       // Show thinking & Stop button
+      requestStartTime = Date.now();
       isWaiting = true;
       sendBtn.style.display = 'none';
       const stopBtn = document.getElementById('stopBtn');
       stopBtn.classList.add('active');
       statusDot.className = 'status-dot loading';
-      
+
       const thinkingEl = addThinking();
       toolCallElements = {};
       currentAbortController = new AbortController();
@@ -1626,11 +2096,19 @@
       let assistantText = '';
       let thinkingRemoved = false;
 
+      // Pending approval resolvers: { tool_id: { resolve } }
+      const pendingApprovals = {};
+
       try {
         const res = await fetch('/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: fullMessage, session_id: tab.sessionId }),
+          body: JSON.stringify({
+            message: fullMessage,
+            session_id: tab.sessionId,
+            approval_mode: settings.approvalMode,
+            model: settings.model || null,
+          }),
           signal: currentAbortController.signal
         });
 
@@ -1683,11 +2161,14 @@
                 if (event.role === 'assistant') {
                   if (event.delta) {
                     assistantText += event.content;
-                    if (!assistantEl) assistantEl = addMessage('', 'assistant');
+                    if (!assistantEl) {
+                      assistantEl = addMessage('', 'assistant');
+                    }
                     assistantEl.innerHTML = renderMarkdown(assistantText);
                     scrollToBottom();
                   } else {
-                    addMessage(event.content, 'assistant');
+                    const el = addMessage(event.content, 'assistant');
+                    addMessageActions(el, event.content);
                   }
                 }
                 break;
@@ -1715,9 +2196,11 @@
         }
 
         if (!thinkingRemoved) thinkingEl.remove();
-        if (assistantText) tab.messages.push({ role: 'assistant', content: assistantText });
+        if (assistantText) {
+          tab.messages.push({ role: 'assistant', content: assistantText });
+          if (assistantEl) addMessageActions(assistantEl, assistantText);
+        }
 
-        // Refresh sessions
         loadSessions();
 
       } catch (e) {
@@ -1725,11 +2208,10 @@
           addMessage('Generation stopped.', 'system');
         } else {
           if (!thinkingRemoved) thinkingEl.remove();
-          // Save partial response if we got anything
           if (assistantText) {
             tab.messages.push({ role: 'assistant', content: assistantText });
           }
-          addMessage(`Connection lost. Partial response preserved above.`, 'system');
+          addMessage('Connection lost. Partial response preserved above.', 'system');
         }
       } finally {
         isWaiting = false;
@@ -1738,6 +2220,18 @@
         statusDot.className = 'status-dot';
         messageInput.focus();
         currentAbortController = null;
+
+        // Refresh token usage
+        loadTokenUsage();
+
+        // Browser notification if task took > 10s and tab is not focused
+        if (settings.notifications === 'on' && requestStartTime) {
+          const elapsed = Date.now() - requestStartTime;
+          if (elapsed > 10000 && document.hidden) {
+            sendNotification('Task complete', assistantText ? assistantText.slice(0, 100) : 'Your request has finished.');
+          }
+        }
+        requestStartTime = null;
       }
     }
 
@@ -1776,32 +2270,149 @@
       scrollToBottom();
     }
 
+    function addToolUseWithApproval(event) {
+      let wrapper = chatContainer.querySelector('.tool-calls:last-child');
+      if (!wrapper || wrapper.nextElementSibling) {
+        wrapper = document.createElement('div');
+        wrapper.className = 'tool-calls';
+        chatContainer.appendChild(wrapper);
+      }
+      const argsPreview = Object.entries(event.parameters || {})
+        .map(([k, v]) => {
+          const val = typeof v === 'string' ? v : JSON.stringify(v);
+          return `${k}=${val.length > 45 ? val.slice(0, 45) + '...' : val}`;
+        }).join(', ');
+
+      // Build rich parameter display
+      const params = event.parameters || {};
+      let paramsHtml = '';
+      for (const [k, v] of Object.entries(params)) {
+        const val = typeof v === 'string' ? v : JSON.stringify(v, null, 2);
+        paramsHtml += `<div class="tool-param-row"><span class="tool-param-key">${escapeHtml(k)}</span><span class="tool-param-val">${escapeHtml(val)}</span></div>`;
+      }
+
+      const div = document.createElement('div');
+      div.className = 'tool-call';
+      div.id = `tool-${event.tool_id}`;
+      div.dataset.startTime = Date.now();
+      div.innerHTML = `
+        <div class="tool-call-header" onclick="this.parentElement.querySelector('.tool-params-preview')?.classList.toggle('open'); this.parentElement.querySelector('.tool-call-body')?.classList.toggle('open')">
+          <span class="tool-call-icon"><i data-lucide="shield-alert"></i></span>
+          <span class="tool-call-name">${escapeHtml(event.tool_name)}</span>
+          <span class="tool-call-args">${escapeHtml(argsPreview)}</span>
+          <span class="tool-call-status waiting">awaiting approval</span>
+        </div>
+        <div class="tool-params-preview open">
+          ${paramsHtml || '<div style="color:var(--text-muted);font-size:0.78rem;">No parameters</div>'}
+        </div>
+        <div class="tool-call-body">
+          <pre>Waiting for approval...</pre>
+        </div>
+        <div class="tool-approval">
+          <span class="approval-label">Allow this tool call?</span>
+          <button class="approve-btn" onclick="approveToolCall('${event.tool_id}', this)">Approve</button>
+          <button class="reject-btn" onclick="rejectToolCall('${event.tool_id}', this)">Reject</button>
+        </div>
+      `;
+      wrapper.appendChild(div);
+      toolCallElements[event.tool_id] = div;
+      lucide.createIcons();
+      scrollToBottom();
+    }
+
+    async function approveToolCall(toolId, btn) {
+      const div = toolCallElements[toolId];
+      if (!div) return;
+      const approval = div.querySelector('.tool-approval');
+      if (approval) approval.remove();
+      const st = div.querySelector('.tool-call-status');
+      st.className = 'tool-call-status running';
+      st.textContent = 'running';
+      const iconEl = div.querySelector('.tool-call-icon');
+      iconEl.classList.add('spinning');
+
+      try {
+        await fetch('/api/tool-approval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool_id: toolId, approved: true })
+        });
+      } catch (e) {
+        console.error('Approval failed:', e);
+      }
+    }
+
+    async function rejectToolCall(toolId, btn) {
+      const div = toolCallElements[toolId];
+      if (!div) return;
+      const approval = div.querySelector('.tool-approval');
+      if (approval) approval.remove();
+      const st = div.querySelector('.tool-call-status');
+      st.className = 'tool-call-status error';
+      st.textContent = 'rejected';
+      div.querySelector('.tool-call-icon').classList.remove('spinning');
+
+      try {
+        await fetch('/api/tool-approval', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tool_id: toolId, approved: false })
+        });
+      } catch (e) {
+        console.error('Rejection failed:', e);
+      }
+    }
+
     function updateToolResult(event) {
       const div = toolCallElements[event.tool_id];
       if (!div) return;
-      
+
       const startTime = parseInt(div.dataset.startTime);
       const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-      
+
       div.querySelector('.tool-call-icon').classList.remove('spinning');
+      // Remove approval buttons if still present
+      const approval = div.querySelector('.tool-approval');
+      if (approval) approval.remove();
+
       const st = div.querySelector('.tool-call-status');
       st.className = `tool-call-status ${event.status === 'success' ? 'success' : 'error'}`;
       st.textContent = `${event.status === 'success' ? 'done' : 'error'} (${duration}s)`;
-      
+
       const output = event.output || '(no output)';
       const diffHtml = renderDiff(output);
+      const bodyEl = div.querySelector('.tool-call-body pre');
+
       if (diffHtml) {
-        div.querySelector('.tool-call-body pre').outerHTML = diffHtml;
+        bodyEl.outerHTML = diffHtml;
+      } else if (output.length > 3000) {
+        // Show truncated with expand toggle
+        bodyEl.textContent = output.slice(0, 3000) + '\n...(truncated)';
+        const expandBtn = document.createElement('button');
+        expandBtn.className = 'copy-btn';
+        expandBtn.style.cssText = 'margin: 8px 0 0; font-size: 0.75rem;';
+        expandBtn.textContent = 'Show full output';
+        expandBtn.onclick = () => {
+          if (expandBtn.textContent === 'Show full output') {
+            bodyEl.textContent = output;
+            expandBtn.textContent = 'Collapse';
+          } else {
+            bodyEl.textContent = output.slice(0, 3000) + '\n...(truncated)';
+            expandBtn.textContent = 'Show full output';
+          }
+        };
+        div.querySelector('.tool-call-body').appendChild(expandBtn);
       } else {
-        div.querySelector('.tool-call-body pre').textContent =
-          output.length > 3000 ? output.slice(0, 3000) + '\n...(truncated)' : output;
+        bodyEl.textContent = output;
       }
     }
 
     // ===== MESSAGE RENDERING =====
     function addMessage(text, role) {
+      const tab = getActiveTab();
       const div = document.createElement('div');
       div.className = `message ${role}`;
+      if (tab) div.dataset.msgIndex = tab.messages.length;
       if (role === 'assistant') {
         div.innerHTML = renderMarkdown(text);
       } else {
@@ -1814,6 +2425,77 @@
       return div;
     }
 
+    function addMessageActions(el, text) {
+      // Remove existing actions if re-rendering
+      const existing = el.querySelector('.message-actions');
+      if (existing) existing.remove();
+
+      if (!text) return;
+
+      const actions = document.createElement('div');
+      actions.className = 'message-actions';
+      actions.innerHTML = `
+        <button onclick="copyMessageText(this)" title="Copy">&#128203;</button>
+        <button onclick="regenerateMessage(this)" title="Regenerate">&#8635;</button>
+      `;
+      el.style.position = 'relative';
+      el.appendChild(actions);
+    }
+
+    function copyMessageText(btn) {
+      const msg = btn.closest('.message');
+      if (!msg) return;
+      const clone = msg.cloneNode(true);
+      const actions = clone.querySelector('.message-actions');
+      if (actions) actions.remove();
+      const text = clone.innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = '&#10003;';
+        setTimeout(() => { btn.innerHTML = '&#128203;'; }, 1500);
+      });
+    }
+
+    function regenerateMessage(btn) {
+      const msg = btn.closest('.message');
+      if (!msg || isWaiting) return;
+      const tab = getActiveTab();
+      if (!tab || tab.messages.length < 2) return;
+
+      // Find the last user message
+      let lastUserIdx = -1;
+      for (let i = tab.messages.length - 1; i >= 0; i--) {
+        if (tab.messages[i].role === 'user') { lastUserIdx = i; break; }
+      }
+      if (lastUserIdx === -1) return;
+
+      const lastUserText = tab.messages[lastUserIdx].content;
+
+      // Remove the last assistant message(s) from state and DOM
+      while (tab.messages.length > lastUserIdx + 1) {
+        tab.messages.pop();
+      }
+      // Also remove the user message itself since sendMessage will re-add it
+      tab.messages.pop();
+
+      // Remove DOM elements from the last user message onward using data-msg-index
+      const allEls = chatContainer.querySelectorAll('.message, .tool-calls, .stats-bar');
+      const toRemove = [];
+      let foundUser = false;
+      for (let i = allEls.length - 1; i >= 0; i--) {
+        const el = allEls[i];
+        if (el.dataset.msgIndex !== undefined && parseInt(el.dataset.msgIndex) === lastUserIdx) {
+          toRemove.push(el);
+          foundUser = true;
+          break;
+        }
+        toRemove.push(el);
+      }
+      toRemove.forEach(el => el.remove());
+
+      // Re-send
+      sendMessage(lastUserText);
+    }
+
     function addThinking() {
       const div = document.createElement('div');
       div.className = 'thinking';
@@ -1824,11 +2506,13 @@
     }
 
     // ===== MARKDOWN & HIGHLIGHTING =====
-    const renderer = new marked.Renderer();
-    renderer.code = (code, lang) => {
+    const mdRenderer = new marked.Renderer();
+    mdRenderer.code = function(codeObj) {
+      // marked v15+ passes an object { text, lang, escaped }
+      const code = typeof codeObj === 'object' ? codeObj.text : codeObj;
+      const lang = typeof codeObj === 'object' ? codeObj.lang : arguments[1];
       const validLang = lang && hljs.getLanguage(lang) ? lang : 'plaintext';
       const highlighted = hljs.highlight(code, { language: validLang }).value;
-      // Using data-code attribute to store content for copying, avoiding complex escaping in onclick
       return `<div class="code-container">
         <div class="code-header">
           <span>${validLang}</span>
@@ -1839,17 +2523,17 @@
       </div>`;
     };
 
-    marked.setOptions({ renderer, breaks: true, gfm: true });
+    marked.setOptions({ renderer: mdRenderer, breaks: true, gfm: true });
 
     function renderMarkdown(text) {
       if (!text) return '';
       return marked.parse(text);
     }
 
+    // Optimized escapeHtml — avoids DOM element creation per call
+    const _escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
     function escapeHtml(text) {
-      const d = document.createElement('div');
-      d.textContent = text;
-      return d.innerHTML;
+      return String(text).replace(/[&<>"']/g, m => _escapeMap[m]);
     }
 
     // ===== HELPERS =====
@@ -1878,21 +2562,27 @@
         btn.innerHTML = '&#10003; Copied';
         btn.style.borderColor = 'var(--success)';
         btn.style.color = 'var(--success)';
-        setTimeout(() => { 
-          btn.innerHTML = original; 
+        setTimeout(() => {
+          btn.innerHTML = original;
           btn.style.borderColor = '';
           btn.style.color = '';
         }, 2000);
       });
     }
 
-    // Keyboard shortcuts
+    // ===== KEYBOARD SHORTCUTS =====
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.key === 't') { e.preventDefault(); createNewTab(); }
       if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId); }
       if (e.ctrlKey && e.key === 'u') { e.preventDefault(); document.getElementById('fileInput').click(); }
       if (e.ctrlKey && e.key === 'b') { e.preventDefault(); toggleSidebar(); }
-      if (e.key === 'Escape') closeFilePreview();
+      if (e.key === 'Escape') {
+        // Priority: cancel generation > close settings > close lightbox > close file preview
+        if (isWaiting) { cancelGeneration(); }
+        else if (document.getElementById('settingsPanel').classList.contains('open')) { closeSettings(); }
+        else if (document.getElementById('imageLightbox').classList.contains('open')) { closeLightbox(); }
+        else { closeFilePreview(); }
+      }
     });
 
     // ===== THEME =====
@@ -1910,30 +2600,84 @@
       document.documentElement.setAttribute('data-theme', next);
       localStorage.setItem('ea-theme', next);
       updateThemeIcon(next);
-      
-      // Update Highlight.js theme
       document.getElementById('hljs-dark').disabled = (next === 'light');
       document.getElementById('hljs-light').disabled = (next === 'dark');
     }
 
     function updateThemeIcon(theme) {
       const btn = document.getElementById('themeToggle');
-      btn.innerHTML = theme === 'dark' ? '&#9788;' : '&#9790;';
+      btn.innerHTML = theme === 'dark' ? '<i data-lucide="sun"></i>' : '<i data-lucide="moon"></i>';
       btn.title = theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+      lucide.createIcons();
     }
 
     initTheme();
 
+    // ===== SETTINGS =====
+    function openSettings() {
+      document.getElementById('settingsPanel').classList.add('open');
+      document.getElementById('settingsBackdrop').classList.add('open');
+    }
+
+    function closeSettings() {
+      document.getElementById('settingsPanel').classList.remove('open');
+      document.getElementById('settingsBackdrop').classList.remove('open');
+    }
+
+    function saveSetting(key, value) {
+      settings[key] = value;
+      localStorage.setItem(`ea-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
+    }
+
+    // ===== IMAGE LIGHTBOX =====
+    function openLightbox(src) {
+      const overlay = document.getElementById('imageLightbox');
+      const img = document.getElementById('lightboxImg');
+      img.src = src;
+      overlay.classList.add('open');
+    }
+
+    function closeLightbox() {
+      document.getElementById('imageLightbox').classList.remove('open');
+    }
+
+    // ===== CONVERSATION EXPORT =====
+    function exportConversation() {
+      const tab = getActiveTab();
+      if (!tab || tab.messages.length === 0) {
+        addMessage('No messages to export.', 'system');
+        return;
+      }
+
+      let md = `# ${tab.title}\n\n`;
+      md += `*Exported on ${new Date().toLocaleString()}*\n\n---\n\n`;
+
+      for (const msg of tab.messages) {
+        if (msg.role === 'user') {
+          md += `## You\n\n${msg.content}\n\n`;
+        } else if (msg.role === 'assistant') {
+          md += `## Assistant\n\n${msg.content}\n\n`;
+        }
+        md += '---\n\n';
+      }
+
+      const blob = new Blob([md], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${tab.title.replace(/[^a-z0-9]/gi, '_').slice(0, 40)}_export.md`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
     // ===== DIFF RENDERING =====
     function renderDiff(text) {
-      if (!text.includes('--- ') || !text.includes('+++ ')) return null;
+      if (!(/(^|\n)--- /.test(text)) || !(/(^|\n)\+\+\+ /.test(text))) return null;
       const lines = text.split('\n');
       let html = '<div class="diff-block">';
-      let inDiff = false;
       for (const line of lines) {
         if (line.startsWith('--- ') || line.startsWith('+++ ')) {
           html += `<div class="diff-header">${escapeHtml(line)}</div>`;
-          inDiff = true;
         } else if (line.startsWith('+')) {
           html += `<div class="diff-line added">${escapeHtml(line)}</div>`;
         } else if (line.startsWith('-')) {
@@ -1949,19 +2693,136 @@
     }
 
     // ===== EVENT DELEGATION =====
-    // Copy buttons lose their handlers when innerHTML is serialized — use delegation instead
     chatContainer.addEventListener('click', e => {
-      const btn = e.target.closest('.copy-btn');
-      if (!btn) return;
-      const container = btn.closest('.code-container');
-      if (!container) return;
-      const raw = container.querySelector('.raw-code')?.innerHTML;
-      if (raw) {
-        const txt = document.createElement('textarea');
-        txt.innerHTML = raw;
-        copyToClipboard(txt.value, btn);
+      // Copy button on code blocks
+      const copyBtn = e.target.closest('.copy-btn');
+      if (copyBtn) {
+        const container = copyBtn.closest('.code-container');
+        if (container) {
+          const raw = container.querySelector('.raw-code')?.innerHTML;
+          if (raw) {
+            const txt = document.createElement('textarea');
+            txt.innerHTML = raw;
+            copyToClipboard(txt.value, copyBtn);
+          }
+        }
+        return;
+      }
+
+      // Image lightbox on attachment images
+      const img = e.target.closest('.attachment-img');
+      if (img) {
+        openLightbox(img.src);
+        return;
       }
     });
+
+    // ===== MODEL BADGE =====
+    function updateModelBadge() {
+      const badge = document.getElementById('modelBadge');
+      const model = settings.model || 'default';
+      const labels = {
+        '': 'default',
+        'gemini-2.5-pro': 'gemini-2.5-pro',
+        'gemini-2.5-flash': 'gemini-2.5-flash',
+        'gemini-2.0-flash': 'gemini-2.0-flash',
+      };
+      badge.textContent = labels[settings.model] || model;
+    }
+
+    // ===== TOKEN USAGE =====
+    async function loadTokenUsage() {
+      try {
+        const res = await fetch('/api/token-usage');
+        const data = await res.json();
+        const t = data.total || {};
+        document.getElementById('tokenTotal').textContent = (t.total_tokens || 0).toLocaleString();
+        document.getElementById('tokenIn').textContent = (t.input_tokens || 0).toLocaleString();
+        document.getElementById('tokenOut').textContent = (t.output_tokens || 0).toLocaleString();
+        document.getElementById('tokenRequests').textContent = (t.requests || 0).toLocaleString();
+      } catch {}
+    }
+
+    async function resetTokenUsage() {
+      if (!confirm('Reset all token usage counters?')) return;
+      await fetch('/api/token-usage', { method: 'DELETE' });
+      loadTokenUsage();
+    }
+
+    // ===== SESSION TAGS =====
+    function setSessionTag(sessionId, tag) {
+      if (!tag || sessionTags[sessionId] === tag) {
+        delete sessionTags[sessionId]; // Clear or toggle off
+      } else {
+        sessionTags[sessionId] = tag;
+      }
+      localStorage.setItem('ea-session-tags', JSON.stringify(sessionTags));
+      closeAllTagPickers();
+      loadSessions();
+    }
+
+    function toggleTagPicker(sessionId, e) {
+      e.stopPropagation();
+      closeAllTagPickers();
+      const item = e.target.closest('.sidebar-item') || e.target.closest('[data-session-id]');
+      if (!item) return;
+
+      const picker = document.createElement('div');
+      picker.className = 'tag-picker open';
+      picker.dataset.sessionId = sessionId;
+      picker.innerHTML = ['red','blue','green','yellow','purple'].map(color =>
+        `<span class="session-tag tag-${color}" data-tag-color="${color}">${color}</span>`
+      ).join('') + `<span class="session-tag" style="border:1px dashed var(--text-muted);color:var(--text-muted);" data-tag-color="">clear</span>`;
+
+      picker.addEventListener('click', ev => {
+        ev.stopPropagation();
+        const tagEl = ev.target.closest('[data-tag-color]');
+        if (tagEl) {
+          setSessionTag(sessionId, tagEl.dataset.tagColor || undefined);
+        }
+      });
+
+      item.appendChild(picker);
+      // Close on outside click
+      setTimeout(() => {
+        document.addEventListener('click', closeAllTagPickers, { once: true });
+      }, 0);
+    }
+
+    function closeAllTagPickers() {
+      document.querySelectorAll('.tag-picker').forEach(p => p.remove());
+    }
+
+    function filterSessions(tag) {
+      activeTagFilter = tag;
+      // Update filter button states
+      document.querySelectorAll('.sidebar-filter-btn').forEach(btn => {
+        btn.classList.toggle('active', (tag === 'all' && !btn.dataset.tag) || btn.dataset.tag === tag);
+      });
+      loadSessions();
+    }
+
+    // ===== NOTIFICATIONS =====
+    function requestNotificationPermission() {
+      if (settings.notifications === 'on' && 'Notification' in window && Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function sendNotification(title, body) {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      try {
+        const n = new Notification(title, {
+          body: body,
+          icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🤖</text></svg>',
+          tag: 'ea-completion',
+        });
+        n.onclick = () => { window.focus(); n.close(); };
+      } catch {}
+    }
+
+    // Request permission on load if enabled
+    requestNotificationPermission();
 
     // ===== LAUNCH =====
     init();

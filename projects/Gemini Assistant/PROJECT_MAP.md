@@ -33,8 +33,13 @@ Gemini Assistant/
 │   └── agents/                   #   Sub-agent definitions (auto-discovered)
 │       ├── ui-engineer.md        #     Frontend, components, accessibility
 │       ├── backend-engineer.md   #     APIs, database, auth, security
+│       ├── graphics-engineer.md  #     Canvas, SVG, Babylon.js, animations
+│       ├── assessment-designer.md #    Rubric architecture, standards alignment
+│       ├── curriculum-designer.md #    Learning objectives, unit sequencing
 │       ├── qa-engineer.md        #     Testing, auditing (reports only)
 │       ├── content-writer.md     #     User-facing copy and text
+│       ├── email-agent.md        #     Gmail triage, drafting, inbox management
+│       ├── research-agent.md     #     Multi-source synthesis, literature review
 │       ├── data-analyst.md       #     Metrics, analysis (read-only)
 │       ├── technical-writer.md   #     API docs, changelogs, references
 │       ├── performance-engineer.md #   Profiling, optimization
@@ -47,10 +52,16 @@ Gemini Assistant/
 │   ├── context-sync.md           #   Weekly priority/memory maintenance
 │   ├── daily-briefing.md         #   Activity summary and next steps
 │   ├── dev-pipeline.md           #   Full dev lifecycle with agent orchestration
+│   ├── inbox-triage.md           #   Gmail triage and classification
 │   ├── web-research.md           #   Search, extract, convert
 │   ├── slide-deck.md             #   Reveal.js presentations
 │   ├── 2d-activity.md            #   Interactive HTML (Canvas/SVG/JS)
 │   ├── 3d-activity.md            #   Babylon.js 3D simulations
+│   ├── create-assessment.md      #   Build assessments from objectives
+│   ├── lesson-plan.md            #   ISLE-aligned lesson creation
+│   ├── generate-questions.md     #   Bulk question bank production
+│   ├── study-guide.md            #   Student review materials from existing content
+│   ├── rubric-audit.md           #   Rubric neutrality and quality checks
 │   ├── changelog.md              #   Generate changelogs from git history
 │   ├── dependency-audit.md       #   Security and package freshness checks
 │   └── agent-creator.md          #   Create/audit agent definitions
@@ -92,6 +103,6 @@ Gemini Assistant/
 ### Model Tiers
 | Tier | Model | Used For |
 |------|-------|----------|
-| Manager | gemini-2.5-pro | EA orchestration, complex decisions |
-| Specialist | gemini-2.5-pro | Engineering agents, content creation |
-| Fast | gemini-2.5-flash | QA, summaries, monitoring |
+| Manager | gemini-3.0-pro | EA orchestration via Gemini CLI (this is the CLI's own model, not declared in agent frontmatter) |
+| Specialist | gemini-2.5-pro | Engineering agents, education agents, content creation |
+| Fast | gemini-2.5-flash | QA, summaries, monitoring, email, research |
