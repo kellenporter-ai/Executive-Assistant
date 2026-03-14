@@ -44,5 +44,6 @@ This agent runs locally via Ollama and does not load shared memory or project co
 - If unsure about something, say so rather than guessing.
 - Flag if a task seems beyond your capability so Claude can handle it instead.
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

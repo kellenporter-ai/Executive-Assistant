@@ -104,6 +104,7 @@ Before starting work:
 ## Localization Gaps Found
 - [Any related content that still needs translation]
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]
 ```

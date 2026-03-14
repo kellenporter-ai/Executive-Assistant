@@ -94,5 +94,6 @@ Before starting work:
 - [Guidance for /create-assessment or /generate-questions]
 ```
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

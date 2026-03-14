@@ -127,6 +127,7 @@ ls -la dist/assets/*.js | sort -k5 -n -r | head -20
 ## Dependencies / Blockers
 - [What other agents need to know or do]
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]
 ```

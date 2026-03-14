@@ -71,5 +71,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 - Cross-reference multiple signals — don't make conclusions from a single metric.
 - Note when data is insufficient to draw conclusions.
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

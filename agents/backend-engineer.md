@@ -62,5 +62,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 **Build:** [pass/fail]
 ```
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

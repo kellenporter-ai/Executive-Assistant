@@ -61,5 +61,6 @@ Before starting work, read `agents/memory/SHARED.md` for cross-cutting knowledge
 - [ ] Does it fit the component's spatial constraints?
 - [ ] Is it free of jargon and condescension?
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

@@ -124,5 +124,6 @@ If ANY category fails: `REJECTED — REQUIRES FIXES` with all bug reports listed
 | Medium (minor functional, non-critical a11y) | Usually — can be deferred by EA |
 | Low (style, minor improvements) | No — noted only |
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

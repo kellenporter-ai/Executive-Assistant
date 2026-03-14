@@ -69,5 +69,6 @@ After any deployment, check:
 | MEDIUM | Single non-critical error | Report with details |
 | LOW | Index still building | Note — resolves on its own |
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

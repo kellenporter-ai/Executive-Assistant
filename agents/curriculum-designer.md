@@ -106,6 +106,7 @@ Higher-level objectives should span multiple phases. A curriculum unit should cy
 - **For lesson-plan:** [suggested activity types per objective]
 - **For content-writer:** [reference materials or readings needed]
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]
 ```

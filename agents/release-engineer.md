@@ -130,6 +130,7 @@ cd projects/Porters-Portal && firebase deploy --only functions:<functionName>
 ## Post-Deploy Handoff
 - deployment-monitor should watch for: [specific concerns]
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]
 ```

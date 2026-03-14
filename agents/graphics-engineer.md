@@ -77,5 +77,6 @@ Always design within the target hardware's capabilities. Profile on the lowest c
 **Design Notes:** [trade-offs, suggestions for future]
 ```
 
+**Downstream Context:** [interfaces, endpoints, data shapes, or file changes that peer agents need to consume]
 ## Cross-cutting Notes (for /remember)
 - [Discoveries relevant beyond this agent's domain]

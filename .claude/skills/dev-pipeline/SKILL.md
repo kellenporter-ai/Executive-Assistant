@@ -10,7 +10,7 @@ tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]
 
 Project-agnostic development pipeline. Takes a task, applies Backward Design, delegates to specialist agents with project-specific context, builds, and deploys. The EA handles all orchestration — no separate orchestrator agent.
 
-**Pipeline:** Backward Design → Delegate → QA → Build → Deploy → Verify
+**Pipeline:** Backward Design → Delegate → Build → QA → Deploy → Verify
 
 ---
 
@@ -84,13 +84,28 @@ Available agents for coordination: [other agents involved in this task]
 [Contents of projects/<name>/.agents/<agent-name>.md, if it exists]
 ```
 
+When agents complete, review their **Downstream Context** section — it contains interfaces, endpoints, data shapes, or file changes that other agents need to consume. Feed relevant downstream context into dependent agent prompts.
+
 Run agents in parallel when their tasks are independent. Stagger when there are dependencies (e.g., types/models before UI that consumes them).
 
 ---
 
-## Step 3: QA
+## Step 3: Build
 
-After all engineering agents complete, launch the **qa-engineer** with all changed files and the Backward Design goal. Include the project's QA specialization if it exists.
+After all engineering agents complete, execute the build commands from `context.md`. Both frontend and backend if applicable.
+
+If the build fails:
+1. Read errors — determine which agent's code caused them.
+2. Launch the responsible agent to fix.
+3. Re-build until clean.
+
+**Never deploy broken code. Never skip the build.**
+
+---
+
+## Step 4: QA
+
+After a clean build, launch the **qa-engineer** with all changed files and the Backward Design goal. Include the project's QA specialization if it exists.
 
 **If the task involved UI changes**, also include in the QA delegation:
 - Which pages/routes were affected by the changes
@@ -99,21 +114,10 @@ After all engineering agents complete, launch the **qa-engineer** with all chang
 
 If QA rejects:
 1. Read each bug report.
-2. Route each bug to the responsible agent.
-3. After fixes, re-run QA.
-
----
-
-## Step 4: Build
-
-Once QA signs off, execute the build commands from `context.md`. Both frontend and backend if applicable.
-
-If the build fails:
-1. Read errors — determine which agent's code caused them.
-2. Launch the responsible agent to fix.
-3. Re-build until clean.
-
-**Never deploy broken code. Never skip the build.**
+2. Route each bug to the responsible agent (back to Step 2).
+3. Re-build (Step 3).
+4. Re-run QA.
+5. Repeat until QA passes. If the rejection reveals a design flaw, loop back to Step 1 (Backward Design) to revise the approach.
 
 ---
 
@@ -180,4 +184,5 @@ Use the 5-step self-correction loop (Read → Research → Patch → Retry → L
 - **Project context is loaded, not hardcoded.** Build/deploy commands come from `.agents/context.md`.
 - **Agents get specialized at runtime.** General agent + project specialization file = project-aware specialist.
 - **Autonomous execution.** The full pipeline runs without pausing for user approval unless a decision is genuinely ambiguous.
-- **Build must pass.** QA sign-off + clean build are both required before deploy.
+- **Build before QA.** Build catches compile/runtime errors first. QA reviews working code. Both must pass before deploy.
+- **QA rejection loops back.** If QA finds issues, route back to agents → rebuild → re-QA. If the flaw is architectural, loop back to Backward Design.
