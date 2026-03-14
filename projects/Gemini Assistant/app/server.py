@@ -63,8 +63,8 @@ async def chat(request: ChatRequest):
         active_tasks[track_id] = task
         
         try:
-            # Pass track_id as session_id if original was None
-            async for event in stream_chat(request.message, session_id or track_id):
+            # Only pass real session_id to CLI — temp track_id is for internal cancellation only
+            async for event in stream_chat(request.message, session_id):
                 # Update track_id if session_id is returned in the first event
                 if event.get("type") == "init" and event.get("session_id"):
                     new_session_id = event["session_id"]
