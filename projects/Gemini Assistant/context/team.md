@@ -8,7 +8,7 @@
 ### Name
 - **Role:** [their role]
 - **Works on:** [their domain/focus area]
-- **Communication:** [how to reach them — Slack, email, etc.]
+- **Communication:** [how to reach them — email, etc.]
 - **Notes:** [anything the EA should know about working with them]
 -->
 

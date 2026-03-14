@@ -10,4 +10,6 @@
 
 ## Index
 - [Parallel session isolation preference](parallel-session-isolation.md) (user)
+- [Communication preferences - No Slack](communication-preferences.md) (user)
 - [GEMINI_SESSION_ID for session-aware logging](gemini-session-id-logging.md) (project)
+- [UI connection timeouts from large shell outputs](ui-connection-timeouts.md) (feedback)

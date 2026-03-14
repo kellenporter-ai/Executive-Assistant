@@ -6,7 +6,7 @@
 ## Priority 1: System Maturity (WAT Implementation)
 **Goal:** Complete the **Deterministic Execution Layer** (Tools) to fully align with the architectural blueprint.
 - **Status:** In Progress (Gmail, Calendar, Search, Logger, and **Session Isolation** implemented).
-- **Key Milestones:** Add Slack integration, build a local state database (SQLite/Airtable), and refine all workflows for tool-first execution.
+- **Key Milestones:** Build a local state database (SQLite/Airtable), and refine all workflows for tool-first execution.
 - **Blockers:** Missing `credentials.json` for live Gmail/Calendar testing.
 
 ## Priority 2: Efficiency & Cost Optimization

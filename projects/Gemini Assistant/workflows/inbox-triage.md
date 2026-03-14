@@ -1,6 +1,6 @@
 # Workflow: Inbox Triage & P.A.R.A Classification
 
-Autonomous pipeline for ingesting unstructured data from Gmail/Slack and organizing it into an actionable database.
+Autonomous pipeline for ingesting unstructured data from Gmail and organizing it into an actionable database.
 
 ## Step 1: Ingestion
 1. **Search for new communications** using deterministic tools:
