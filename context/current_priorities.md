@@ -14,21 +14,22 @@ All stability work completed as of 2026-03-10. Full audit history archived in `d
 - **Remaining (round 10+):** deeper color contrast sweep (remaining `text-gray-300/400/500` on dark), InlineBlockEditor form labels (`htmlFor`/`id` pairing ~30 inputs), touch target sizing (icon buttons `p-1`/`p-1.5` → 44px min), virtualization (DungeonPanel, FluxShop, inventory grids), early warning intervention UI, seasonal rewards wiring, spectate mode, skill synergy viz
 
 ## Priority 3: Executive Assistant & Agent Team Enhancement
-- **14 general agents** in `agents/`, project-specific agents in `projects/<name>/.agents/`
-- **26 skills** in `.claude/skills/` — dev-pipeline is project-agnostic with Backward Design
+- **15 general agents** in `agents/`, project-specific agents in `projects/<name>/.agents/`
+- **27 skills** in `.claude/skills/` — dev-pipeline is project-agnostic with Backward Design
 - Agent memory in `agents/memory/` — cross-project institutional knowledge
 - Teaching automation tools (grading assistant, lesson plans, parent comms, behavior referrals)
 - Trigger skills for new agents: `/rubric-audit`, `/perf-audit`, `/changelog`
 - Full assessment lifecycle + skill-to-agent mapping documented in `agents/ROUTING.md`
 - **Two audit rounds completed (2026-03-12):** Round 1 added 6 agents, 4 skills, 3 tools, expanded ROUTING.md. Round 2 standardized all agent structures, added error handling to skills, wired orphaned tools, fixed deploy delegation (→ release-engineer), added QA-before-user in create-assessment.
 
-## Priority 4: Gemini Executive Assistant for Teachers
-- **Goal:** Distributable WAT-based EA powered by Gemini CLI for other teachers
-- **Location:** `projects/Gemini Assistant/`
-- **Architecture:** Web chat UI (FastAPI + vanilla HTML) that acts as a thin shell over Gemini CLI subprocess
-- **Key decision:** Frontend pipes user input to `gemini` CLI process stdin, streams stdout back. CLI handles all auth (Google account OAuth or API key), tool calling, agent delegation, and file operations natively. No SDK, no custom auth code.
-- **Status (2026-03-15):** Distribution-ready. Frontend modularized into 3 files (~7300 lines total). Setup: standalone setup.html for no-Python users, 3-phase wizard (deps→auth→interview), profile editor in settings. Reset system: 5 scopes (history/interview/preferences/factory/complete) + individual folder cleanup. Settings: 4-category sidebar nav (General/Profile/Reset/Developer). Message actions: hover copy/fork, right-click context menu. Debug panel: verbose mode with color-coded event log, model badges, timing. Server shutdown from UI. QA passed all rounds.
-- **Next step:** User testing — have a colleague try the full setup flow from scratch (download, run start.sh, complete wizard). Polish based on feedback.
+## Priority 4: Gemini Integration (Discourse Agent + Shared Distribution)
+
+**Two versions (as of 2026-03-15):**
+
+- **Non-shared** (`projects/Gemini Assistant/`): Headless discourse agent in the Claude Code dev-pipeline. No web UI. Invoked via `tools/gemini-bridge.py`. Works as a peer to Claude Code agents — parallel QA audits, second-opinion analysis, cross-model synthesis via `/discourse` skill. Context files populated with discourse agent identity.
+- **Shared** (`projects/Gemini Assistant (Shared)/`): Full web app (FastAPI + chat UI) for distribution to other teachers. Context files are empty templates — context-agnostic, ready for any teacher to set up.
+- **Learning flow:** Non-shared accumulates learnings → context-agnostic entries propagate to Shared version via `/remember` and `/context-sync`.
+- **Next step:** User testing of the Shared version with a colleague (full setup flow from scratch).
 
 ## Porter's Portal Reference
 - Path: `/home/kp/Desktop/Executive Assistant/projects/Porters-Portal` (git submodule)

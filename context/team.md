@@ -28,6 +28,8 @@ General agents in `agents/` — project-specialized via `projects/<name>/.agents
 | curriculum-designer | Lesson + unit design | ISLE methodology, Backward Design |
 | localization-coordinator | Bilingual content | English/Spanish, equity-centered |
 | release-engineer | Deploy orchestration | Ordering, pre-deploy gates, rollback |
+| gemini-assistant | Gemini system coordinator | Invokes Gemini CLI via bridge tool; parallel discourse QA and cross-model synthesis |
 
 **Portal-only:** `economy-designer` lives in `projects/Porters-Portal/.agents/` (no general counterpart).
+**Gemini sub-agents:** 13 specialists in `projects/Gemini Assistant/.gemini/agents/` (mirror of Claude agent roster).
 **Orchestration:** EA handles directly — no separate orchestrator agent.

@@ -20,6 +20,7 @@ Quick reference for the EA to decide which agent handles a task.
 | **localization-coordinator** | Haiku | English↔Spanish translation, bilingual content review, terminology consistency, localization coverage audits | Original English content, i18n code, lesson block JSON, assessment design |
 | **release-engineer** | Sonnet | Deploy planning, multi-target Firebase sequencing (indexes→rules→functions→hosting), rollback, pre-deploy gates | Post-deploy monitoring, writing features, QA, security rule authoring |
 | **local-llm-assistant** | Qwen3 14B | Drafting, summarizing, reformatting, brainstorming, boilerplate | Complex reasoning, multi-step code, student-facing content |
+| **gemini-assistant** | Sonnet | Discourse QA, second-opinion reviews, cross-model synthesis, batch file ops | Unilateral architectural decisions, replacing Claude agents |
 
 ## Project-Only Agents
 
@@ -60,6 +61,10 @@ Quick reference for the EA to decide which agent handles a task.
 | "Deploy the latest changes" | release-engineer | deployment-monitor |
 | "What order should we deploy?" | release-engineer | backend-engineer |
 | "Roll back the last deploy" | release-engineer | deployment-monitor |
+| "Get Gemini's perspective on this" | gemini-assistant | qa-engineer |
+| "Run discourse QA" | qa-engineer + gemini-assistant (parallel) | just qa-engineer |
+| "Have Gemini audit this" | gemini-assistant --agent qa-engineer | qa-engineer |
+| "Have Gemini research this" | gemini-assistant --agent research-agent | web-research skill |
 
 ## Multi-Agent Coordination
 
@@ -80,6 +85,8 @@ Some tasks require multiple agents. Launch them in sequence:
 10. **New curriculum unit:** curriculum-designer (objectives + sequence) → assessment-designer (rubrics for key objectives) → lesson-plan skill (lesson blocks) → content-writer (student materials) → localization-coordinator (Spanish versions)
 11. **Production release:** release-engineer (plan + sequence + deploy) → deployment-monitor (health check) → technical-writer (changelog if major)
 12. **Bilingual content pipeline:** content-writer (English original) → localization-coordinator (Spanish translation) → qa-engineer (verify pedagogical framing preserved)
+13. **Discourse QA:** qa-engineer (Claude audit) + gemini-assistant (Gemini audit, parallel) → EA synthesizes → final QA verdict. Use `/discourse` skill for orchestration.
+14. **Cross-model review:** gemini-assistant (independent analysis) + relevant Claude agent (parallel) → EA merges unique findings from both
 
 ## Boundary Ownership
 

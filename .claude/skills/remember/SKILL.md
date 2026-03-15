@@ -96,6 +96,15 @@ Check if any discoveries from this session are **cross-cutting** — relevant to
 
 If cross-cutting discoveries exist, read `agents/memory/SHARED.md` and append them under the appropriate section. Follow the same dedup rules as personal memory — check what's already there first.
 
+### Gemini Memory Bridge
+
+After consolidating Claude-side memory, check if the **gemini-assistant** agent was used this session. If so:
+
+1. Read `projects/Gemini Assistant/memory/MEMORY.md` for any new entries Gemini recorded
+2. Check the gemini-assistant's last task report for Cross-cutting Notes
+3. **Context-agnostic learnings** (useful to any user, not Kellen-specific) should also be written to `projects/Gemini Assistant (Shared)/memory/MEMORY.md` — this keeps the distributable version improving alongside the working version
+4. Gemini-specific learnings (CLI quirks, model performance) go to `agents/memory/gemini-assistant/MEMORY.md`
+
 ## Step 4: Apply Changes
 
 Make your edits using the Edit tool for surgical updates. Follow these rules:

@@ -1,0 +1,12 @@
+{
+  "experimental": {
+    "enableAgents": true,
+    "nativeParallelDispatch": true
+  },
+  "agents": {
+    "defaultApprovalMode": "yolo",
+    "maxConcurrent": 4,
+    "staggerDelay": 2
+  },
+  "theme": "system"
+}

@@ -1,0 +1,26 @@
+# Temp outputs — keep directory structure, ignore contents
+temp/**
+!temp/.gitkeep
+!temp/attachments/
+temp/attachments/*
+!temp/attachments/.gitkeep
+*.pyc
+__pycache__/
+.env
+node_modules/
+dist/
+.DS_Store
+app/.venv/
+app/.auth/
+state.db
+operational_logs.jsonl
+.directory
+
+# Credentials — NEVER commit these
+credentials.json
+token.json
+token_gmail.json
+token_calendar.json
+service-account*.json
+client-secret*.json
+*.key.json

@@ -45,6 +45,9 @@ Read all files in `context/` to understand the current documented state:
 ### 3. Agent Memory
 Scan `agents/memory/*/MEMORY.md` for patterns agents have recorded. These often capture real shifts before anyone formally documents them — new bugs becoming a theme, a feature area getting heavy attention, performance issues surfacing.
 
+### 3b. Gemini Memory Bridge
+Check `projects/Gemini Assistant/memory/MEMORY.md` for learnings the Gemini system has accumulated. Propagate context-agnostic entries (not Kellen-specific) to `projects/Gemini Assistant (Shared)/memory/MEMORY.md` so the distributable version improves alongside the working version. Skip entries that reference personal data, school-specific details, or student information.
+
 ### 4. Decision Log
 Read any existing files in `decisions/` to understand what's already been logged and avoid duplicating entries.
 

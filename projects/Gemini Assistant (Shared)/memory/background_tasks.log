@@ -1,0 +1,11 @@
+YOLO mode is enabled. All tool calls will be automatically approved.
+Loaded cached credentials.
+YOLO mode is enabled. All tool calls will be automatically approved.
+An unexpected critical error occurred:Error: setRawMode EIO
+    at ReadStream.setRawMode (node:tty:81:24)
+    at setupStdinCancellation (file:///usr/lib/node_modules/@google/gemini-cli/dist/src/nonInteractiveCli.js:59:27)
+    at file:///usr/lib/node_modules/@google/gemini-cli/dist/src/nonInteractiveCli.js:116:13
+    at AsyncLocalStorage.run (node:internal/async_local_storage/async_context_frame:63:14)
+    at runNonInteractive (file:///usr/lib/node_modules/@google/gemini-cli/dist/src/nonInteractiveCli.js:16:28)
+    at main (file:///usr/lib/node_modules/@google/gemini-cli/dist/src/gemini.js:531:15)
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)

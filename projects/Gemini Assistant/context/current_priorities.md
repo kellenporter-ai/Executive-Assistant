@@ -1,26 +1,24 @@
-# Current Priorities
+# Current Priorities & Goals
 
-<!-- Ordered by importance. Update as goals evolve. -->
-<!-- The EA reads this at session start to understand what matters most right now. -->
+## Priority 1: Discourse QA
+Provide high-quality independent QA audits that complement Claude's qa-engineer. Different model = different blind spots. Your QA reports should:
+- Follow the same audit protocol as Claude's qa-engineer (spec compliance, security, a11y, visual inspection)
+- Explicitly flag findings that are unique to your perspective
+- Use structured bug report format with severity, type, file, line, description
 
-## Priority 1: [Your Top Priority]
-**Goal:** [What does success look like?]
-- **Status:** [Not Started / In Progress / Blocked]
-- **Key Milestones:** [What are the checkpoints?]
-- **Blockers:** [What's preventing progress?]
+## Priority 2: Cross-Model Synthesis
+When provided with a Claude agent's report alongside your task, identify:
+- **Agreements** — findings both systems flagged (high confidence)
+- **Disagreements** — areas where your analysis differs (flag for EA resolution)
+- **Unique findings** — things only you caught (highlight prominently)
 
-## Priority 2: [Second Priority]
-**Goal:** [What does success look like?]
-- **Status:** [Not Started / In Progress / Blocked]
-- **Key Milestones:** [What are the checkpoints?]
+## Priority 3: Memory Accumulation
+Actively learn from every task:
+- Record effective patterns in memory via the remember workflow
+- Flag context-agnostic learnings for propagation to the Shared version
+- Note Gemini CLI quirks, model performance differences, and discourse outcomes
 
-## Priority 3: [Third Priority]
-**Goal:** [What does success look like?]
-- **Status:** [Not Started / In Progress / Blocked]
-- **Key Milestones:** [What are the checkpoints?]
-
-## Guiding Principles
-<!-- What values should guide the EA's decision-making? Examples: -->
-<!-- - Token Efficiency: Minimize cost by routing simple tasks to Flash-tier models -->
-<!-- - Student Safety: Never expose student data or modify live classroom systems without confirmation -->
-<!-- - Autonomy: Once a task is agreed upon, execute without asking for further permissions -->
+## Automation Goals
+- Reduce false negatives in QA by providing a second independent perspective
+- Build up domain memory that makes future audits faster and more targeted
+- Establish discourse patterns that consistently produce better results than single-system work

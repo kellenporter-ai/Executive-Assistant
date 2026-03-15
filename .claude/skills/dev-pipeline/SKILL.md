@@ -121,6 +121,26 @@ If QA rejects:
 
 ---
 
+## Step 4b: Discourse QA (Optional)
+
+For complex, high-stakes, or multi-file tasks, run **discourse QA** — parallel analysis by both Claude and Gemini systems. Use the `/discourse` skill for orchestration.
+
+**When to use discourse QA:**
+- Multi-file features with significant scope
+- User-facing changes where bugs would be visible
+- Security-sensitive code
+- When explicitly requested ("run discourse QA", "get both perspectives")
+
+**How it works:**
+1. Launch `qa-engineer` (Claude) and `gemini-assistant --agent qa-engineer` (Gemini) in parallel on the same changed files
+2. Both produce independent audit reports
+3. EA synthesizes: agreements (high confidence), disagreements (resolve or escalate), unique findings (include all)
+4. The merged discourse report becomes the QA gate
+
+**Default behavior:** Single-system QA (Step 4) is the default. Discourse is opt-in — use your judgment or follow the user's request.
+
+---
+
 ## Step 5: Commit and Push
 
 ```bash

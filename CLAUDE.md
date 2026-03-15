@@ -68,6 +68,17 @@ curl -sf http://localhost:11434/api/tags > /dev/null 2>&1 && echo "available" ||
 ```
 If unavailable, handle the task yourself — don't ask Kellen to start the service.
 
+## Gemini Integration
+
+The Gemini Assistant (`projects/Gemini Assistant/`) is a headless agent subsystem that runs Google's Gemini models alongside Claude Code agents. It enables **discourse** — parallel analysis by both AI systems with synthesis for stronger outcomes.
+
+- **Bridge tool:** `tools/gemini-bridge.py` — invoke Gemini CLI synchronously from any agent
+- **Agent:** `agents/gemini-assistant.md` — Claude Code agent that coordinates all Gemini invocations
+- **Gemini workspace:** `projects/Gemini Assistant/` — contains GEMINI.md, 13 Gemini sub-agents, 19 workflows, memory, and context
+- **Discourse skill:** `/discourse` — parallel Claude+Gemini work with synthesis
+- **Key advantage:** Gemini CLI runs in yolo mode with full file access and zero permission prompts
+- **Memory propagation:** Context-agnostic learnings flow from `projects/Gemini Assistant/memory/` to `projects/Gemini Assistant (Shared)/memory/` via `/remember` and `/context-sync`
+
 ## Skill Format (MANDATORY)
 
 Every skill MUST be saved in `.claude/skills/<skill-name>/SKILL.md` with this exact structure (this makes them auto-discovered and user-invocable via `/skill-name`):
