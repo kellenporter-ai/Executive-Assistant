@@ -17,22 +17,26 @@ echo "  Gemini Executive Assistant"
 echo "  =========================="
 echo ""
 
-# Check Gemini CLI
-if ! command -v gemini &> /dev/null; then
-    echo "  Error: Gemini CLI is required but not installed."
-    echo "  Install with: npm install -g @google/gemini-cli"
-    echo "  Then authenticate: gemini auth login"
-    exit 1
-fi
-
-echo "  Gemini CLI: $(which gemini)"
-
-# Check Python 3
+# Check Python 3 (the only hard requirement — runs the server)
 if ! command -v python3 &> /dev/null; then
     echo "  Error: Python 3 is required but not installed."
-    echo "  Install it from https://www.python.org/downloads/"
+    echo ""
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        echo "  macOS:   brew install python3"
+    elif [[ -f /etc/debian_version ]]; then
+        echo "  Ubuntu/Debian: sudo apt install python3 python3-venv"
+    elif [[ -f /etc/fedora-release ]]; then
+        echo "  Fedora:  sudo dnf install python3"
+    elif [[ -f /etc/arch-release ]]; then
+        echo "  Arch:    sudo pacman -S python"
+    else
+        echo "  Install from: https://www.python.org/downloads/"
+    fi
     exit 1
 fi
+
+# Note: Gemini CLI, Node, npm, and git are checked by the web interface.
+# The setup wizard will guide through installing any missing dependencies.
 
 # Create virtual environment if it doesn't exist
 if [ ! -d "app/.venv" ]; then

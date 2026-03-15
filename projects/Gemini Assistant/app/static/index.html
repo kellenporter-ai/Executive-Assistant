@@ -1661,6 +1661,414 @@
       .minimap { display: none; }
     }
 
+    /* ===== SETUP WIZARD ===== */
+    .setup-wizard {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      overflow-y: auto;
+      padding: 40px 24px 60px;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .setup-wizard-inner {
+      max-width: 640px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    .setup-header {
+      text-align: center;
+    }
+    .setup-header h2 {
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .setup-header p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-size: 1rem;
+    }
+
+    /* Progress bar */
+    .setup-progress {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      padding: 0 20px;
+    }
+    .setup-progress-step {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      white-space: nowrap;
+      transition: color 0.3s;
+    }
+    .setup-progress-step.active { color: var(--accent); }
+    .setup-progress-step.done { color: var(--success); }
+    .setup-progress-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+    .setup-progress-step.active .setup-progress-dot {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .setup-progress-step.done .setup-progress-dot {
+      border-color: var(--success);
+      background: rgba(166, 227, 161, 0.15);
+      color: var(--success);
+    }
+    .setup-progress-line {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      margin: 0 8px;
+      transition: background 0.3s;
+    }
+    .setup-progress-line.done { background: var(--success); }
+
+    /* Phase content */
+    .setup-phase {
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    /* Dependency checklist */
+    .setup-dep-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .setup-dep-item {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      transition: border-color 0.2s;
+    }
+    .setup-dep-item.ok { border-color: var(--success); }
+    .setup-dep-item.missing { border-color: var(--warning); }
+    .setup-dep-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .setup-dep-icon {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.85rem;
+      flex-shrink: 0;
+    }
+    .setup-dep-item.ok .setup-dep-icon { color: var(--success); }
+    .setup-dep-item.missing .setup-dep-icon { color: var(--warning); }
+    .setup-dep-name {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+    }
+    .setup-dep-tag {
+      margin-left: auto;
+      font-size: 0.72rem;
+      font-weight: 500;
+      padding: 2px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .setup-dep-item.ok .setup-dep-tag {
+      background: rgba(166, 227, 161, 0.15);
+      color: var(--success);
+    }
+    .setup-dep-item.missing .setup-dep-tag {
+      background: rgba(249, 226, 175, 0.15);
+      color: var(--warning);
+    }
+    .setup-dep-item.missing .setup-dep-tag.optional {
+      background: rgba(108, 112, 134, 0.15);
+      color: var(--text-muted);
+    }
+    .setup-dep-instructions {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border-light);
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    .setup-dep-instructions code {
+      background: var(--bg-input);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+      user-select: all;
+    }
+    .setup-dep-instructions .platform-note {
+      display: block;
+      margin-top: 4px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+    }
+
+    /* Auth phase */
+    .setup-auth-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+    }
+    .setup-auth-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .setup-auth-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .setup-auth-step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--accent-dim);
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .setup-auth-step-text {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      padding-top: 3px;
+    }
+    .setup-auth-step-text code {
+      background: var(--bg-input);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--accent);
+      user-select: all;
+    }
+    .setup-auth-result {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: none;
+    }
+    .setup-auth-result.success {
+      display: block;
+      background: rgba(166, 227, 161, 0.1);
+      border: 1px solid rgba(166, 227, 161, 0.3);
+      color: var(--success);
+    }
+    .setup-auth-result.error {
+      display: block;
+      background: rgba(243, 139, 168, 0.1);
+      border: 1px solid rgba(243, 139, 168, 0.3);
+      color: var(--error);
+    }
+
+    /* Interview phase */
+    .setup-interview-step {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .setup-interview-step h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+    .setup-interview-step p.setup-step-desc {
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin-bottom: 12px;
+    }
+    .setup-field {
+      margin-bottom: 16px;
+    }
+    .setup-field label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .setup-field input[type="text"],
+    .setup-field textarea {
+      width: 100%;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text-primary);
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+    .setup-field input[type="text"]:focus,
+    .setup-field textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .setup-field textarea { min-height: 80px; }
+    .setup-radio-group,
+    .setup-checkbox-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .setup-radio-option,
+    .setup-checkbox-option {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .setup-radio-option:hover,
+    .setup-checkbox-option:hover {
+      border-color: var(--accent);
+      color: var(--text-primary);
+    }
+    .setup-radio-option input,
+    .setup-checkbox-option input {
+      accent-color: var(--accent);
+    }
+    .setup-radio-option:has(input:checked),
+    .setup-checkbox-option:has(input:checked) {
+      border-color: var(--accent);
+      background: var(--accent-dim);
+      color: var(--accent);
+    }
+    .setup-conditional {
+      margin-top: 8px;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    /* Buttons */
+    .setup-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .setup-btn {
+      padding: 10px 28px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .setup-btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .setup-btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); }
+    .setup-btn-secondary {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+    .setup-btn-secondary:hover { border-color: var(--accent); color: var(--text-primary); }
+    .setup-btn-ghost {
+      background: none;
+      color: var(--text-muted);
+      padding: 10px 16px;
+    }
+    .setup-btn-ghost:hover { color: var(--text-primary); }
+
+    /* Completion screen */
+    .setup-complete {
+      text-align: center;
+      padding: 40px 0;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .setup-complete-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(166, 227, 161, 0.15);
+      color: var(--success);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+    }
+    .setup-complete-icon .lucide { width: 32px; height: 32px; }
+    .setup-complete h3 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    .setup-complete p {
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+
+    /* Step counter */
+    .setup-step-counter {
+      text-align: center;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      font-weight: 500;
+      letter-spacing: 0.03em;
+    }
+
+    @media (max-width: 600px) {
+      .setup-wizard { padding: 24px 16px 40px; }
+      .setup-wizard-inner { gap: 24px; }
+      .setup-progress-step span:not(.setup-progress-dot) { display: none; }
+      .setup-radio-group, .setup-checkbox-group { flex-direction: column; }
+      .setup-actions { flex-direction: column-reverse; }
+      .setup-actions .setup-btn { width: 100%; text-align: center; }
+    }
+
     /* ===== STATUS BAR ===== */
     .status-bar {
       display: flex;
@@ -2115,6 +2523,8 @@
     </div>
   </div>
 
+  <!-- Setup Wizard (injected dynamically into chatContainer) -->
+
   <!-- Settings Panel -->
   <div class="settings-backdrop" id="settingsBackdrop" onclick="closeSettings()"></div>
   <div class="settings-panel" id="settingsPanel" role="dialog" aria-modal="true" aria-label="Settings">
@@ -2343,7 +2753,8 @@
     // ===== INIT =====
     async function init() {
       initAriaContainers();
-      await checkStatus();
+      const setupNeeded = await checkStatus();
+      if (setupNeeded) return; // Setup wizard is showing, don't initialize chat UI
       createNewTab();
       loadSessions();
       loadFiles('');
@@ -2369,11 +2780,6 @@
         const data = await res.json();
         statusDot.className = data.ready ? 'status-dot' : 'status-dot error';
         statusDot.setAttribute('aria-label', data.ready ? 'Connected' : 'Connection error');
-        if (!data.ready) {
-          document.getElementById('errorModal').classList.add('open');
-          const gotItBtn = document.querySelector('#errorModal .modal-actions button');
-          if (gotItBtn) gotItBtn.focus();
-        }
         setConnectionStatus(data.ready);
         // Populate workspace indicator
         if (data.workspace_name) {
@@ -2382,11 +2788,39 @@
           document.getElementById('workspaceIndicator').title = data.workspace || workspaceName;
           updateBreadcrumbs();
         }
+        // Check if setup wizard is needed (first-time users or missing deps)
+        // Skip for users who completed setup previously (localStorage flag)
+        // BUT always show if dependencies are missing (can't function without CLI)
+        try {
+          const setupRes = await fetch('/api/setup/status');
+          const setupData = await setupRes.json();
+          const setupCompleted = safeGet('ea-setup-complete') === 'true';
+          const depsOk = setupData.dependencies && Object.entries(setupData.dependencies)
+            .filter(([k]) => k !== 'git')  // git is optional
+            .every(([, v]) => v);
+          if (setupData.phase !== 'ready' && (!setupCompleted || !depsOk)) {
+            showSetupWizard(setupData);
+            return true;
+          }
+        } catch {
+          // /api/setup/status not available — fall back to old error modal if CLI missing
+          if (!data.cli_available) {
+            document.getElementById('errorModal').classList.add('open');
+            const gotItBtn = document.querySelector('#errorModal .modal-actions button');
+            if (gotItBtn) gotItBtn.focus();
+            return true;
+          }
+        }
+        if (!data.ready) {
+          showToast('Server not ready', 'error', { id: 'server-status' });
+        }
+        return false;
       } catch {
         statusDot.className = 'status-dot error';
         statusDot.setAttribute('aria-label', 'Connection error');
         showToast('Connection lost', 'error', { id: 'connection', sticky: true });
         setConnectionStatus(false);
+        return false;
       }
     }
 
@@ -4546,6 +4980,597 @@
       } else {
         safeSet('ea-onboarded', 'true');
       }
+    }
+
+    // ===== SETUP WIZARD =====
+    let setupState = { phase: null, step: 1, data: {}, setupData: null };
+
+    function detectPlatform() {
+      const ua = navigator.userAgent.toLowerCase();
+      const platform = (navigator.platform || '').toLowerCase();
+      if (platform.includes('win') || ua.includes('windows')) return 'windows';
+      if (platform.includes('mac') || ua.includes('macintosh') || ua.includes('mac os')) return 'mac';
+      return 'linux';
+    }
+
+    function showSetupWizard(setupData) {
+      setupState.setupData = setupData;
+      setupState.phase = setupData.phase;
+      setupState.step = 1;
+      setupState.data = {};
+      // Render wizard into chatContainer
+      chatContainer.innerHTML = '';
+      const wizard = document.createElement('div');
+      wizard.className = 'setup-wizard';
+      wizard.setAttribute('role', 'region');
+      wizard.setAttribute('aria-label', 'Setup Wizard');
+      wizard.innerHTML = `
+        <div class="setup-wizard-inner">
+          <div class="setup-header">
+            <h2>Welcome to Executive Assistant</h2>
+            <p>Let's get everything set up. This takes about 5 minutes.</p>
+          </div>
+          <div class="setup-progress" id="setupProgress"></div>
+          <div id="setupPhaseContent"></div>
+        </div>`;
+      chatContainer.appendChild(wizard);
+      renderSetupProgress();
+      renderSetupPhase();
+      createIconsIn(wizard);
+    }
+
+    function renderSetupProgress() {
+      const phases = [
+        { key: 'dependencies', label: 'Install' },
+        { key: 'auth', label: 'Connect' },
+        { key: 'interview', label: 'Personalize' }
+      ];
+      const phaseOrder = ['dependencies', 'auth', 'interview'];
+      const currentIdx = phaseOrder.indexOf(setupState.phase);
+      const el = document.getElementById('setupProgress');
+      if (!el) return;
+      el.innerHTML = phases.map((p, i) => {
+        let cls = '';
+        if (i < currentIdx) cls = 'done';
+        else if (i === currentIdx) cls = 'active';
+        const dot = i < currentIdx ? '<i data-lucide="check" style="width:14px;height:14px"></i>' : (i + 1);
+        return `
+          <div class="setup-progress-step ${cls}">
+            <span class="setup-progress-dot">${dot}</span>
+            <span>${p.label}</span>
+          </div>
+          ${i < phases.length - 1 ? `<div class="setup-progress-line ${i < currentIdx ? 'done' : ''}"></div>` : ''}`;
+      }).join('');
+      createIconsIn(el);
+    }
+
+    function renderSetupPhase() {
+      const container = document.getElementById('setupPhaseContent');
+      if (!container) return;
+      switch (setupState.phase) {
+        case 'dependencies': renderDepPhase(container); break;
+        case 'auth': renderAuthPhase(container); break;
+        case 'interview': renderInterviewPhase(container); break;
+        default: renderDepPhase(container);
+      }
+      createIconsIn(container);
+    }
+
+    // --- Phase 1: Dependencies ---
+    function renderDepPhase(container) {
+      const deps = setupState.setupData?.dependencies || {};
+      const platform = detectPlatform();
+      const items = [
+        { key: 'python', name: 'Python 3', required: true, ok: !!deps.python },
+        { key: 'node', name: 'Node.js', required: true, ok: !!deps.node },
+        { key: 'npm', name: 'npm', required: true, ok: !!deps.npm },
+        { key: 'git', name: 'Git', required: false, ok: !!deps.git },
+        { key: 'gemini', name: 'Gemini CLI', required: true, ok: !!deps.gemini },
+      ];
+      const allRequired = items.filter(d => d.required).every(d => d.ok);
+
+      container.innerHTML = `
+        <div class="setup-phase" role="group" aria-label="Dependencies check">
+          <div class="setup-dep-list">
+            ${items.map(d => `
+              <div class="setup-dep-item ${d.ok ? 'ok' : 'missing'}">
+                <div class="setup-dep-row">
+                  <span class="setup-dep-icon">
+                    <i data-lucide="${d.ok ? 'check-circle' : 'circle-alert'}" style="width:20px;height:20px"></i>
+                  </span>
+                  <span class="setup-dep-name">${d.name}</span>
+                  <span class="setup-dep-tag ${!d.required ? 'optional' : ''}">${d.ok ? 'Installed' : (d.required ? 'Required' : 'Recommended')}</span>
+                </div>
+                ${!d.ok ? `<div class="setup-dep-instructions">${getDepInstructions(d.key, platform)}</div>` : ''}
+              </div>
+            `).join('')}
+          </div>
+          <div class="setup-actions">
+            <span></span>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="setup-btn setup-btn-secondary" onclick="refreshSetupStatus()">
+                <i data-lucide="refresh-cw" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"></i>Refresh
+              </button>
+              ${allRequired ? `<button class="setup-btn setup-btn-primary" onclick="advanceSetupPhase('auth')">Continue</button>` : ''}
+            </div>
+          </div>
+        </div>`;
+    }
+
+    function getDepInstructions(key, platform) {
+      const instructions = {
+        node: {
+          windows: 'Download the installer from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a> and run it. This also installs npm.',
+          mac: 'Run <code>brew install node</code> in Terminal, or download from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>.',
+          linux: 'Run <code>sudo apt install nodejs npm</code> (Debian/Ubuntu) or <code>sudo pacman -S nodejs npm</code> (Arch), or download from <a href="https://nodejs.org" target="_blank" rel="noopener">nodejs.org</a>.'
+        },
+        npm: {
+          windows: 'npm is included with Node.js. Install Node.js first.',
+          mac: 'npm is included with Node.js. Install Node.js first.',
+          linux: 'npm is included with Node.js. Install Node.js first.'
+        },
+        git: {
+          windows: 'Download from <a href="https://git-scm.com" target="_blank" rel="noopener">git-scm.com</a> and run the installer.<span class="platform-note">Optional — needed for version control features.</span>',
+          mac: 'Run <code>xcode-select --install</code> or <code>brew install git</code>.<span class="platform-note">Optional — needed for version control features.</span>',
+          linux: 'Run <code>sudo apt install git</code> or <code>sudo pacman -S git</code>.<span class="platform-note">Optional — needed for version control features.</span>'
+        },
+        gemini: {
+          windows: 'After installing Node.js, open a terminal and run: <code>npm install -g @google/gemini-cli</code>',
+          mac: 'After installing Node.js, open Terminal and run: <code>npm install -g @google/gemini-cli</code>',
+          linux: 'After installing Node.js, open a terminal and run: <code>npm install -g @google/gemini-cli</code>'
+        },
+        python: {
+          windows: 'Download from <a href="https://python.org" target="_blank" rel="noopener">python.org</a>.',
+          mac: 'Run <code>brew install python3</code> or download from <a href="https://python.org" target="_blank" rel="noopener">python.org</a>.',
+          linux: 'Run <code>sudo apt install python3</code> or <code>sudo pacman -S python</code>.'
+        }
+      };
+      return instructions[key]?.[platform] || instructions[key]?.linux || '';
+    }
+
+    async function refreshSetupStatus() {
+      try {
+        showToast('Checking dependencies...', 'info', { id: 'setup-refresh', duration: 2000 });
+        const res = await fetch('/api/setup/status');
+        const data = await res.json();
+        setupState.setupData = data;
+        // If phase advanced (all deps met), auto-advance
+        if (setupState.phase === 'dependencies' && data.phase !== 'dependencies') {
+          advanceSetupPhase(data.phase);
+          return;
+        }
+        // Re-render current phase
+        renderSetupPhase();
+        renderSetupProgress();
+      } catch {
+        showToast('Could not check setup status', 'error');
+      }
+    }
+
+    function advanceSetupPhase(newPhase) {
+      setupState.phase = newPhase;
+      setupState.step = 1;
+      renderSetupProgress();
+      renderSetupPhase();
+      // Focus the phase content for screen readers
+      const content = document.getElementById('setupPhaseContent');
+      if (content) content.focus();
+    }
+
+    // --- Phase 2: Authentication ---
+    function renderAuthPhase(container) {
+      const platform = detectPlatform();
+      const terminalInstructions = {
+        windows: 'Press <strong>Win + R</strong>, type <code>cmd</code>, and press Enter',
+        mac: 'Press <strong>Cmd + Space</strong>, type <code>Terminal</code>, and press Enter',
+        linux: 'Press <strong>Ctrl + Alt + T</strong> or open Terminal from your applications'
+      };
+      container.innerHTML = `
+        <div class="setup-phase" role="group" aria-label="Authentication">
+          <div class="setup-auth-card">
+            <h3 style="font-size:1.1rem;font-weight:600;color:var(--text-primary);margin-bottom:4px;">
+              <i data-lucide="link" style="width:18px;height:18px;vertical-align:-3px;margin-right:6px;color:var(--accent)"></i>
+              Let's connect your Google account
+            </h3>
+            <p style="font-size:0.88rem;color:var(--text-secondary);line-height:1.5;">
+              The Gemini CLI needs access to your Google account to work. Follow these steps:
+            </p>
+            <div class="setup-auth-steps">
+              <div class="setup-auth-step">
+                <span class="setup-auth-step-num">1</span>
+                <span class="setup-auth-step-text">Open a terminal: ${terminalInstructions[platform]}</span>
+              </div>
+              <div class="setup-auth-step">
+                <span class="setup-auth-step-num">2</span>
+                <span class="setup-auth-step-text">Run this command: <code>gemini auth login</code></span>
+              </div>
+              <div class="setup-auth-step">
+                <span class="setup-auth-step-num">3</span>
+                <span class="setup-auth-step-text">A browser window will open — sign in with your Google account and allow access.</span>
+              </div>
+              <div class="setup-auth-step">
+                <span class="setup-auth-step-num">4</span>
+                <span class="setup-auth-step-text">Come back here and click <strong>Verify Connection</strong> below.</span>
+              </div>
+            </div>
+            <div class="setup-auth-result" id="setupAuthResult"></div>
+          </div>
+          <div class="setup-actions">
+            <button class="setup-btn setup-btn-ghost" onclick="advanceSetupPhase('dependencies')">Back</button>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button class="setup-btn setup-btn-secondary" id="setupVerifyBtn" onclick="verifyAuth()">
+                <i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"></i>Verify Connection
+              </button>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    async function verifyAuth() {
+      const btn = document.getElementById('setupVerifyBtn');
+      const result = document.getElementById('setupAuthResult');
+      if (!btn || !result) return;
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      result.className = 'setup-auth-result';
+      result.style.display = 'none';
+      try {
+        const res = await fetch('/api/setup/verify-auth', { method: 'POST' });
+        const data = await res.json();
+        if (data.authenticated) {
+          result.className = 'setup-auth-result success';
+          result.style.display = 'block';
+          result.innerHTML = '<i data-lucide="check-circle" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px"></i>Connected successfully! Advancing...';
+          createIconsIn(result);
+          setTimeout(() => advanceSetupPhase('interview'), 1200);
+        } else {
+          result.className = 'setup-auth-result error';
+          result.style.display = 'block';
+          const errorMsg = document.createTextNode(data.error || 'Not authenticated yet. Complete the steps above and try again.');
+          result.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px;vertical-align:-3px;margin-right:6px"></i>`;
+          result.appendChild(errorMsg);
+          createIconsIn(result);
+          btn.disabled = false;
+          btn.innerHTML = '<i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"></i>Verify Connection';
+          createIconsIn(btn);
+        }
+      } catch {
+        result.className = 'setup-auth-result error';
+        result.style.display = 'block';
+        result.textContent = 'Could not reach the server. Make sure the assistant is running.';
+        btn.disabled = false;
+        btn.innerHTML = '<i data-lucide="shield-check" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px"></i>Verify Connection';
+        createIconsIn(btn);
+      }
+    }
+
+    // --- Phase 3: Interview ---
+    const interviewSteps = [
+      {
+        key: 'about',
+        file: 'me.md',
+        title: 'About You',
+        desc: 'Help the assistant understand who you are so it can tailor responses to your needs.',
+        fields: [
+          { id: 'iv_name', label: 'What\'s your name?', type: 'text', placeholder: 'e.g., Ms. Johnson' },
+          { id: 'iv_teaches', label: 'What do you teach?', type: 'text', placeholder: 'e.g., 9th grade Physics and Forensic Science' },
+          { id: 'iv_techcomfort', label: 'How comfortable are you with technology?', type: 'radio', options: ['Beginner', 'Intermediate', 'Advanced'] },
+          { id: 'iv_hopes', label: 'What are you hoping this assistant can help you with?', type: 'textarea', placeholder: 'e.g., Lesson planning, grading rubrics, creating activities...' },
+        ],
+        format: (d) => `# About Me\n\n## Role\n${d.iv_teaches || 'Teacher'}\n\n## Name\n${d.iv_name || ''}\n\n## Tech Comfort Level\n${d.iv_techcomfort || 'Intermediate'}\n\n## Goals\n${d.iv_hopes || ''}\n\n## Preferences\n<!-- Add personal workflow preferences as you discover them -->\n`
+      },
+      {
+        key: 'workspace',
+        file: 'work.md',
+        title: 'Your Workspace',
+        desc: 'Tell the assistant about your teaching environment and tools.',
+        fields: [
+          { id: 'iv_devices', label: 'What devices do your students use?', type: 'checkbox', options: ['Chromebooks', 'iPads', 'Laptops', 'Desktops', 'Phones'] },
+          { id: 'iv_tools', label: 'What tools do you use for teaching?', type: 'checkbox', options: ['Google Classroom', 'Canvas', 'Schoology', 'Google Slides', 'Other'] },
+          { id: 'iv_tools_other', label: 'Other tools (if applicable)', type: 'text', placeholder: 'e.g., Desmos, PhET simulations, Kahoot', conditional: 'iv_tools', conditionValue: 'Other' },
+          { id: 'iv_limitations', label: 'Any technical limitations to be aware of?', type: 'textarea', placeholder: 'e.g., School blocks certain websites, students can\'t install apps...' },
+        ],
+        format: (d) => {
+          const devices = (d.iv_devices || []).join(', ') || 'Not specified';
+          const tools = (d.iv_tools || []).filter(t => t !== 'Other').join(', ');
+          const other = d.iv_tools_other ? `, ${d.iv_tools_other}` : '';
+          return `# Work Environment\n\n## Student Devices\n${devices}\n\n## Teaching Tools\n${tools}${other || ''}\n\n## Constraints\n${d.iv_limitations || 'None specified'}\n\n## Deployment\n<!-- Updated as you configure integrations -->\n`;
+        }
+      },
+      {
+        key: 'team',
+        file: 'team.md',
+        title: 'Your Team',
+        desc: 'Let the assistant know about the people you work with.',
+        fields: [
+          { id: 'iv_collab', label: 'Do you collaborate with other teachers?', type: 'radio', options: ['Yes', 'No'] },
+          { id: 'iv_collabwho', label: 'Who do you work with? (names and subjects)', type: 'textarea', placeholder: 'e.g., Mr. Smith — Chemistry, Ms. Lee — Biology', conditional: 'iv_collab', conditionValue: 'Yes' },
+          { id: 'iv_otherusers', label: 'Who else might use this assistant?', type: 'textarea', placeholder: 'e.g., My co-teacher, student teacher, department head...' },
+        ],
+        format: (d) => {
+          let team = '# Team\n\n';
+          if (d.iv_collab === 'Yes' && d.iv_collabwho) {
+            team += `## Collaborators\n${d.iv_collabwho}\n\n`;
+          } else {
+            team += '## Collaborators\nNone currently\n\n';
+          }
+          team += `## Other Users\n${d.iv_otherusers || 'Just me'}\n\n## Collaboration Norms\n<!-- How does your team communicate? -->\n`;
+          return team;
+        }
+      },
+      {
+        key: 'priorities',
+        file: 'current_priorities.md',
+        title: 'Your Priorities',
+        desc: 'What\'s on your plate right now? The assistant checks this at the start of each session.',
+        fields: [
+          { id: 'iv_workon', label: 'What are you working on right now?', type: 'textarea', placeholder: 'e.g., Planning the next unit on forces, grading lab reports...' },
+          { id: 'iv_automate', label: 'What takes up the most time that you\'d like to automate?', type: 'textarea', placeholder: 'e.g., Writing rubrics, creating review activities, formatting handouts...' },
+        ],
+        format: (d) => {
+          let md = '# Current Priorities\n\n';
+          if (d.iv_workon) {
+            const items = d.iv_workon.split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+            items.forEach((item, i) => {
+              md += `## Priority ${i + 1}: ${item}\n**Status:** In Progress\n\n`;
+            });
+          } else {
+            md += '## Priority 1: [Your Top Priority]\n**Goal:** [What does success look like?]\n**Status:** Not Started\n\n';
+          }
+          if (d.iv_automate) {
+            md += `## Automation Wishlist\n${d.iv_automate}\n`;
+          }
+          return md;
+        }
+      },
+      {
+        key: 'rules',
+        file: 'rules.md',
+        title: 'Communication Style',
+        desc: 'Tell the assistant how you\'d like it to communicate with you.',
+        fields: [
+          { id: 'iv_tone', label: 'How should the assistant talk to you?', type: 'radio', options: ['Casual', 'Professional', 'Technical'] },
+          { id: 'iv_detail', label: 'How detailed should responses be?', type: 'radio', options: ['Brief one-liners', 'Mid-detail', 'Detailed explanations'] },
+          { id: 'iv_rules', label: 'Any rules or boundaries?', type: 'textarea', placeholder: 'e.g., Never contact parents directly, always use metric units...' },
+        ],
+        format: (d) => {
+          const tone = d.iv_tone || 'Casual';
+          const detailMap = { 'Brief one-liners': 'Concise one-liners', 'Mid-detail': 'Mid-detail', 'Detailed explanations': 'Detailed explanations' };
+          const detail = detailMap[d.iv_detail] || 'Mid-detail';
+          let md = `# Communication & Operating Rules\n\n## Communication Style\n- **Tone:** ${tone}\n- **Format:** ${detail}\n- **Decision-making:** Present options for me to choose from\n\n## Hard Rules\n- Never modify files outside the user's home directory\n- Once a task has been agreed upon, execute without asking for further permissions\n- Never commit secrets, API keys, or credentials to version control\n`;
+          if (d.iv_rules) {
+            md += `\n## Custom Rules\n${d.iv_rules.split(/\n/).map(r => r.trim()).filter(Boolean).map(r => `- ${r}`).join('\n')}\n`;
+          }
+          return md;
+        }
+      }
+    ];
+
+    function renderInterviewPhase(container) {
+      const stepIdx = setupState.step - 1;
+      const step = interviewSteps[stepIdx];
+      if (!step) { renderSetupComplete(container); return; }
+
+      container.innerHTML = `
+        <div class="setup-phase">
+          <div class="setup-step-counter">Step ${setupState.step} of ${interviewSteps.length}</div>
+          <div class="setup-interview-step" id="setupInterviewStep">
+            <h3>${step.title}</h3>
+            <p class="setup-step-desc">${step.desc}</p>
+            ${step.fields.map(f => renderInterviewField(f)).join('')}
+          </div>
+          <div class="setup-actions">
+            <button class="setup-btn setup-btn-ghost" onclick="interviewBack()">
+              ${setupState.step === 1 ? 'Back' : 'Previous'}
+            </button>
+            <button class="setup-btn setup-btn-primary" onclick="interviewNext()">
+              ${setupState.step === interviewSteps.length ? 'Finish' : 'Next'}
+            </button>
+          </div>
+        </div>`;
+
+      // Restore saved data for this step
+      step.fields.forEach(f => {
+        const el = document.getElementById(f.id);
+        if (!el) return;
+        const saved = setupState.data[f.id];
+        if (saved === undefined) return;
+        if (f.type === 'text' || f.type === 'textarea') el.value = saved;
+      });
+      // Restore radio selections
+      step.fields.filter(f => f.type === 'radio').forEach(f => {
+        const saved = setupState.data[f.id];
+        if (saved) {
+          const radio = document.querySelector(`input[name="${f.id}"][value="${saved}"]`);
+          if (radio) { radio.checked = true; updateConditionalFields(f.id); }
+        }
+      });
+      // Restore checkbox selections
+      step.fields.filter(f => f.type === 'checkbox').forEach(f => {
+        const saved = setupState.data[f.id];
+        if (Array.isArray(saved)) {
+          saved.forEach(v => {
+            const cb = document.querySelector(`input[name="${f.id}"][value="${v}"]`);
+            if (cb) cb.checked = true;
+          });
+          updateConditionalFields(f.id);
+        }
+      });
+
+      // Focus first input
+      const firstInput = container.querySelector('input, textarea');
+      if (firstInput) setTimeout(() => firstInput.focus(), 100);
+    }
+
+    function renderInterviewField(field) {
+      const isConditional = !!field.conditional;
+      const shouldShow = isConditional ? checkConditionalVisible(field) : true;
+
+      let html = `<div class="setup-field ${isConditional ? 'setup-conditional' : ''}" id="field_${field.id}" ${!shouldShow ? 'style="display:none"' : ''}>`;
+      html += `<label for="${field.id}">${field.label}</label>`;
+
+      switch (field.type) {
+        case 'text':
+          html += `<input type="text" id="${field.id}" placeholder="${field.placeholder || ''}" autocomplete="off">`;
+          break;
+        case 'textarea':
+          html += `<textarea id="${field.id}" placeholder="${field.placeholder || ''}" rows="3"></textarea>`;
+          break;
+        case 'radio':
+          html += `<div class="setup-radio-group">`;
+          field.options.forEach(opt => {
+            html += `<label class="setup-radio-option">
+              <input type="radio" name="${field.id}" value="${opt}" onchange="updateConditionalFields('${field.id}')"> ${opt}
+            </label>`;
+          });
+          html += `</div>`;
+          break;
+        case 'checkbox':
+          html += `<div class="setup-checkbox-group">`;
+          field.options.forEach(opt => {
+            html += `<label class="setup-checkbox-option">
+              <input type="checkbox" name="${field.id}" value="${opt}" onchange="updateConditionalFields('${field.id}')"> ${opt}
+            </label>`;
+          });
+          html += `</div>`;
+          break;
+      }
+      html += `</div>`;
+      return html;
+    }
+
+    function checkConditionalVisible(field) {
+      if (!field.conditional) return true;
+      const saved = setupState.data[field.conditional];
+      if (Array.isArray(saved)) return saved.includes(field.conditionValue);
+      return saved === field.conditionValue;
+    }
+
+    function updateConditionalFields(changedId) {
+      // Save the changed value first
+      collectCurrentStepData();
+      // Show/hide conditional fields
+      const stepIdx = setupState.step - 1;
+      const step = interviewSteps[stepIdx];
+      if (!step) return;
+      step.fields.forEach(f => {
+        if (f.conditional === changedId) {
+          const fieldEl = document.getElementById('field_' + f.id);
+          if (fieldEl) {
+            fieldEl.style.display = checkConditionalVisible(f) ? '' : 'none';
+          }
+        }
+      });
+    }
+
+    function collectCurrentStepData() {
+      const stepIdx = setupState.step - 1;
+      const step = interviewSteps[stepIdx];
+      if (!step) return;
+      step.fields.forEach(f => {
+        switch (f.type) {
+          case 'text':
+          case 'textarea': {
+            const el = document.getElementById(f.id);
+            if (el) setupState.data[f.id] = el.value;
+            break;
+          }
+          case 'radio': {
+            const checked = document.querySelector(`input[name="${f.id}"]:checked`);
+            if (checked) setupState.data[f.id] = checked.value;
+            break;
+          }
+          case 'checkbox': {
+            const checked = document.querySelectorAll(`input[name="${f.id}"]:checked`);
+            setupState.data[f.id] = Array.from(checked).map(c => c.value);
+            break;
+          }
+        }
+      });
+    }
+
+    async function saveInterviewStep() {
+      const stepIdx = setupState.step - 1;
+      const step = interviewSteps[stepIdx];
+      if (!step) return true;
+      collectCurrentStepData();
+      const content = step.format(setupState.data);
+      try {
+        const res = await fetch('/api/setup/save-context', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: step.file, content })
+        });
+        const data = await res.json();
+        return data.status === 'ok';
+      } catch {
+        showToast('Could not save — check your connection', 'error');
+        return false;
+      }
+    }
+
+    async function interviewNext() {
+      const saved = await saveInterviewStep();
+      if (!saved) return;
+      if (setupState.step >= interviewSteps.length) {
+        // Done — show completion
+        setupState.step = interviewSteps.length + 1;
+        const container = document.getElementById('setupPhaseContent');
+        if (container) renderSetupComplete(container);
+        return;
+      }
+      setupState.step++;
+      renderSetupPhase();
+    }
+
+    function interviewBack() {
+      collectCurrentStepData();
+      if (setupState.step <= 1) {
+        advanceSetupPhase('auth');
+        return;
+      }
+      setupState.step--;
+      renderSetupPhase();
+    }
+
+    function renderSetupComplete(container) {
+      container.innerHTML = `
+        <div class="setup-complete">
+          <div class="setup-complete-icon">
+            <i data-lucide="sparkles"></i>
+          </div>
+          <h3>You're All Set!</h3>
+          <p>Your assistant has been personalized and is ready to go.<br>
+          You can always update your preferences in the context files later.</p>
+          <button class="setup-btn setup-btn-primary" onclick="dismissSetupWizard()" style="margin:0 auto;">
+            Start Using Assistant
+          </button>
+        </div>`;
+      createIconsIn(container);
+    }
+
+    function dismissSetupWizard() {
+      setupState = { phase: null, step: 1, data: {}, setupData: null };
+      safeSet('ea-onboarded', 'true');
+      safeSet('ea-setup-complete', 'true');
+      // Re-initialize the full app
+      chatContainer.innerHTML = '';
+      createNewTab();
+      loadSessions();
+      loadFiles('');
+      loadGitStatus();
+      document.getElementById('settingApprovalMode').value = settings.approvalMode;
+      document.getElementById('settingModel').value = settings.model;
+      document.getElementById('settingNotifications').value = settings.notifications;
+      document.getElementById('settingOnboarding').value = 'off';
+      updateModelBadge();
+      updateModeToggle();
+      updateBreadcrumbs();
+      updateStatusBar();
+      pollTokenUsage();
+      lucide.createIcons();
+      setTimeout(updateMinimap, 500);
+      showToast('Setup complete — welcome!', 'success');
     }
 
     // ===== BREADCRUMB NAVIGATION =====

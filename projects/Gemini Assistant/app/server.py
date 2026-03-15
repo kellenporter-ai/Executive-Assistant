@@ -70,6 +70,10 @@ class ChatRequest(BaseModel):
 class CancelRequest(BaseModel):
     session_id: str
 
+class ContextSaveRequest(BaseModel):
+    file: str  # e.g. "me.md"
+    content: str
+
 # Token usage file (persisted across server restarts)
 TOKEN_USAGE_FILE = os.path.join(WORKSPACE, "temp", "token_usage.json")
 
@@ -164,14 +168,15 @@ async def cancel_chat(request: CancelRequest):
 
 @app.get("/api/status")
 async def status():
-    """Check if the Gemini CLI is available."""
+    """Check server and CLI status."""
     try:
         get_gemini_path()
         cli_available = True
     except RuntimeError:
         cli_available = False
     return {
-        "ready": cli_available,
+        "ready": True,  # Server is always ready (it's running!)
+        "cli_available": cli_available,
         "workspace": WORKSPACE,
         "workspace_name": os.path.basename(WORKSPACE),
     }
@@ -498,6 +503,133 @@ def cleanup_old_archives():
             os.remove(filepath)
 
 
+
+
+# --- Setup / Onboarding ---
+
+@app.get("/api/setup/status")
+async def setup_status():
+    """Check all dependencies and setup completion."""
+    checks = {}
+
+    # Check each dependency
+    for name, cmds in [("node", ["node"]), ("npm", ["npm"]), ("git", ["git"]), ("python", ["python3", "python"]), ("gemini", ["gemini"])]:
+        checks[name] = any(shutil.which(c) is not None for c in cmds)
+
+    # Check Gemini auth - look for auth tokens or settings
+    gemini_auth = False
+    auth_dir = os.path.expanduser("~/.gemini")
+    if os.path.isdir(auth_dir):
+        # Check settings.json for account info
+        settings_file = os.path.join(auth_dir, "settings.json")
+        if os.path.isfile(settings_file):
+            try:
+                with open(settings_file, "r") as f:
+                    s = json.load(f)
+                    gemini_auth = bool(s.get("account") or s.get("selectedAuthType"))
+            except Exception:
+                pass
+        # Fallback: check for any session files (indicates CLI has been used successfully)
+        if not gemini_auth:
+            tmp_dir = os.path.join(auth_dir, "tmp")
+            if os.path.isdir(tmp_dir):
+                for d in os.listdir(tmp_dir):
+                    chats = os.path.join(tmp_dir, d, "chats")
+                    if os.path.isdir(chats) and os.listdir(chats):
+                        gemini_auth = True
+                        break
+
+    # Check context files - are they filled in or still templates?
+    context_dir = os.path.join(WORKSPACE, "context")
+    context_files = {}
+    for fname in ["me.md", "work.md", "team.md", "current_priorities.md", "rules.md"]:
+        fpath = os.path.join(context_dir, fname)
+        filled = False
+        if os.path.isfile(fpath):
+            with open(fpath, "r") as f:
+                content = f.read()
+                # Consider it "filled" if it has content beyond just template comments
+                lines = [l.strip() for l in content.split("\n")
+                         if l.strip() and not l.strip().startswith("#") and not l.strip().startswith("<!--")]
+                filled = len(lines) > 3
+        context_files[fname] = filled
+
+    # Overall setup phase
+    deps_ok = all(checks.values())
+    auth_ok = gemini_auth
+    context_ok = any(context_files.values())
+
+    if not deps_ok:
+        phase = "dependencies"
+    elif not auth_ok:
+        phase = "auth"
+    elif not context_ok:
+        phase = "interview"
+    else:
+        phase = "ready"
+
+    return {
+        "phase": phase,
+        "dependencies": checks,
+        "auth": auth_ok,
+        "context": context_files,
+    }
+
+
+@app.post("/api/setup/save-context")
+async def save_context(request: ContextSaveRequest):
+    """Save content to a context file from the setup interview."""
+    allowed = {"me.md", "work.md", "team.md", "current_priorities.md", "rules.md"}
+    if request.file not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid context file: {request.file}")
+
+    context_dir = os.path.join(WORKSPACE, "context")
+    fpath = os.path.join(context_dir, request.file)
+
+    # Security: ensure path stays within context dir
+    resolved = Path(fpath).resolve()
+    if not resolved.is_relative_to(Path(context_dir).resolve()):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    with open(str(resolved), "w", encoding="utf-8") as f:
+        f.write(request.content)
+
+    return {"status": "ok", "file": request.file}
+
+
+@app.post("/api/setup/verify-auth")
+async def verify_auth():
+    """Verify Gemini CLI authentication by running a simple test command."""
+    try:
+        gemini = get_gemini_path()
+    except RuntimeError:
+        return {"authenticated": False, "error": "Gemini CLI not installed"}
+
+    proc = await asyncio.create_subprocess_exec(
+        gemini, "-p", "Say hello", "-o", "stream-json",
+        "--approval-mode", "yolo",
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        cwd=WORKSPACE,
+    )
+
+    try:
+        stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=30)
+        output = stdout.decode("utf-8")
+        # If we got any valid JSON events, auth works
+        for line in output.split("\n"):
+            try:
+                event = json.loads(line.strip())
+                if event.get("type") in ("init", "message", "result"):
+                    return {"authenticated": True}
+            except Exception:
+                continue
+
+        stderr_text = stderr.decode("utf-8")
+        return {"authenticated": False, "error": stderr_text or "No valid response from CLI"}
+    except asyncio.TimeoutError:
+        proc.kill()
+        return {"authenticated": False, "error": "Authentication check timed out"}
 
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")

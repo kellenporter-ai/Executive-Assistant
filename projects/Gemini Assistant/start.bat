@@ -8,29 +8,30 @@ echo   Gemini Executive Assistant
 echo   ==========================
 echo.
 
-REM Check Gemini CLI
-where gemini >nul 2>&1
-if errorlevel 1 (
-    echo   Error: Gemini CLI is required but not installed.
-    echo   Install with: npm install -g @google/gemini-cli
-    echo   Then authenticate: gemini auth login
-    pause
-    exit /b 1
+REM Check Python (the only hard requirement — runs the server)
+set PYTHON_CMD=
+python3 --version >nul 2>&1
+if not errorlevel 1 (
+    set PYTHON_CMD=python3
+) else (
+    python --version >nul 2>&1
+    if not errorlevel 1 (
+        set PYTHON_CMD=python
+    ) else (
+        echo   Error: Python 3 is required but not installed.
+        echo   Install from: https://www.python.org/downloads/
+        pause
+        exit /b 1
+    )
 )
 
-REM Check Python
-python --version >nul 2>&1
-if errorlevel 1 (
-    echo   Error: Python 3 is required but not installed.
-    echo   Install it from https://www.python.org/downloads/
-    pause
-    exit /b 1
-)
+REM Note: Gemini CLI, Node, npm, and git are checked by the web interface.
+REM The setup wizard will guide through installing any missing dependencies.
 
 REM Create virtual environment if needed
 if not exist "app\.venv" (
     echo   Setting up for the first time...
-    python -m venv app\.venv
+    %PYTHON_CMD% -m venv app\.venv
     echo   Created virtual environment.
 )
 
@@ -54,4 +55,4 @@ start /b cmd /c "timeout /t 2 /nobreak >nul && start http://localhost:3131"
 
 REM Start the server
 cd app
-python server.py
+%PYTHON_CMD% server.py
