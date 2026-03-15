@@ -23,7 +23,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 
 from fastapi.middleware.cors import CORSMiddleware
-from gemini_client import stream_chat, get_gemini_path, WORKSPACE
+from gemini_client import stream_chat, get_gemini_path, get_model_status, WORKSPACE
 
 # Lock to prevent race conditions on token usage file read-modify-write
 token_lock = asyncio.Lock()
@@ -194,6 +194,12 @@ async def status():
 async def get_token_usage():
     """Return accumulated token usage stats."""
     return _load_token_usage()
+
+
+@app.get("/api/model-status")
+async def model_status():
+    """Return current Gemini model availability and cooldown times."""
+    return get_model_status()
 
 
 @app.delete("/api/token-usage")
