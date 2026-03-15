@@ -18,3 +18,7 @@
 - [Session archiving logic](session-archiving-logic.md) (project)
 - [Gemini CLI session file naming](gemini-session-file-naming.md) (project)
 - [Gemini CLI session deletion](gemini-cli-session-deletion.md) (project)
+- [High-challenge forensic simulations](high-challenge-forensic-sims.md) (user)
+- [Narrative stakes and student engagement](narrative-stakes-student-engagement.md) (feedback)
+- [Strict forensic search logic](strict-forensic-search-logic.md) (project)
+- [Answer neutrality in forensics](answer-neutrality-forensics.md) (feedback)

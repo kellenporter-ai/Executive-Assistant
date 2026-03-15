@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: The Silent Partner | Forensic Simulation</title>
+    <style>
+        :root {
+            --bg-dark: #0a0c10;
+            --bg-panel: #161b22;
+            --bg-accent: #21262d;
+            --text-main: #c9d1d9;
+            --text-dim: #8b949e;
+            --primary: #58a6ff;
+            --secondary: #3fb950;
+            --danger: #f85149;
+            --warning: #d29922;
+            --border: #30363d;
+            --font-mono: 'fira-code', 'cascadia-code', 'source-code-pro', Menlo, Monaco, Consolas, "Courier New", monospace;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            height: 100vh;
+            display: grid;
+            grid-template-columns: 240px 1fr;
+            overflow: hidden;
+        }
+
+        /* Sidebar Navigation */
+        nav {
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 0;
+        }
+
+        .nav-header {
+            padding: 0 1.5rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+
+        .nav-header h1 {
+            font-size: 1.2rem;
+            margin: 0;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-header span {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+        }
+
+        .nav-btn {
+            background: none;
+            border: none;
+            color: var(--text-dim);
+            padding: 0.75rem 1.5rem;
+            text-align: left;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--bg-accent);
+            color: var(--text-main);
+        }
+
+        .nav-btn.active {
+            color: var(--primary);
+            background-color: var(--bg-accent);
+            border-left: 4px solid var(--primary);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Main Content Area */
+        main {
+            padding: 1.5rem;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 { border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-top: 0; font-weight: 400; color: var(--primary); }
+
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Case Overview */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        /* Blood Spatter Canvas */
+        #blood-container {
+            position: relative;
+            width: 100%;
+            height: 500px;
+            background: #000;
+            border: 1px solid var(--border);
+            cursor: crosshair;
+        }
+
+        canvas {
+            display: block;
+        }
+
+        .canvas-toolbar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .tool-btn {
+            background: var(--bg-accent);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        /* DNA Chart */
+        .dna-chart-container {
+            height: 300px;
+            width: 100%;
+            background: #000;
+            border: 1px solid var(--border);
+            margin-top: 1rem;
+            position: relative;
+        }
+
+        .dna-peak {
+            fill: var(--primary);
+            stroke: var(--primary);
+            stroke-width: 1;
+        }
+
+        .dna-axis {
+            stroke: #444;
+            stroke-width: 1;
+        }
+
+        .dna-label {
+            font-size: 10px;
+            fill: var(--text-dim);
+        }
+
+        /* Microscopy */
+        .micro-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .micro-view {
+            background: #000;
+            aspect-ratio: 1;
+            border-radius: 50%;
+            border: 4px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Database */
+        .db-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .db-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        input, select {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 8px;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th { color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase; }
+
+        /* Dossiers */
+        .dossier-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+
+        .dossier-card {
+            background: var(--bg-accent);
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .status-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .status-match { background: var(--secondary); color: white; }
+        .status-partial { background: var(--warning); color: black; }
+
+        .hidden { display: none; }
+
+        .instruction-overlay {
+            background: rgba(0,0,0,0.8);
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--warning);
+        }
+
+        .data-readout {
+            font-family: var(--font-mono);
+            font-size: 0.8rem;
+            color: var(--secondary);
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<nav aria-label="Simulation Navigation" role="tablist">
+    <div class="nav-header">
+        <h1>Silent Partner</h1>
+        <span>CASE ID: VG-2024-0812</span>
+    </div>
+    <button class="nav-btn active" onclick="showTab('overview')" role="tab" aria-selected="true" aria-controls="overview">Case Overview</button>
+    <button class="nav-btn" onclick="showTab('blood')" role="tab" aria-selected="false" aria-controls="blood">Blood Spatter</button>
+    <button class="nav-btn" onclick="showTab('dna')" role="tab" aria-selected="false" aria-controls="dna">DNA STR Analysis</button>
+    <button class="nav-btn" onclick="showTab('micro')" role="tab" aria-selected="false" aria-controls="micro">Microscopy Suite</button>
+    <button class="nav-btn" onclick="showTab('db')" role="tab" aria-selected="false" aria-controls="db">Forensic Database</button>
+    <button class="nav-btn" id="nav-btn-dossiers" onclick="showTab('dossiers')" role="tab" aria-selected="false" aria-controls="dossiers" disabled title="Search the database to unlock dossiers">Subject Dossiers</button>
+</nav>
+
+<main aria-label="Forensic Investigation Content">
+    <!-- CASE OVERVIEW -->
+    <section id="overview" class="tab-content active" role="tabpanel" aria-labelledby="overview-tab">
+        <h2>Case Overview: The Vanish Gallery Heist</h2>
+        <div class="card">
+            <p>At 02:14 AM, the "Eternal Sun" diamond was stolen from the Vanish Gallery's secure vault. Surveillance footage (partially obstructed) shows two suspects engaging in a violent struggle with the night security officer. One suspect was seen fleeing through the service exit, leaving behind traces of blood on the storage door. A single hair was recovered from the vault handle, and another was found on the officer's uniform. Your mission is to identify the "Silent Partner" who assisted Marcus Thorne in this high-stakes robbery.</p>
+            <div class="overview-grid">
+                <div>
+                    <h3>Evidence Log</h3>
+                    <ul>
+                        <li><strong>Location A (Vault):</strong> Impact spatter on North Wall; Hair Sample A (recovered from vault handle).</li>
+                        <li><strong>Location B (Service Exit):</strong> Impact spatter on Storage Door; Hair Sample B (recovered from officer's uniform).</li>
+                        <li><strong>DNA Sample A:</strong> Full profile recovered from hair follicle at Location A. Matches known associate Marcus Thorne.</li>
+                        <li><strong>DNA Sample B:</strong> Degraded profile recovered from blood at Location B. Suspected to belong to the second intruder.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Directives</h3>
+                    <ol>
+                        <li>Determine Area of Origin for blood spatters at Locations A and B to confirm struggle positions.</li>
+                        <li>Compare Sample B's degraded DNA profile against the initial 7 suspects.</li>
+                        <li>Analyze medullary indices of hair samples to corroborate suspect physical data.</li>
+                        <li>Search the National Forensic Database (NFD) using Sample B's known alleles to identify the "Silent Partner".</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BLOOD SPATTER -->
+    <section id="blood" class="tab-content" role="tabpanel" aria-labelledby="blood-tab">
+        <h2>Blood Spatter Analysis</h2>
+        <div class="instruction-overlay">
+            MISSION: Determine Area of Origin (Height). Click a drop to select it, then drag to draw a string to the convergence point on the back wall (x=0).
+        </div>
+        <div class="canvas-toolbar">
+            <button class="tool-btn active" onclick="setSpatter('A')">Location A (Wall)</button>
+            <button class="tool-btn" onclick="setSpatter('B')">Location B (Door)</button>
+            <button class="tool-btn" onclick="resetSpatter()">Reset Strings</button>
+        </div>
+        <div id="blood-container">
+            <canvas id="bloodCanvas" aria-label="Blood Spatter Trajectory Canvas" role="img"></canvas>
+        </div>
+        <div class="card">
+            <div id="spatter-data" class="data-readout" aria-live="polite">
+                Select a drop to view Impact Data...
+            </div>
+            <p style="font-size: 0.8rem; margin-top: 1rem; color: var(--text-dim);">
+                * Note: Impact Angle (θ) = sin⁻¹(W/L). Height = d * tan(θ). <br>
+                For this simulation, use the side-view canvas to trace trajectories back to the origin line (Y-axis).
+            </p>
+        </div>
+    </section>
+
+    <!-- DNA STR -->
+    <section id="dna" class="tab-content" role="tabpanel" aria-labelledby="dna-tab">
+        <h2>DNA STR Analysis</h2>
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3 style="margin: 0;">Suspect Profile Comparison</h3>
+                <div class="db-input-group">
+                    <label for="suspect-selector" style="font-size: 0.8rem; color: var(--text-dim);">Compare against:</label>
+                    <select id="suspect-selector" onchange="updateSelectedSuspect(this.value)" style="width: 200px;">
+                        <option value="thorne">Marcus Thorne</option>
+                        <option value="vance_s">Sarah Vance</option>
+                        <option value="cross_j">Julian Cross</option>
+                        <option value="vance_e">Elias Vance</option>
+                        <option value="rossi_e">Elena Rossi</option>
+                        <option value="kray_v">Victor Kray</option>
+                        <option value="vane_s">Silas Vane</option>
+                    </select>
+                </div>
+            </div>
+            <div id="dna-chart-suspect" class="dna-chart-container" aria-label="STR Electropherogram for Selected Suspect"></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="card">
+                <h3>Sample A: Vault Hair (Reference)</h3>
+                <div id="dna-chart-a" class="dna-chart-container" style="height: 200px;" aria-label="STR Electropherogram for Sample A"></div>
+            </div>
+            <div class="card">
+                <h3>Sample B: Service Door Blood (Evidence)</h3>
+                <div id="dna-chart-b" class="dna-chart-container" style="height: 200px;" aria-label="STR Electropherogram for Sample B"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MICROSCOPY -->
+    <section id="micro" class="tab-content" role="tabpanel" aria-labelledby="micro-tab">
+        <h2>Microscopy Suite (Hair Analysis)</h2>
+        <div class="micro-grid">
+            <div class="card">
+                <h3>Subject: Marcus Thorne</h3>
+                <div class="micro-view" id="micro-thorne-long" aria-label="Microscopic view of Marcus Thorne's hair"></div>
+                <div class="data-readout">
+                    Medullary Index: 0.28<br>
+                    Cuticle: Imbricate (flattened scales)<br>
+                    Cross-section: Circular
+                </div>
+            </div>
+            <div class="card">
+                <h3>Subject: Sample B</h3>
+                <div class="micro-view" id="micro-sample-long" aria-label="Microscopic view of Evidence Sample B hair"></div>
+                <div class="data-readout">
+                    Medullary Index: 0.15<br>
+                    Pigment: Ovoid bodies (clumped)<br>
+                    Cross-section: Oval
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DATABASE -->
+    <section id="db" class="tab-content" role="tabpanel" aria-labelledby="db-tab">
+        <h2>National Forensic Database (NFD)</h2>
+        <div class="card">
+            <div class="db-controls">
+                <div class="db-input-group">
+                    <label for="query-d8">Locus D8S1179</label>
+                    <input type="text" id="query-d8" placeholder="e.g. 13, 14" aria-label="Input alleles for locus D8S1179">
+                </div>
+                <div class="db-input-group">
+                    <label for="query-d21">Locus D21S11</label>
+                    <input type="text" id="query-d21" placeholder="e.g. 29, 30" aria-label="Input alleles for locus D21S11">
+                </div>
+                <div class="db-input-group">
+                    <label for="query-th01">Locus TH01</label>
+                    <input type="text" id="query-th01" placeholder="e.g. 6, 9.3" aria-label="Input alleles for locus TH01">
+                </div>
+                <div class="db-input-group">
+                    <label for="query-mi">Medullary Index</label>
+                    <input type="number" id="query-mi" step="0.01" placeholder="0.00" aria-label="Input medullary index">
+                </div>
+            </div>
+            <button class="tool-btn" style="width: 100%; padding: 10px;" onclick="searchDatabase()">Execute Search</button>
+        </div>
+        <div class="card">
+            <table id="db-results" aria-live="polite">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>DNA Match</th>
+                        <th>Morphology Match</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="db-body">
+                    <tr><td colspan="4" style="text-align: center; color: var(--text-dim);">No active search results</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- DOSSIERS -->
+    <section id="dossiers" class="tab-content" role="tabpanel" aria-labelledby="dossiers-tab">
+        <h2>Subject Dossiers</h2>
+        <div class="dossier-grid" id="dossier-list">
+            <!-- Populated by JS -->
+        </div>
+    </section>
+</main>
+
+<script>
+    // --- STATE MANAGEMENT ---
+    let currentTab = 'overview';
+    let currentSpatter = 'A';
+    let activeStrings = [];
+    let isDrawing = false;
+    let startPoint = null;
+    let selectedSuspectId = 'thorne';
+
+    // --- DATA ---
+    const DNA_DATA = {
+        sampleA: { // Marcus Thorne (Full)
+            'D8S1179': [15, 16], 'D21S11': [28, 31.2], 'D7S820': [12, 14], 'CSF1PO': [10, 13], 
+            'TH01': [7, 9], 'D13S317': [13, 13], 'VWA': [14, 18], 'FGA': [21, 24], 
+            'D3S1358': [15, 17], 'D5S818': [11, 12], 'D16S539': [9, 11], 'D18S51': [12, 15], 'TPOX': [8, 8]
+        },
+        sampleB: { // Sarah Vance (Degraded - only 6 loci amplify)
+            'D8S1179': [13, 14], 'D21S11': [29, 30], 'D7S820': [10, 11], 
+            'CSF1PO': [12, 12], 'TH01': [6, 9.3], 'D13S317': [11, 12]
+        },
+        thorne: {
+            'D8S1179': [15, 16], 'D21S11': [28, 31.2], 'D7S820': [12, 14], 'CSF1PO': [10, 13], 
+            'TH01': [7, 9], 'D13S317': [13, 13], 'VWA': [14, 18], 'FGA': [21, 24], 
+            'D3S1358': [15, 17], 'D5S818': [11, 12], 'D16S539': [9, 11], 'D18S51': [12, 15], 'TPOX': [8, 8]
+        },
+        vance_s: { // Sarah Vance (Full Profile - The Match)
+            'D8S1179': [13, 14], 'D21S11': [29, 30], 'D7S820': [10, 11], 'CSF1PO': [12, 12], 
+            'TH01': [6, 9.3], 'D13S317': [11, 12], 'VWA': [17, 18], 'FGA': [22, 25], 
+            'D3S1358': [14, 16], 'D5S818': [12, 13], 'D16S539': [11, 14], 'D18S51': [13, 16], 'TPOX': [8, 11]
+        },
+        cross_j: {
+            'D8S1179': [12, 14], 'D21S11': [30, 30], 'D7S820': [10, 11], 'CSF1PO': [12, 12], 
+            'TH01': [7, 7], 'D13S317': [13, 13], 'VWA': [16, 19], 'FGA': [19, 21], 
+            'D3S1358': [15, 15], 'D5S818': [11, 11], 'D16S539': [12, 12], 'D18S51': [14, 17], 'TPOX': [9, 10]
+        },
+        vance_e: {
+            'D8S1179': [13, 13], 'D21S11': [29, 31], 'D7S820': [10, 11], 'CSF1PO': [12, 12], 
+            'TH01': [6, 9.3], 'D13S317': [11, 12], 'VWA': [15, 17], 'FGA': [23, 23], 
+            'D3S1358': [14, 14], 'D5S818': [12, 12], 'D16S539': [11, 13], 'D18S51': [15, 16], 'TPOX': [8, 11]
+        },
+        rossi_e: {
+            'D8S1179': [14, 17], 'D21S11': [27, 32], 'D7S820': [8, 12], 'CSF1PO': [11, 11], 
+            'TH01': [8, 9], 'D13S317': [10, 14], 'VWA': [18, 18], 'FGA': [20, 26], 
+            'D3S1358': [16, 16], 'D5S818': [13, 13], 'D16S539': [10, 15], 'D18S51': [12, 18], 'TPOX': [7, 12]
+        },
+        kray_v: {
+            'D8S1179': [12, 13], 'D21S11': [30, 30.2], 'D7S820': [11, 11], 'CSF1PO': [13, 14], 
+            'TH01': [6, 7], 'D13S317': [11, 11], 'VWA': [14, 14], 'FGA': [24, 25], 
+            'D3S1358': [17, 18], 'D5S818': [10, 12], 'D16S539': [9, 12], 'D18S51': [16, 16], 'TPOX': [8, 9]
+        },
+        vane_s: {
+            'D8S1179': [14, 14], 'D21S11': [28, 28], 'D7S820': [10, 12], 'CSF1PO': [12, 12], 
+            'TH01': [9, 9.3], 'D13S317': [12, 13], 'VWA': [17, 17], 'FGA': [21, 21], 
+            'D3S1358': [15, 16], 'D5S818': [11, 13], 'D16S539': [11, 11], 'D18S51': [13, 14], 'TPOX': [10, 11]
+        }
+    };
+
+    const SPATTER_A_DROPS = [
+        { x: 150, y: 442.7, w: 5, l: 10, angle: 30 }, // d=100, theta=30 => dy=57.7 => y_orig=385 => H=95cm
+        { x: 250, y: 457.8, w: 3.4, l: 10, angle: 20 }, // d=200, theta=20 => dy=72.8 => y_orig=385 => H=95cm
+        { x: 350, y: 466.8, w: 2.6, l: 10, angle: 15 }  // d=300, theta=15 => dy=81.8 => y_orig=385 => H=95cm
+    ];
+
+    const SPATTER_B_DROPS = [
+        { x: 150, y: 405, w: 7.07, l: 10, angle: 45 }, // d=100, theta=45 => dy=100 => y_orig=305 => H=175cm
+        { x: 250, y: 420.5, w: 5, l: 10, angle: 30 },  // d=200, theta=30 => dy=115.5 => y_orig=305 => H=175cm
+        { x: 350, y: 433.2, w: 4.2, l: 10, angle: 25 }  // d=300, theta=25 => dy=128.2 => y_orig=305 => H=175cm
+    ];
+
+    const SUBJECTS = [
+        { id: 'thorne', name: 'Marcus Thorne', height: '185cm', mi: 0.28, dna: DNA_DATA.thorne, status: 'In Custody', background: 'Known professional thief. Arrested at the scene with the "Eternal Sun" diamond in his possession.' },
+        { id: 'vance_s', name: 'Sarah Vance', height: '178cm', mi: 0.15, dna: DNA_DATA.vance_s, status: 'At Large', background: 'Former curator with detailed knowledge of gallery security. Disappeared 24 hours before the heist. Suspected of being the "Silent Partner".' },
+        { id: 'cross_j', name: 'Julian Cross', height: '170cm', mi: 0.25, dna: DNA_DATA.cross_j, status: 'Suspect', background: 'Surveillance expert often hired for "perimeter testing". Frequently associates with Thorne.' },
+        { id: 'vance_e', name: 'Elias Vance', height: '182cm', mi: 0.18, dna: DNA_DATA.vance_e, status: 'Suspect', background: 'Sarah\'s younger brother. History of petty theft and corporate espionage.' },
+        { id: 'rossi_e', name: 'Elena Rossi', height: '165cm', mi: 0.22, dna: DNA_DATA.rossi_e, status: 'Suspect', background: 'Security bypass consultant. Expertise in high-end vault electronics.' },
+        { id: 'kray_v', name: 'Victor Kray', height: '190cm', mi: 0.35, dna: DNA_DATA.kray_v, status: 'Suspect', background: 'Hired muscle for various underworld figures. Known for brute-force entry methods.' },
+        { id: 'vane_s', name: 'Silas Vane', height: '175cm', mi: 0.12, dna: DNA_DATA.vane_s, status: 'Suspect', background: 'Freelance hacker known for interfering with city-wide networks.' }
+    ];
+
+    const NFD_DATABASE = [
+        { name: 'Sarah Vance', dna: DNA_DATA.vance_s, mi: 0.15 },
+        { name: 'Elias Vance', dna: DNA_DATA.vance_e, mi: 0.18 },
+        { name: 'Julian Cross', dna: DNA_DATA.cross_j, mi: 0.25 },
+        { name: 'Elena Rossi', dna: DNA_DATA.rossi_e, mi: 0.22 },
+        { name: 'Victor Kray', dna: DNA_DATA.kray_v, mi: 0.35 },
+        { name: 'Silas Vane', dna: DNA_DATA.vane_s, mi: 0.12 },
+        { name: 'Leo Sterling', dna: { 'D8S1179': [15,15], 'D21S11': [30,31], 'D7S820': [11,11], 'CSF1PO': [12,13], 'TH01': [6,6], 'D13S317': [11,12] }, mi: 0.24 },
+        { name: 'Maya Chen', dna: { 'D8S1179': [13,16], 'D21S11': [28,29], 'D7S820': [10,14], 'CSF1PO': [11,12], 'TH01': [7,9.3], 'D13S317': [13,14] }, mi: 0.19 },
+        { name: 'Arthur Penhaligon', dna: { 'D8S1179': [14,14], 'D21S11': [32,32], 'D7S820': [12,12], 'CSF1PO': [10,10], 'TH01': [8,8], 'D13S317': [11,11] }, mi: 0.31 },
+        { name: 'Isabella Moretti', dna: { 'D8S1179': [13,14], 'D21S11': [29,30], 'D7S820': [10,11], 'CSF1PO': [12,12], 'TH01': [6,9.3], 'D13S317': [11,12] }, mi: 0.28 }, // DNA Match but MI mismatch
+        { name: 'Jackson Storm', dna: { 'D8S1179': [15,16], 'D21S11': [28,31.2], 'D7S820': [12,14], 'CSF1PO': [10,13], 'TH01': [7,9], 'D13S317': [13,13] }, mi: 0.15 }, // MI Match but DNA mismatch (Thorne's DNA)
+        { name: 'Chloe Valance', dna: { 'D8S1179': [12,12], 'D21S11': [30,30], 'D7S820': [11,11], 'CSF1PO': [13,13], 'TH01': [9,9], 'D13S317': [14,14] }, mi: 0.15 }
+    ];
+
+    // --- TAB NAVIGATION ---
+    let hasSearched = false;
+
+    function showTab(tabId) {
+        if (tabId === 'dossiers' && !hasSearched) {
+            alert('Access Denied: You must perform a database search before viewing subject dossiers.');
+            return;
+        }
+
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        
+        // Find button and activate
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(btn => {
+            if (btn.getAttribute('onclick').includes(tabId)) {
+                btn.classList.add('active');
+            }
+        });
+
+        currentTab = tabId;
+
+        if (tabId === 'blood') initBloodCanvas();
+        if (tabId === 'dna') renderDNACharts();
+        if (tabId === 'micro') renderMicroscopy();
+    }
+
+    // --- BLOOD SPATTER ENGINE ---
+    const canvas = document.getElementById('bloodCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function initBloodCanvas() {
+        const container = document.getElementById('blood-container');
+        canvas.width = container.clientWidth;
+        canvas.height = container.clientHeight;
+        renderBlood();
+    }
+
+    function setSpatter(type) {
+        currentSpatter = type;
+        activeStrings = [];
+        document.querySelectorAll('.canvas-toolbar .tool-btn').forEach(b => b.classList.remove('active'));
+        if (event) event.target.classList.add('active');
+        renderBlood();
+    }
+
+    function resetSpatter() {
+        activeStrings = [];
+        renderBlood();
+    }
+
+    function renderBlood() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        // Floor and Wall lines
+        ctx.strokeStyle = '#333';
+        ctx.beginPath();
+        ctx.moveTo(0, 480); ctx.lineTo(canvas.width, 480); // Floor
+        ctx.moveTo(50, 0); ctx.lineTo(50, canvas.height); // Wall
+        ctx.stroke();
+
+        const drops = currentSpatter === 'A' ? SPATTER_A_DROPS : SPATTER_B_DROPS;
+        
+        drops.forEach(drop => {
+            ctx.fillStyle = '#800';
+            ctx.beginPath();
+            ctx.ellipse(drop.x, drop.y, drop.l/2, drop.w/2, (90 - drop.angle) * Math.PI/180, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Strings
+        activeStrings.forEach(s => {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(s.x1, s.y1);
+            ctx.lineTo(s.x2, s.y2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        });
+    }
+
+    canvas.addEventListener('mousedown', e => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        const drops = currentSpatter === 'A' ? SPATTER_A_DROPS : SPATTER_B_DROPS;
+        const drop = drops.find(d => Math.hypot(d.x - x, d.y - y) < 20);
+        
+        if (drop) {
+            startPoint = { x: drop.x, y: drop.y };
+            isDrawing = true;
+            document.getElementById('spatter-data').innerText = `DROP DATA: W=${drop.w}mm, L=${drop.l}mm, DIST_X=${drop.x - 50}cm`;
+        }
+    });
+
+    canvas.addEventListener('mousemove', e => {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        renderBlood();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+        ctx.beginPath();
+        ctx.moveTo(startPoint.x, startPoint.y);
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    });
+
+    canvas.addEventListener('mouseup', e => {
+        if (!isDrawing) return;
+        const rect = canvas.getBoundingClientRect();
+        activeStrings.push({ x1: startPoint.x, y1: startPoint.y, x2: e.clientX - rect.left, y2: e.clientY - rect.top });
+        isDrawing = false;
+        renderBlood();
+    });
+
+    // --- DNA RENDERING ---
+    function updateSelectedSuspect(id) {
+        selectedSuspectId = id;
+        renderDNACharts();
+    }
+
+    function renderDNACharts() {
+        const suspect = SUBJECTS.find(s => s.id === selectedSuspectId);
+        renderChart('dna-chart-a', DNA_DATA.sampleA, false, 'Sample A (Vault Hair)');
+        renderChart('dna-chart-b', DNA_DATA.sampleB, true, 'Sample B (Evidence Blood)');
+        renderChart('dna-chart-suspect', suspect.dna, false, `Suspect Profile: ${suspect.name}`);
+    }
+
+    function renderChart(containerId, data, isDegraded, title) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = `<h4 style="margin-top: 0; color: var(--text-dim); font-size: 0.8rem; text-transform: uppercase;">${title}</h4>`;
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "180");
+        svg.setAttribute("viewBox", "0 0 1000 180");
+        
+        // Axis
+        const axis = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        axis.setAttribute("x1", "50"); axis.setAttribute("y1", "140");
+        axis.setAttribute("x2", "950"); axis.setAttribute("y2", "140");
+        axis.setAttribute("class", "dna-axis");
+        svg.appendChild(axis);
+
+        const allLoci = ['D8S1179', 'D21S11', 'D7S820', 'CSF1PO', 'TH01', 'D13S317', 'VWA', 'FGA', 'D3S1358', 'D5S818', 'D16S539', 'D18S51', 'TPOX'];
+        const step = 900 / allLoci.length;
+
+        allLoci.forEach((locus, i) => {
+            const x = 70 + (i * step);
+            const alleles = data[locus];
+            
+            if (alleles) {
+                alleles.forEach((allele, ai) => {
+                    const h = 60 + (Math.random() * 30);
+                    const peak = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                    const px = x + (ai * 15);
+                    peak.setAttribute("d", `M ${px-8} 140 L ${px} ${140-h} L ${px+8} 140`);
+                    peak.setAttribute("class", "dna-peak");
+                    svg.appendChild(peak);
+
+                    const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                    label.setAttribute("x", px);
+                    label.setAttribute("y", 155);
+                    label.setAttribute("class", "dna-label");
+                    label.setAttribute("text-anchor", "middle");
+                    label.textContent = allele;
+                    svg.appendChild(label);
+                });
+            } else if (isDegraded) {
+                const placeholder = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                placeholder.setAttribute("x", x + 5);
+                placeholder.setAttribute("y", 130);
+                placeholder.setAttribute("class", "dna-label");
+                placeholder.setAttribute("style", "fill: #444; font-size: 8px; font-style: italic;");
+                placeholder.setAttribute("text-anchor", "middle");
+                placeholder.textContent = "DROPOUT";
+                svg.appendChild(placeholder);
+            }
+
+            const locusName = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            locusName.setAttribute("x", x + 5);
+            locusName.setAttribute("y", 175);
+            locusName.setAttribute("class", "dna-label");
+            locusName.setAttribute("style", "font-weight: bold; fill: var(--primary); font-size: 9px;");
+            locusName.setAttribute("text-anchor", "middle");
+            locusName.textContent = locus;
+            svg.appendChild(locusName);
+        });
+
+        container.appendChild(svg);
+    }
+
+    // --- MICROSCOPY RENDERING ---
+    function renderMicroscopy() {
+        drawHair('micro-thorne-long', 0.28, 'imbricate');
+        drawHair('micro-sample-long', 0.15, 'ovoid');
+    }
+
+    function drawHair(id, mi, type) {
+        const div = document.getElementById(id);
+        div.innerHTML = `<canvas id="${id}-canvas" width="300" height="300"></canvas>`;
+        const c = document.getElementById(`${id}-canvas`);
+        const mctx = c.getContext('2d');
+        
+        mctx.fillStyle = '#111';
+        mctx.fillRect(0,0,300,300);
+        
+        // Main Shaft
+        mctx.fillStyle = '#432';
+        mctx.fillRect(100, 0, 100, 300);
+        
+        // Medulla
+        const medWidth = 100 * mi;
+        mctx.fillStyle = '#000';
+        mctx.fillRect(150 - medWidth/2, 0, medWidth, 300);
+        
+        // Cuticle / Pigment
+        mctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        for(let y=0; y<300; y+=10) {
+            if (type === 'imbricate') {
+                mctx.beginPath();
+                mctx.moveTo(100, y);
+                mctx.bezierCurveTo(120, y-5, 180, y-5, 200, y);
+                mctx.stroke();
+            } else if (type === 'ovoid') {
+                mctx.fillStyle = 'rgba(0,0,0,0.6)';
+                mctx.beginPath();
+                mctx.ellipse(120 + Math.random()*60, y + Math.random()*10, 4, 2, Math.random(), 0, Math.PI*2);
+                mctx.fill();
+            }
+        }
+    }
+
+    // --- DATABASE SEARCH ---
+    function searchDatabase() {
+        const d8 = document.getElementById('query-d8').value.split(',').map(v => v.trim()).filter(v => v).sort();
+        const d21 = document.getElementById('query-d21').value.split(',').map(v => v.trim()).filter(v => v).sort();
+        const th01 = document.getElementById('query-th01').value.split(',').map(v => v.trim()).filter(v => v).sort();
+        const miInput = parseFloat(document.getElementById('query-mi').value);
+
+        const tbody = document.getElementById('db-body');
+        tbody.innerHTML = '';
+
+        let matchFound = false;
+
+        NFD_DATABASE.forEach(sub => {
+            const checkLocus = (locus, queryAlleles) => {
+                if (queryAlleles.length === 0) return true; 
+                const subAlleles = [...sub.dna[locus]].map(String).sort();
+                return JSON.stringify(subAlleles) === JSON.stringify(queryAlleles);
+            };
+
+            const d8Match = checkLocus('D8S1179', d8);
+            const d21Match = checkLocus('D21S11', d21);
+            const th01Match = checkLocus('TH01', th01);
+            const miMatch = isNaN(miInput) ? true : Math.abs(sub.mi - miInput) < 0.001;
+
+            const dnaSearched = d8.length > 0 || d21.length > 0 || th01.length > 0;
+            const miSearched = !isNaN(miInput);
+
+            if ((dnaSearched || miSearched) && d8Match && d21Match && th01Match && miMatch) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${sub.name}</td>
+                    <td><span class="status-tag status-match">DNA MATCH</span></td>
+                    <td><span class="status-tag status-match">MORPHOLOGY MATCH</span></td>
+                    <td><button class="tool-btn" onclick="viewSubject('${sub.name}')">Access Dossier</button></td>
+                `;
+                tbody.appendChild(tr);
+                matchFound = true;
+                
+                if (sub.name === 'Sarah Vance') {
+                    hasSearched = true;
+                    document.getElementById('nav-btn-dossiers').disabled = false;
+                }
+            }
+        });
+
+        if (!matchFound) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-dim);">NO MATCH FOUND. Ensure exact allele entry (e.g., "13, 14") and precise Medullary Index (0.15).</td></tr>';
+        }
+    }
+
+    function viewSubject(name) {
+        showTab('dossiers');
+        const suspect = SUBJECTS.find(s => s.name === name);
+        if (suspect) {
+            const card = document.getElementById(`dossier-${suspect.id}`);
+            if (card) {
+                card.scrollIntoView({ behavior: 'smooth' });
+                card.style.border = '2px solid var(--primary)';
+                setTimeout(() => card.style.border = '1px solid var(--border)', 3000);
+            }
+        }
+    }
+
+    // --- DOSSIERS POPULATION ---
+    function renderDossiers() {
+        const container = document.getElementById('dossier-list');
+        container.innerHTML = '';
+        
+        SUBJECTS.forEach(sub => {
+            const div = document.createElement('div');
+            div.className = 'dossier-card';
+            div.id = `dossier-${sub.id}`;
+            div.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+                    <h3 style="margin: 0;">${sub.name}</h3>
+                    <span class="status-tag ${sub.status === 'In Custody' ? 'status-match' : 'status-partial'}">${sub.status}</span>
+                </div>
+                <p><strong>Height:</strong> ${sub.height}</p>
+                <p><strong>Medullary Index:</strong> ${sub.mi}</p>
+                <p><strong>DNA Markers (Partial):</strong> ${Object.entries(sub.dna).slice(0, 4).map(([k, v]) => `${k}: [${v.join(',')}]`).join(' | ')}...</p>
+                <p style="font-size: 0.85rem; color: var(--text-dim); border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 1rem;">
+                    ${sub.background}
+                </p>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    // Initialize
+    renderDossiers();
+
+</script>
+
+</body>
+</html>
