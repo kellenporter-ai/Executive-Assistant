@@ -140,6 +140,7 @@ def run_gemini(
     model: str | None = None,
     session_id: str | None = None,
     timeout: int = DEFAULT_TIMEOUT,
+    workspace: str | None = None,
 ) -> dict:
     """
     Run the Gemini CLI synchronously and return structured output.
@@ -150,6 +151,7 @@ def run_gemini(
     gemini = get_gemini_path()
     full_prompt = build_prompt(prompt, agent)
     status = load_model_status()
+    cwd = workspace or GEMINI_WORKSPACE
 
     # Determine which model to use
     explicit_model = model is not None
@@ -186,7 +188,7 @@ def run_gemini(
                 capture_output=True,
                 text=True,
                 timeout=timeout,
-                cwd=GEMINI_WORKSPACE,
+                cwd=cwd,
                 env=env,
             )
         except subprocess.TimeoutExpired:
@@ -382,6 +384,10 @@ def main():
         help="Print raw NDJSON events to stderr"
     )
     parser.add_argument(
+        "--workspace", "-w",
+        help="Override workspace directory (default: Gemini Assistant project)"
+    )
+    parser.add_argument(
         "--status",
         action="store_true",
         help="Check model availability status and exit"
@@ -395,8 +401,9 @@ def main():
     if not args.prompt:
         parser.error("prompt is required (unless using --status)")
 
+    workspace = args.workspace or GEMINI_WORKSPACE
     if args.verbose:
-        print(f"Workspace: {GEMINI_WORKSPACE}", file=sys.stderr)
+        print(f"Workspace: {workspace}", file=sys.stderr)
         print(f"Agent: {args.agent or 'none'}", file=sys.stderr)
         print(f"Model: {args.model or 'auto (highest available)'}", file=sys.stderr)
 
@@ -406,6 +413,7 @@ def main():
         model=args.model,
         session_id=args.session_id,
         timeout=args.timeout,
+        workspace=args.workspace,
     )
 
     print(json.dumps(result, indent=2))

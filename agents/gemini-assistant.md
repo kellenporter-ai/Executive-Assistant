@@ -45,6 +45,9 @@ python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --session-
 
 # Longer timeout for complex tasks
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --timeout 300 "Large audit..."
+
+# Run in a specific project workspace (e.g., Portal)
+python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --workspace "/home/kp/Desktop/Executive Assistant/projects/Porters-Portal" "Audit this component..."
 ```
 
 ### Auto-Fallback
