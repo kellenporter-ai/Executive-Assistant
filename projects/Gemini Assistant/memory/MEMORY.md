@@ -21,3 +21,5 @@
 ## Bridge Configuration
 - Timeout: 300s for file-reading audits (180s times out on 1000+ line files)
 - Shell `cat` works when `read_file` hits workspace restrictions, but adds latency
+- **Auto-fallback built (2026-03-15):** Bridge auto-scales 3.1→2.5 Pro→2.5 Flash on 429 AND timeout. Gemini 3.1 can silently hang under load (not just 429). Timeout now treated as exhaustion signal.
+- Both non-shared and shared versions have identical fallback logic
