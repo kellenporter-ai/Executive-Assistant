@@ -41,9 +41,15 @@ call app\.venv\Scripts\activate.bat
 REM Install dependencies if needed
 if not exist "app\.venv\.installed" (
     echo   Installing dependencies...
-    pip install -q -r app\requirements.txt
-    echo. > app\.venv\.installed
-    echo   Dependencies installed.
+    pip install -q -r requirements.txt
+    if not errorlevel 1 (
+        echo. > app\.venv\.installed
+        echo   Dependencies installed.
+    ) else (
+        echo   Failed to install dependencies. Check requirements.txt exists.
+        pause
+        exit /b 1
+    )
 )
 
 REM Check if port 3131 is already in use

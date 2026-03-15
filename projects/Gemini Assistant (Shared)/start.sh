@@ -43,10 +43,10 @@ fi
 source app/.venv/bin/activate
 
 # Install/update dependencies if requirements changed
-REQS_HASH=$(md5sum app/requirements.txt 2>/dev/null | cut -d' ' -f1 || md5 -q app/requirements.txt 2>/dev/null)
+REQS_HASH=$(md5sum requirements.txt 2>/dev/null | cut -d' ' -f1 || md5 -q requirements.txt 2>/dev/null)
 if [ ! -f "app/.venv/.installed" ] || [ "$(cat app/.venv/.installed 2>/dev/null)" != "$REQS_HASH" ]; then
     echo "  Installing dependencies..."
-    pip install -q -r app/requirements.txt
+    pip install -q -r requirements.txt
     echo "$REQS_HASH" > app/.venv/.installed
     echo "  Dependencies installed."
 fi

@@ -3068,6 +3068,10 @@ function renderDepPhase(container) {
           </div>
         `).join('')}
       </div>
+      ${platform === 'windows' && !allRequired ? `<div style="margin:8px 0 4px;padding:8px 12px;background:var(--bg-tertiary);border-radius:8px;font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+        <i data-lucide="info" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;color:var(--accent)"></i>
+        After installing, close and reopen the assistant for changes to take effect.
+      </div>` : ''}
       <div class="setup-actions">
         <span></span>
         <div style="display:flex;gap:8px;align-items:center;">
@@ -3178,6 +3182,10 @@ function renderAuthPhase(container) {
         </div>
         <div class="setup-auth-result" id="setupAuthResult"></div>
       </div>
+      ${platform === 'windows' ? `<div style="margin:8px 0 4px;padding:8px 12px;background:var(--bg-tertiary);border-radius:8px;font-size:0.82rem;color:var(--text-secondary);line-height:1.5;">
+        <i data-lucide="info" style="width:14px;height:14px;vertical-align:-2px;margin-right:4px;color:var(--accent)"></i>
+        If verification fails, close and reopen the assistant, then try again.
+      </div>` : ''}
       <div class="setup-actions">
         <button class="setup-btn setup-btn-ghost" onclick="advanceSetupPhase('dependencies')">Back</button>
         <div style="display:flex;gap:8px;align-items:center;">

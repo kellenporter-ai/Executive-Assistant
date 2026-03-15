@@ -34,6 +34,8 @@ Portal-specific conventions, schema additions, UI patterns, content gotchas, bui
 
 ## Known Gotchas — Portal
 
+- **Notification docs use `timestamp`, NOT `createdAt`** — The `notifications` collection stores its time field as `timestamp` (ISO string). Do NOT query with `createdAt` — that field doesn't exist. This broke the daily digest for months.
+- **Submission docs use `userName`, NOT `studentName`** — The `submissions` collection stores the student name as `userName`. `studentName` doesn't exist. Any new code reading submission author names must use `userName`.
 - **Per-student announcement targeting** — Announcements support `targetStudentIds?: string[]`. When set, `StudentDashboard.tsx` filters so only listed students see it. Nudge buttons in TeacherDashboard use this for per-student or batch targeting. Class-wide announcements omit the field. No true DM/chat system exists — it's still the announcement pipeline.
 - **STARTED submissions were previously hidden** — `TeacherDashboard.tsx` used to filter `status !== 'STARTED'`. As of March 2026, they're included so admin can see in-progress work. Any new code consuming assessment submissions should expect STARTED status in the mix.
 - **New block types must be added to TWO grading lists** — `submitAssessment` in `functions/src/index.ts` has separate lists: auto-graded types (MC, SHORT_ANSWER, SORTING, RANKING, LINKED) and manual-review types (DRAWING, MATH_RESPONSE, BAR_CHART, DATA_TABLE, CHECKLIST). Missing a block type means its response is silently dropped from `perBlock` and invisible to teachers.
