@@ -5,6 +5,7 @@
 ## Bridge Performance
 - **Timeout:** 180s is too short for audits of files >1000 lines. Use `--timeout 300` for audit tasks.
 - Gemini reads files via `cat` in shell commands when `read_file` tool hits workspace restrictions. This works but adds latency.
+- **Auto-fallback (2026-03-15):** Bridge now automatically scales down models on 429 errors AND timeouts. Tier order: 3.1-pro-preview → 2.5-pro → 2.5-flash. Exhausted models get a 15-min cooldown. Use `--status` to check availability. No need to manually specify `--model` anymore — the bridge picks the highest available.
 
 ## Discourse Patterns (from 2026-03-15 testing)
 

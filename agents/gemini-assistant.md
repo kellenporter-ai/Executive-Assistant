@@ -28,14 +28,17 @@ Before starting work:
 Use the bridge tool at `tools/gemini-bridge.py`:
 
 ```bash
-# General prompt (Gemini EA handles routing)
+# General prompt — auto-selects highest available model
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" "Your prompt here"
 
 # Target a specific Gemini agent
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --agent qa-engineer "Audit this code..."
 
-# Use a specific model
+# Force a specific model (skips auto-fallback)
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --model gemini-2.5-pro "Complex task..."
+
+# Check model availability (which models are up, cooldown times)
+python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --status
 
 # Multi-turn conversation
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --session-id <id> "Follow-up..."
@@ -43,6 +46,15 @@ python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --session-
 # Longer timeout for complex tasks
 python3 "/home/kp/Desktop/Executive Assistant/tools/gemini-bridge.py" --timeout 300 "Large audit..."
 ```
+
+### Auto-Fallback
+
+The bridge automatically scales down when a model is exhausted or times out:
+- **Tier 1:** `gemini-3.1-pro-preview` (highest capability)
+- **Tier 2:** `gemini-2.5-pro` (reliable fallback)
+- **Tier 3:** `gemini-2.5-flash` (fast, always available)
+
+On 429 errors or timeouts, the bridge marks the model exhausted for 15 minutes and retries with the next tier. The response includes `model_fallback` showing the chain of attempts. Use `--status` to check current availability and retry times.
 
 The bridge returns structured JSON:
 ```json
