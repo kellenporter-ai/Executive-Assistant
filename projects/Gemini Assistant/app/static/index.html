@@ -36,6 +36,7 @@
     <button class="titlebar-toggle" onclick="exportConversation()" title="Export conversation" aria-label="Export conversation"><i data-lucide="download"></i></button>
     <button class="titlebar-toggle" onclick="openSettings()" title="Settings" aria-label="Settings"><i data-lucide="settings"></i></button>
     <button class="titlebar-toggle" onclick="toggleTheme()" id="themeToggle" title="Toggle light/dark theme" aria-label="Toggle theme"><i data-lucide="sun"></i></button>
+    <button class="titlebar-toggle titlebar-shutdown" onclick="confirmShutdown()" title="Stop Server" aria-label="Stop Server"><i data-lucide="power"></i></button>
     <div class="status-dot" id="statusDot" role="status" aria-label="Connected"></div>
   </div>
 
@@ -199,9 +200,6 @@
           <button class="status-item status-bell" id="statusBell" onclick="toggleNotificationCenter()" title="Notifications">
             <i data-lucide="bell"></i>
             <span class="status-badge" id="statusBadge" style="display:none">0</span>
-          </button>
-          <button class="status-item status-shutdown" onclick="confirmShutdown()" title="Stop Server">
-            <i data-lucide="power" style="width:12px;height:12px"></i>
           </button>
         </div>
       </div>

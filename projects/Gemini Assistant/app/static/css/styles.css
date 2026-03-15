@@ -2377,14 +2377,8 @@ body {
   padding: 0 3px;
   pointer-events: none;
 }
-.status-shutdown {
-  margin-left: auto;
-  color: var(--text-muted);
-  padding: 0 8px;
-  transition: color 0.15s;
-}
-.status-shutdown:hover {
-  color: var(--error);
+.titlebar-shutdown:hover {
+  color: var(--error) !important;
 }
 
 /* Shutdown overlay — covers entire page after server stops */
