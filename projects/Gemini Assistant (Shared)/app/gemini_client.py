@@ -123,11 +123,15 @@ def get_model_status() -> dict:
     return result
 
 
+DEFAULT_TIMEOUT = 120  # seconds — kill subprocess if it hangs
+
+
 async def stream_chat(
     message: str,
     session_id: str | None = None,
     approval_mode: str = "yolo",
     model: str | None = None,
+    timeout: int = DEFAULT_TIMEOUT,
 ):
     """
     Spawn gemini CLI with -p and -o stream-json, yield parsed NDJSON events.
@@ -187,37 +191,52 @@ async def stream_chat(
         # Collect all events and check for capacity errors
         events = []
         got_content = False
+        timed_out = False
 
-        async for raw_line in proc.stdout:
-            line = raw_line.decode("utf-8").strip()
-            if not line:
-                continue
+        async def collect_output():
+            nonlocal got_content
+            async for raw_line in proc.stdout:
+                line = raw_line.decode("utf-8").strip()
+                if not line:
+                    continue
+                try:
+                    event = json.loads(line)
+                    events.append(event)
+                    if event.get("type") == "message" and event.get("content"):
+                        got_content = True
+                except json.JSONDecodeError:
+                    continue
+            await proc.wait()
+
+        try:
+            await asyncio.wait_for(collect_output(), timeout=timeout)
+        except asyncio.TimeoutError:
+            timed_out = True
             try:
-                event = json.loads(line)
-                events.append(event)
-                if event.get("type") == "message" and event.get("content"):
-                    got_content = True
-            except json.JSONDecodeError:
-                continue
-
-        await proc.wait()
+                proc.kill()
+                await proc.wait()
+            except ProcessLookupError:
+                pass
 
         # Read stderr for capacity errors
         stderr_output = ""
         if proc.stderr:
-            stderr_bytes = await proc.stderr.read()
-            stderr_output = stderr_bytes.decode("utf-8").strip()
+            try:
+                stderr_bytes = await asyncio.wait_for(proc.stderr.read(), timeout=5)
+                stderr_output = stderr_bytes.decode("utf-8").strip()
+            except asyncio.TimeoutError:
+                pass
 
-        # Check if this was a capacity error
+        # Check if this was a capacity error or timeout
         all_text = stderr_output + " ".join(
             json.dumps(e) for e in events if e.get("type") == "error"
         )
         is_capacity = _is_capacity_error(all_text)
         is_failure = (proc.returncode and proc.returncode != 0) and not got_content
 
-        if (is_capacity or is_failure) and not explicit_model:
+        if (is_capacity or is_failure or timed_out) and not explicit_model:
             # Mark this model as exhausted and try the next one
-            reason = "capacity_exhausted" if is_capacity else "process_failure"
+            reason = "capacity_exhausted" if is_capacity else "timeout" if timed_out else "process_failure"
             status = _mark_model_exhausted(model, status)
             next_model, next_skipped = _get_best_available_model(status)
 
@@ -238,6 +257,14 @@ async def stream_chat(
         # No capacity error (or explicit model) — yield all collected events
         for event in events:
             yield event
+
+        # If we timed out and couldn't fall back, yield timeout error
+        if timed_out and not got_content:
+            yield {
+                "type": "error",
+                "message": f"Gemini CLI timed out after {timeout}s",
+            }
+            break
 
         # If the process failed, yield an error event
         if proc.returncode and proc.returncode != 0 and not got_content:

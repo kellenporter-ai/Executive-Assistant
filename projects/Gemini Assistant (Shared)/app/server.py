@@ -66,6 +66,7 @@ class ChatRequest(BaseModel):
     session_id: str | None = None
     approval_mode: str | None = "yolo"
     model: str | None = None
+    timeout: int | None = None
 
 class CancelRequest(BaseModel):
     session_id: str
@@ -120,6 +121,7 @@ async def chat(request: ChatRequest):
                 session_id,
                 approval_mode=request.approval_mode or "yolo",
                 model=request.model,
+                **({"timeout": request.timeout} if request.timeout else {}),
             ):
                 # Update track_id if session_id is returned in the first event
                 if event.get("type") == "init" and event.get("session_id"):
