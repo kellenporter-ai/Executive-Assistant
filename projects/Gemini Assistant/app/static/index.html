@@ -1135,7 +1135,7 @@
       position: fixed;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%; max-width: 440px;
+      width: 500px; max-width: 95vw;
       background: var(--bg-primary);
       border: 1px solid var(--border);
       border-radius: var(--radius);
@@ -1143,8 +1143,10 @@
       z-index: 1000;
       animation: settingsFadeIn 0.2s ease-out;
       overflow: hidden;
+      flex-direction: column;
+      max-height: 85vh;
     }
-    .settings-panel.open { display: block; }
+    .settings-panel.open { display: flex; }
     .settings-header {
       display: flex; align-items: center; justify-content: space-between;
       padding: 16px 20px; border-bottom: 1px solid var(--border);
@@ -1167,7 +1169,7 @@
       font-family: inherit;
     }
     .setting-select:focus, .setting-input:focus { border-color: var(--accent); }
-    .settings-body { max-height: 70vh; overflow-y: auto; }
+    .settings-body { flex: 1; overflow-y: auto; min-height: 0; }
 
     /* ===== PROFILE EDITOR & RESET SECTIONS ===== */
     .settings-accordion {
@@ -3344,11 +3346,9 @@
         item.style.transform = 'translateX(-20px)';
         setTimeout(() => item.remove(), 150);
       }
-      // Detach from any open tab
+      // Close any open tab for this session
       const tab = tabs.find(t => t.sessionId === sessionId);
-      if (tab) {
-        tab.sessionId = null;
-      }
+      if (tab) closeTab(tab.id);
       // Background API call
       let endpoint = permanent
         ? `/api/sessions/${sessionId}/archive`
