@@ -823,6 +823,19 @@ async def clear_folder(request: FolderClearRequest):
     return {"status": "ok", "folder": request.folder, "deleted": deleted}
 
 
+@app.post("/api/shutdown")
+async def shutdown():
+    """Gracefully shut down the server."""
+    import signal
+
+    async def _delayed_shutdown():
+        await asyncio.sleep(1.5)
+        os.kill(os.getpid(), signal.SIGTERM)
+
+    asyncio.create_task(_delayed_shutdown())
+    return {"status": "ok", "message": "Server shutting down..."}
+
+
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 

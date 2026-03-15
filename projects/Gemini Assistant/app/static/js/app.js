@@ -2705,6 +2705,7 @@ const commands = [
   { id: 'export', label: 'Export Conversation', icon: 'download', description: 'Download chat as markdown', action: () => { const tab = getActiveTab(); if (!tab || tab.messages.length === 0) { showToast('No conversation to export', 'warning'); } else { exportConversation(); showToast('Conversation exported', 'success'); } } },
   { id: 'toggle-theme', label: 'Toggle Theme', icon: 'sun', description: 'Switch between dark and light mode', action: () => toggleTheme() },
   { id: 'toggle-approval', label: 'Toggle Approval Mode', icon: 'shield', description: 'Switch between auto and plan mode', action: () => { toggleApprovalMode(); showToast(`Mode: ${settings.approvalMode}`, 'info'); } },
+  { id: 'shutdown', label: 'Shut Down Server', icon: 'power', description: 'Stop the assistant server', action: () => { confirmShutdown(); } },
 ];
 
 let cmdPaletteIndex = 0;
@@ -4002,6 +4003,33 @@ function clearDebugLog() {
     e.preventDefault();
   });
 })();
+
+// ===== SHUTDOWN =====
+function confirmShutdown() {
+  // Use a simple confirm dialog — this is destructive but not data-losing
+  if (!confirm('This will shut down the assistant server.\n\nYou\'ll need to run start.sh or start.bat again to restart.\n\nContinue?')) {
+    return;
+  }
+
+  fetch('/api/shutdown', { method: 'POST' })
+    .then(res => res.json())
+    .then(() => {
+      // Show shutdown overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'shutdown-overlay';
+      overlay.innerHTML = `
+        <i data-lucide="power-off" style="width:48px;height:48px;color:var(--text-muted)"></i>
+        <h2>Server Stopped</h2>
+        <p>The assistant has been shut down. You can close this browser tab.</p>
+        <p style="color:var(--text-muted);font-size:0.85rem;">To restart, run <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.sh</code> or <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.bat</code></p>
+      `;
+      document.body.appendChild(overlay);
+      lucide.createIcons();
+    })
+    .catch(() => {
+      showToast('Failed to stop server', 'error');
+    });
+}
 
 // ===== LAUNCH =====
 init();
