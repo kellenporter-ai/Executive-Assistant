@@ -194,6 +194,42 @@ async def reset_token_usage():
 
 # --- Session Management ---
 
+async def _delete_from_cli(session_id: str, index: str | None = None) -> bool:
+    """Remove a session from the Gemini CLI's index.
+    If index is not provided, looks it up via --list-sessions."""
+    gemini = get_gemini_path()
+
+    if not index:
+        # Look up the index by listing sessions and matching the session_id
+        proc = await asyncio.create_subprocess_exec(
+            gemini, "--list-sessions",
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=WORKSPACE,
+        )
+        stdout, _ = await proc.communicate()
+        for line in stdout.decode("utf-8").split("\n"):
+            match = re.match(
+                r"\s*(\d+)\.\s+.+?\s+\(.+?\)\s+\[([a-f0-9-]+)\]",
+                line,
+            )
+            if match and match.group(2).strip() == session_id:
+                index = match.group(1).strip()
+                break
+
+    if not index:
+        return False
+
+    proc = await asyncio.create_subprocess_exec(
+        gemini, "--delete-session", index,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+        cwd=WORKSPACE,
+    )
+    await proc.communicate()
+    return proc.returncode == 0
+
+
 @app.get("/api/sessions")
 async def list_sessions():
     """List available chat sessions from the Gemini CLI."""
@@ -226,16 +262,10 @@ async def list_sessions():
 
 @app.delete("/api/sessions/{session_id}")
 async def archive_session(session_id: str, index: str | None = None):
-    """Archive a chat session by moving it to the 24h archive directory.
-    If an index is provided, also use the Gemini CLI to delete it from the active session list."""
-    if index:
-        gemini = get_gemini_path()
-        await asyncio.create_subprocess_exec(
-            gemini, "--delete-session", index,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-            cwd=WORKSPACE,
-        )
+    """Archive a chat session by moving it to the 24h archive directory
+    and removing it from the Gemini CLI's session index."""
+    # Always remove from CLI index (looks up index if not provided)
+    await _delete_from_cli(session_id, index)
 
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
     short_id = session_id.split("-")[0]
@@ -243,9 +273,8 @@ async def archive_session(session_id: str, index: str | None = None):
     matches = glob.glob(pattern, recursive=True)
 
     if not matches:
-        if index: # If CLI delete succeeded, we might not find the file anymore
-             return {"status": "ok", "archived": True, "cli_deleted": True}
-        raise HTTPException(status_code=404, detail="Session not found")
+        # CLI delete may have already removed the file
+        return {"status": "ok", "archived": True, "cli_deleted": True}
 
     for match in matches:
         dest = os.path.join(ARCHIVE_DIR, os.path.basename(match))
@@ -256,7 +285,11 @@ async def archive_session(session_id: str, index: str | None = None):
 
 @app.post("/api/sessions/{session_id}/archive")
 async def permanent_archive_session(session_id: str):
-    """Permanently archive a session (not auto-deleted after 24h)."""
+    """Permanently archive a session (not auto-deleted after 24h).
+    Also removes it from the Gemini CLI's session index."""
+    # Remove from CLI index before moving files
+    await _delete_from_cli(session_id)
+
     gemini_dir = os.path.expanduser("~/.gemini/tmp")
     short_id = session_id.split("-")[0]
     pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{short_id}*.json")

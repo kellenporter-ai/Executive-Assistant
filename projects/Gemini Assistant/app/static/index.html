@@ -432,6 +432,7 @@
       flex-direction: column;
       gap: 16px;
       scroll-behavior: smooth;
+      position: relative;
     }
 
     .message {
@@ -1347,6 +1348,581 @@
       background: var(--purple-dim); color: var(--purple);
       white-space: nowrap;
     }
+
+    /* ===== TOAST NOTIFICATIONS ===== */
+    .toast-container {
+      position: fixed;
+      bottom: 62px;
+      right: 20px;
+      z-index: 3000;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .toast {
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      min-width: 280px;
+      max-width: 420px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.85rem;
+      color: var(--text-primary);
+      animation: toastSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .toast.removing {
+      animation: toastFadeOut 0.25s ease-in forwards;
+    }
+    .toast-icon { flex-shrink: 0; font-size: 1rem; }
+    .toast-icon.success { color: var(--success); }
+    .toast-icon.error { color: var(--error); }
+    .toast-icon.warning { color: var(--warning); }
+    .toast-icon.info { color: var(--accent); }
+    .toast-message { flex: 1; line-height: 1.4; }
+    .toast-close {
+      flex-shrink: 0;
+      background: none; border: none; color: var(--text-muted);
+      cursor: pointer; padding: 2px; border-radius: 4px;
+      font-size: 1.1rem; line-height: 1; transition: color 0.15s;
+    }
+    .toast-close:hover { color: var(--text-primary); }
+    .toast-progress {
+      position: absolute;
+      bottom: 0; left: 0;
+      height: 3px;
+      border-radius: 0 0 10px 10px;
+      animation: toastProgress linear forwards;
+    }
+    .toast-progress.success { background: var(--success); }
+    .toast-progress.error { background: var(--error); }
+    .toast-progress.warning { background: var(--warning); }
+    .toast-progress.info { background: var(--accent); }
+    @keyframes toastSlideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes toastFadeOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    @keyframes toastProgress {
+      from { width: 100%; }
+      to { width: 0%; }
+    }
+
+    /* ===== COMMAND PALETTE ===== */
+    .command-palette-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px);
+      z-index: 2500;
+    }
+    .command-palette-backdrop.open { display: block; }
+    .command-palette {
+      display: none;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 520px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      z-index: 2501;
+      overflow: hidden;
+      animation: modalFadeIn 0.15s ease-out;
+    }
+    .command-palette.open { display: block; }
+    .command-palette-input {
+      width: 100%;
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      padding: 16px 20px;
+      color: var(--text-primary);
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+    }
+    .command-palette-input::placeholder { color: var(--text-muted); }
+    .command-palette-list {
+      max-height: 320px;
+      overflow-y: auto;
+      padding: 6px;
+    }
+    .command-palette-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      transition: background 0.1s, color 0.1s;
+    }
+    .command-palette-item:hover,
+    .command-palette-item.active {
+      background: var(--accent-dim);
+      color: var(--text-primary);
+    }
+    .command-palette-item .cmd-icon {
+      width: 20px; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: var(--text-muted);
+    }
+    .command-palette-item.active .cmd-icon,
+    .command-palette-item:hover .cmd-icon { color: var(--accent); }
+    .command-palette-item .cmd-label { flex: 1; }
+    .command-palette-item .cmd-shortcut {
+      font-size: 0.7rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--text-muted);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 6px;
+    }
+    .command-palette-empty {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* ===== BREADCRUMB NAVIGATION ===== */
+    .breadcrumb-bar {
+      display: flex;
+      align-items: center;
+      height: 24px;
+      padding: 0 16px;
+      background: var(--bg-secondary);
+      border-bottom: 1px solid var(--border);
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      gap: 2px;
+      overflow: hidden;
+    }
+    .breadcrumb-item {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 200px;
+    }
+    .breadcrumb-item.clickable {
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+    .breadcrumb-item.clickable:hover {
+      color: var(--accent);
+    }
+    .breadcrumb-sep {
+      color: var(--text-muted);
+      opacity: 0.5;
+      margin: 0 4px;
+      flex-shrink: 0;
+      font-size: 0.65rem;
+    }
+    .breadcrumb-item.current {
+      color: var(--text-secondary);
+    }
+
+    /* ===== CONVERSATION MINIMAP ===== */
+    .minimap {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 40px;
+      background: var(--bg-secondary);
+      border-left: 1px solid var(--border);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 10;
+      overflow: hidden;
+    }
+    .minimap.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .minimap-block {
+      position: absolute;
+      left: 6px;
+      right: 6px;
+      border-radius: 2px;
+      min-height: 3px;
+      cursor: pointer;
+      transition: opacity 0.15s;
+    }
+    .minimap-block:hover { opacity: 0.8; }
+    .minimap-block.user { background: var(--accent); opacity: 0.6; }
+    .minimap-block.assistant { background: var(--text-muted); opacity: 0.2; }
+    .minimap-block.tool { background: var(--warning); opacity: 0.4; }
+    .minimap-block.system { background: var(--text-muted); opacity: 0.15; }
+    .minimap-viewport {
+      position: absolute;
+      left: 2px;
+      right: 2px;
+      background: var(--accent);
+      opacity: 0.12;
+      border-radius: 3px;
+      border: 1px solid var(--accent);
+      pointer-events: none;
+      transition: top 0.1s, height 0.1s;
+    }
+
+    /* ===== ONBOARDING WELCOME ===== */
+    .onboarding {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 24px;
+      color: var(--text-secondary);
+      text-align: center;
+      padding: 40px 24px;
+      animation: fadeIn 0.5s ease-out;
+    }
+    .onboarding h2 { font-size: 1.8rem; color: var(--text-primary); font-weight: 600; }
+    .onboarding > p { max-width: 500px; line-height: 1.6; font-size: 1rem; }
+    .onboarding-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 700px;
+      width: 100%;
+    }
+    .onboarding-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 16px;
+      text-align: left;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .onboarding-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+    .onboarding-card .card-icon {
+      font-size: 1.5rem;
+      margin-bottom: 8px;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+    }
+    .onboarding-card .card-icon .lucide { width: 28px; height: 28px; }
+    .onboarding-card h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+    .onboarding-card p {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      margin: 0;
+    }
+    .onboarding-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+    .onboarding-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 12px 32px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+    .onboarding-btn:hover { background: var(--accent-hover); transform: translateY(-1px); }
+
+    @media (max-width: 600px) {
+      .onboarding-grid { grid-template-columns: 1fr; }
+      .breadcrumb-bar { display: none; }
+      .minimap { display: none; }
+    }
+
+    /* ===== STATUS BAR ===== */
+    .status-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 22px;
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-variant-numeric: tabular-nums;
+      flex-shrink: 0;
+      user-select: none;
+    }
+    .status-bar-left {
+      display: flex;
+      align-items: center;
+      flex: 1;
+      min-width: 0;
+    }
+    .status-bar-right {
+      display: flex;
+      align-items: center;
+    }
+    .status-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 8px;
+      height: 22px;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      border-radius: 0;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+      border: none;
+      background: none;
+    }
+    .status-item:hover {
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+    }
+    .status-item:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+    .status-bar .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      transition: background 0.3s;
+    }
+    .status-bar .status-dot.connected { background: var(--success); }
+    .status-bar .status-dot.disconnected { background: var(--error); }
+    .status-bar .lucide { width: 12px; height: 12px; }
+    .status-bell {
+      position: relative;
+    }
+    .status-badge {
+      position: absolute;
+      top: 1px;
+      right: 2px;
+      min-width: 14px;
+      height: 14px;
+      border-radius: 7px;
+      background: var(--accent);
+      color: #fff;
+      font-size: 9px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 3px;
+      pointer-events: none;
+    }
+
+    /* ===== NOTIFICATION CENTER ===== */
+    .notification-center {
+      display: none;
+      position: fixed;
+      bottom: 23px;
+      right: 0;
+      width: 350px;
+      max-height: 400px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border);
+      border-bottom: none;
+      border-radius: var(--radius) var(--radius) 0 0;
+      box-shadow: var(--shadow-lg);
+      z-index: 2900;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .notification-center.open { display: flex; }
+    .notification-center-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-primary);
+      flex-shrink: 0;
+    }
+    .notification-center-header button {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 3px 8px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      background: none;
+      transition: all 0.15s;
+    }
+    .notification-center-header button:hover {
+      color: var(--error);
+      border-color: var(--error);
+    }
+    .notification-center-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .notification-entry {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      transition: background 0.15s;
+    }
+    .notification-entry:hover { background: var(--bg-hover); }
+    .notification-entry .notif-icon {
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      margin-top: 1px;
+    }
+    .notification-entry .notif-icon.success { color: var(--success); }
+    .notification-entry .notif-icon.error { color: var(--error); }
+    .notification-entry .notif-icon.warning { color: var(--warning); }
+    .notification-entry .notif-icon.info { color: var(--accent); }
+    .notification-entry .notif-body { flex: 1; min-width: 0; }
+    .notification-entry .notif-message { line-height: 1.4; word-break: break-word; }
+    .notification-entry .notif-time {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .notification-center-empty {
+      padding: 24px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.82rem;
+    }
+
+    /* ===== TOAST ENHANCEMENTS ===== */
+    @media (prefers-reduced-motion: reduce) {
+      .toast { animation: none !important; }
+      .toast.removing { animation: none !important; opacity: 0; }
+      .toast-progress { animation: none !important; width: 0% !important; }
+    }
+    .toast.paused .toast-progress {
+      animation-play-state: paused;
+    }
+
+    /* ===== ACCESSIBILITY: Screen Reader Only ===== */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+    }
+
+    /* ===== PREFERS-REDUCED-MOTION ===== */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+      }
+    }
+
+    /* ===== COMMAND PALETTE ENHANCEMENTS ===== */
+    .command-palette-separator {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      padding: 6px 16px 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .command-palette-item .cmd-description {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-left: auto;
+    }
+    .command-palette-item .cmd-label strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+    .command-palette-item .cmd-remove-history {
+      display: none;
+      width: 16px;
+      height: 16px;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-radius: 3px;
+      font-size: 0.75rem;
+      padding: 0;
+      flex-shrink: 0;
+      transition: color 0.15s;
+    }
+    .command-palette-item:hover .cmd-remove-history {
+      display: flex;
+    }
+    .command-palette-item .cmd-remove-history:hover {
+      color: var(--error);
+    }
+    /* ===== TAB ENHANCEMENTS ===== */
+    .tab.pinned { flex-shrink: 0; width: 80px; justify-content: center; padding: 0 8px; }
+    .tab.pinned .tab-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40px; font-size: 0.75rem; }
+    .tab.pinned .tab-pin-icon { display: flex; align-items: center; }
+    .tab:not(.pinned) .tab-pin-icon { display: none; }
+    .tab.pinned .tab-close { display: none; }
+    .draft-dot { color: var(--text-muted); font-weight: 700; margin-left: 2px; font-size: 1.1em; line-height: 1; }
+    .tab.dragging { opacity: 0.5; }
+    .tab.drag-over-left { border-left: 2px solid var(--accent); }
+    .tab.drag-over-right { border-right: 2px solid var(--accent); }
+    .tab-context-menu {
+      position: fixed; z-index: 3000; background: var(--bg-primary); border: 1px solid var(--border);
+      border-radius: 8px; box-shadow: var(--shadow-lg); min-width: 180px; padding: 4px 0;
+      animation: fadeIn 0.12s ease-out;
+    }
+    .tab-context-menu-item {
+      display: flex; align-items: center; gap: 10px; height: 28px; padding: 0 24px;
+      font-size: 0.82rem; color: var(--text-secondary); cursor: pointer;
+      transition: background 0.1s, color 0.1s; white-space: nowrap;
+    }
+    .tab-context-menu-item:hover { background: var(--bg-hover); color: var(--text-primary); }
+    .tab-context-menu-item:focus-visible { background: var(--bg-hover); color: var(--text-primary); outline: 2px solid var(--accent); outline-offset: -2px; }
+    .tab-context-menu-item .lucide { width: 14px; height: 14px; flex-shrink: 0; }
+    .tab-context-menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+    /* ===== SIDEBAR RESIZE HANDLE ===== */
+    .sidebar-resize-handle { width: 4px; cursor: col-resize; background: transparent; flex-shrink: 0; z-index: 10; transition: background 0.15s; }
+    .sidebar-resize-handle:hover { background: rgba(137, 180, 250, 0.3); }
+    .sidebar-resize-handle.active { background: rgba(137, 180, 250, 0.6); }
+    [data-theme="light"] .sidebar-resize-handle:hover { background: rgba(37, 99, 235, 0.2); }
+    [data-theme="light"] .sidebar-resize-handle.active { background: rgba(37, 99, 235, 0.4); }
+    .sidebar.collapsed + .sidebar-resize-handle { display: none; }
   </style>
 </head>
 <body>
@@ -1388,7 +1964,7 @@
           <button class="sidebar-filter-btn" data-tag="yellow" onclick="filterSessions('yellow')">Yellow</button>
           <button class="sidebar-filter-btn" data-tag="purple" onclick="filterSessions('purple')">Purple</button>
         </div>
-        <div class="sidebar-list" id="sessionList">
+        <div class="sidebar-list" id="sessionList" role="list">
           <div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">Loading sessions...</div>
         </div>
       </div>
@@ -1415,23 +1991,35 @@
       <div class="sidebar-footer">
         <div class="sidebar-header">Keyboard Shortcuts</div>
         <div class="shortcut-list">
-          <div class="shortcut-item"><span>New Chat</span><kbd>Ctrl+T</kbd></div>
-          <div class="shortcut-item"><span>Stop Gen</span><kbd>Esc</kbd></div>
-          <div class="shortcut-item"><span>Toggle Sidebar</span><kbd>Ctrl+B</kbd></div>
+          <div class="shortcut-item"><span>New Chat</span><kbd>Ctrl+N</kbd></div>
+          <div class="shortcut-item"><span>Command Palette</span><kbd>Ctrl+K</kbd></div>
+          <div class="shortcut-item"><span>Toggle Sidebar</span><kbd>Ctrl+/</kbd></div>
+          <div class="shortcut-item"><span>Archive Session</span><kbd>Ctrl+Shift+A</kbd></div>
+          <div class="shortcut-item"><span>Close Modal</span><kbd>Esc</kbd></div>
           <div class="shortcut-item"><span>Attach File</span><kbd>Ctrl+U</kbd></div>
         </div>
       </div>
     </div>
 
+    <!-- Sidebar Resize Handle -->
+    <div class="sidebar-resize-handle" id="sidebarResizeHandle" role="separator" aria-label="Resize sidebar" tabindex="0"></div>
+
     <!-- Workspace -->
     <div class="workspace">
       <!-- Tab Bar -->
       <div class="tab-bar" id="tabBar" role="tablist">
-        <button class="new-tab-btn" onclick="createNewTab()" title="New chat (Ctrl+T)"><i data-lucide="plus"></i></button>
+        <button class="new-tab-btn" onclick="createNewTab()" title="New chat (Ctrl+N)"><i data-lucide="plus"></i></button>
+      </div>
+
+      <!-- Breadcrumb Navigation -->
+      <div class="breadcrumb-bar" id="breadcrumbBar">
+        <span class="breadcrumb-item clickable" id="breadcrumbWorkspace" onclick="toggleSidebar()">...</span>
+        <span class="breadcrumb-sep">&#8250;</span>
+        <span class="breadcrumb-item current" id="breadcrumbSession">New Chat</span>
       </div>
 
       <!-- Chat Container (welcome injected by JS via getWelcomeHTML()) -->
-      <div class="chat-container" id="chatContainer" role="log" aria-live="polite"></div>
+      <div class="chat-container" id="chatContainer" role="tabpanel" aria-live="polite"></div>
 
       <!-- Input Area -->
       <div class="input-area">
@@ -1441,6 +2029,7 @@
             id="messageInput"
             placeholder="Type a message..."
             rows="1"
+            spellcheck="true"
             onkeydown="handleKeyDown(event)"
             oninput="autoResize(this)"
           ></textarea>
@@ -1462,6 +2051,30 @@
           </div>
         </div>
       </div>
+
+      <!-- Status Bar -->
+      <div class="status-bar" id="statusBar">
+        <div class="status-bar-left">
+          <button class="status-item" onclick="openSettings()" title="Change model">
+            <span class="status-dot connected" id="statusBarDot"></span>
+            <span id="statusModel">gemini-2.5-pro</span>
+          </button>
+          <span class="status-item" id="statusApproval" tabindex="0" role="button" onclick="toggleApprovalMode()" title="Toggle approval mode">Auto</span>
+        </div>
+        <div class="status-bar-right">
+          <button class="status-item" id="statusTokens" title="Token usage (click to reset)" onclick="resetTokenUsageFromBar()">
+            <span id="statusTokenLabel">&uarr;0 &darr;0</span>
+          </button>
+          <button class="status-item status-bell" id="statusBell" onclick="toggleNotificationCenter()" title="Notifications">
+            <i data-lucide="bell"></i>
+            <span class="status-badge" id="statusBadge" style="display:none">0</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <!-- Conversation Minimap -->
+    <div class="minimap" id="minimap" aria-hidden="true">
+      <div class="minimap-viewport" id="minimapViewport"></div>
     </div>
   </div>
 
@@ -1542,6 +2155,16 @@
           <option value="on">On</option>
         </select>
       </div>
+      <div class="setting-row">
+        <div class="setting-label">
+          Show Onboarding
+          <small>Show the welcome walkthrough for new chats</small>
+        </div>
+        <select class="setting-select" id="settingOnboarding" onchange="toggleOnboardingSetting(this.value)">
+          <option value="off">Off</option>
+          <option value="on">On</option>
+        </select>
+      </div>
     </div>
   </div>
 
@@ -1549,6 +2172,27 @@
   <div class="modal-overlay" id="imageLightbox" onclick="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image preview">
     <button onclick="closeLightbox()" aria-label="Close preview" style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1001;" type="button">&times;</button>
     <img id="lightboxImg" alt="Enlarged preview" style="max-width:90vw; max-height:90vh; object-fit:contain; border-radius:8px; box-shadow:0 20px 60px rgba(0,0,0,0.6);" onclick="event.stopPropagation()">
+  </div>
+
+  <!-- Notification Center -->
+  <div class="notification-center" id="notificationCenter" role="dialog" aria-label="Notification center">
+    <div class="notification-center-header">
+      <span>Notifications</span>
+      <button onclick="clearNotifications()" title="Clear all">Clear All</button>
+    </div>
+    <div class="notification-center-list" id="notificationList">
+      <div class="notification-center-empty">No notifications</div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="false"></div>
+
+  <!-- Command Palette -->
+  <div class="command-palette-backdrop" id="cmdPaletteBackdrop" onclick="closeCommandPalette()"></div>
+  <div class="command-palette" id="cmdPalette" role="dialog" aria-modal="true" aria-label="Command palette">
+    <input type="text" class="command-palette-input" id="cmdPaletteInput" placeholder="Type a command..." autocomplete="off" aria-label="Search commands" aria-controls="cmdPaletteList" role="combobox" aria-expanded="true" aria-haspopup="listbox">
+    <div class="command-palette-list" id="cmdPaletteList" role="listbox"></div>
   </div>
 
   <input type="file" id="fileInput" multiple aria-label="Attach files" onchange="handleFileSelect(this.files)">
@@ -1575,6 +2219,80 @@
 
     // Derived convenience — true if any tab is streaming
     function getIsWaiting() { return tabs.some(t => t.isWaiting); }
+
+    // ===== ARIA LIVE REGIONS (dual-container pattern from VS Code) =====
+    let ariaAlertContainer1, ariaAlertContainer2, lastAriaAlertTarget = 1;
+    let ariaStatusContainer1, ariaStatusContainer2, lastAriaStatusTarget = 1;
+    let _lastAriaAnnounce = 0;
+
+    function initAriaContainers() {
+      ariaAlertContainer1 = document.createElement('div');
+      ariaAlertContainer1.setAttribute('role', 'alert');
+      ariaAlertContainer1.setAttribute('aria-atomic', 'true');
+      ariaAlertContainer1.className = 'sr-only';
+
+      ariaAlertContainer2 = document.createElement('div');
+      ariaAlertContainer2.setAttribute('role', 'alert');
+      ariaAlertContainer2.setAttribute('aria-atomic', 'true');
+      ariaAlertContainer2.className = 'sr-only';
+
+      ariaStatusContainer1 = document.createElement('div');
+      ariaStatusContainer1.setAttribute('role', 'status');
+      ariaStatusContainer1.setAttribute('aria-atomic', 'true');
+      ariaStatusContainer1.className = 'sr-only';
+
+      ariaStatusContainer2 = document.createElement('div');
+      ariaStatusContainer2.setAttribute('role', 'status');
+      ariaStatusContainer2.setAttribute('aria-atomic', 'true');
+      ariaStatusContainer2.className = 'sr-only';
+
+      document.body.appendChild(ariaAlertContainer1);
+      document.body.appendChild(ariaAlertContainer2);
+      document.body.appendChild(ariaStatusContainer1);
+      document.body.appendChild(ariaStatusContainer2);
+    }
+
+    function ariaAlert(msg) {
+      const target = lastAriaAlertTarget === 1 ? ariaAlertContainer2 : ariaAlertContainer1;
+      const other = lastAriaAlertTarget === 1 ? ariaAlertContainer1 : ariaAlertContainer2;
+      other.textContent = '';
+      target.textContent = msg;
+      lastAriaAlertTarget = lastAriaAlertTarget === 1 ? 2 : 1;
+    }
+
+    function ariaStatus(msg) {
+      const target = lastAriaStatusTarget === 1 ? ariaStatusContainer2 : ariaStatusContainer1;
+      const other = lastAriaStatusTarget === 1 ? ariaStatusContainer1 : ariaStatusContainer2;
+      other.textContent = '';
+      target.textContent = msg;
+      lastAriaStatusTarget = lastAriaStatusTarget === 1 ? 2 : 1;
+    }
+
+    // Throttled ariaStatus — won't fire more than once per 5 seconds
+    function ariaStatusThrottled(msg) {
+      const now = Date.now();
+      if (now - _lastAriaAnnounce < 5000) return;
+      _lastAriaAnnounce = now;
+      ariaStatus(msg);
+    }
+
+    // ===== COMMAND PALETTE MRU HISTORY =====
+    let cmdHistory = safeJsonParse(safeGet('ea-cmd-history', '[]'), []);
+
+    function getCmdHistory() { return cmdHistory; }
+    function saveCmdHistory() {
+      safeSet('ea-cmd-history', JSON.stringify(cmdHistory));
+    }
+    function addToCmdHistory(cmdId) {
+      cmdHistory = cmdHistory.filter(id => id !== cmdId);
+      cmdHistory.unshift(cmdId);
+      if (cmdHistory.length > 50) cmdHistory.length = 50;
+      saveCmdHistory();
+    }
+    function removeFromCmdHistory(cmdId) {
+      cmdHistory = cmdHistory.filter(id => id !== cmdId);
+      saveCmdHistory();
+    }
 
     // Settings (persisted to localStorage)
     const settings = {
@@ -1607,6 +2325,9 @@
 
     // ===== WELCOME TEMPLATE =====
     function getWelcomeHTML() {
+      if (shouldShowOnboarding()) {
+        return getOnboardingHTML();
+      }
       return `<div class="welcome">
         <h2>Executive Assistant</h2>
         <p>Powered by Gemini CLI. Ask me anything, run workflows, or manage your workspace.</p>
@@ -1621,19 +2342,25 @@
 
     // ===== INIT =====
     async function init() {
+      initAriaContainers();
       await checkStatus();
       createNewTab();
       loadSessions();
       loadFiles('');
       loadGitStatus();
-      loadTokenUsage();
       // Sync settings UI
       document.getElementById('settingApprovalMode').value = settings.approvalMode;
       document.getElementById('settingModel').value = settings.model;
       document.getElementById('settingNotifications').value = settings.notifications;
+      document.getElementById('settingOnboarding').value = shouldShowOnboarding() ? 'on' : 'off';
       updateModelBadge();
       updateModeToggle();
+      updateBreadcrumbs();
+      updateStatusBar();
+      pollTokenUsage();
       lucide.createIcons();
+      // Initial minimap update after content renders
+      setTimeout(updateMinimap, 500);
     }
 
     async function checkStatus() {
@@ -1647,22 +2374,26 @@
           const gotItBtn = document.querySelector('#errorModal .modal-actions button');
           if (gotItBtn) gotItBtn.focus();
         }
+        setConnectionStatus(data.ready);
         // Populate workspace indicator
         if (data.workspace_name) {
           workspaceName = data.workspace_name;
           document.getElementById('workspaceName').textContent = workspaceName;
           document.getElementById('workspaceIndicator').title = data.workspace || workspaceName;
+          updateBreadcrumbs();
         }
       } catch {
         statusDot.className = 'status-dot error';
         statusDot.setAttribute('aria-label', 'Connection error');
+        showToast('Connection lost', 'error', { id: 'connection', sticky: true });
+        setConnectionStatus(false);
       }
     }
 
     // ===== TABS =====
     function createNewTab(sessionId = null, title = 'New Chat') {
       const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-      tabs.push({ id, title, sessionId, messages: [], attachments: [], isWaiting: false, abortController: null, toolCallElements: {}, assistantEl: null, assistantText: '' });
+      tabs.push({ id, title, sessionId, messages: [], attachments: [], isWaiting: false, abortController: null, toolCallElements: {}, assistantEl: null, assistantText: '', pinned: false, hasDraft: false });
       switchTab(id);
       renderTabs();
       return id;
@@ -1731,8 +2462,11 @@
       renderTabs();
       highlightActiveSession();
       createIconsIn(chatContainer);
+      updateBreadcrumbs();
+      updateStatusBar();
       messageInput.focus();
       scrollToBottom();
+      setTimeout(updateMinimap, 100);
     }
 
     function closeTab(tabId, e) {
@@ -1752,21 +2486,30 @@
     function renderTabs() {
       const newTabBtn = tabBar.querySelector('.new-tab-btn');
       tabBar.innerHTML = '';
-      for (const tab of tabs) {
+      // Sort: pinned tabs first, then unpinned in original order
+      const sorted = [...tabs].sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0));
+      for (const tab of sorted) {
         const el = document.createElement('div');
-        el.className = `tab${tab.id === activeTabId ? ' active' : ''}`;
+        el.className = `tab${tab.id === activeTabId ? ' active' : ''}${tab.pinned ? ' pinned' : ''}`;
         el.setAttribute('role', 'tab');
         el.setAttribute('aria-selected', tab.id === activeTabId ? 'true' : 'false');
+        el.setAttribute('draggable', 'true');
         el.onclick = () => switchTab(tab.id);
         el.dataset.tabId = tab.id;
+        const draftDot = tab.hasDraft ? '<span class="draft-dot"> \u2022</span>' : '';
         el.innerHTML = `
-          <span class="tab-label" data-action="rename">${escapeHtml(tab.title)}</span>
+          <span class="tab-pin-icon"><i data-lucide="pin"></i></span>
+          <span class="tab-label" data-action="rename">${escapeHtml(tab.title)}${draftDot}</span>
           <button class="tab-close" data-action="close" title="Close"><i data-lucide="x"></i></button>
         `;
         tabBar.appendChild(el);
       }
       tabBar.appendChild(newTabBtn || createNewTabBtn());
       createIconsIn(tabBar);
+      checkTabOverflow();
+    }
+
+    function checkTabOverflow() {
       tabBar.classList.toggle('scrollable', tabBar.scrollWidth > tabBar.clientWidth);
     }
 
@@ -1795,13 +2538,14 @@
         tab.title = input.value.trim().slice(0, 60);
       }
       renderTabs();
+      updateBreadcrumbs();
     }
 
     function createNewTabBtn() {
       const btn = document.createElement('button');
       btn.className = 'new-tab-btn';
       btn.onclick = () => createNewTab();
-      btn.title = 'New chat (Ctrl+T)';
+      btn.title = 'New chat (Ctrl+N)';
       btn.innerHTML = '<i data-lucide="plus"></i>';
       return btn;
     }
@@ -1867,6 +2611,7 @@
 
           const div = document.createElement('div');
           div.className = 'sidebar-item';
+          div.setAttribute('role', 'listitem');
           div.dataset.sessionId = s.session_id;
           div.dataset.sessionIndex = s.index;
           div.onclick = () => resumeSession(s.session_id, s.preview);
@@ -1889,6 +2634,7 @@
       } catch (err) {
         console.error('loadSessions failed:', err);
         document.getElementById('sessionList').innerHTML = '<div style="padding: 8px; color: var(--text-muted); font-size: 0.78rem;">Failed to load</div>';
+        showToast('Failed to load sessions', 'error', { id: 'session-load' });
       }
     }
 
@@ -1969,7 +2715,10 @@
         endpoint += `?index=${index}`;
       }
       const method = permanent ? 'POST' : 'DELETE';
-      fetch(endpoint, { method }).catch(() => {
+      fetch(endpoint, { method }).then(() => {
+        showToast(permanent ? 'Session permanently archived' : 'Session archived', 'success');
+      }).catch(() => {
+        showToast('Failed to archive session', 'error');
         loadSessions(); // Restore on failure
       });
     }
@@ -2163,6 +2912,7 @@
       title.textContent = name;
       content.textContent = 'Loading...';
       panel.classList.add('open');
+      trapFocus(panel);
 
       try {
         const res = await fetch(`/api/files/read?path=${encodeURIComponent(path)}`);
@@ -2174,7 +2924,9 @@
     }
 
     function closeFilePreview() {
-      document.getElementById('filePreview').classList.remove('open');
+      const panel = document.getElementById('filePreview');
+      releaseFocus(panel);
+      panel.classList.remove('open');
     }
 
     // ===== SIDEBAR =====
@@ -2330,9 +3082,13 @@
       if (!tab) return;
       if ((!text && pendingAttachments.length === 0) || tab.isWaiting) return;
 
-      // Remove welcome (tab is always active at this point — sendMessage is user-initiated)
-      const welcome = chatContainer.querySelector('.welcome');
-      if (welcome) welcome.remove();
+      // Remove welcome/onboarding (tab is always active at this point — sendMessage is user-initiated)
+      const welcome = chatContainer.querySelector('.welcome, .onboarding');
+      if (welcome) {
+        welcome.remove();
+        // If onboarding was shown, mark as dismissed
+        if (shouldShowOnboarding()) safeSet('ea-onboarded', 'true');
+      }
 
       // Build message with attachment references
       let fullMessage = text;
@@ -2395,6 +3151,8 @@
 
       const thinkingEl = addThinking(tab);
       let thinkingRemoved = false;
+      let firstChunkAnnounced = false;
+      ariaStatus('Generating response...');
       function removeThinking() {
         if (thinkingRemoved) return;
         cleanupThinking(thinkingEl);
@@ -2466,24 +3224,33 @@
                 if (!thinkingRemoved) {
                   updateThinkingStatus(thinkingEl, `Running ${event.tool_name}...`);
                 }
+                ariaAlert('Running tool: ' + event.tool_name);
                 addToolUse(event, tab);
                 break;
-              case 'tool_result':
+              case 'tool_result': {
                 // Mark tool as done in thinking feed
+                const toolName = tab.toolCallElements[event.tool_id]
+                  ? tab.toolCallElements[event.tool_id].querySelector('.tool-call-name')?.textContent || 'tool'
+                  : 'tool';
                 if (!thinkingRemoved) {
-                  const toolName = tab.toolCallElements[event.tool_id]
-                    ? tab.toolCallElements[event.tool_id].querySelector('.tool-call-name')?.textContent || 'tool'
-                    : 'tool';
                   updateThinkingStatus(thinkingEl, `${toolName} ${event.status === 'success' ? 'completed' : 'failed'}`, event.status === 'success' ? 'done' : 'running');
                 }
+                ariaStatus(toolName + (event.status === 'success' ? ' completed' : ' failed'));
                 updateToolResult(event, tab);
                 break;
+              }
               case 'message':
                 if (event.role === 'assistant') {
                   if (event.delta) {
                     tab.assistantText += event.content;
                     if (!tab.assistantEl) {
                       tab.assistantEl = addMessage('', 'assistant', tab);
+                    }
+                    if (!firstChunkAnnounced) {
+                      firstChunkAnnounced = true;
+                      ariaStatus('Response started');
+                    } else {
+                      ariaStatusThrottled('Still generating...');
                     }
                     tab.assistantEl.innerHTML = renderMarkdown(tab.assistantText);
                     if (isTabVisible(tab)) scrollToBottom();
@@ -2547,6 +3314,7 @@
           tab.messages.push({ role: 'assistant', content: tab.assistantText });
           if (tab.assistantEl) addMessageActions(tab.assistantEl, tab.assistantText);
         }
+        ariaStatus('Response complete');
 
         loadSessions();
 
@@ -2582,8 +3350,8 @@
         }
         messageInput.focus();
 
-        // Refresh token usage
-        loadTokenUsage();
+        // Refresh token usage (updates both token bar and status bar)
+        pollTokenUsage();
 
         // Browser notification if task took > 10s and tab is not focused
         if (settings.notifications === 'on' && requestStartTime) {
@@ -2904,17 +3672,45 @@
     }
 
     // ===== KEYBOARD SHORTCUTS =====
+    function isTyping() {
+      const el = document.activeElement;
+      return el && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT');
+    }
+
     document.addEventListener('keydown', e => {
-      if (e.ctrlKey && e.key === 't') { e.preventDefault(); createNewTab(); }
-      if (e.ctrlKey && e.key === 'w') { e.preventDefault(); if (activeTabId) closeTab(activeTabId); }
-      if (e.ctrlKey && e.key === 'u') { e.preventDefault(); document.getElementById('fileInput').click(); }
-      if (e.ctrlKey && e.key === 'b') { if (document.activeElement !== messageInput) { e.preventDefault(); toggleSidebar(); } }
+      // Escape always works
       if (e.key === 'Escape') {
-        // Priority: cancel generation > close settings > close lightbox > close file preview
-        if (getIsWaiting()) { cancelGeneration(); }
+        e.preventDefault();
+        // Priority: command palette > notification center > cancel gen > close settings > close lightbox > close file preview
+        if (document.getElementById('cmdPalette').classList.contains('open')) { closeCommandPalette(); }
+        else if (notificationCenterOpen) { toggleNotificationCenter(); }
+        else if (getIsWaiting()) { cancelGeneration(); }
         else if (document.getElementById('settingsPanel').classList.contains('open')) { closeSettings(); }
         else if (document.getElementById('imageLightbox').classList.contains('open')) { closeLightbox(); }
         else { closeFilePreview(); }
+        return;
+      }
+
+      // Ctrl+K always works (even when typing)
+      if (e.ctrlKey && e.key === 'k') {
+        e.preventDefault();
+        toggleCommandPalette();
+        return;
+      }
+
+      // Skip other shortcuts when typing in textarea/input
+      if (isTyping() && !e.ctrlKey) return;
+
+      if (e.ctrlKey && e.key === 'n') { e.preventDefault(); createNewTab(); return; }
+      if (e.ctrlKey && e.key === '/') { e.preventDefault(); toggleSidebar(); return; }
+      if (e.ctrlKey && e.key === 'u') { e.preventDefault(); document.getElementById('fileInput').click(); return; }
+      if (e.ctrlKey && e.shiftKey && (e.key === 'A' || e.key === 'a')) {
+        e.preventDefault();
+        const tab = getActiveTab();
+        if (tab && tab.sessionId) {
+          archiveSession(tab.sessionId);
+          showToast('Session archived', 'success');
+        }
       }
     });
 
@@ -2946,9 +3742,10 @@
 
     initTheme();
 
-    // ===== FOCUS TRAP =====
+    // ===== FOCUS TRAP (upgraded with focusout guard) =====
     let _focusTrapPrev = null;
     let _focusTrapHandler = null;
+    let _focusTrapFocusout = null;
 
     function trapFocus(containerEl) {
       _focusTrapPrev = document.activeElement;
@@ -2966,12 +3763,25 @@
         }
       };
       containerEl.addEventListener('keydown', _focusTrapHandler);
+
+      // Guard: if focus escapes the container, pull it back
+      _focusTrapFocusout = (e) => {
+        if (e.relatedTarget && !containerEl.contains(e.relatedTarget)) {
+          const currentFocusable = containerEl.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+          if (currentFocusable.length > 0) currentFocusable[0].focus();
+        }
+      };
+      containerEl.addEventListener('focusout', _focusTrapFocusout);
     }
 
     function releaseFocus(containerEl) {
       if (_focusTrapHandler && containerEl) {
         containerEl.removeEventListener('keydown', _focusTrapHandler);
         _focusTrapHandler = null;
+      }
+      if (_focusTrapFocusout && containerEl) {
+        containerEl.removeEventListener('focusout', _focusTrapFocusout);
+        _focusTrapFocusout = null;
       }
       if (_focusTrapPrev) { _focusTrapPrev.focus(); _focusTrapPrev = null; }
     }
@@ -2995,6 +3805,7 @@
       settings[key] = value;
       safeSet(`ea-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`, value);
       if (key === 'approvalMode') updateModeToggle();
+      updateStatusBar();
     }
 
     function toggleApprovalMode() {
@@ -3214,6 +4025,862 @@
 
     // Request permission on load if enabled
     requestNotificationPermission();
+
+    // ===== TOAST NOTIFICATIONS =====
+    const toastContainer = document.getElementById('toastContainer');
+    const toastIcons = { success: '&#10003;', error: '&#10007;', warning: '&#9888;', info: '&#8505;' };
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    // Notification log for the notification center
+    const notificationLog = [];
+    let notificationUnread = 0;
+    let notificationCenterOpen = false;
+
+    // Severity-based default durations
+    const toastDurations = { info: 10000, success: 10000, warning: 12000, error: 15000 };
+
+    function showToast(message, type = 'info', opts = {}) {
+      // Support legacy 3rd-arg as number (duration)
+      if (typeof opts === 'number') opts = { duration: opts };
+      const { duration = toastDurations[type] || 10000, id, sticky = false, progress = true } = opts;
+
+      // Log to notification center
+      addNotificationEntry(message, type);
+
+      // If notification center is open, don't show toast visually
+      if (notificationCenterOpen) return null;
+
+      // Deduplication: replace existing toast with same id
+      if (id) {
+        const existing = toastContainer.querySelector(`[data-toast-id="${CSS.escape(id)}"]`);
+        if (existing) dismissToast(existing);
+      }
+
+      // Max 3 visible
+      const visible = toastContainer.querySelectorAll('.toast:not(.removing)');
+      if (visible.length >= 3) {
+        dismissToast(visible[0]);
+      }
+
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.setAttribute('role', 'status');
+      if (id) toast.dataset.toastId = id;
+
+      const progressHtml = (!sticky && progress)
+        ? `<div class="toast-progress ${type}" style="animation-duration: ${duration}ms;"></div>`
+        : '';
+
+      toast.innerHTML = `
+        <span class="toast-icon ${type}">${toastIcons[type] || toastIcons.info}</span>
+        <span class="toast-message">${escapeHtml(message)}</span>
+        <button class="toast-close" onclick="dismissToast(this.parentElement)" aria-label="Dismiss">&times;</button>
+        ${progressHtml}
+      `;
+      toastContainer.appendChild(toast);
+
+      // Hover pause/resume for non-sticky toasts
+      if (!sticky) {
+        let remaining = duration;
+        let startedAt = Date.now();
+
+        toast._timeout = setTimeout(() => dismissToast(toast), duration);
+
+        toast.addEventListener('mouseenter', () => {
+          clearTimeout(toast._timeout);
+          remaining -= (Date.now() - startedAt);
+          toast.classList.add('paused');
+        });
+
+        toast.addEventListener('mouseleave', () => {
+          startedAt = Date.now();
+          toast.classList.remove('paused');
+          toast._timeout = setTimeout(() => dismissToast(toast), Math.max(remaining, 500));
+          // Restart progress bar with remaining time
+          const bar = toast.querySelector('.toast-progress');
+          if (bar) {
+            const pct = (remaining / duration) * 100;
+            bar.style.animation = 'none';
+            bar.offsetHeight; // reflow
+            bar.style.width = pct + '%';
+            bar.style.animation = `toastProgress ${remaining}ms linear forwards`;
+          }
+        });
+      }
+
+      return toast;
+    }
+
+    function dismissToast(toast) {
+      if (!toast || toast.classList.contains('removing')) return;
+      clearTimeout(toast._timeout);
+      toast.classList.add('removing');
+      if (prefersReducedMotion.matches) {
+        toast.remove();
+      } else {
+        setTimeout(() => toast.remove(), 250);
+      }
+    }
+
+    // ===== NOTIFICATION CENTER =====
+    function addNotificationEntry(message, type) {
+      notificationLog.unshift({ message, type, time: Date.now() });
+      if (notificationLog.length > 50) notificationLog.length = 50;
+
+      if (!notificationCenterOpen) {
+        notificationUnread++;
+        updateNotificationBadge();
+      }
+
+      if (notificationCenterOpen) renderNotificationList();
+    }
+
+    function updateNotificationBadge() {
+      const badge = document.getElementById('statusBadge');
+      if (notificationUnread > 0) {
+        badge.textContent = notificationUnread > 99 ? '99+' : notificationUnread;
+        badge.style.display = '';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+
+    function toggleNotificationCenter() {
+      const panel = document.getElementById('notificationCenter');
+      notificationCenterOpen = !notificationCenterOpen;
+      panel.classList.toggle('open', notificationCenterOpen);
+
+      if (notificationCenterOpen) {
+        notificationUnread = 0;
+        updateNotificationBadge();
+        renderNotificationList();
+        // Hide active toasts
+        toastContainer.style.display = 'none';
+      } else {
+        // Show toasts again
+        toastContainer.style.display = '';
+      }
+    }
+
+    function renderNotificationList() {
+      const list = document.getElementById('notificationList');
+      if (notificationLog.length === 0) {
+        list.innerHTML = '<div class="notification-center-empty">No notifications</div>';
+        return;
+      }
+      list.innerHTML = notificationLog.map(entry => {
+        const icon = toastIcons[entry.type] || toastIcons.info;
+        return `<div class="notification-entry">
+          <span class="notif-icon ${entry.type}">${icon}</span>
+          <div class="notif-body">
+            <div class="notif-message">${escapeHtml(entry.message)}</div>
+            <div class="notif-time">${relativeTime(entry.time)}</div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function clearNotifications() {
+      notificationLog.length = 0;
+      notificationUnread = 0;
+      updateNotificationBadge();
+      renderNotificationList();
+    }
+
+    function relativeTime(ts) {
+      const diff = Math.floor((Date.now() - ts) / 1000);
+      if (diff < 5) return 'just now';
+      if (diff < 60) return diff + 's ago';
+      if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+      if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+      return Math.floor(diff / 86400) + 'd ago';
+    }
+
+    // Update relative times periodically
+    setInterval(() => {
+      if (notificationCenterOpen) renderNotificationList();
+    }, 15000);
+
+    // Close notification center on outside click
+    document.addEventListener('click', e => {
+      if (!notificationCenterOpen) return;
+      const panel = document.getElementById('notificationCenter');
+      const bell = document.getElementById('statusBell');
+      if (!panel.contains(e.target) && !bell.contains(e.target)) {
+        toggleNotificationCenter();
+      }
+    });
+
+    // ===== STATUS BAR =====
+    let statusBarConnected = true;
+
+    function formatTokenCount(n) {
+      if (n == null || n === 0) return '0';
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+      return String(n);
+    }
+
+    function updateStatusBar() {
+      // Model
+      const modelEl = document.getElementById('statusModel');
+      const modelLabels = {
+        '': 'default',
+        'gemini-3.1-pro-preview': 'gemini-3.1-pro',
+        'gemini-2.5-pro': 'gemini-2.5-pro',
+        'gemini-2.5-flash': 'gemini-2.5-flash',
+      };
+      modelEl.textContent = modelLabels[settings.model] || settings.model || 'default';
+
+      // Approval mode
+      const approvalEl = document.getElementById('statusApproval');
+      approvalEl.textContent = settings.approvalMode === 'yolo' ? 'Auto' : 'Plan';
+
+      // Connection dot
+      const dot = document.getElementById('statusBarDot');
+      dot.className = statusBarConnected ? 'status-dot connected' : 'status-dot disconnected';
+    }
+
+    function setConnectionStatus(connected) {
+      statusBarConnected = connected;
+      const dot = document.getElementById('statusBarDot');
+      dot.className = connected ? 'status-dot connected' : 'status-dot disconnected';
+    }
+
+    async function pollTokenUsage() {
+      try {
+        const res = await fetch('/api/token-usage');
+        const data = await res.json();
+        const t = data.total || {};
+        const input = t.input_tokens || 0;
+        const output = t.output_tokens || 0;
+        document.getElementById('statusTokenLabel').innerHTML =
+          `&#8593;${formatTokenCount(input)} &#8595;${formatTokenCount(output)}`;
+        // Also update the full token bar
+        document.getElementById('tokenTotal').textContent = (t.total_tokens || 0).toLocaleString();
+        document.getElementById('tokenIn').textContent = input.toLocaleString();
+        document.getElementById('tokenOut').textContent = output.toLocaleString();
+        document.getElementById('tokenRequests').textContent = (t.requests || 0).toLocaleString();
+        setConnectionStatus(true);
+      } catch {
+        setConnectionStatus(false);
+      }
+    }
+
+    async function resetTokenUsageFromBar() {
+      showToast('Resetting token usage...', 'info', { duration: 2000, id: 'token-reset' });
+      try {
+        await fetch('/api/token-usage', { method: 'DELETE' });
+        await pollTokenUsage();
+        showToast('Token usage reset', 'info', { id: 'token-reset' });
+      } catch {
+        showToast('Failed to reset token usage', 'error', { id: 'token-reset' });
+      }
+    }
+
+    // Start token polling (every 30s)
+    setInterval(pollTokenUsage, 30000);
+
+        // ===== COMMAND PALETTE =====
+    const commands = [
+      { id: 'new-chat', label: 'New Chat', icon: 'plus', shortcut: 'Ctrl+N', description: 'Open a new conversation tab', action: () => createNewTab() },
+      { id: 'archive', label: 'Archive Session', icon: 'archive', shortcut: 'Ctrl+Shift+A', description: 'Archive the current session', action: () => {
+        const tab = getActiveTab();
+        if (tab && tab.sessionId) { archiveSession(tab.sessionId); showToast('Session archived', 'success'); }
+        else showToast('No session to archive', 'warning');
+      }},
+      { id: 'archive-all', label: 'Archive All Sessions', icon: 'trash-2', description: 'Archive every session in the sidebar', action: () => { const items = document.querySelectorAll('#sessionList .sidebar-item'); if (items.length === 0) { showToast('No sessions to archive', 'warning'); } else { archiveAllSessions(); showToast('All sessions archived', 'success'); } } },
+      { id: 'toggle-sidebar', label: 'Toggle Sidebar', icon: 'panel-left', shortcut: 'Ctrl+/', description: 'Show or hide the sidebar', action: () => toggleSidebar() },
+      { id: 'settings', label: 'Open Settings', icon: 'settings', description: 'Change model, theme, and preferences', action: () => openSettings() },
+      { id: 'export', label: 'Export Conversation', icon: 'download', description: 'Download chat as markdown', action: () => { const tab = getActiveTab(); if (!tab || tab.messages.length === 0) { showToast('No conversation to export', 'warning'); } else { exportConversation(); showToast('Conversation exported', 'success'); } } },
+      { id: 'toggle-theme', label: 'Toggle Theme', icon: 'sun', description: 'Switch between dark and light mode', action: () => toggleTheme() },
+      { id: 'toggle-approval', label: 'Toggle Approval Mode', icon: 'shield', description: 'Switch between auto and plan mode', action: () => { toggleApprovalMode(); showToast(`Mode: ${settings.approvalMode}`, 'info'); } },
+    ];
+
+    let cmdPaletteIndex = 0;
+
+    function toggleCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      if (palette.classList.contains('open')) { closeCommandPalette(); }
+      else { openCommandPalette(); }
+    }
+
+    function openCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      const backdrop = document.getElementById('cmdPaletteBackdrop');
+      const input = document.getElementById('cmdPaletteInput');
+      palette.classList.add('open');
+      backdrop.classList.add('open');
+      input.value = '';
+      cmdPaletteIndex = 0;
+      renderCommandList('');
+      trapFocus(palette);
+    }
+
+    function closeCommandPalette() {
+      const palette = document.getElementById('cmdPalette');
+      releaseFocus(palette);
+      palette.classList.remove('open');
+      document.getElementById('cmdPaletteBackdrop').classList.remove('open');
+      messageInput.focus();
+    }
+
+    function renderCommandList(query) {
+      const list = document.getElementById('cmdPaletteList');
+      const input = document.getElementById('cmdPaletteInput');
+      const q = query.toLowerCase().trim();
+
+      // Filter with match indices
+      let filtered;
+      if (q) {
+        filtered = [];
+        for (const c of commands) {
+          const indices = fuzzyMatch(c.label.toLowerCase(), q);
+          if (indices) filtered.push({ cmd: c, indices });
+        }
+      } else {
+        filtered = commands.map(c => ({ cmd: c, indices: null }));
+      }
+
+      if (filtered.length === 0) {
+        list.innerHTML = '<div class="command-palette-empty">No matching commands</div>';
+        input.removeAttribute('aria-activedescendant');
+        return;
+      }
+
+      // Split into "Recently Used" and "All Commands" groups
+      const history = getCmdHistory();
+      const recentItems = [];
+      const otherItems = [];
+      for (const item of filtered) {
+        if (history.includes(item.cmd.id)) {
+          recentItems.push(item);
+        } else {
+          otherItems.push(item);
+        }
+      }
+      // Sort recent items by history order
+      recentItems.sort((a, b) => history.indexOf(a.cmd.id) - history.indexOf(b.cmd.id));
+
+      const allItems = [...recentItems, ...otherItems];
+
+      // Clamp index
+      if (cmdPaletteIndex >= allItems.length) cmdPaletteIndex = allItems.length - 1;
+      if (cmdPaletteIndex < 0) cmdPaletteIndex = 0;
+
+      // Update aria-activedescendant
+      input.setAttribute('aria-activedescendant', `cmd-item-${cmdPaletteIndex}`);
+
+      // Build HTML with group separators
+      let html = '';
+      let globalIdx = 0;
+
+      if (recentItems.length > 0) {
+        html += '<div class="command-palette-separator" role="separator"><span>Recently Used</span></div>';
+        for (const item of recentItems) {
+          html += renderCommandItem(item, globalIdx, true);
+          globalIdx++;
+        }
+      }
+
+      if (otherItems.length > 0) {
+        if (recentItems.length > 0) {
+          html += '<div class="command-palette-separator" role="separator"><span>All Commands</span></div>';
+        }
+        for (const item of otherItems) {
+          html += renderCommandItem(item, globalIdx, false);
+          globalIdx++;
+        }
+      }
+
+      list.innerHTML = html;
+      createIconsIn(list);
+    }
+
+    function renderCommandItem(item, index, inHistory) {
+      const cmd = item.cmd;
+      const isActive = index === cmdPaletteIndex;
+      const labelHtml = item.indices ? highlightFuzzyMatch(cmd.label, item.indices) : escapeHtml(cmd.label);
+      const removeBtn = inHistory
+        ? `<button class="cmd-remove-history" onclick="event.stopPropagation(); removeFromCmdHistory('${cmd.id}'); renderCommandList(document.getElementById('cmdPaletteInput').value)" title="Remove from history" aria-label="Remove from recent">&times;</button>`
+        : '';
+      return `
+        <div class="command-palette-item${isActive ? ' active' : ''}"
+             id="cmd-item-${index}"
+             role="option" aria-selected="${isActive}"
+             data-cmd-id="${cmd.id}"
+             onmouseenter="cmdPaletteIndex=${index}; renderCommandList(document.getElementById('cmdPaletteInput').value)"
+             onclick="executeCommand('${cmd.id}')">
+          <span class="cmd-icon"><i data-lucide="${cmd.icon}"></i></span>
+          <span class="cmd-label">${labelHtml}</span>
+          ${cmd.description ? `<span class="cmd-description">${escapeHtml(cmd.description)}</span>` : ''}
+          ${cmd.shortcut ? `<span class="cmd-shortcut">${cmd.shortcut}</span>` : ''}
+          ${removeBtn}
+        </div>`;
+    }
+
+    function fuzzyMatch(str, query) {
+      let qi = 0;
+      const indices = [];
+      for (let i = 0; i < str.length && qi < query.length; i++) {
+        if (str[i] === query[qi]) {
+          indices.push(i);
+          qi++;
+        }
+      }
+      return qi === query.length ? indices : null;
+    }
+
+    function highlightFuzzyMatch(label, indices) {
+      const indexSet = new Set(indices);
+      let result = '';
+      for (let i = 0; i < label.length; i++) {
+        if (indexSet.has(i)) {
+          result += `<strong>${escapeHtml(label[i])}</strong>`;
+        } else {
+          result += escapeHtml(label[i]);
+        }
+      }
+      return result;
+    }
+
+    function executeCommand(id) {
+      const cmd = commands.find(c => c.id === id);
+      if (cmd) {
+        addToCmdHistory(id);
+        closeCommandPalette();
+        cmd.action();
+      }
+    }
+
+    // Command palette input handling
+    document.getElementById('cmdPaletteInput').addEventListener('input', e => {
+      cmdPaletteIndex = 0;
+      renderCommandList(e.target.value);
+    });
+
+    document.getElementById('cmdPaletteInput').addEventListener('keydown', e => {
+      const q = e.target.value.toLowerCase().trim();
+      // Rebuild filtered list to get count (same logic as renderCommandList)
+      let filtered;
+      if (q) {
+        filtered = [];
+        for (const c of commands) {
+          const indices = fuzzyMatch(c.label.toLowerCase(), q);
+          if (indices) filtered.push(c);
+        }
+      } else {
+        filtered = [...commands];
+      }
+      // Reorder: recent first, then others
+      const history = getCmdHistory();
+      const recent = filtered.filter(c => history.includes(c.id)).sort((a, b) => history.indexOf(a.id) - history.indexOf(b.id));
+      const others = filtered.filter(c => !history.includes(c.id));
+      const allItems = [...recent, ...others];
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        cmdPaletteIndex = Math.min(cmdPaletteIndex + 1, allItems.length - 1);
+        renderCommandList(e.target.value);
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        cmdPaletteIndex = Math.max(cmdPaletteIndex - 1, 0);
+        renderCommandList(e.target.value);
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (allItems[cmdPaletteIndex]) {
+          executeCommand(allItems[cmdPaletteIndex].id);
+        }
+      }
+    });
+
+    // ===== ONBOARDING / WELCOME =====
+    function getOnboardingHTML() {
+      return `<div class="onboarding">
+        <h2>Welcome to Executive Assistant</h2>
+        <p>Your AI-powered workspace, built on Gemini CLI. Here's a quick overview to get you started.</p>
+        <div class="onboarding-grid">
+          <div class="onboarding-card">
+            <div class="card-icon"><i data-lucide="message-circle"></i></div>
+            <h3>Start a Conversation</h3>
+            <p>Type a message in the input box below to chat with your assistant. It can answer questions, run tasks, and manage files.</p>
+          </div>
+          <div class="onboarding-card">
+            <div class="card-icon"><i data-lucide="folder-open"></i></div>
+            <h3>Browse Your Files</h3>
+            <p>The sidebar on the left has a file browser. Click any file to preview it, or use the search bar to find files quickly.</p>
+          </div>
+          <div class="onboarding-card">
+            <div class="card-icon"><i data-lucide="history"></i></div>
+            <h3>Manage Sessions</h3>
+            <p>Your chat history is saved automatically. Resume past sessions from the sidebar, or archive ones you no longer need.</p>
+          </div>
+          <div class="onboarding-card">
+            <div class="card-icon"><i data-lucide="palette"></i></div>
+            <h3>Customize Your Workspace</h3>
+            <p>Open Settings to choose your model and theme. Use Ctrl+K to open the command palette for quick access to any action.</p>
+          </div>
+        </div>
+        <div class="onboarding-actions">
+          <button class="onboarding-btn" onclick="dismissOnboarding()">Get Started</button>
+        </div>
+      </div>`;
+    }
+
+    function shouldShowOnboarding() {
+      return safeGet('ea-onboarded') !== 'true';
+    }
+
+    function dismissOnboarding() {
+      safeSet('ea-onboarded', 'true');
+      chatContainer.innerHTML = getWelcomeHTML();
+      createIconsIn(chatContainer);
+      // Update settings dropdown
+      document.getElementById('settingOnboarding').value = 'off';
+    }
+
+    function toggleOnboardingSetting(value) {
+      if (value === 'on') {
+        try { localStorage.removeItem('ea-onboarded'); } catch {}
+        showToast('Onboarding will show on next new chat', 'info');
+      } else {
+        safeSet('ea-onboarded', 'true');
+      }
+    }
+
+    // ===== BREADCRUMB NAVIGATION =====
+    function updateBreadcrumbs() {
+      const wsEl = document.getElementById('breadcrumbWorkspace');
+      const sessionEl = document.getElementById('breadcrumbSession');
+      wsEl.textContent = workspaceName || '...';
+      const tab = getActiveTab();
+      sessionEl.textContent = tab ? tab.title : 'New Chat';
+    }
+
+    // ===== CONVERSATION MINIMAP =====
+    function updateMinimap() {
+      const minimap = document.getElementById('minimap');
+      const viewport = document.getElementById('minimapViewport');
+
+      // Collect message elements
+      const messages = chatContainer.querySelectorAll('.message, .tool-calls, .tool-call');
+      const msgEls = Array.from(messages).filter(el =>
+        el.classList.contains('message') || el.classList.contains('tool-call')
+      );
+
+      // Only show if 5+ messages
+      if (msgEls.length < 5) {
+        minimap.classList.remove('visible');
+        return;
+      }
+      minimap.classList.add('visible');
+
+      // Remove old blocks
+      minimap.querySelectorAll('.minimap-block').forEach(b => b.remove());
+
+      const containerHeight = chatContainer.scrollHeight;
+      const visibleHeight = chatContainer.clientHeight;
+      const minimapHeight = minimap.clientHeight;
+
+      if (containerHeight === 0) return;
+
+      const scale = minimapHeight / containerHeight;
+
+      // Add blocks
+      for (const el of msgEls) {
+        const block = document.createElement('div');
+        block.className = 'minimap-block';
+        if (el.classList.contains('user')) block.classList.add('user');
+        else if (el.classList.contains('assistant')) block.classList.add('assistant');
+        else if (el.classList.contains('tool-call')) block.classList.add('tool');
+        else if (el.classList.contains('system')) block.classList.add('system');
+        else block.classList.add('assistant');
+
+        const top = el.offsetTop * scale;
+        const height = Math.max(3, el.offsetHeight * scale);
+        block.style.top = top + 'px';
+        block.style.height = height + 'px';
+
+        // Click to scroll
+        block.addEventListener('click', () => {
+          chatContainer.scrollTo({ top: el.offsetTop - 50, behavior: 'smooth' });
+        });
+
+        minimap.appendChild(block);
+      }
+
+      // Update viewport indicator
+      const vpTop = chatContainer.scrollTop * scale;
+      const vpHeight = visibleHeight * scale;
+      viewport.style.top = vpTop + 'px';
+      viewport.style.height = vpHeight + 'px';
+    }
+
+    // Update minimap on scroll
+    chatContainer.addEventListener('scroll', () => {
+      const minimap = document.getElementById('minimap');
+      if (!minimap.classList.contains('visible')) return;
+      const viewport = document.getElementById('minimapViewport');
+      const containerHeight = chatContainer.scrollHeight;
+      const visibleHeight = chatContainer.clientHeight;
+      const minimapHeight = minimap.clientHeight;
+      if (containerHeight === 0) return;
+      const scale = minimapHeight / containerHeight;
+      viewport.style.top = (chatContainer.scrollTop * scale) + 'px';
+      viewport.style.height = (visibleHeight * scale) + 'px';
+    });
+
+    // Periodically update minimap (catches new messages)
+    setInterval(() => {
+      const minimap = document.getElementById('minimap');
+      if (minimap && minimap.classList.contains('visible')) updateMinimap();
+    }, 2000);
+
+
+    // ===== TAB CONTEXT MENU =====
+    let _activeContextMenu = null;
+
+    function closeTabContextMenu() {
+      if (_activeContextMenu) {
+        _activeContextMenu.remove();
+        _activeContextMenu = null;
+      }
+      document.removeEventListener('click', closeTabContextMenu);
+      document.removeEventListener('keydown', _contextMenuKeyHandler);
+    }
+
+    function _contextMenuKeyHandler(e) {
+      if (e.key === 'Escape') { closeTabContextMenu(); return; }
+      if (!_activeContextMenu) return;
+      const items = Array.from(_activeContextMenu.querySelectorAll('.tab-context-menu-item'));
+      if (items.length === 0) return;
+      const focused = _activeContextMenu.querySelector('.tab-context-menu-item:focus');
+      let idx = items.indexOf(focused);
+      if (e.key === 'ArrowDown') { e.preventDefault(); idx = (idx + 1) % items.length; items[idx].focus(); }
+      else if (e.key === 'ArrowUp') { e.preventDefault(); idx = (idx - 1 + items.length) % items.length; items[idx].focus(); }
+      else if (e.key === 'Enter' && focused) { e.preventDefault(); focused.click(); }
+    }
+
+    function showTabContextMenu(tabId, x, y) {
+      closeTabContextMenu();
+      const tab = tabs.find(t => t.id === tabId);
+      if (!tab) return;
+
+      const menu = document.createElement('div');
+      menu.className = 'tab-context-menu';
+      menu.setAttribute('role', 'menu');
+
+      const items = [
+        { label: 'Close', icon: 'x', action: () => closeTab(tabId) },
+        { label: 'Close Others', icon: 'x-circle', action: () => { const keep = tabs.filter(t => t.id === tabId || t.pinned); tabs.length = 0; tabs.push(...keep); if (!tabs.find(t => t.id === activeTabId)) switchTab(tabs[0].id); renderTabs(); } },
+        { label: 'Close All', icon: 'x-square', action: () => { tabs.length = 0; createNewTab(); } },
+        'sep',
+        { label: tab.pinned ? 'Unpin Tab' : 'Pin Tab', icon: 'pin', action: () => { tab.pinned = !tab.pinned; renderTabs(); } },
+        'sep',
+        { label: 'Export Session', icon: 'download', action: () => { switchTab(tabId); exportConversation(); } },
+      ];
+
+      for (const item of items) {
+        if (item === 'sep') {
+          const sep = document.createElement('div');
+          sep.className = 'tab-context-menu-sep';
+          menu.appendChild(sep);
+          continue;
+        }
+        const el = document.createElement('div');
+        el.className = 'tab-context-menu-item';
+        el.setAttribute('role', 'menuitem');
+        el.setAttribute('tabindex', '-1');
+        el.innerHTML = '<i data-lucide="' + item.icon + '"></i><span>' + escapeHtml(item.label) + '</span>';
+        el.addEventListener('click', (e) => { e.stopPropagation(); closeTabContextMenu(); item.action(); });
+        menu.appendChild(el);
+      }
+
+      // Position: ensure it stays on screen
+      document.body.appendChild(menu);
+      createIconsIn(menu);
+      const rect = menu.getBoundingClientRect();
+      if (x + rect.width > window.innerWidth) x = window.innerWidth - rect.width - 8;
+      if (y + rect.height > window.innerHeight) y = window.innerHeight - rect.height - 8;
+      menu.style.left = x + 'px';
+      menu.style.top = y + 'px';
+
+      _activeContextMenu = menu;
+      // Focus first item
+      const firstItem = menu.querySelector('.tab-context-menu-item');
+      if (firstItem) firstItem.focus();
+
+      setTimeout(() => {
+        document.addEventListener('click', closeTabContextMenu);
+        document.addEventListener('keydown', _contextMenuKeyHandler);
+      }, 0);
+    }
+
+    // Right-click handler on tab bar
+    tabBar.addEventListener('contextmenu', e => {
+      const tabEl = e.target.closest('.tab');
+      if (!tabEl || !tabEl.dataset.tabId) return;
+      e.preventDefault();
+      showTabContextMenu(tabEl.dataset.tabId, e.clientX, e.clientY);
+    });
+
+    // ===== TAB DRAG-TO-REORDER =====
+    let _dragTabId = null;
+
+    tabBar.addEventListener('dragstart', e => {
+      const tabEl = e.target.closest('.tab');
+      if (!tabEl || !tabEl.dataset.tabId) return;
+      _dragTabId = tabEl.dataset.tabId;
+      tabEl.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', tabEl.dataset.tabId);
+    });
+
+    tabBar.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const tabEl = e.target.closest('.tab');
+      if (!tabEl || tabEl.dataset.tabId === _dragTabId) return;
+      // Clear all indicators
+      tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over-left', 'drag-over-right'));
+      // Determine left/right
+      const rect = tabEl.getBoundingClientRect();
+      const midX = rect.left + rect.width / 2;
+      if (e.clientX < midX) tabEl.classList.add('drag-over-left');
+      else tabEl.classList.add('drag-over-right');
+    });
+
+    tabBar.addEventListener('dragleave', e => {
+      const tabEl = e.target.closest('.tab');
+      if (tabEl) tabEl.classList.remove('drag-over-left', 'drag-over-right');
+    });
+
+    tabBar.addEventListener('drop', e => {
+      e.preventDefault();
+      tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('drag-over-left', 'drag-over-right', 'dragging'));
+      const targetEl = e.target.closest('.tab');
+      if (!targetEl || !_dragTabId || targetEl.dataset.tabId === _dragTabId) return;
+
+      const dragTab = tabs.find(t => t.id === _dragTabId);
+      const targetTab = tabs.find(t => t.id === targetEl.dataset.tabId);
+      if (!dragTab || !targetTab) return;
+
+      // Enforce: pinned tabs stay before unpinned
+      if (dragTab.pinned && !targetTab.pinned) return;
+      if (!dragTab.pinned && targetTab.pinned) return;
+
+      // Reorder
+      const dragIdx = tabs.indexOf(dragTab);
+      tabs.splice(dragIdx, 1);
+      let targetIdx = tabs.indexOf(targetTab);
+      const rect = targetEl.getBoundingClientRect();
+      if (e.clientX > rect.left + rect.width / 2) targetIdx++;
+      tabs.splice(targetIdx, 0, dragTab);
+      renderTabs();
+    });
+
+    tabBar.addEventListener('dragend', () => {
+      tabBar.querySelectorAll('.tab').forEach(t => t.classList.remove('dragging', 'drag-over-left', 'drag-over-right'));
+      _dragTabId = null;
+    });
+
+    // ===== DIRTY INDICATOR (UNSENT DRAFT) =====
+    messageInput.addEventListener('input', () => {
+      const tab = getActiveTab();
+      if (!tab) return;
+      const hasText = messageInput.value.trim().length > 0;
+      if (tab.hasDraft !== hasText) {
+        tab.hasDraft = hasText;
+        renderTabs();
+      }
+    });
+
+    // Clear draft when input becomes empty (e.g. after send)
+    setInterval(() => {
+      const tab = getActiveTab();
+      if (tab && tab.hasDraft && messageInput.value.trim() === '') {
+        tab.hasDraft = false;
+        renderTabs();
+      }
+    }, 500);
+
+    // ===== SIDEBAR RESIZE =====
+    (function initSidebarResize() {
+      const handle = document.getElementById('sidebarResizeHandle');
+      const sidebar = document.getElementById('sidebar');
+      if (!handle || !sidebar) return;
+
+      const DEFAULT_WIDTH = 280;
+      const MIN_WIDTH = 170;
+      const getMaxWidth = () => window.innerWidth * 0.5;
+      let isResizing = false;
+
+      // Restore saved width
+      const savedWidth = parseInt(safeGet('ea-sidebar-width', ''), 10);
+      if (savedWidth && savedWidth >= MIN_WIDTH) {
+        sidebar.style.width = savedWidth + 'px';
+      }
+
+      function startResize(clientX) {
+        isResizing = true;
+        handle.classList.add('active');
+        document.body.style.userSelect = 'none';
+        document.body.style.cursor = 'col-resize';
+        // Disable sidebar transition during drag
+        sidebar.style.transition = 'none';
+      }
+
+      function doResize(clientX) {
+        if (!isResizing) return;
+        const maxWidth = getMaxWidth();
+        const width = Math.max(MIN_WIDTH, Math.min(clientX, maxWidth));
+        sidebar.style.width = width + 'px';
+      }
+
+      function stopResize() {
+        if (!isResizing) return;
+        isResizing = false;
+        handle.classList.remove('active');
+        document.body.style.userSelect = '';
+        document.body.style.cursor = '';
+        sidebar.style.transition = '';
+        // Save width
+        const currentWidth = parseInt(sidebar.style.width, 10);
+        if (currentWidth) safeSet('ea-sidebar-width', currentWidth.toString());
+      }
+
+      // Mouse events
+      handle.addEventListener('mousedown', e => { e.preventDefault(); startResize(e.clientX); });
+      document.addEventListener('mousemove', e => { if (isResizing) doResize(e.clientX); });
+      document.addEventListener('mouseup', () => stopResize());
+
+      // Touch events
+      handle.addEventListener('touchstart', e => { e.preventDefault(); startResize(e.touches[0].clientX); }, { passive: false });
+      document.addEventListener('touchmove', e => { if (isResizing) doResize(e.touches[0].clientX); }, { passive: true });
+      document.addEventListener('touchend', () => stopResize());
+
+      // Double-click to reset
+      handle.addEventListener('dblclick', () => {
+        sidebar.style.width = DEFAULT_WIDTH + 'px';
+        safeSet('ea-sidebar-width', DEFAULT_WIDTH.toString());
+      });
+
+      // Keyboard support: arrow keys to resize
+      handle.addEventListener('keydown', e => {
+        if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+          e.preventDefault();
+          const current = parseInt(sidebar.style.width || getComputedStyle(sidebar).width, 10);
+          const delta = e.key === 'ArrowRight' ? 10 : -10;
+          const maxWidth = getMaxWidth();
+          const newWidth = Math.max(MIN_WIDTH, Math.min(current + delta, maxWidth));
+          sidebar.style.width = newWidth + 'px';
+          safeSet('ea-sidebar-width', newWidth.toString());
+        }
+      });
+    })();
+
+    // ===== TAB OVERFLOW CHECK ON RESIZE =====
+    window.addEventListener('resize', () => { checkTabOverflow(); });
 
     // ===== LAUNCH =====
     init();
