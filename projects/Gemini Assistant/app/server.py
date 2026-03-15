@@ -75,7 +75,10 @@ class ContextSaveRequest(BaseModel):
     content: str
 
 class ResetRequest(BaseModel):
-    scope: str  # "interview", "history", "preferences", "factory"
+    scope: str  # "interview", "history", "preferences", "factory", "complete"
+
+class FolderClearRequest(BaseModel):
+    folder: str  # "temp", "assets", or "projects"
 
 # Token usage file (persisted across server restarts)
 TOKEN_USAGE_FILE = os.path.join(WORKSPACE, "temp", "token_usage.json")
@@ -661,7 +664,7 @@ async def reset(request: ResetRequest):
     """Reset various aspects of the assistant."""
     results = {}
 
-    if request.scope in ("history", "factory"):
+    if request.scope in ("history", "factory", "complete"):
         # Archive all active sessions
         gemini = None
         try:
@@ -702,7 +705,7 @@ async def reset(request: ResetRequest):
         else:
             results["history"] = {"archived": 0, "note": "Gemini CLI not available"}
 
-    if request.scope in ("interview", "factory"):
+    if request.scope in ("interview", "factory", "complete"):
         # Reset context files to templates
         context_dir = os.path.join(WORKSPACE, "context")
         templates = {
@@ -718,7 +721,7 @@ async def reset(request: ResetRequest):
                 f.write(template)
         results["context"] = {"reset": True, "files": list(templates.keys())}
 
-    if request.scope == "factory":
+    if request.scope in ("factory", "complete"):
         # Also reset token usage
         _save_token_usage({"sessions": {}, "total": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}})
         results["tokens"] = {"reset": True}
@@ -736,7 +739,88 @@ async def reset(request: ResetRequest):
                     f.write("# Memory\n\n<!-- Memories will be stored here as you use the assistant -->\n")
         results["memory"] = {"reset": True}
 
+    if request.scope == "complete":
+        # Clear non-essential workspace folders
+        for folder in ["temp", "assets", "projects"]:
+            folder_path = os.path.join(WORKSPACE, folder)
+            if os.path.isdir(folder_path):
+                for item in os.listdir(folder_path):
+                    item_path = os.path.join(folder_path, item)
+                    try:
+                        if os.path.isdir(item_path):
+                            shutil.rmtree(item_path)
+                        else:
+                            os.remove(item_path)
+                    except OSError:
+                        pass
+
+        # Recreate essential directories and re-save token usage (cleared by folder wipe)
+        os.makedirs(os.path.join(WORKSPACE, "temp", "archived_sessions"), exist_ok=True)
+        os.makedirs(os.path.join(WORKSPACE, "temp", "permanent_archives"), exist_ok=True)
+        os.makedirs(os.path.join(WORKSPACE, "temp", "attachments"), exist_ok=True)
+        _save_token_usage({"sessions": {}, "total": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}})
+
+        results["folders"] = {"cleared": ["temp", "assets", "projects"]}
+
     return {"status": "ok", "scope": request.scope, "results": results}
+
+
+# --- Folder Management ---
+
+@app.get("/api/folders/stats")
+async def folder_stats():
+    """Get file counts and sizes for cleanable folders."""
+    folders = {
+        "temp": os.path.join(WORKSPACE, "temp"),
+        "assets": os.path.join(WORKSPACE, "assets"),
+        "projects": os.path.join(WORKSPACE, "projects"),
+    }
+    stats = {}
+    for name, path in folders.items():
+        file_count = 0
+        total_size = 0
+        if os.path.isdir(path):
+            for root, dirs, files in os.walk(path):
+                for f in files:
+                    fp = os.path.join(root, f)
+                    try:
+                        total_size += os.path.getsize(fp)
+                        file_count += 1
+                    except OSError:
+                        pass
+        stats[name] = {"files": file_count, "size": total_size, "path": path}
+    return stats
+
+
+@app.post("/api/folders/clear")
+async def clear_folder(request: FolderClearRequest):
+    """Clear contents of a workspace folder."""
+    allowed = {"temp", "assets", "projects"}
+    if request.folder not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid folder: {request.folder}")
+
+    target = os.path.join(WORKSPACE, request.folder)
+    if not os.path.isdir(target):
+        return {"status": "ok", "deleted": 0}
+
+    # Security: ensure path stays within workspace
+    resolved = Path(target).resolve()
+    if not resolved.is_relative_to(Path(WORKSPACE).resolve()):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    deleted = 0
+    for item in os.listdir(target):
+        item_path = os.path.join(target, item)
+        try:
+            if os.path.isdir(item_path):
+                shutil.rmtree(item_path)
+            else:
+                os.remove(item_path)
+            deleted += 1
+        except OSError:
+            pass
+
+    return {"status": "ok", "folder": request.folder, "deleted": deleted}
 
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")

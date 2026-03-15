@@ -136,6 +136,22 @@
         </button>
       </div>
 
+      <!-- Debug Panel (verbose mode) -->
+      <div class="debug-panel" id="debugPanel" style="display:none">
+        <div class="debug-resize-handle" id="debugResizeHandle"></div>
+        <div class="debug-header">
+          <span class="debug-title"><i data-lucide="terminal" style="width:14px;height:14px"></i> Debug Console</span>
+          <div class="debug-controls">
+            <label class="debug-autoscroll">
+              <input type="checkbox" id="debugAutoScroll" checked> Auto-scroll
+            </label>
+            <button class="debug-clear-btn" onclick="clearDebugLog()">Clear</button>
+            <button class="debug-close-btn" onclick="toggleVerboseMode('off'); document.getElementById('settingVerbose').value='off';">&times;</button>
+          </div>
+        </div>
+        <div class="debug-log" id="debugLog" role="log" aria-live="off"></div>
+      </div>
+
       <!-- Input Area -->
       <div class="input-area">
         <div class="attachment-bar" id="attachmentBar"></div>
@@ -245,6 +261,7 @@
       <button class="settings-mobile-tab active" data-category="general" onclick="switchSettingsCategory('general')">General</button>
       <button class="settings-mobile-tab" data-category="profile" onclick="switchSettingsCategory('profile')">Profile</button>
       <button class="settings-mobile-tab" data-category="reset" onclick="switchSettingsCategory('reset')">Reset</button>
+      <button class="settings-mobile-tab" data-category="developer" onclick="switchSettingsCategory('developer')">Developer</button>
     </div>
 
     <div class="settings-layout">
@@ -258,6 +275,9 @@
         </button>
         <button class="settings-nav-item" data-category="reset" onclick="switchSettingsCategory('reset')" type="button">
           <i data-lucide="refresh-cw"></i> Reset
+        </button>
+        <button class="settings-nav-item" data-category="developer" onclick="switchSettingsCategory('developer')" type="button">
+          <i data-lucide="terminal"></i> Developer
         </button>
       </nav>
 
@@ -319,6 +339,21 @@
             </div>
           </div>
 
+          <!-- Developer section -->
+          <div class="settings-section" data-section="developer" style="display:none">
+            <div class="setting-row">
+              <div class="setting-label">
+                <i data-lucide="bug" style="width:16px;height:16px"></i>
+                Verbose Mode
+                <small>Show debug panel with event logs, model info, and timing</small>
+              </div>
+              <select class="setting-select" id="settingVerbose" onchange="toggleVerboseMode(this.value)">
+                <option value="off">Off</option>
+                <option value="on">On</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Reset & Maintenance section -->
           <div class="settings-section" data-section="reset" style="display:none;">
             <div class="reset-card">
@@ -372,6 +407,71 @@
                 </div>
               </div>
             </div>
+
+            <div class="reset-section-divider">
+              <span>Folder Cleanup</span>
+            </div>
+
+            <div class="reset-card folder-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Clear Temp Files</div>
+                <div class="reset-card-desc">Delete cached files, archived sessions, and attachments</div>
+                <span class="folder-stats" id="folderStatsTemp">Calculating...</span>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" id="clearTempBtn" onclick="showResetConfirm('temp')" type="button">Clear Temp</button>
+                <div class="reset-confirm" id="resetConfirmTemp">
+                  <span>Delete all temp files?</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('temp')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="clearFolder('temp')" type="button">Confirm</button>
+                </div>
+              </div>
+            </div>
+            <div class="reset-card folder-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Clear Assets</div>
+                <div class="reset-card-desc">Delete user-generated activities, images, and media</div>
+                <span class="folder-stats" id="folderStatsAssets">Calculating...</span>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" id="clearAssetsBtn" onclick="showResetConfirm('assets')" type="button">Clear Assets</button>
+                <div class="reset-confirm" id="resetConfirmAssets">
+                  <span>Delete all generated assets?</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('assets')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="clearFolder('assets')" type="button">Confirm</button>
+                </div>
+              </div>
+            </div>
+            <div class="reset-card folder-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Clear Projects</div>
+                <div class="reset-card-desc">Delete all project folders and their contents</div>
+                <span class="folder-stats" id="folderStatsProjects">Calculating...</span>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" id="clearProjectsBtn" onclick="showResetConfirm('projects')" type="button">Clear Projects</button>
+                <div class="reset-confirm" id="resetConfirmProjects">
+                  <span>This will delete all project data!</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('projects')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="clearFolder('projects')" type="button">Confirm</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="reset-card reset-danger reset-nuclear">
+              <div class="reset-card-info">
+                <div class="reset-card-title"><i data-lucide="alert-triangle"></i> Complete Reset</div>
+                <div class="reset-card-desc">Nuclear option — resets everything including all files. Returns the assistant to a freshly-downloaded state.</div>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn-danger reset-btn-nuclear" onclick="showResetConfirm('complete')" type="button">Complete Reset</button>
+                <div class="reset-confirm" id="resetConfirmComplete">
+                  <span>This erases EVERYTHING.</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('complete')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="showCompleteResetModal()" type="button">Continue</button>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
@@ -388,6 +488,20 @@
       <div class="factory-reset-dialog-actions">
         <button class="reset-btn" onclick="closeFactoryResetModal()" type="button">Cancel</button>
         <button class="reset-btn-danger" id="factoryResetConfirmBtn" onclick="performReset('factory')" type="button" disabled>Erase Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Complete Reset Modal -->
+  <div class="factory-reset-modal" id="completeResetModal">
+    <div class="factory-reset-dialog complete-reset-dialog">
+      <h3><i data-lucide="alert-triangle"></i> Complete Reset</h3>
+      <p>This will erase <strong>all data, files, projects, and settings</strong> and cannot be undone. The assistant will return to a freshly-downloaded state.</p>
+      <p style="margin-top:-8px;">Type <strong>RESET</strong> to confirm.</p>
+      <input type="text" id="completeResetInput" placeholder="Type RESET to confirm" autocomplete="off">
+      <div class="factory-reset-dialog-actions">
+        <button class="reset-btn" onclick="closeCompleteResetModal()" type="button">Cancel</button>
+        <button class="reset-btn-danger reset-btn-nuclear" id="completeResetConfirmBtn" onclick="performCompleteReset()" type="button" disabled>Erase Everything</button>
       </div>
     </div>
   </div>

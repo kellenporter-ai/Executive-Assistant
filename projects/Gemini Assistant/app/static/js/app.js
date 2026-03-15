@@ -99,6 +99,7 @@ const settings = {
   approvalMode: safeGet('ea-approval-mode', 'yolo') || 'yolo',
   model: safeGet('ea-model', '') || '',
   notifications: safeGet('ea-notifications', 'off') || 'off',
+  verbose: safeGet('ea-verbose') === 'on',
 };
 
 // Session tags (persisted to localStorage)
@@ -154,6 +155,8 @@ async function init() {
   document.getElementById('settingModel').value = settings.model;
   document.getElementById('settingNotifications').value = settings.notifications;
   document.getElementById('settingOnboarding').value = shouldShowOnboarding() ? 'on' : 'off';
+  document.getElementById('settingVerbose').value = safeGet('ea-verbose') || 'off';
+  if (safeGet('ea-verbose') === 'on') toggleVerboseMode('on');
   updateModelBadge();
   updateModeToggle();
   updateBreadcrumbs();
@@ -1028,6 +1031,7 @@ async function sendMessage(overrideText = null) {
 
         let event;
         try { event = JSON.parse(data); } catch { continue; }
+        debugLog(event);
 
         // Capture session ID
         if (event.type === 'init' && event.session_id) {
@@ -1120,6 +1124,7 @@ async function sendMessage(overrideText = null) {
         if (data === '[DONE]') continue;
         let event;
         try { event = JSON.parse(data); } catch { continue; }
+        debugLog(event);
         if (event.type === 'message' && event.role === 'assistant') {
           if (event.delta) {
             tab.assistantText += event.content;
@@ -1792,11 +1797,14 @@ function switchSettingsCategory(category) {
     el.style.display = el.dataset.section === category ? '' : 'none';
   });
   // Update content header
-  const headers = { general: 'General', profile: 'Profile', reset: 'Reset & Maintenance' };
+  const headers = { general: 'General', profile: 'Profile', reset: 'Reset & Maintenance', developer: 'Developer' };
   document.querySelector('.settings-content-header').textContent = headers[category] || category;
   // Load profile data on first visit
   if (category === 'profile' && !profileDataLoaded) {
     loadProfileData();
+  }
+  if (category === 'reset') {
+    loadFolderStats();
   }
   createIconsIn(document.getElementById('settingsPanel'));
 }
@@ -2132,6 +2140,99 @@ async function performReset(scope) {
     }
   } catch (err) {
     showToast(`Reset failed: ${err.message}`, 'error');
+  }
+}
+
+// ===== FOLDER CLEANUP =====
+function formatBytes(bytes) {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+}
+
+async function loadFolderStats() {
+  try {
+    const resp = await fetch('/api/folders/stats');
+    if (!resp.ok) throw new Error(`${resp.status}`);
+    const stats = await resp.json();
+    for (const [folder, data] of Object.entries(stats)) {
+      const el = document.getElementById(`folderStats${folder.charAt(0).toUpperCase() + folder.slice(1)}`);
+      if (!el) continue;
+      if (data.files === 0) {
+        el.textContent = 'Empty';
+        el.className = 'folder-stats empty';
+      } else {
+        el.textContent = `${data.files} file${data.files !== 1 ? 's' : ''}, ${formatBytes(data.size)}`;
+        el.className = 'folder-stats loaded';
+      }
+    }
+  } catch (err) {
+    ['Temp', 'Assets', 'Projects'].forEach(name => {
+      const el = document.getElementById(`folderStats${name}`);
+      if (el) { el.textContent = 'Unable to load'; el.className = 'folder-stats'; }
+    });
+  }
+}
+
+async function clearFolder(folder) {
+  hideResetConfirm(folder);
+  try {
+    const resp = await fetch('/api/folders/clear', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ folder })
+    });
+    if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+    const result = await resp.json();
+    const labels = { temp: 'Temp files', assets: 'Assets', projects: 'Projects' };
+    showToast(`${labels[folder] || folder} cleared — ${result.deleted} item${result.deleted !== 1 ? 's' : ''} deleted`, 'success');
+    loadFolderStats();
+  } catch (err) {
+    showToast(`Failed to clear ${folder}: ${err.message}`, 'error');
+  }
+}
+
+function showCompleteResetModal() {
+  hideResetConfirm('complete');
+  const modal = document.getElementById('completeResetModal');
+  const input = document.getElementById('completeResetInput');
+  const btn = document.getElementById('completeResetConfirmBtn');
+  input.value = '';
+  btn.disabled = true;
+  modal.classList.add('open');
+  input.focus();
+  input.oninput = () => { btn.disabled = input.value !== 'RESET'; };
+}
+
+function closeCompleteResetModal() {
+  document.getElementById('completeResetModal').classList.remove('open');
+  document.getElementById('completeResetInput').value = '';
+}
+
+async function performCompleteReset() {
+  const input = document.getElementById('completeResetInput');
+  if (input.value !== 'RESET') return;
+  closeCompleteResetModal();
+  try {
+    const resp = await fetch('/api/setup/reset', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ scope: 'complete' })
+    });
+    if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+    // Clear ALL localStorage
+    const keysToRemove = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key) keysToRemove.push(key);
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+    showToast('Complete reset done — reloading...', 'info');
+    setTimeout(() => location.reload(), 800);
+  } catch (err) {
+    showToast(`Complete reset failed: ${err.message}`, 'error');
   }
 }
 
@@ -3781,6 +3882,126 @@ setInterval(() => {
 
 // ===== TAB OVERFLOW CHECK ON RESIZE =====
 window.addEventListener('resize', () => { checkTabOverflow(); });
+
+// ===== DEBUG / VERBOSE MODE =====
+let debugStartTime = null;
+let debugFirstTokenTime = null;
+
+function toggleVerboseMode(value) {
+  settings.verbose = value === 'on';
+  safeSet('ea-verbose', value);
+  const panel = document.getElementById('debugPanel');
+  if (settings.verbose) {
+    panel.style.display = 'flex';
+    createIconsIn(panel);
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function debugLog(event) {
+  if (!settings.verbose) return;
+
+  const log = document.getElementById('debugLog');
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+  const type = event.type || 'unknown';
+  const entry = document.createElement('div');
+  entry.className = 'debug-entry';
+
+  let detail = '';
+  switch (type) {
+    case 'init':
+      debugStartTime = performance.now();
+      debugFirstTokenTime = null;
+      detail = `session=${escapeHtml(event.session_id || 'new')} <span class="debug-model-badge">${escapeHtml(event.model || 'unknown')}</span>`;
+      break;
+    case 'message':
+      if (!debugFirstTokenTime && debugStartTime) {
+        debugFirstTokenTime = performance.now();
+        const ttft = ((debugFirstTokenTime - debugStartTime) / 1000).toFixed(2);
+        detail = `role=${escapeHtml(event.role || '?')} TTFT=${ttft}s`;
+      } else {
+        const delta = event.delta ? event.content?.substring(0, 80) : (event.content ? event.content.substring(0, 80) : '');
+        detail = `role=${escapeHtml(event.role || '?')} ${delta ? '"' + escapeHtml(delta) + '..."' : ''}`;
+      }
+      break;
+    case 'tool_use':
+      detail = `tool=${escapeHtml(event.tool_name || '?')} id=${escapeHtml(event.tool_id || '?')}`;
+      break;
+    case 'tool_result': {
+      const status = escapeHtml(event.status || '?');
+      const outputLen = event.output ? event.output.length : 0;
+      detail = `id=${escapeHtml(event.tool_id || '?')} status=${status} output=${outputLen} chars`;
+      break;
+    }
+    case 'result':
+      if (debugStartTime) {
+        const totalTime = ((performance.now() - debugStartTime) / 1000).toFixed(2);
+        const stats = event.stats || {};
+        detail = `total=${totalTime}s tokens: &uarr;${stats.input_tokens || 0} &darr;${stats.output_tokens || 0}`;
+        if (stats.model) detail += ` <span class="debug-model-badge">${escapeHtml(stats.model)}</span>`;
+      }
+      break;
+    case 'error':
+      detail = escapeHtml(event.message || 'Unknown error');
+      break;
+    default:
+      detail = escapeHtml(JSON.stringify(event).substring(0, 120));
+  }
+
+  entry.innerHTML = `
+    <span class="debug-time">${timeStr}</span>
+    <span class="debug-type debug-type-${escapeHtml(type)}">${escapeHtml(type)}</span>
+    <span class="debug-detail">${detail}</span>
+  `;
+
+  log.appendChild(entry);
+
+  if (document.getElementById('debugAutoScroll').checked) {
+    log.scrollTop = log.scrollHeight;
+  }
+}
+
+function clearDebugLog() {
+  document.getElementById('debugLog').innerHTML = '';
+  debugStartTime = null;
+  debugFirstTokenTime = null;
+}
+
+// Debug panel resize
+(function() {
+  const handle = document.getElementById('debugResizeHandle');
+  const panel = document.getElementById('debugPanel');
+  if (!handle || !panel) return;
+
+  let startY, startHeight;
+
+  handle.addEventListener('mousedown', function(e) {
+    startY = e.clientY;
+    startHeight = panel.offsetHeight;
+
+    function onMouseMove(e) {
+      const delta = startY - e.clientY;
+      const newHeight = Math.max(80, Math.min(window.innerHeight * 0.6, startHeight + delta));
+      panel.style.height = newHeight + 'px';
+    }
+
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    e.preventDefault();
+  });
+})();
 
 // ===== LAUNCH =====
 init();
