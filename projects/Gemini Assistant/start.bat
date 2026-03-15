@@ -46,6 +46,19 @@ if not exist "app\.venv\.installed" (
     echo   Dependencies installed.
 )
 
+REM Check if port 3131 is already in use
+netstat -an 2>nul | findstr ":3131.*LISTENING" >nul
+if not errorlevel 1 (
+    echo.
+    echo   Warning: Port 3131 is already in use.
+    echo   Another instance may be running.
+    echo   Close the other instance first, then try again.
+    echo.
+    pause
+    exit /b 1
+)
+
+echo   Workspace: %CD%
 echo   Starting server on http://localhost:3131
 echo   Press Ctrl+C to stop
 echo.

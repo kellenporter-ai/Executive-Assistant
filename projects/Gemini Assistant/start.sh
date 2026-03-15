@@ -51,6 +51,29 @@ if [ ! -f "app/.venv/.installed" ] || [ "$(cat app/.venv/.installed 2>/dev/null)
     echo "  Dependencies installed."
 fi
 
+# Check if port 3131 is already in use
+PORT=3131
+if command -v lsof &> /dev/null; then
+    if lsof -i :$PORT -sTCP:LISTEN &> /dev/null; then
+        echo "  Warning: Port $PORT is already in use."
+        echo "  Another instance may be running."
+        echo ""
+        echo "  To stop the other instance, open it in your browser"
+        echo "  and click the power button, or run:"
+        echo "    kill \$(lsof -t -i :$PORT)"
+        echo ""
+        exit 1
+    fi
+elif command -v ss &> /dev/null; then
+    if ss -tlnp 2>/dev/null | grep -q ":$PORT "; then
+        echo "  Warning: Port $PORT is already in use."
+        echo "  Another instance may be running."
+        echo ""
+        exit 1
+    fi
+fi
+
+echo "  Workspace: $(pwd)"
 echo "  Starting server on http://localhost:3131"
 echo "  Press Ctrl+C to stop"
 echo ""

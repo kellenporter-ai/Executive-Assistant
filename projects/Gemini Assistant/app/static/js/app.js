@@ -2356,9 +2356,15 @@ async function loadTokenUsage() {
 }
 
 async function resetTokenUsage() {
-  if (!confirm('Reset all token usage counters?')) return;
-  await fetch('/api/token-usage', { method: 'DELETE' });
-  loadTokenUsage();
+  showConfirmModal(
+    'Reset Token Usage',
+    'Reset all token usage counters? This cannot be undone.',
+    async function() {
+      await fetch('/api/token-usage', { method: 'DELETE' });
+      loadTokenUsage();
+    },
+    { confirmText: 'Reset' }
+  );
 }
 
 // ===== SESSION TAGS =====
@@ -4004,31 +4010,74 @@ function clearDebugLog() {
   });
 })();
 
+// ===== CONFIRM MODAL =====
+let _confirmCallback = null;
+
+function showConfirmModal(title, message, onConfirm, options = {}) {
+  const modal = document.getElementById('confirmModal');
+  document.getElementById('confirmModalTitle').textContent = title;
+  document.getElementById('confirmModalMessage').textContent = message;
+
+  const confirmBtn = document.getElementById('confirmModalConfirm');
+  confirmBtn.textContent = options.confirmText || 'Confirm';
+  confirmBtn.className = 'confirm-modal-btn confirm' + (options.danger ? ' danger' : '');
+
+  _confirmCallback = onConfirm;
+  confirmBtn.onclick = function() {
+    closeConfirmModal();
+    if (_confirmCallback) _confirmCallback();
+    _confirmCallback = null;
+  };
+
+  modal.classList.add('open');
+
+  // Focus Cancel for safety (prevents accidental Enter confirmation)
+  document.getElementById('confirmModalCancel').focus();
+
+  // Close on Escape
+  modal._escHandler = function(e) {
+    if (e.key === 'Escape') closeConfirmModal();
+  };
+  document.addEventListener('keydown', modal._escHandler);
+}
+
+function closeConfirmModal() {
+  const modal = document.getElementById('confirmModal');
+  modal.classList.remove('open');
+  _confirmCallback = null;
+  if (modal._escHandler) {
+    document.removeEventListener('keydown', modal._escHandler);
+    modal._escHandler = null;
+  }
+}
+
 // ===== SHUTDOWN =====
 function confirmShutdown() {
-  // Use a simple confirm dialog — this is destructive but not data-losing
-  if (!confirm('This will shut down the assistant server.\n\nYou\'ll need to run start.sh or start.bat again to restart.\n\nContinue?')) {
-    return;
-  }
-
-  fetch('/api/shutdown', { method: 'POST' })
-    .then(res => res.json())
-    .then(() => {
-      // Show shutdown overlay
-      const overlay = document.createElement('div');
-      overlay.className = 'shutdown-overlay';
-      overlay.innerHTML = `
-        <i data-lucide="power-off" style="width:48px;height:48px;color:var(--text-muted)"></i>
-        <h2>Server Stopped</h2>
-        <p>The assistant has been shut down. You can close this browser tab.</p>
-        <p style="color:var(--text-muted);font-size:0.85rem;">To restart, run <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.sh</code> or <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.bat</code></p>
-      `;
-      document.body.appendChild(overlay);
-      lucide.createIcons();
-    })
-    .catch(() => {
-      showToast('Failed to stop server', 'error');
-    });
+  showConfirmModal(
+    'Stop Server',
+    'This will shut down the assistant server. You\'ll need to run start.sh or start.bat again to restart.',
+    function() {
+      fetch('/api/shutdown', { method: 'POST' })
+        .then(res => res.json())
+        .then(() => {
+          // Show shutdown overlay
+          const overlay = document.createElement('div');
+          overlay.className = 'shutdown-overlay';
+          overlay.innerHTML = `
+            <i data-lucide="power-off" style="width:48px;height:48px;color:var(--text-muted)"></i>
+            <h2>Server Stopped</h2>
+            <p>The assistant has been shut down. You can close this browser tab.</p>
+            <p style="color:var(--text-muted);font-size:0.85rem;">To restart, run <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.sh</code> or <code style="background:var(--bg-input);padding:2px 6px;border-radius:4px;">start.bat</code></p>
+          `;
+          document.body.appendChild(overlay);
+          lucide.createIcons();
+        })
+        .catch(() => {
+          showToast('Failed to stop server', 'error');
+        });
+    },
+    { danger: true, confirmText: 'Shut Down' }
+  );
 }
 
 // ===== LAUNCH =====

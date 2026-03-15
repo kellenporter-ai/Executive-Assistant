@@ -507,6 +507,18 @@
     </div>
   </div>
 
+  <!-- Confirm Modal -->
+  <div class="confirm-modal-overlay" id="confirmModal" role="dialog" aria-modal="true" aria-label="Confirm action">
+    <div class="confirm-modal">
+      <h3 id="confirmModalTitle">Confirm</h3>
+      <p id="confirmModalMessage"></p>
+      <div class="confirm-modal-actions">
+        <button class="confirm-modal-btn cancel" id="confirmModalCancel" onclick="closeConfirmModal()">Cancel</button>
+        <button class="confirm-modal-btn confirm" id="confirmModalConfirm">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Image Lightbox -->
   <div class="modal-overlay" id="imageLightbox" onclick="closeLightbox()" role="dialog" aria-modal="true" aria-label="Image preview">
     <button onclick="closeLightbox()" aria-label="Close preview" style="position:absolute;top:20px;right:20px;background:rgba(0,0,0,0.5);color:#fff;border:none;border-radius:50%;width:40px;height:40px;font-size:1.5rem;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:1001;" type="button">&times;</button>
