@@ -74,6 +74,9 @@ class ContextSaveRequest(BaseModel):
     file: str  # e.g. "me.md"
     content: str
 
+class ResetRequest(BaseModel):
+    scope: str  # "interview", "history", "preferences", "factory"
+
 # Token usage file (persisted across server restarts)
 TOKEN_USAGE_FILE = os.path.join(WORKSPACE, "temp", "token_usage.json")
 
@@ -630,6 +633,110 @@ async def verify_auth():
     except asyncio.TimeoutError:
         proc.kill()
         return {"authenticated": False, "error": "Authentication check timed out"}
+
+
+@app.get("/api/setup/context/{filename}")
+async def get_context(filename: str):
+    """Read a context file for the profile editor."""
+    allowed = {"me.md", "work.md", "team.md", "current_priorities.md", "rules.md"}
+    if filename not in allowed:
+        raise HTTPException(status_code=400, detail=f"Invalid context file: {filename}")
+
+    context_dir = os.path.join(WORKSPACE, "context")
+    fpath = os.path.join(context_dir, filename)
+
+    resolved = Path(fpath).resolve()
+    if not resolved.is_relative_to(Path(context_dir).resolve()):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not os.path.isfile(str(resolved)):
+        return {"content": "", "exists": False}
+
+    with open(str(resolved), "r", encoding="utf-8") as f:
+        return {"content": f.read(), "exists": True}
+
+
+@app.post("/api/setup/reset")
+async def reset(request: ResetRequest):
+    """Reset various aspects of the assistant."""
+    results = {}
+
+    if request.scope in ("history", "factory"):
+        # Archive all active sessions
+        gemini = None
+        try:
+            gemini = get_gemini_path()
+        except RuntimeError:
+            pass
+
+        if gemini:
+            proc = await asyncio.create_subprocess_exec(
+                gemini, "--list-sessions",
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                cwd=WORKSPACE,
+            )
+            stdout, _ = await proc.communicate()
+            output = stdout.decode("utf-8")
+
+            archived_count = 0
+            for line in output.split("\n"):
+                match = re.match(
+                    r"\s*(\d+)\.\s+.+?\s+\(.+?\)\s+\[([a-f0-9-]+)\]",
+                    line,
+                )
+                if match:
+                    session_id = match.group(2).strip()
+                    await _delete_from_cli(session_id, match.group(1).strip())
+                    # Move session files to archive
+                    gemini_dir = os.path.expanduser("~/.gemini/tmp")
+                    short_id = session_id.split("-")[0]
+                    pattern = os.path.join(gemini_dir, "**", "chats", f"session-*{short_id}*.json")
+                    matches = glob.glob(pattern, recursive=True)
+                    for m in matches:
+                        dest = os.path.join(ARCHIVE_DIR, os.path.basename(m))
+                        shutil.move(m, dest)
+                    archived_count += 1
+
+            results["history"] = {"archived": archived_count}
+        else:
+            results["history"] = {"archived": 0, "note": "Gemini CLI not available"}
+
+    if request.scope in ("interview", "factory"):
+        # Reset context files to templates
+        context_dir = os.path.join(WORKSPACE, "context")
+        templates = {
+            "me.md": "# About Me\n\n## Role\n<!-- What is your primary role? -->\n\n## Name\n\n\n## Tech Comfort Level\n\n\n## Goals\n\n\n## Preferences\n<!-- Add personal workflow preferences as you discover them -->\n",
+            "work.md": "# Work Environment\n\n## Student Devices\n<!-- What devices do your students use? -->\n\n## Teaching Tools\n<!-- Key tools and platforms you use -->\n\n## Constraints\n<!-- Any limitations? -->\n\n## Deployment\n<!-- Updated as you configure integrations -->\n",
+            "team.md": "# Team\n\n## Collaborators\n<!-- People you work with -->\n\n## Other Users\n<!-- Who else might use this assistant? -->\n",
+            "current_priorities.md": "# Current Priorities & Goals\n\n## Priority 1\n<!-- What are you working on right now? -->\n\n## Automation Goals\n<!-- What takes up the most time that you'd like to automate? -->\n",
+            "rules.md": "# Communication & Operating Rules\n\n## Communication Style\n- **Tone:** Casual\n- **Format:** Concise\n- **Decision-making:** Present options for me to choose from\n\n## Hard Rules\n- Never modify files outside the user's home directory\n- Once a task has been agreed upon, execute without asking for further permissions\n- Never commit secrets, API keys, or credentials to version control\n",
+        }
+        for fname, template in templates.items():
+            fpath = os.path.join(context_dir, fname)
+            with open(fpath, "w", encoding="utf-8") as f:
+                f.write(template)
+        results["context"] = {"reset": True, "files": list(templates.keys())}
+
+    if request.scope == "factory":
+        # Also reset token usage
+        _save_token_usage({"sessions": {}, "total": {"input_tokens": 0, "output_tokens": 0, "total_tokens": 0, "requests": 0}})
+        results["tokens"] = {"reset": True}
+
+        # Clear memory files
+        memory_dir = os.path.join(WORKSPACE, "memory")
+        if os.path.isdir(memory_dir):
+            for f in os.listdir(memory_dir):
+                if f.endswith(".md") and f != "MEMORY.md":
+                    os.remove(os.path.join(memory_dir, f))
+            # Reset MEMORY.md to empty index
+            memfile = os.path.join(memory_dir, "MEMORY.md")
+            if os.path.isfile(memfile):
+                with open(memfile, "w") as f:
+                    f.write("# Memory\n\n<!-- Memories will be stored here as you use the assistant -->\n")
+        results["memory"] = {"reset": True}
+
+    return {"status": "ok", "scope": request.scope, "results": results}
 
 
 static_dir = os.path.join(os.path.dirname(__file__), "static")

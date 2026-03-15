@@ -1167,6 +1167,124 @@
       font-family: inherit;
     }
     .setting-select:focus, .setting-input:focus { border-color: var(--accent); }
+    .settings-body { max-height: 70vh; overflow-y: auto; }
+
+    /* ===== PROFILE EDITOR & RESET SECTIONS ===== */
+    .settings-accordion {
+      border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+    }
+    .settings-accordion + .settings-accordion { margin-top: 8px; }
+    .settings-accordion-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      width: 100%; padding: 12px 16px; background: var(--bg-tool); border: none;
+      color: var(--text-primary); font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: background 0.15s;
+    }
+    .settings-accordion-toggle:hover { background: var(--bg-hover); }
+    .settings-accordion-toggle .accordion-chevron {
+      transition: transform 0.25s ease; font-size: 0.7rem; color: var(--text-muted);
+    }
+    .settings-accordion.open .accordion-chevron { transform: rotate(180deg); }
+    .settings-accordion-body {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+    }
+    .settings-accordion.open .settings-accordion-body { max-height: 2000px; }
+    .settings-accordion-content { padding: 16px; }
+
+    .profile-section { margin-bottom: 16px; }
+    .profile-section-title {
+      font-size: 0.82rem; font-weight: 600; color: var(--accent);
+      margin-bottom: 8px; display: flex; align-items: center; gap: 6px;
+    }
+    .profile-field { margin-bottom: 10px; }
+    .profile-field label {
+      display: block; font-size: 0.78rem; color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .profile-field input[type="text"],
+    .profile-field textarea,
+    .profile-field select {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-primary); padding: 7px 10px; font-size: 0.82rem;
+      font-family: inherit; outline: none; transition: border-color 0.2s;
+    }
+    .profile-field input[type="text"]:focus,
+    .profile-field textarea:focus,
+    .profile-field select:focus { border-color: var(--accent); }
+    .profile-field textarea { resize: vertical; min-height: 48px; }
+    .profile-save-btn {
+      background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent);
+      border-radius: 6px; padding: 5px 14px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+    }
+    .profile-save-btn:hover { background: var(--accent); color: var(--bg-primary); }
+    .profile-section-actions {
+      display: flex; justify-content: flex-end; margin-top: 6px;
+    }
+    .profile-loading {
+      text-align: center; padding: 24px; color: var(--text-muted); font-size: 0.85rem;
+    }
+
+    .reset-card {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      padding: 12px 0; border-bottom: 1px solid var(--border);
+    }
+    .reset-card:last-child { border-bottom: none; }
+    .reset-card.reset-danger { border-left: 3px solid var(--error); padding-left: 12px; margin-left: -16px; }
+    .reset-card-info { flex: 1; margin-right: 12px; }
+    .reset-card-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .reset-card-desc { font-size: 0.75rem; color: var(--text-muted); }
+    .reset-card-actions { flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+    .reset-btn {
+      background: var(--bg-hover); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-primary); padding: 5px 14px; font-size: 0.78rem;
+      cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
+    }
+    .reset-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .reset-btn-danger {
+      background: rgba(243, 139, 168, 0.1); border: 1px solid var(--error);
+      color: var(--error); border-radius: 6px; padding: 5px 14px; font-size: 0.78rem;
+      cursor: pointer; font-family: inherit; transition: all 0.2s; white-space: nowrap;
+    }
+    .reset-btn-danger:hover { background: var(--error); color: var(--bg-primary); }
+    .reset-confirm {
+      display: none; font-size: 0.75rem; color: var(--text-secondary);
+      margin-top: 4px; gap: 6px; align-items: center;
+    }
+    .reset-confirm.visible { display: flex; }
+    .reset-confirm span { white-space: nowrap; }
+    .reset-confirm-btn {
+      background: none; border: none; font-size: 0.75rem; cursor: pointer;
+      font-family: inherit; padding: 2px 8px; border-radius: 4px;
+    }
+    .reset-confirm-yes { color: var(--error); }
+    .reset-confirm-yes:hover { background: rgba(243, 139, 168, 0.15); }
+    .reset-confirm-no { color: var(--text-muted); }
+    .reset-confirm-no:hover { background: var(--bg-hover); }
+
+    .factory-reset-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6); z-index: 1100;
+      align-items: center; justify-content: center;
+    }
+    .factory-reset-modal.open { display: flex; }
+    .factory-reset-dialog {
+      background: var(--bg-primary); border: 1px solid var(--error);
+      border-radius: 12px; padding: 24px; max-width: 380px; width: 90%;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    }
+    .factory-reset-dialog h3 { color: var(--error); margin: 0 0 8px; font-size: 1rem; }
+    .factory-reset-dialog p { color: var(--text-secondary); font-size: 0.82rem; margin: 0 0 16px; }
+    .factory-reset-dialog input {
+      width: 100%; box-sizing: border-box;
+      background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px;
+      color: var(--text-primary); padding: 8px 12px; font-size: 0.85rem;
+      font-family: inherit; outline: none; margin-bottom: 12px;
+    }
+    .factory-reset-dialog input:focus { border-color: var(--error); }
+    .factory-reset-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; }
+    .factory-reset-dialog-actions button { border-radius: 6px; padding: 6px 16px; font-size: 0.82rem; cursor: pointer; font-family: inherit; }
 
     /* ===== MESSAGE ACTIONS ===== */
     .message-actions {
@@ -2574,6 +2692,96 @@
           <option value="off">Off</option>
           <option value="on">On</option>
         </select>
+      </div>
+
+      <!-- Profile Editor Accordion -->
+      <div class="settings-accordion" id="profileAccordion">
+        <button class="settings-accordion-toggle" onclick="toggleProfileEditor()" type="button">
+          <span>Your Profile</span>
+          <span class="accordion-chevron">&#9660;</span>
+        </button>
+        <div class="settings-accordion-body">
+          <div class="settings-accordion-content" id="profileEditorContent">
+            <div class="profile-loading" id="profileLoading">Loading profile data...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reset & Maintenance Accordion -->
+      <div class="settings-accordion" id="resetAccordion">
+        <button class="settings-accordion-toggle" onclick="toggleResetSection()" type="button">
+          <span>Reset &amp; Maintenance</span>
+          <span class="accordion-chevron">&#9660;</span>
+        </button>
+        <div class="settings-accordion-body">
+          <div class="settings-accordion-content">
+            <div class="reset-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Re-run Setup Interview</div>
+                <div class="reset-card-desc">Walk through the setup interview again to update your profile</div>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" onclick="rerunInterview()" type="button">Start Interview</button>
+              </div>
+            </div>
+            <div class="reset-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Clear Chat History</div>
+                <div class="reset-card-desc">Archive all chat sessions and start fresh</div>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" id="resetHistoryBtn" onclick="showResetConfirm('history')" type="button">Clear History</button>
+                <div class="reset-confirm" id="resetConfirmHistory">
+                  <span>Are you sure? This will archive all sessions.</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('history')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="performReset('history')" type="button">Confirm</button>
+                </div>
+              </div>
+            </div>
+            <div class="reset-card">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Reset Preferences</div>
+                <div class="reset-card-desc">Reset theme, sidebar width, and other display preferences to defaults</div>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn" id="resetPrefsBtn" onclick="showResetConfirm('preferences')" type="button">Reset Preferences</button>
+                <div class="reset-confirm" id="resetConfirmPreferences">
+                  <span>Reset all display preferences?</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('preferences')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="performReset('preferences')" type="button">Confirm</button>
+                </div>
+              </div>
+            </div>
+            <div class="reset-card reset-danger">
+              <div class="reset-card-info">
+                <div class="reset-card-title">Factory Reset</div>
+                <div class="reset-card-desc">Completely reset the assistant — clears profile, history, preferences, and memory. You'll need to set up again.</div>
+              </div>
+              <div class="reset-card-actions">
+                <button class="reset-btn-danger" onclick="showResetConfirm('factory')" type="button">Factory Reset</button>
+                <div class="reset-confirm" id="resetConfirmFactory">
+                  <span>This cannot be undone.</span>
+                  <button class="reset-confirm-btn reset-confirm-no" onclick="hideResetConfirm('factory')" type="button">Cancel</button>
+                  <button class="reset-confirm-btn reset-confirm-yes" onclick="showFactoryResetModal()" type="button">Continue</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Factory Reset Modal -->
+  <div class="factory-reset-modal" id="factoryResetModal">
+    <div class="factory-reset-dialog">
+      <h3>Factory Reset</h3>
+      <p>This will erase all your data and cannot be undone. Type <strong>RESET</strong> to confirm.</p>
+      <input type="text" id="factoryResetInput" placeholder="Type RESET to confirm" autocomplete="off">
+      <div class="factory-reset-dialog-actions">
+        <button class="reset-btn" onclick="closeFactoryResetModal()" type="button">Cancel</button>
+        <button class="reset-btn-danger" id="factoryResetConfirmBtn" onclick="performReset('factory')" type="button" disabled>Erase Everything</button>
       </div>
     </div>
   </div>
@@ -4257,6 +4465,304 @@
       } else {
         label.textContent = 'Plan (read-only)';
         toggle.classList.add('active');
+      }
+    }
+
+    // ===== PROFILE EDITOR & RESET =====
+    let profileDataLoaded = false;
+
+    function toggleProfileEditor() {
+      const acc = document.getElementById('profileAccordion');
+      acc.classList.toggle('open');
+      if (acc.classList.contains('open') && !profileDataLoaded) {
+        loadProfileData();
+      }
+    }
+
+    function toggleResetSection() {
+      document.getElementById('resetAccordion').classList.toggle('open');
+    }
+
+    const profileFileConfig = [
+      {
+        file: 'me.md', title: 'About You',
+        sections: { 'Name': 'Name', 'Role': 'Role', 'Tech Comfort Level': 'Tech Comfort Level', 'Goals': 'Goals' },
+        fields: [
+          { key: 'Name', label: 'Name', type: 'text' },
+          { key: 'Role', label: 'Role / What you teach', type: 'text' },
+          { key: 'Tech Comfort Level', label: 'Tech Comfort Level', type: 'select', options: ['Beginner', 'Intermediate', 'Advanced'] },
+          { key: 'Goals', label: 'Goals', type: 'textarea' },
+        ],
+        format: (vals) => `# About Me\n\n## Role\n${vals['Role'] || ''}\n\n## Name\n${vals['Name'] || ''}\n\n## Tech Comfort Level\n${vals['Tech Comfort Level'] || 'Intermediate'}\n\n## Goals\n${vals['Goals'] || ''}\n\n## Preferences\n<!-- Add personal workflow preferences as you discover them -->\n`
+      },
+      {
+        file: 'work.md', title: 'Your Workspace',
+        fields: [
+          { key: 'Student Devices', label: 'Hardware / Student Devices', type: 'textarea' },
+          { key: 'Teaching Tools', label: 'Software / Teaching Tools', type: 'textarea' },
+          { key: 'Constraints', label: 'Constraints', type: 'textarea' },
+        ],
+        format: (vals) => `# Work Environment\n\n## Student Devices\n${vals['Student Devices'] || 'Not specified'}\n\n## Teaching Tools\n${vals['Teaching Tools'] || ''}\n\n## Constraints\n${vals['Constraints'] || 'None specified'}\n\n## Deployment\n<!-- Updated as you configure integrations -->\n`
+      },
+      {
+        file: 'team.md', title: 'Your Team',
+        fields: [
+          { key: 'Collaborators', label: 'Collaborators', type: 'textarea' },
+          { key: 'Other Users', label: 'Other Users', type: 'textarea' },
+        ],
+        format: (vals) => `# Team\n\n## Collaborators\n${vals['Collaborators'] || 'None currently'}\n\n## Other Users\n${vals['Other Users'] || 'Just me'}\n\n## Collaboration Norms\n<!-- How does your team communicate? -->\n`
+      },
+      {
+        file: 'current_priorities.md', title: 'Your Priorities',
+        fields: [
+          { key: 'Current Work', label: 'Current Work', type: 'textarea' },
+          { key: 'Automation Goals', label: 'Automation Goals', type: 'textarea' },
+        ],
+        format: (vals) => {
+          let md = '# Current Priorities\n\n';
+          const work = vals['Current Work'] || '';
+          if (work) {
+            const items = work.split(/\n/).map(s => s.trim()).filter(Boolean);
+            items.forEach((item, i) => { md += `## Priority ${i + 1}: ${item}\n**Status:** In Progress\n\n`; });
+          } else {
+            md += '## Priority 1: [Your Top Priority]\n**Goal:** [What does success look like?]\n**Status:** Not Started\n\n';
+          }
+          if (vals['Automation Goals']) md += `## Automation Wishlist\n${vals['Automation Goals']}\n`;
+          return md;
+        }
+      },
+      {
+        file: 'rules.md', title: 'Communication Style',
+        fields: [
+          { key: 'Tone', label: 'Tone', type: 'select', options: ['Casual', 'Professional', 'Technical'] },
+          { key: 'Detail Level', label: 'Detail Level', type: 'select', options: ['Concise', 'Mid-detail', 'Detailed'] },
+          { key: 'Custom Rules', label: 'Custom Rules', type: 'textarea' },
+        ],
+        format: (vals) => {
+          const tone = vals['Tone'] || 'Casual';
+          const detailMap = { 'Concise': 'Concise one-liners', 'Mid-detail': 'Mid-detail', 'Detailed': 'Detailed explanations' };
+          const detail = detailMap[vals['Detail Level']] || 'Mid-detail';
+          let md = `# Communication & Operating Rules\n\n## Communication Style\n- **Tone:** ${tone}\n- **Format:** ${detail}\n- **Decision-making:** Present options for me to choose from\n\n## Hard Rules\n- Never modify files outside the user's home directory\n- Once a task has been agreed upon, execute without asking for further permissions\n- Never commit secrets, API keys, or credentials to version control\n`;
+          if (vals['Custom Rules']) {
+            md += `\n## Custom Rules\n${vals['Custom Rules'].split(/\n/).map(r => r.trim()).filter(Boolean).map(r => r.startsWith('- ') ? r : `- ${r}`).join('\n')}\n`;
+          }
+          return md;
+        }
+      }
+    ];
+
+    function parseContextMarkdown(content, fileConfig) {
+      const vals = {};
+      for (const field of fileConfig.fields) {
+        const key = field.key;
+        let val = '';
+
+        // Special-case fields that aren't under their own ## header
+        if (key === 'Tone') {
+          const m = content.match(/\*\*Tone:\*\*\s*(.+)/);
+          val = m ? m[1].trim() : '';
+        } else if (key === 'Detail Level') {
+          const m = content.match(/\*\*Format:\*\*\s*(.+)/);
+          if (m) {
+            const raw = m[1].trim();
+            if (raw.includes('Concise')) val = 'Concise';
+            else if (raw.includes('Mid')) val = 'Mid-detail';
+            else if (raw.includes('Detailed')) val = 'Detailed';
+            else val = raw;
+          } else { val = 'Mid-detail'; }
+        } else if (key === 'Current Work') {
+          // Extract priority titles from "## Priority N: Title" patterns
+          const priorities = [];
+          const re = /##\s+Priority\s+\d+:\s*(.+)/g;
+          let pm;
+          while ((pm = re.exec(content)) !== null) priorities.push(pm[1].trim());
+          val = priorities.join('\n');
+        } else if (key === 'Automation Goals') {
+          const am = content.match(/##\s+Automation Wishlist[^\n]*\n([\s\S]*?)(?=\n##\s|$)/);
+          val = am ? am[1].trim() : '';
+        } else {
+          // Standard: find ## Key header and grab content until next ## or end
+          const pattern = new RegExp(`##\\s+${key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[^\\n]*\\n([\\s\\S]*?)(?=\\n##\\s|$)`);
+          const match = content.match(pattern);
+          val = match ? match[1].trim() : '';
+        }
+
+        // Strip markdown comments and list-item prefixes for clean display
+        val = val.replace(/<!--[\s\S]*?-->/g, '').trim();
+        vals[key] = val;
+      }
+      return vals;
+    }
+
+    async function loadProfileData() {
+      const container = document.getElementById('profileEditorContent');
+      const loading = document.getElementById('profileLoading');
+      if (loading) loading.style.display = 'block';
+
+      try {
+        const results = await Promise.all(
+          profileFileConfig.map(cfg =>
+            fetch(`/api/setup/context/${cfg.file}`).then(r => r.json()).catch(() => ({ content: '', exists: false }))
+          )
+        );
+
+        let html = '';
+        profileFileConfig.forEach((cfg, i) => {
+          const data = results[i];
+          const vals = data.exists ? parseContextMarkdown(data.content || '', cfg) : {};
+          const fileId = cfg.file.replace('.md', '').replace('_', '-');
+
+          html += `<div class="profile-section">`;
+          html += `<div class="profile-section-title">${cfg.title}</div>`;
+
+          for (const field of cfg.fields) {
+            const val = vals[field.key] || '';
+            const inputId = `profile-${fileId}-${field.key.toLowerCase().replace(/\s+/g, '-')}`;
+
+            html += `<div class="profile-field">`;
+            html += `<label for="${inputId}">${field.label}</label>`;
+
+            if (field.type === 'text') {
+              html += `<input type="text" id="${inputId}" data-file="${cfg.file}" data-key="${field.key}" value="${val.replace(/"/g, '&quot;')}">`;
+            } else if (field.type === 'textarea') {
+              html += `<textarea id="${inputId}" data-file="${cfg.file}" data-key="${field.key}" rows="2">${val.replace(/</g, '&lt;')}</textarea>`;
+            } else if (field.type === 'select') {
+              html += `<select id="${inputId}" data-file="${cfg.file}" data-key="${field.key}">`;
+              for (const opt of field.options) {
+                const selected = val === opt ? ' selected' : '';
+                html += `<option value="${opt}"${selected}>${opt}</option>`;
+              }
+              html += `</select>`;
+            }
+            html += `</div>`;
+          }
+
+          html += `<div class="profile-section-actions">`;
+          html += `<button class="profile-save-btn" onclick="saveProfileSection('${cfg.file}')" type="button">Save</button>`;
+          html += `</div></div>`;
+        });
+
+        html += `<div class="profile-section-actions" style="margin-top:8px;"><button class="reset-btn" onclick="rerunInterview()" type="button">Re-run Interview</button></div>`;
+
+        container.innerHTML = html;
+        profileDataLoaded = true;
+      } catch (err) {
+        container.innerHTML = `<div class="profile-loading" style="color:var(--error)">Failed to load profile data: ${err.message}</div>`;
+      }
+    }
+
+    async function saveProfileSection(filename) {
+      const cfg = profileFileConfig.find(c => c.file === filename);
+      if (!cfg) return;
+
+      const vals = {};
+      for (const field of cfg.fields) {
+        const fileId = cfg.file.replace('.md', '').replace('_', '-');
+        const inputId = `profile-${fileId}-${field.key.toLowerCase().replace(/\s+/g, '-')}`;
+        const el = document.getElementById(inputId);
+        vals[field.key] = el ? el.value : '';
+      }
+
+      const content = cfg.format(vals);
+      try {
+        const resp = await fetch('/api/setup/save-context', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ file: filename, content })
+        });
+        if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+        showToast(`Saved ${cfg.title}`, 'success');
+      } catch (err) {
+        showToast(`Failed to save: ${err.message}`, 'error');
+      }
+    }
+
+    async function rerunInterview() {
+      closeSettings();
+      localStorage.removeItem('ea-setup-complete');
+      profileDataLoaded = false;
+      try {
+        const resp = await fetch('/api/setup/status');
+        const data = await resp.json();
+        data.phase = 'interview';
+        showSetupWizard(data);
+      } catch (err) {
+        // Fallback: construct minimal setup data
+        showSetupWizard({ phase: 'interview', dependencies: {}, auth: {} });
+      }
+    }
+
+    function showResetConfirm(scope) {
+      const el = document.getElementById(`resetConfirm${scope.charAt(0).toUpperCase() + scope.slice(1)}`);
+      if (el) el.classList.add('visible');
+    }
+
+    function hideResetConfirm(scope) {
+      const el = document.getElementById(`resetConfirm${scope.charAt(0).toUpperCase() + scope.slice(1)}`);
+      if (el) el.classList.remove('visible');
+    }
+
+    function showFactoryResetModal() {
+      hideResetConfirm('factory');
+      const modal = document.getElementById('factoryResetModal');
+      const input = document.getElementById('factoryResetInput');
+      const btn = document.getElementById('factoryResetConfirmBtn');
+      input.value = '';
+      btn.disabled = true;
+      modal.classList.add('open');
+      input.focus();
+      input.oninput = () => { btn.disabled = input.value !== 'RESET'; };
+    }
+
+    function closeFactoryResetModal() {
+      document.getElementById('factoryResetModal').classList.remove('open');
+      document.getElementById('factoryResetInput').value = '';
+    }
+
+    async function performReset(scope) {
+      if (scope === 'factory') {
+        const input = document.getElementById('factoryResetInput');
+        if (input.value !== 'RESET') return;
+        closeFactoryResetModal();
+      }
+
+      hideResetConfirm(scope);
+
+      if (scope === 'preferences') {
+        ['ea-sidebar-width', 'ea-cmd-history', 'ea-theme', 'ea-notification-history'].forEach(k => localStorage.removeItem(k));
+        showToast('Preferences reset to defaults', 'success');
+        setTimeout(() => location.reload(), 800);
+        return;
+      }
+
+      try {
+        const resp = await fetch('/api/setup/reset', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ scope })
+        });
+        if (!resp.ok) throw new Error(`Server returned ${resp.status}`);
+        const result = await resp.json();
+
+        if (scope === 'history') {
+          const archived = result.results?.history?.archived || 0;
+          showToast(`Chat history cleared — ${archived} session${archived !== 1 ? 's' : ''} archived`, 'success');
+          // Reload sessions in sidebar
+          if (typeof loadSessions === 'function') loadSessions();
+        } else if (scope === 'factory') {
+          // Clear all localStorage and reload
+          const keysToRemove = [];
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            if (key && key.startsWith('ea-')) keysToRemove.push(key);
+          }
+          keysToRemove.forEach(k => localStorage.removeItem(k));
+          localStorage.removeItem('ea-setup-complete');
+          showToast('Factory reset complete — reloading...', 'info');
+          setTimeout(() => location.reload(), 800);
+        }
+      } catch (err) {
+        showToast(`Reset failed: ${err.message}`, 'error');
       }
     }
 
