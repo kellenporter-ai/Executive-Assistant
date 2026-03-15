@@ -1,6 +1,6 @@
 ---
 name: create-assessment
-description: Use when someone asks to create an assessment, build a quiz, make a test, generate an exam, or create assessment questions for a class.
+description: Use when someone asks to create a formal assessment, build a graded quiz, make a test or exam, or generate rubric-based assessment questions for a class. This is for formal graded work with rubrics — NOT for bulk gamification question banks (use /generate-questions for boss battles, dungeons, and game mode questions). Triggers on 'assessment', 'test', 'exam', 'quiz', 'graded', 'rubric'.
 model: claude-sonnet-4-6
 effort: high
 tools: [Read, Write, Glob]

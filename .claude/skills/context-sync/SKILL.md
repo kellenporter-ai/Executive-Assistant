@@ -1,10 +1,11 @@
 ---
 name: context-sync
 description: >
-  Weekly context maintenance that keeps the Executive Assistant's knowledge of Kellen's priorities,
-  projects, and team accurate over time. Use this skill whenever the user says "sync my context",
+  Weekly context maintenance — checks what is DIFFERENT now (reality shifts, priority drift,
+  changed circumstances). Use this skill whenever the user says "sync my context",
   "review my priorities", "what's changed recently", "update my priorities", "context audit",
   "weekly review", "has anything shifted", "check for priority drift", or "maintenance check".
+  NOT for session summaries or task history (use /daily-briefing for "what did we do").
   Also trigger proactively: if you notice it has been 7+ days since the last context sync
   (check the most recent decision log entry tagged CONTEXT-SYNC), nudge the user with
   "It's been over a week since your last context sync — want me to run one?"
@@ -53,6 +54,22 @@ Read any existing files in `decisions/` to understand what's already been logged
 
 ### 5. Recent Conversation Patterns (if available)
 If the current conversation has prior messages, scan them for signals: new projects mentioned, shifting focus areas, new team members, tools adopted, frustrations expressed.
+
+### 6. Stale Reference Files
+Check modification dates of key reference files against recent project changes. If a reference file hasn't been updated in 30+ days but the code it documents has changed significantly, flag it as potentially stale.
+
+```bash
+# Check reference file ages vs recent code changes
+for f in references/block-types.md references/economy-reference.md references/portal-bridge.md references/reveal-patterns.md; do
+  if [ -f "$f" ]; then
+    echo "$f: $(stat -c '%y' "$f" | cut -d' ' -f1)"
+  fi
+done
+echo "---"
+echo "Last Portal commit: $(cd projects/Porters-Portal && git log -1 --format='%ci' | cut -d' ' -f1)"
+```
+
+If any reference file is 30+ days older than the latest relevant code changes, add it to the sync report under a "Potentially Stale References" section.
 
 ## How to Detect Drift
 

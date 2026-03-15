@@ -1,6 +1,6 @@
 ---
 name: generate-questions
-description: "Use when someone asks to generate questions, create a question bank, make boss battle questions, create dungeon room questions, or build quiz questions from content."
+description: "Use when someone asks to generate a bulk question bank, create boss battle questions, build dungeon room questions, or produce gamification quiz content. This skill generates large volumes (500-1000) for game modes — NOT for formal graded assessments (use /create-assessment for tests, exams, and rubric-based assessments). Triggers on: 'question bank', 'boss battle questions', 'dungeon questions', 'bulk questions', 'gamification questions'."
 model: claude-sonnet-4-6
 effort: max
 tools: [Read, Write, Glob, Bash]

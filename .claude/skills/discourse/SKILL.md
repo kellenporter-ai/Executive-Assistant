@@ -1,6 +1,6 @@
 ---
 name: discourse
-description: "Run parallel Claude + Gemini analysis on the same task, then synthesize results for a stronger outcome. Use when you want discourse QA, a second opinion, cross-model synthesis, or independent verification. Triggers on: 'discourse QA', 'run discourse', 'get both perspectives', 'cross-model review', 'Gemini and Claude both review this'."
+description: "Run parallel Claude + Gemini analysis on the same task, then synthesize results for a stronger outcome. Triggers on: 'discourse QA', 'run discourse', 'cross-model review', 'Gemini and Claude both review this', or any explicit request for parallel Claude+Gemini analysis. Requires explicit mention of discourse, Gemini, cross-model, or both-AI-systems. Do NOT trigger on generic 'get both perspectives' or 'pros and cons' requests — those are normal analysis, not cross-model discourse."
 model: claude-sonnet-4-6
 effort: max
 tools: [Read, Write, Edit, Bash, Glob, Grep, Agent]

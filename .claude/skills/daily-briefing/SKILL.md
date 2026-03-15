@@ -1,10 +1,11 @@
 ---
 name: daily-briefing
 description: >
-  Summarize recent activity — what was done, what changed, what's next.
+  Summarize recent activity — what did WE do (task history, session recap, work summary).
   Use when Kellen says "briefing", "daily briefing", "what happened",
   "catch me up", "what's the status", "what did we do", or any variation
-  of wanting a session/day summary.
+  of wanting a session/day summary. NOT for priority drift or context maintenance
+  (use /context-sync for "what is different now", "has anything shifted").
 model: claude-haiku-4-5-20251001
 effort: low
 tools: [Read, Bash, Glob, Grep]

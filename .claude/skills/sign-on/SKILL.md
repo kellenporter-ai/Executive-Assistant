@@ -4,7 +4,9 @@ description: >
   Workspace initialization when Kellen starts a session. Use when the user says "sign on",
   "good morning", "start session", "open up shop", "let's get started", or any variation
   of beginning a work session. Detects machine type, syncs repos, checks services,
-  and shows a status dashboard.
+  and shows a status dashboard. IMPORTANT: Only trigger when the greeting IS the primary
+  intent of the message. If followed by a specific task request (e.g., "good morning,
+  fix the grading function"), skip sign-on and handle the task directly.
 model: claude-haiku-4-5-20251001
 effort: low
 tools: [Read, Bash, Glob]

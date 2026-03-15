@@ -65,6 +65,10 @@ Quick reference for the EA to decide which agent handles a task.
 | "Run discourse QA" | qa-engineer + gemini-assistant (parallel) | just qa-engineer |
 | "Have Gemini audit this" | gemini-assistant --agent qa-engineer | qa-engineer |
 | "Have Gemini research this" | gemini-assistant --agent research-agent | web-research skill |
+| "Bulk rename/reformat files across the project" | gemini-assistant (zero-prompt batch ops) | ui-engineer or backend-engineer |
+| "Independent code review during build" | gemini-assistant (background, parallel with QA) | qa-engineer alone |
+| "Discourse curriculum audit" | curriculum-designer + gemini-assistant (parallel) | curriculum-designer alone |
+| "Bilingual parent communication" | content-writer → localization-coordinator | local-llm-assistant alone |
 
 ## Multi-Agent Coordination
 

@@ -1,6 +1,6 @@
 ---
 name: lesson-plan
-description: Use when someone asks to plan a lesson, create a lesson plan, build lesson blocks, convert a resource into a lesson, or generate an ISLE physics lesson. This skill creates ORIGINAL instructional content structured around ISLE phases — use study-guide instead when summarizing existing lessons into review materials.
+description: Use when someone asks to plan a lesson, create a lesson plan, build lesson blocks, convert a resource into a lesson, or generate an ISLE lesson for any science course (physics, forensic science, AP Physics 1). This skill creates ORIGINAL instructional content structured around ISLE phases — use study-guide instead when summarizing existing lessons into review materials.
 model: claude-sonnet-4-6
 effort: medium
 tools: [Read, Write, Glob]
@@ -8,13 +8,13 @@ tools: [Read, Write, Glob]
 
 ## What This Skill Does
 
-Generates physics lesson plans structured around the ISLE (Investigative Science Learning Environment) pedagogy and outputs them as a JSON array of lesson blocks that can be directly imported into the Porters-Portal lesson editor.
+Generates lesson plans structured around the ISLE (Investigative Science Learning Environment) pedagogy and outputs them as a JSON array of lesson blocks that can be directly imported into the Porters-Portal lesson editor.
 
 **Two modes:**
-- **Topic mode:** Given a physics topic (e.g., "projectile motion"), generates a complete ISLE lesson from scratch.
+- **Topic mode:** Given a topic (e.g., "projectile motion", "blood spatter analysis"), generates a complete ISLE lesson from scratch.
 - **Resource mode:** Given a file path to a PDF or document, reads the resource and converts it into ISLE-structured lesson blocks.
 
-**Audience:** High school physics and AP Physics 1.
+**Audience:** High school physics, AP Physics 1, and Forensic Science.
 
 For the full ISLE pedagogy reference, see [isle-pedagogy.md](isle-pedagogy.md).
 For the complete JSON block schema, see [block-schema.md](block-schema.md).
