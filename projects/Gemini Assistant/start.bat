@@ -18,10 +18,10 @@ if not errorlevel 1 (
     if not errorlevel 1 (
         set PYTHON_CMD=python
     ) else (
-        echo   Error: Python 3 is required but not installed.
-        echo   Install from: https://www.python.org/downloads/
-        pause
-        exit /b 1
+        echo   Python 3 is required. Opening setup guide in your browser...
+        start "" "%~dp0setup.html"
+        timeout /t 3 /nobreak >nul
+        exit /b 0
     )
 )
 

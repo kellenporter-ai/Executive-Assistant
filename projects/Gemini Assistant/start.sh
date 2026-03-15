@@ -19,20 +19,14 @@ echo ""
 
 # Check Python 3 (the only hard requirement — runs the server)
 if ! command -v python3 &> /dev/null; then
-    echo "  Error: Python 3 is required but not installed."
+    echo "  Python 3 is required. Opening setup guide in your browser..."
     echo ""
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        echo "  macOS:   brew install python3"
-    elif [[ -f /etc/debian_version ]]; then
-        echo "  Ubuntu/Debian: sudo apt install python3 python3-venv"
-    elif [[ -f /etc/fedora-release ]]; then
-        echo "  Fedora:  sudo dnf install python3"
-    elif [[ -f /etc/arch-release ]]; then
-        echo "  Arch:    sudo pacman -S python"
+        open setup.html
     else
-        echo "  Install from: https://www.python.org/downloads/"
+        xdg-open setup.html 2>/dev/null || sensible-browser setup.html 2>/dev/null || echo "  Please open setup.html in your browser manually"
     fi
-    exit 1
+    exit 0
 fi
 
 # Note: Gemini CLI, Node, npm, and git are checked by the web interface.

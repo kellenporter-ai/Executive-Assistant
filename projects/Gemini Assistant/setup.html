@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gemini Executive Assistant — Setup</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg-primary:#11111b;--bg-secondary:rgba(24,24,37,0.95);--text-primary:#cdd6f4;--text-secondary:#a6adc8;--text-muted:#6c7086;--accent:#89b4fa;--accent-hover:#b4d0fb;--border:rgba(49,50,68,0.6);--success:#a6e3a1;--warning:#f9e2af;--error:#f38ba8;--radius:12px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.6;min-height:100vh}
+.wrapper{max-width:820px;margin:0 auto;padding:2rem 1.25rem 3rem;animation:fadeIn .6s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+header{text-align:center;margin-bottom:2.5rem}
+h1{font-size:1.6rem;font-weight:700;margin-bottom:.4rem}
+h1 span{color:var(--accent)}
+.subtitle{color:var(--text-secondary);font-size:.95rem;max-width:540px;margin:0 auto}
+/* Tabs */
+.tabs{display:flex;gap:.5rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab{padding:.55rem 1.2rem;background:none;border:none;color:var(--text-muted);font-size:.9rem;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;transition:color .2s,border-color .2s}
+.tab:hover{color:var(--text-secondary)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.platform{display:none}.platform.active{display:block}
+/* Cards */
+.step{background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem 1.5rem;margin-bottom:1.25rem}
+.step-header{display:flex;align-items:center;gap:.65rem;margin-bottom:.75rem}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:var(--bg-primary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;flex-shrink:0}
+.step-title{font-size:1.05rem;font-weight:600}
+.step ol,.step ul{padding-left:1.25rem;color:var(--text-secondary);font-size:.9rem}
+.step li{margin-bottom:.35rem}
+.step p{color:var(--text-secondary);font-size:.9rem;margin-bottom:.5rem}
+/* Code blocks */
+.code{position:relative;background:#0e0e18;border:1px solid var(--border);border-radius:8px;padding:.6rem .85rem;margin:.5rem 0;font-family:'SF Mono',Consolas,'Liberation Mono',Menlo,monospace;font-size:.82rem;color:var(--accent-hover);overflow-x:auto;display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.code code{flex:1;white-space:pre;display:block}
+.copy-btn{background:none;border:1px solid var(--border);border-radius:6px;color:var(--text-muted);cursor:pointer;padding:3px 7px;font-size:.72rem;font-family:inherit;flex-shrink:0;transition:color .2s,border-color .2s}
+.copy-btn:hover{color:var(--text-primary);border-color:var(--text-muted)}
+.copy-btn.copied{color:var(--success);border-color:var(--success)}
+/* Callout */
+.callout{border:1.5px solid var(--warning);border-radius:8px;padding:.75rem 1rem;margin:.65rem 0;background:rgba(249,226,175,.06);font-size:.88rem;color:var(--warning);display:flex;gap:.6rem;align-items:flex-start}
+.callout svg{flex-shrink:0;margin-top:2px}
+/* Verify section */
+.verify{border-top:1px solid var(--border);margin-top:2.5rem;padding-top:2rem}
+.verify h2{font-size:1.15rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.verify p{color:var(--text-secondary);font-size:.9rem;margin-bottom:.75rem}
+.verify .code{margin-bottom:.4rem}
+.verify .expect{color:var(--text-muted);font-size:.8rem;margin-bottom:.75rem;padding-left:.25rem}
+footer{text-align:center;color:var(--text-muted);font-size:.82rem;margin-top:2.5rem;padding-top:1.25rem;border-top:1px solid var(--border)}
+a{color:var(--accent);text-decoration:none}a:hover{color:var(--accent-hover);text-decoration:underline}
+strong{color:var(--text-primary);font-weight:600}
+@media(max-width:600px){
+  .wrapper{padding:1.25rem .75rem 2rem}
+  h1{font-size:1.25rem}
+  .tabs{gap:.25rem}
+  .tab{padding:.45rem .75rem;font-size:.82rem}
+  .step{padding:1rem 1.1rem}
+}
+</style>
+</head>
+<body>
+<div class="wrapper">
+<header>
+  <h1><span>Gemini Executive Assistant</span> — Setup</h1>
+  <p class="subtitle">Let's get your assistant up and running. Follow the steps below for your operating system.</p>
+</header>
+
+<div class="tabs" role="tablist">
+  <button class="tab" role="tab" data-platform="windows" onclick="showPlatform('windows')">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M0 2.3l6.5-.9v6.3H0zm7.3-1L16 0v7.7H7.3zM16 8.4V16l-8.7-1.2V8.4zM6.5 14.7L0 13.8V8.4h6.5z"/></svg>
+    Windows
+  </button>
+  <button class="tab" role="tab" data-platform="macos" onclick="showPlatform('macos')">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M12.2 5.3c-.1.1-1.8 1-1.8 3.2 0 2.5 2.2 3.4 2.2 3.4 0 .1-.3 1.2-1.1 2.3-.7 1-1.4 2-2.5 2s-1.4-.6-2.6-.6-1.6.7-2.6.7-1.7-.9-2.5-2C.3 12.7 0 10.8 0 9c0-2.9 1.9-4.4 3.7-4.4 1 0 1.8.7 2.4.7.6 0 1.5-.7 2.7-.7.4 0 2 0 3.4 1.7zM10 2.5c.5-.6.9-1.5.9-2.5 0-.1 0-.3 0-.3-.9 0-1.9.6-2.5 1.3-.5.5-1 1.4-1 2.4 0 .2 0 .3 0 .3h.1c.9 0 1.8-.5 2.5-1.2z"/></svg>
+    macOS
+  </button>
+  <button class="tab" role="tab" data-platform="linux" onclick="showPlatform('linux')">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align:-2px;margin-right:4px"><path d="M8 0C5.5 0 4 2.5 4 5.5c0 1.4.3 2.7.8 3.7-.8.8-1.8 2-2.3 3.2-.3.8.3 1.8 1.2 2 .5.1 1.5.4 2.3.5.5.5 1.2.8 2 .8s1.5-.3 2-.8c.8-.1 1.8-.3 2.3-.5.9-.2 1.5-1.2 1.2-2-.5-1.2-1.5-2.4-2.3-3.2.5-1 .8-2.3.8-3.7C12 2.5 10.5 0 8 0zm-1.5 6a.75.75 0 110-1.5.75.75 0 010 1.5zm3 0a.75.75 0 110-1.5.75.75 0 010 1.5zM6.5 8h3l-.3.8c-.2.4-.6.7-1.2.7s-1-.3-1.2-.7L6.5 8z"/></svg>
+    Linux
+  </button>
+</div>
+
+<!-- WINDOWS -->
+<div class="platform" id="platform-windows">
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><div class="step-title">Install Python 3</div></div>
+    <ol>
+      <li>Go to <a href="https://python.org/downloads" target="_blank">python.org/downloads</a></li>
+      <li>Click the big <strong>"Download Python 3.x.x"</strong> button</li>
+      <li>Run the installer. On the <strong>first screen</strong>, look for the checkbox at the bottom:</li>
+    </ol>
+    <div class="callout">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      <div><strong>Check "Add python.exe to PATH"</strong> — this is the #1 setup mistake. Without it, your terminal won't find Python. The checkbox is at the very bottom of the installer's first screen.</div>
+    </div>
+    <ol start="4">
+      <li>Click <strong>"Install Now"</strong></li>
+      <li>When done, <strong>close and reopen</strong> any terminal/PowerShell windows</li>
+    </ol>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><div class="step-title">Install Node.js</div></div>
+    <ol>
+      <li>Go to <a href="https://nodejs.org" target="_blank">nodejs.org</a></li>
+      <li>Download the <strong>LTS</strong> version</li>
+      <li>Run the installer — accept all defaults</li>
+    </ol>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><div class="step-title">Install Gemini CLI</div></div>
+    <p>Open <strong>PowerShell</strong> or <strong>Command Prompt</strong> and run:</p>
+    <div class="code"><code>npm install -g @google/gemini-cli</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><div class="step-title">Launch the Assistant</div></div>
+    <p>Double-click <strong>start.bat</strong> in the Gemini Assistant folder.</p>
+  </div>
+</div>
+
+<!-- MACOS -->
+<div class="platform" id="platform-macos">
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><div class="step-title">Install Python 3</div></div>
+    <p>Python may already be installed. Open <strong>Terminal</strong> and check:</p>
+    <div class="code"><code>python3 --version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <p>If that prints a version number, skip to Step 2. Otherwise:</p>
+    <ul>
+      <li><strong>Option A</strong> (Homebrew): <code style="color:var(--accent-hover)">brew install python3</code></li>
+      <li><strong>Option B</strong>: Download the macOS installer from <a href="https://python.org/downloads" target="_blank">python.org/downloads</a> and run it</li>
+    </ul>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><div class="step-title">Install Node.js</div></div>
+    <ul>
+      <li><strong>Homebrew:</strong></li>
+    </ul>
+    <div class="code"><code>brew install node</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <p>Or download from <a href="https://nodejs.org" target="_blank">nodejs.org</a> and run the macOS installer.</p>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><div class="step-title">Install Gemini CLI</div></div>
+    <p>Open <strong>Terminal</strong> and run:</p>
+    <div class="code"><code>npm install -g @google/gemini-cli</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><div class="step-title">Launch the Assistant</div></div>
+    <p>Open Terminal in the Gemini Assistant folder and run:</p>
+    <div class="code"><code>./start.sh</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+</div>
+
+<!-- LINUX -->
+<div class="platform" id="platform-linux">
+  <div class="step">
+    <div class="step-header"><div class="step-num">1</div><div class="step-title">Install Python 3</div></div>
+    <p>Python may already be installed. Check first:</p>
+    <div class="code"><code>python3 --version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <p>If that prints a version number, skip to Step 2. Otherwise, install for your distro:</p>
+    <div class="code"><code>sudo apt update && sudo apt install python3 python3-venv</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <div class="code"><code>sudo dnf install python3</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <div class="code"><code>sudo pacman -S python</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">2</div><div class="step-title">Install Node.js</div></div>
+    <div class="code"><code>sudo apt install nodejs npm</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <div class="code"><code>sudo dnf install nodejs npm</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+    <div class="code"><code>sudo pacman -S nodejs npm</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">3</div><div class="step-title">Install Gemini CLI</div></div>
+    <p>Open a terminal and run:</p>
+    <div class="code"><code>npm install -g @google/gemini-cli</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+  <div class="step">
+    <div class="step-header"><div class="step-num">4</div><div class="step-title">Launch the Assistant</div></div>
+    <p>Open a terminal in the Gemini Assistant folder and run:</p>
+    <div class="code"><code>./start.sh</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  </div>
+</div>
+
+<!-- VERIFY -->
+<div class="verify">
+  <h2>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    Verify Installation
+  </h2>
+  <p>Open a <strong>new</strong> terminal window and run each command. You should see version numbers, not errors.</p>
+  <div class="code"><code>python3 --version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <p class="expect">Expected: Python 3.11.x or higher</p>
+  <div class="code"><code>node --version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <p class="expect">Expected: v18.x or higher</p>
+  <div class="code"><code>gemini --version</code><button class="copy-btn" onclick="copyCode(this)">Copy</button></div>
+  <p class="expect">Expected: a version number (any)</p>
+  <div class="callout" style="border-color:var(--accent);color:var(--text-secondary);background:rgba(137,180,250,.06)">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    <div><strong>Windows users:</strong> If <code style="color:var(--accent-hover)">python3</code> is not found, try <code style="color:var(--accent-hover)">python --version</code> instead. If neither works, re-run the Python installer and make sure "Add python.exe to PATH" is checked.</div>
+  </div>
+</div>
+
+<footer>Having trouble? Ask your school's IT department to install Python 3 and Node.js on your computer.</footer>
+</div>
+
+<script>
+function showPlatform(id){
+  document.querySelectorAll('.platform').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.tab').forEach(function(el){el.classList.remove('active')});
+  document.getElementById('platform-'+id).classList.add('active');
+  document.querySelector('[data-platform="'+id+'"]').classList.add('active');
+}
+function copyCode(btn){
+  var text=btn.parentElement.querySelector('code').textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(function(){btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},1500)}).catch(function(){/* file:// fallback */var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},1500)})}
+  else{var ta=document.createElement('textarea');ta.value=text;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);btn.textContent='Copied!';btn.classList.add('copied');setTimeout(function(){btn.textContent='Copy';btn.classList.remove('copied')},1500)}
+}
+(function(){
+  var ua=navigator.userAgent||'';var p=navigator.platform||'';
+  var os='linux';
+  if(p.indexOf('Win')!==-1||ua.indexOf('Windows')!==-1)os='windows';
+  else if(p.indexOf('Mac')!==-1||ua.indexOf('Macintosh')!==-1)os='macos';
+  showPlatform(os);
+})();
+</script>
+</body>
+</html>
